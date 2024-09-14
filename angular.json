@@ -3,9 +3,13 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "dashManqu": {
+    "dash-manqu": {
       "projectType": "application",
-      "schematics": {},
+      "schematics": {
+        "@schematics/angular:component": {
+        "style": "scss"
+       }
+      },
       "root": "",
       "sourceRoot": "src",
       "prefix": "app",
@@ -27,7 +31,7 @@
               }
             ],
             "styles": [
-              "src/styles.css"
+               "src/styles/global.scss"
             ],
             "scripts": [],
             "server": "src/main.server.ts",
@@ -64,10 +68,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "dashManqu:build:production"
+              "buildTarget": "dash-manqu:build:production"
             },
             "development": {
-              "buildTarget": "dashManqu:build:development"
+              "buildTarget": "dash-manqu:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -97,5 +101,8 @@
         }
       }
     }
+  },
+  "cli": {
+    "analytics": false
   }
 }
