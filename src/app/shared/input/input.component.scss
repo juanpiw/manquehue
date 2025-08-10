@@ -1,0 +1,17 @@
+/* input.component.scss */
+input {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 100%;
+  }
+  
+  label {
+    display: block;
+    margin-bottom: 5px;
+  }
+  
+  mat-icon {
+    cursor: pointer;
+  }
+  

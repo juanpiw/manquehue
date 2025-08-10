@@ -1,0 +1,41 @@
+<div>
+    <div>logo</div>
+<div class="col-3">
+    <app-menu-app></app-menu-app>
+</div>
+<div class="col-9">
+    <!-- Resumen-->
+    <div>
+        <div *ngIf="currentComponent === 'resumen'">
+            <div> resumen 1</div> 
+        </div>
+     <!-- Proyecto-->
+    <div *ngIf="currentComponent === 'proyectos'">
+     <div>proyectos 2</div>
+    </div>
+     <!-- Estadísticas de uso-->
+     <div *ngIf="currentComponent === 'uso'">
+        <div>proyectos 3</div>
+    </div>
+      <!-- Configuraciones-->
+      <div *ngIf="currentComponent === 'configuracion'">
+       <div>proyectos 4</div>
+    </div>
+     <!-- Nuevo Proyecto-->
+     <div *ngIf="currentComponent === 'nuevoProyecto'">
+        <div>Nuevo proyecto</div>
+     </div>
+      <!-- Usuario-->
+      <div *ngIf="currentComponent === 'Usuario'">
+        <div>usuario</div>
+     </div>
+      <!-- Soporte y ayuda-->
+      <div *ngIf="currentComponent === 'soporteyAyuda'">
+        <div>soporte ayuda</div>
+     </div>
+    </div>
+</div>
+</div>
+<div>
+  
+</div>

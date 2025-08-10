@@ -1,0 +1,51 @@
+.container-menu{
+    background-color: #e6e6e6;
+    width: 100%;
+}
+li{
+    font-family: var(--font-primary);
+    
+}
+.container-menu {
+    width: 100%; /* Ajusta al tamaño de tu sidebar */
+    background: #fff; /* Fondo blanco o según el diseño */
+    padding: 20px; /* Espacio interior */
+    box-sizing: border-box;
+  }
+  
+  .sidebar {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .nav-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .nav-links li {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px; /* Espacio entre elementos */
+  }
+  
+  .nav-links i {
+    font-size: 24px; /* Tamaño del ícono */
+    width: 40px; /* Asegura que los íconos tengan el mismo espacio */
+    text-align: center;
+    color: #555; /* Color de los íconos */
+  }
+  
+  .link-name {
+    font-size: 16px; /* Tamaño de la fuente */
+    color: #333; /* Color del texto */
+    text-decoration: none; /* Sin subrayado */
+    margin-left: 10px; /* Espacio entre el ícono y el texto */
+    cursor: pointer;
+  }
+  
+  /* Añade más estilos según sea necesario */
+  .icon-menu{
+    width: 16px;
+  }
