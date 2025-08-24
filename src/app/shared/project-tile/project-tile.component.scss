@@ -1,0 +1,42 @@
+:host { display: inline-block; outline: none; }
+.tile {
+  --primary: #3155ff;
+  --muted: #6b7280;
+  --size: 56; /* px */
+
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border-radius: 12px;
+  transition: background .15s ease, transform .06s ease, box-shadow .15s ease;
+  cursor: pointer;
+  user-select: none;
+  font-family: var(--font-primary);
+}
+
+.icon {
+  width: var(--size)px;
+  height: var(--size)px;
+  display: block;
+}
+
+.folder { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.outer  { stroke: var(--primary); stroke-width: 0.4; }
+.inner  { stroke: var(--primary); stroke-width: 0.4; }
+
+.label {
+  font-size: 12px;
+  color: var(--muted);
+  text-align: center;
+}
+
+/* estados */
+:host(:hover) .tile { background: rgba(49,85,255,.06); }
+:host(:active) .tile { transform: translateY(1px); }
+:host(:focus-visible) .tile { box-shadow: 0 0 0 3px rgba(49,85,255,.25); }
+
+/* seleccionado / deshabilitado */
+:host(.is-selected) .tile { background: rgba(49,85,255,.10); }
+:host(.is-disabled) .tile { opacity:.55; cursor: not-allowed; }

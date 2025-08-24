@@ -1,0 +1,37 @@
+<nav class="preview-navigation" [class.centered]="config.centered">
+  <div class="nav-container">
+    <ul class="nav-list">
+      <li 
+        *ngFor="let item of config.items; trackBy: trackByLabel" 
+        class="nav-item"
+        [class.active]="item.active"
+        [class.disabled]="item.disabled">
+        
+        <a 
+          *ngIf="item.href && !item.disabled"
+          [href]="item.href"
+          class="nav-link text-body text-medium"
+          (click)="onItemClick(item)">
+          {{ item.label }}
+        </a>
+        
+        <button 
+          *ngIf="!item.href || item.disabled"
+          class="nav-link text-body text-medium"
+          [disabled]="item.disabled"
+          (click)="onItemClick(item)"
+          type="button">
+          {{ item.label }}
+        </button>
+      </li>
+    </ul>
+    
+    <!-- Active underline -->
+    <div 
+      *ngIf="config.showUnderline" 
+      class="nav-underline"
+      [class.visible]="hasActiveItems()">
+    </div>
+  </div>
+</nav>
+

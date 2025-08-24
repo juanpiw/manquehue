@@ -1,0 +1,58 @@
+<div class="info-tooltip-container" [class.disabled]="disabled">
+  
+  <!-- Icono del tooltip -->
+  <div 
+    class="tooltip-icon"
+    [class]="'icon-' + iconSize + ' icon-' + iconColor"
+    [class.active]="isOpen"
+    (click)="toggleTooltip($event)"
+    [attr.role]="'button'"
+    [attr.tabindex]="disabled ? -1 : 0"
+    [attr.aria-label]="'info_tooltip.additional_info' | t"
+    [attr.aria-expanded]="isOpen">
+    
+    <span class="icon-content">?</span>
+  </div>
+
+  <!-- Cuadro informativo -->
+  <div 
+    class="tooltip-content"
+    [class]="'position-' + position"
+    [class.open]="isOpen">
+    
+    <!-- Header del tooltip -->
+    <div class="tooltip-header" *ngIf="data.title">
+      <h4 class="tooltip-title">{{ data.title }}</h4>
+              <button 
+          class="close-button"
+          (click)="toggleTooltip($event)"
+          [attr.aria-label]="'info_tooltip.close_info' | t">
+          ×
+        </button>
+    </div>
+
+    <!-- Contenido del tooltip -->
+    <div class="tooltip-body">
+      <div class="content-area">
+        <div class="content-text">
+          {{ data.content }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer del tooltip -->
+    <div class="tooltip-footer">
+      <div class="tooltip-actions">
+        <button 
+          class="btn btn-secondary btn-sm"
+          (click)="toggleTooltip($event)">
+          {{ 'info_tooltip.close' | t }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Flecha del tooltip -->
+    <div class="tooltip-arrow"></div>
+  </div>
+
+</div>

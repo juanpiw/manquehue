@@ -1,0 +1,52 @@
+<div class="number-dropdown-container" [class.disabled]="disabled">
+  
+  <!-- Selector principal -->
+  <div 
+    class="number-selector"
+    [class]="'size-' + size"
+    [class.open]="isOpen"
+    [class.disabled]="disabled"
+    (click)="toggleDropdown($event)"
+    [attr.role]="'button'"
+    [attr.tabindex]="disabled ? -1 : 0"
+    [attr.aria-label]="'number_dropdown.select_number' | t"
+    [attr.aria-expanded]="isOpen"
+    [attr.aria-haspopup]="'listbox'">
+    
+    <!-- Valor seleccionado -->
+    <span class="selected-value">{{ value }}</span>
+    
+    <!-- Icono de flecha -->
+    <span class="dropdown-arrow">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </span>
+  </div>
+
+  <!-- Lista de opciones -->
+  <div 
+    class="dropdown-options"
+    [class.open]="isOpen"
+    role="listbox"
+    [attr.aria-label]="'number_dropdown.options' | t">
+    
+    <div 
+      *ngFor="let number of numbers"
+      class="option-item"
+      [class.selected]="number === value"
+      (click)="selectNumber(number)"
+      role="option"
+      [attr.aria-selected]="number === value">
+      
+      {{ number }}
+    </div>
+  </div>
+
+</div>
+
+
+
+
+
+

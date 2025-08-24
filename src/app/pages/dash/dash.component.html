@@ -1,41 +1,43 @@
-<div>
-    <div>logo</div>
+<div class="base">
+<div class="row">
+ 
 <div class="col-3">
     <app-menu-app></app-menu-app>
 </div>
 <div class="col-9">
     <!-- Resumen-->
-    <div>
+    <div  class="container-contenido" >
         <div *ngIf="currentComponent === 'resumen'">
-            <div> resumen 1</div> 
+          <app-resumen (navigate)="onNavigate($event)"></app-resumen>
         </div>
      <!-- Proyecto-->
     <div *ngIf="currentComponent === 'proyectos'">
-     <div>proyectos 2</div>
+     <app-proyectos></app-proyectos>
     </div>
      <!-- Estadísticas de uso-->
      <div *ngIf="currentComponent === 'uso'">
-        <div>proyectos 3</div>
+        <app-uso></app-uso>
     </div>
       <!-- Configuraciones-->
       <div *ngIf="currentComponent === 'configuracion'">
-       <div>proyectos 4</div>
+      <app-configuracion></app-configuracion>
+      
     </div>
      <!-- Nuevo Proyecto-->
      <div *ngIf="currentComponent === 'nuevoProyecto'">
-        <div>Nuevo proyecto</div>
+        <app-nuevo-proyecto></app-nuevo-proyecto>
      </div>
       <!-- Usuario-->
       <div *ngIf="currentComponent === 'Usuario'">
-        <div>usuario</div>
+       <app-usuario></app-usuario>
      </div>
       <!-- Soporte y ayuda-->
       <div *ngIf="currentComponent === 'soporteyAyuda'">
-        <div>soporte ayuda</div>
+        <app-soporte-ayuda></app-soporte-ayuda>
      </div>
     </div>
 </div>
 </div>
-<div>
+
   
 </div>

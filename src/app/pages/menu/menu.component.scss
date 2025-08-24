@@ -1,51 +1,82 @@
-.container-menu{
+.container-menu {
     background-color: #e6e6e6;
     width: 100%;
-}
-li{
-    font-family: var(--font-primary);
-    
-}
-.container-menu {
-    width: 100%; /* Ajusta al tamaño de tu sidebar */
-    background: #fff; /* Fondo blanco o según el diseño */
-    padding: 20px; /* Espacio interior */
+    padding: 20px;
     box-sizing: border-box;
-  }
-  
-  .sidebar {
+}
+
+.sidebar {
     display: flex;
     flex-direction: column;
-  }
-  
-  .nav-links {
+}
+
+.nav-links {
     list-style: none;
     padding: 0;
     margin: 0;
-  }
-  
-  .nav-links li {
+}
+
+.nav-links li {
     display: flex;
     align-items: center;
-    margin-bottom: 20px; /* Espacio entre elementos */
-  }
-  
-  .nav-links i {
-    font-size: 24px; /* Tamaño del ícono */
-    width: 40px; /* Asegura que los íconos tengan el mismo espacio */
-    text-align: center;
-    color: #555; /* Color de los íconos */
-  }
-  
-  .link-name {
-    font-size: 16px; /* Tamaño de la fuente */
-    color: #333; /* Color del texto */
-    text-decoration: none; /* Sin subrayado */
-    margin-left: 10px; /* Espacio entre el ícono y el texto */
+    margin-bottom: 20px;
+    padding: 12px 16px;
+    border-radius: 8px;
     cursor: pointer;
-  }
-  
-  /* Añade más estilos según sea necesario */
-  .icon-menu{
+    transition: all 0.3s ease;
+    font-family: var(--font-primary);
+    
+    &:hover {
+        background-color: rgba(59, 130, 246, 0.1);
+        
+        .link-name {
+            color: #3b82f6;
+            font-weight: 500;
+        }
+        
+        .icon-menu {
+            filter: brightness(0) saturate(100%) invert(48%) sepia(79%) saturate(2476%) hue-rotate(202deg) brightness(118%) contrast(119%);
+            transform: scale(1.1);
+        }
+    }
+    
+    &:active {
+        transform: scale(0.98);
+    }
+    
+    &.active {
+        background-color: rgba(59, 130, 246, 0.15);
+        border-left: 4px solid #3b82f6;
+        
+        .link-name {
+            color: #3b82f6;
+            font-weight: 600;
+        }
+        
+        .icon-menu {
+            filter: brightness(0) saturate(100%) invert(48%) sepia(79%) saturate(2476%) hue-rotate(202deg) brightness(118%) contrast(119%);
+            transform: scale(1.05);
+        }
+    }
+}
+
+.link-name {
+    font-size: 16px;
+    color: #333;
+    text-decoration: none;
+    margin-left: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.icon-menu {
     width: 16px;
-  }
+    margin-right: 10px;
+    transition: all 0.3s ease;
+    filter: brightness(0) saturate(100%) invert(27%) sepia(51%) saturate(2878%) hue-rotate(346deg) brightness(104%) contrast(97%);
+}
+
+.distancia {
+    margin-top: 300px;
+    padding-left: 50px;
+}

@@ -1,0 +1,16 @@
+<section class="preview-description" 
+         [class.centered]="config.centered"
+         [class.with-background]="config.showBackground"
+         [class.padding-small]="config.padding === 'small'"
+         [class.padding-medium]="config.padding === 'medium'"
+         [class.padding-large]="config.padding === 'large'">
+  
+  <div class="description-container" [style.max-width]="config.maxWidth">
+    <div class="description-content">
+      <p class="description-text text-body-large text-regular">
+        {{ config.text }}
+      </p>
+    </div>
+  </div>
+</section>
+

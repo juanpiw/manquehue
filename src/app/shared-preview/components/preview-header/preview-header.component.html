@@ -1,0 +1,36 @@
+<header class="preview-header">
+  <div class="header-content">
+    <!-- Logo/Icon -->
+    <div class="header-logo" (click)="onLogoClick()">
+      <div class="logo-placeholder" *ngIf="!config.logo">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/>
+          <line x1="9" y1="9" x2="15" y2="9" stroke="currentColor" stroke-width="2"/>
+          <line x1="9" y1="12" x2="15" y2="12" stroke="currentColor" stroke-width="2"/>
+          <line x1="9" y1="15" x2="15" y2="15" stroke="currentColor" stroke-width="2"/>
+        </svg>
+      </div>
+      <img *ngIf="config.logo" [src]="config.logo" [alt]="config.title" class="logo-image">
+    </div>
+
+    <!-- Title -->
+    <h1 class="header-title text-heading-4 text-semibold" *ngIf="config.title">
+      {{ config.title }}
+    </h1>
+
+    <!-- Menu Toggle -->
+    <button 
+      *ngIf="config.showMenu" 
+      class="menu-toggle" 
+      (click)="onMenuToggle()"
+      type="button"
+      aria-label="Toggle menu">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <line x1="3" y1="6" x2="21" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <line x1="3" y1="12" x2="21" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <line x1="3" y1="18" x2="21" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </button>
+  </div>
+</header>
+

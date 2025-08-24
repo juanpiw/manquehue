@@ -1,0 +1,29 @@
+<div class="preview-scroll-indicator" 
+     [class.position-left]="config.position === 'left'"
+     [class.position-right]="config.position === 'right'"
+     [class.size-small]="config.size === 'small'"
+     [class.size-medium]="config.size === 'medium'"
+     [class.size-large]="config.size === 'large'">
+  
+  <div class="scroll-indicator-container">
+    <div class="scroll-indicator-list">
+      <button 
+        *ngFor="let section of sections; trackBy: trackBySection" 
+        class="scroll-indicator-item"
+        [class.active]="isActive(section)"
+        (click)="onSectionClick(section)"
+        type="button"
+        [attr.aria-label]="'Go to section ' + section">
+        
+        <div class="indicator-circle">
+          <div class="indicator-inner" *ngIf="isActive(section)"></div>
+        </div>
+        
+        <span *ngIf="config.showLabels" class="indicator-label text-caption text-medium">
+          {{ section }}
+        </span>
+      </button>
+    </div>
+  </div>
+</div>
+

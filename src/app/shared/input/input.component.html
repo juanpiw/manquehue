@@ -1,2 +1,22 @@
-<label>{{ label }}</label>
-<input [type]="type" [value]="value" (input)="onChange($event)">
+<div class="input-container">
+  <label *ngIf="showLabel" class="input-label" [class.required]="required">
+    {{ getLabel() | t }}
+  </label>
+  
+  <input 
+    [type]="type" 
+    [value]="value" 
+    [placeholder]="getPlaceholder() | t"
+    [required]="required"
+    [disabled]="disabled"
+    [attr.maxlength]="maxLength"
+    [attr.minlength]="minLength"
+    [attr.pattern]="pattern"
+    (input)="onChange($event)"
+    (focus)="onFocus()"
+    (blur)="onBlur()"
+    class="input-field"
+    [class.error]="false"
+    [class.disabled]="disabled"
+  >
+</div>

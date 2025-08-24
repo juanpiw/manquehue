@@ -1,0 +1,77 @@
+<div class="dropdown-container">
+  <label *ngIf="showLabel" class="dropdown-label" [class.required]="required">
+    {{ getLabel() | t }}
+  </label>
+  
+  <div class="dropdown-wrapper">
+    <div 
+      class="dropdown-field"
+      [class.open]="isOpen"
+      [class.disabled]="disabled"
+      [class.loading]="loading"
+      [class.error]="getError()"
+      (click)="toggleDropdown()"
+    >
+      <div class="dropdown-selected">
+        <span *ngIf="selectedOption" class="selected-text">
+          {{ getSelectedText() | t }}
+        </span>
+        <span *ngIf="!selectedOption" class="placeholder-text">
+          {{ getPlaceholder() | t }}
+        </span>
+      </div>
+      
+      <div class="dropdown-icon">
+        <svg 
+          *ngIf="!loading"
+          class="chevron-icon" 
+          [class.rotated]="isOpen"
+          width="16" 
+          height="16" 
+          viewBox="0 0 24 24" 
+          fill="none" 
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <div *ngIf="loading" class="loading-spinner"></div>
+      </div>
+    </div>
+    
+    <!-- Lista de opciones -->
+    <div 
+      *ngIf="isOpen && hasOptions()" 
+      class="dropdown-options"
+      (click)="$event.stopPropagation()"
+    >
+      <div 
+        *ngFor="let option of options"
+        class="dropdown-option"
+        [class.selected]="selectedOption?.id === option.id"
+        [class.disabled]="option.disabled"
+        (click)="selectOption(option)"
+      >
+        <span class="option-text">
+          {{ (option.labelKey || option.label) | t }}
+        </span>
+      </div>
+    </div>
+    
+    <!-- Mensaje de error -->
+    <div *ngIf="getError()" class="error-message">
+      {{ getError() | t }}
+    </div>
+    
+    <!-- Mensaje cuando no hay opciones -->
+    <div *ngIf="isOpen && !hasOptions()" class="no-options">
+      <span>{{ 'common.no_options' | t }}</span>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+

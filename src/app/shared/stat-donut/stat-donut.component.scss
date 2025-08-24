@@ -1,0 +1,40 @@
+:host { display: inline-block; font-family: var(--font-primary); }
+
+.stat { width: var(--size); }
+.title {
+  text-align: center;
+  color: #6b7280; /* muted */
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.donut {
+  width: var(--size);
+  height: var(--size);
+  display: block;
+}
+
+circle { fill: none; vector-effect: non-scaling-stroke; }
+
+.track { opacity: 1; }
+
+.bar {
+  transform: rotate(-90deg);         /* inicia arriba (12 en punto) */
+  transform-origin: 50% 50%;
+  stroke-linecap: butt;              /* extremos rectos (como el mock) */
+  transition: stroke-dasharray .35s ease;
+}
+
+.fraction {
+  color: #6b7280;
+  font-size: 13px;
+  min-width: 38px;                   /* evita "bailes" al animar */
+  text-align: left;
+}

@@ -1,0 +1,14 @@
+<div class="apartment-type-selector">
+  <h3 class="selector-title text-heading-5 text-semibold">{{ config.title }}</h3>
+  
+  <div class="type-indicators">
+    <div 
+      *ngFor="let type of config.types; trackBy: trackById"
+      class="type-indicator"
+      [class.active]="type.active"
+      (click)="onTypeClick(type)">
+      <div class="indicator-circle"></div>
+      <span class="type-label text-body text-regular">{{ type.label }}</span>
+    </div>
+  </div>
+</div>

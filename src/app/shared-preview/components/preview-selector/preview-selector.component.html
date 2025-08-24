@@ -1,0 +1,56 @@
+<div class="preview-selector" 
+     [class.layout-horizontal]="config.layout === 'horizontal'"
+     [class.layout-vertical]="config.layout === 'vertical'"
+     [class.size-small]="config.size === 'small'"
+     [class.size-medium]="config.size === 'medium'"
+     [class.size-large]="config.size === 'large'">
+  
+  <div class="selector-container">
+    <!-- Label -->
+    <label *ngIf="config.label" class="selector-label text-body text-medium">
+      {{ config.label }}
+    </label>
+
+    <!-- Radio Buttons -->
+    <div *ngIf="config.type === 'radio'" class="radio-group">
+      <div *ngFor="let option of config.options; trackBy: trackByValue" 
+           class="radio-option"
+           [class.selected]="isSelected(option.value)"
+           [class.disabled]="option.disabled"
+           (click)="!option.disabled && onOptionSelect(option.value)">
+        
+        <div class="radio-circle">
+          <div class="radio-inner" *ngIf="isSelected(option.value)"></div>
+        </div>
+        
+        <span class="radio-label text-body text-regular">{{ option.label }}</span>
+      </div>
+    </div>
+
+    <!-- Dropdown -->
+    <div *ngIf="config.type === 'dropdown'" class="dropdown-container">
+      <select class="dropdown-select text-body text-regular" 
+              [value]="config.selectedValue"
+              (change)="onOptionSelect($event)">
+        <option *ngFor="let option of config.options" 
+                [value]="option.value"
+                [disabled]="option.disabled">
+          {{ option.label }}
+        </option>
+      </select>
+    </div>
+
+    <!-- Toggle -->
+    <div *ngIf="config.type === 'toggle'" class="toggle-group">
+      <div *ngFor="let option of config.options; trackBy: trackByValue" 
+           class="toggle-option"
+           [class.selected]="isSelected(option.value)"
+           [class.disabled]="option.disabled"
+           (click)="!option.disabled && onOptionSelect(option.value)">
+        
+        <span class="toggle-label text-body text-regular">{{ option.label }}</span>
+      </div>
+    </div>
+  </div>
+</div>
+

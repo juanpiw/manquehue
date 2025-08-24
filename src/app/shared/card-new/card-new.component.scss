@@ -1,0 +1,63 @@
+:host {
+  display: inline-block;
+  outline: none;
+}
+
+.cta {
+  --primary: #3155ff;
+  --bg: #f3f5ff; /* pill claro */
+  --text: #1f2937;
+  --radius: 20px;
+  font-family: var(--font-primary);
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--bg);
+  border-radius: var(--radius);
+  padding: 14px 22px;
+  cursor: pointer;
+  user-select: none;
+  transition: background .15s ease, transform .06s ease, box-shadow .15s ease;
+}
+
+.cta.md { padding: 10px 16px; gap: 10px; }
+.cta.lg { padding: 16px 26px; gap: 16px; }
+
+.label {
+  color: var(--text);
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1;
+}
+
+/* círculo con + hecho en CSS */
+.icon {
+  --s: 36px;
+  width: var(--s);
+  height: var(--s);
+  border: 2px solid var(--primary);
+  border-radius: 999px;
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+.icon::before,
+.icon::after {
+  content: '';
+  position: absolute;
+  background: var(--primary);
+  border-radius: 2px;
+}
+.icon::before { width: 18px; height: 2px; } /* barra horizontal */
+.icon::after  { width: 2px; height: 18px; } /* barra vertical */
+
+/* estados */
+:host(:hover) .cta { background: #e9ecff; }
+:host(:active) .cta { transform: translateY(1px); }
+:host(:focus-visible) .cta { box-shadow: 0 0 0 3px rgba(49, 85, 255, .25); }
+
+/* disabled */
+:host(.disabled) .cta {
+  opacity: .6;
+  cursor: not-allowed;
+}

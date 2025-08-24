@@ -1,0 +1,11 @@
+<div class="apartment-list">
+  <div 
+    *ngFor="let item of config.items; trackBy: trackById"
+    class="apartment-list-item"
+    [class.selected]="item.selected"
+    (click)="onItemClick(item)">
+    <div class="item-placeholder">
+      <span class="item-title text-body text-medium">{{ item.title }}</span>
+    </div>
+  </div>
+</div>

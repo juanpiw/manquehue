@@ -15,4 +15,8 @@ export class MenuStateService {
   changeComponent(componentName: string) {
     this.componentToShow.next(componentName);
   }
+
+  getCurrentComponent(): string {
+    return this.componentToShow.value;
+  }
 }

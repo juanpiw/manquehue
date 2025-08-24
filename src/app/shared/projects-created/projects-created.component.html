@@ -1,0 +1,22 @@
+<div class="pc">
+  <h3 class="title text-heading-5 text-semibold">{{ title }}</h3>
+
+  <!-- loading -->
+  <ul class="list" *ngIf="loading; else notLoading">
+    <li class="skeleton" *ngFor="let i of skeletons"></li>
+  </ul>
+
+  <!-- contenido -->
+  <ng-template #notLoading>
+    <ul class="list" role="list" *ngIf="visibleItems.length > 0; else empty">
+      <li *ngFor="let p of visibleItems; trackBy: trackById">
+        <button class="link text-body text-medium" type="button" (click)="open.emit(p)">
+          {{ p.name }}
+        </button>
+      </li>
+    </ul>
+    <ng-template #empty>
+      <div class="empty text-body text-regular">Aún no hay proyectos</div>
+    </ng-template>
+  </ng-template>
+</div>

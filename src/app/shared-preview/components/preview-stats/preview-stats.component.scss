@@ -1,0 +1,155 @@
+.preview-stats {
+  padding: 2rem 0;
+
+  &.centered {
+    .stats-container {
+      text-align: center;
+    }
+  }
+
+  &.layout-horizontal {
+    .stats-list {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 3rem;
+    }
+
+    .stat-item {
+      flex: 1;
+      max-width: 200px;
+    }
+  }
+
+  &.layout-vertical {
+    .stats-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .stat-item {
+      text-align: center;
+    }
+  }
+
+  &.layout-grid {
+    .stats-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 2rem;
+    }
+
+    .stat-item {
+      text-align: center;
+    }
+  }
+
+  &.size-small {
+    .stat-value {
+      font-size: 1.5rem;
+    }
+
+    .stat-label {
+      font-size: 0.875rem;
+    }
+  }
+
+  &.size-medium {
+    .stat-value {
+      font-size: 2.5rem;
+    }
+
+    .stat-label {
+      font-size: 1rem;
+    }
+  }
+
+  &.size-large {
+    .stat-value {
+      font-size: 3.5rem;
+    }
+
+    .stat-label {
+      font-size: 1.125rem;
+    }
+  }
+
+  .stats-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+
+  .stat-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  .stat-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .stat-value {
+    color: var(--stat-color, var(--text-color, #333));
+    margin: 0;
+    line-height: 1;
+  }
+
+  .stat-label {
+    color: var(--text-secondary, #666);
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .stat-divider {
+    width: 1px;
+    height: 40px;
+    background: rgba(0, 0, 0, 0.1);
+    margin: 0 1.5rem;
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .preview-stats {
+    padding: 1.5rem 0;
+
+    &.layout-horizontal {
+      .stats-list {
+        flex-direction: column;
+        gap: 1.5rem;
+      }
+
+      .stat-item {
+        max-width: none;
+      }
+
+      .stat-divider {
+        display: none;
+      }
+    }
+
+    .stats-container {
+      padding: 0 1rem;
+    }
+
+    &.size-large {
+      .stat-value {
+        font-size: 2.5rem;
+      }
+    }
+
+    &.size-medium {
+      .stat-value {
+        font-size: 2rem;
+      }
+    }
+  }
+}
+

@@ -1,0 +1,144 @@
+<div class="apartment-model-detail">
+  <!-- Model Title -->
+  <h3 class="model-title">{{ config.title }}</h3>
+
+  <!-- Specifications Grid -->
+  <div class="specifications-grid">
+    <div 
+      *ngFor="let spec of config.specifications; let i = index" 
+      class="specification-item"
+      [class.spec-row-1]="i < 2"
+      [class.spec-row-2]="i >= 2 && i < 4"
+      [class.spec-row-3]="i >= 4">
+      <div class="spec-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"></circle>
+        </svg>
+      </div>
+      <span class="spec-label">{{ spec.label }}</span>
+      <span class="spec-value">{{ spec.value }}</span>
+    </div>
+  </div>
+
+  <!-- Floor Type Selector -->
+  <div class="floor-type-section">
+    <div class="floor-type-header">
+      <div class="floor-type-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"></circle>
+        </svg>
+      </div>
+      <span class="floor-type-label">Tipo de piso</span>
+    </div>
+    <div class="floor-type-options">
+      <button 
+        *ngFor="let type of config.floorTypes"
+        class="floor-type-option"
+        [class.active]="type.active"
+        (click)="onFloorTypeClick(type.id)">
+        {{ type.label }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Floor Plan -->
+  <div class="floor-plan-container" *ngIf="config.showFloorPlan">
+    <div class="floor-plan-image">
+      <!-- Real floor plan image -->
+      <img 
+        *ngIf="config.useRealImage && config.floorPlanImage" 
+        [src]="config.floorPlanImage" 
+        [alt]="config.title + ' floor plan'"
+        class="floor-plan-real-image">
+      
+      <!-- Placeholder SVG when no real image -->
+      <div class="floor-plan-placeholder" *ngIf="!config.useRealImage || !config.floorPlanImage">
+        <svg width="100%" height="100%" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Background -->
+          <rect x="0" y="0" width="400" height="300" fill="#f8f9fa" stroke="none"/>
+          
+          <!-- Master Bedroom with furniture -->
+          <rect x="20" y="20" width="120" height="80" fill="#e9ecef" stroke="#dee2e6" stroke-width="1"/>
+          <rect x="30" y="30" width="40" height="25" fill="#f8f9fa" stroke="#dee2e6" stroke-width="1"/>
+          <rect x="80" y="30" width="40" height="25" fill="#f8f9fa" stroke="#dee2e6" stroke-width="1"/>
+          <rect x="30" y="65" width="20" height="15" fill="#f8f9fa" stroke="#dee2e6" stroke-width="1"/>
+          <rect x="60" y="65" width="20" height="15" fill="#f8f9fa" stroke="#dee2e6" stroke-width="1"/>
+          <text x="80" y="45" text-anchor="middle" fill="#6c757d" font-size="10" font-family="Arial">Master Bed</text>
+          
+          <!-- En-suite Bathroom -->
+          <rect x="140" y="20" width="30" height="40" fill="#f1f3f4" stroke="#dee2e6" stroke-width="1"/>
+          <rect x="145" y="25" width="20" height="8" fill="#e9ecef" stroke="#dee2e6" stroke-width="1"/>
+          <rect x="145" y="40" width="8" height="15" fill="#e9ecef" stroke="#dee2e6" stroke-width="1"/>
+          <text x="155" y="35" text-anchor="middle" fill="#6c757d" font-size="8" font-family="Arial">Bath</text>
+          
+          <!-- Second Bedroom -->
+          <rect x="20" y="110" width="80" height="60" fill="#e9ecef" stroke="#dee2e6" stroke-width="1"/>
+          <rect x="30" y="120" width="25" height="20" fill="#f8f9fa" stroke="#dee2e6" stroke-width="1"/>
+          <rect x="60" y="120" width="25" height="20" fill="#f8f9fa" stroke="#dee2e6" stroke-width="1"/>
+          <text x="60" y="140" text-anchor="middle" fill="#6c757d" font-size="9" font-family="Arial">Bed 2</text>
+          
+          <!-- Third Bedroom -->
+          <rect x="110" y="110" width="80" height="60" fill="#e9ecef" stroke="#dee2e6" stroke-width="1"/>
+          <rect x="120" y="120" width="25" height="20" fill="#f8f9fa" stroke="#dee2e6" stroke-width="1"/>
+          <rect x="150" y="120" width="25" height="20" fill="#f8f9fa" stroke="#dee2e6" stroke-width="1"/>
+          <text x="150" y="140" text-anchor="middle" fill="#6c757d" font-size="9" font-family="Arial">Bed 3</text>
+          
+          <!-- Living Room -->
+          <rect x="200" y="20" width="120" height="80" fill="#e9ecef" stroke="#dee2e6" stroke-width="1"/>
+          <rect x="210" y="30" width="40" height="25" fill="#f8f9fa" stroke="#dee2e6" stroke-width="1"/>
+          <rect x="260" y="30" width="40" height="25" fill="#f8f9fa" stroke="#dee2e6" stroke-width="1"/>
+          <rect x="210" y="65" width="20" height="15" fill="#f8f9fa" stroke="#dee2e6" stroke-width="1"/>
+          <rect x="240" y="65" width="20" height="15" fill="#f8f9fa" stroke="#dee2e6" stroke-width="1"/>
+          <rect x="270" y="65" width="20" height="15" fill="#f8f9fa" stroke="#dee2e6" stroke-width="1"/>
+          <text x="260" y="45" text-anchor="middle" fill="#6c757d" font-size="10" font-family="Arial">Living</text>
+          
+          <!-- Dining Area -->
+          <rect x="200" y="110" width="60" height="50" fill="#e9ecef" stroke="#dee2e6" stroke-width="1"/>
+          <rect x="210" y="120" width="40" height="30" fill="#f8f9fa" stroke="#dee2e6" stroke-width="1"/>
+          <text x="230" y="135" text-anchor="middle" fill="#6c757d" font-size="8" font-family="Arial">Dining</text>
+          
+          <!-- Kitchen -->
+          <rect x="270" y="110" width="50" height="50" fill="#f1f3f4" stroke="#dee2e6" stroke-width="1"/>
+          <rect x="275" y="115" width="40" height="8" fill="#e9ecef" stroke="#dee2e6" stroke-width="1"/>
+          <rect x="275" y="130" width="8" height="25" fill="#e9ecef" stroke="#dee2e6" stroke-width="1"/>
+          <text x="295" y="135" text-anchor="middle" fill="#6c757d" font-size="8" font-family="Arial">Kitchen</text>
+          
+          <!-- Bathroom -->
+          <rect x="330" y="110" width="30" height="50" fill="#f1f3f4" stroke="#dee2e6" stroke-width="1"/>
+          <rect x="335" y="115" width="20" height="8" fill="#e9ecef" stroke="#dee2e6" stroke-width="1"/>
+          <rect x="335" y="130" width="8" height="25" fill="#e9ecef" stroke="#dee2e6" stroke-width="1"/>
+          <text x="345" y="135" text-anchor="middle" fill="#6c757d" font-size="8" font-family="Arial">Bath</text>
+          
+          <!-- Balcony 1 -->
+          <rect x="20" y="180" width="120" height="20" fill="#fff3cd" stroke="#ffc107" stroke-width="1"/>
+          <rect x="50" y="185" width="20" height="10" fill="#f8f9fa" stroke="#dee2e6" stroke-width="1"/>
+          <text x="80" y="192" text-anchor="middle" fill="#856404" font-size="8" font-family="Arial">Balcony</text>
+          
+          <!-- Balcony 2 -->
+          <rect x="200" y="170" width="120" height="20" fill="#fff3cd" stroke="#ffc107" stroke-width="1"/>
+          <rect x="230" y="175" width="20" height="10" fill="#f8f9fa" stroke="#dee2e6" stroke-width="1"/>
+          <text x="260" y="182" text-anchor="middle" fill="#856404" font-size="8" font-family="Arial">Balcony</text>
+          
+          <!-- Doors -->
+          <line x1="140" y1="60" x2="150" y2="60" stroke="#495057" stroke-width="2"/>
+          <line x1="100" y1="110" x2="100" y2="120" stroke="#495057" stroke-width="2"/>
+          <line x1="190" y1="110" x2="190" y2="120" stroke="#495057" stroke-width="2"/>
+          <line x1="200" y1="60" x2="210" y2="60" stroke="#495057" stroke-width="2"/>
+          <line x1="260" y1="110" x2="260" y2="120" stroke="#495057" stroke-width="2"/>
+          <line x1="320" y1="135" x2="330" y2="135" stroke="#495057" stroke-width="2"/>
+          <line x1="360" y1="135" x2="370" y2="135" stroke="#495057" stroke-width="2"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="action-buttons">
+    <button class="btn btn-secondary" (click)="onSendPdf()">
+      Enviar pdf
+    </button>
+    <button class="btn btn-primary" (click)="onQuoteModel()">
+      cotizar modelo
+    </button>
+  </div>
+</div>

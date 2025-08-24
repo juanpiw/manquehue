@@ -1,0 +1,28 @@
+<div class="textarea-container">
+  <label *ngIf="showLabel" class="textarea-label" [class.required]="required">
+    {{ getLabel() | t }}
+  </label>
+  
+  <div class="textarea-wrapper">
+    <textarea 
+      [value]="currentValue"
+      [placeholder]="getPlaceholder() | t"
+      [required]="required"
+      [disabled]="disabled"
+      [attr.maxlength]="maxLength"
+      [attr.minlength]="minLength"
+      [rows]="rows"
+      [style.resize]="resize"
+      (input)="onInput($event)"
+      (focus)="onFocus()"
+      (blur)="onBlur()"
+      class="textarea-field"
+      [class.error]="isLimitReached()"
+      [class.disabled]="disabled"
+    ></textarea>
+    
+    <div *ngIf="showCounter" class="character-counter" [style.color]="getCounterColor()">
+      {{ getCharacterCount() }}/{{ maxLength }}
+    </div>
+  </div>
+</div>

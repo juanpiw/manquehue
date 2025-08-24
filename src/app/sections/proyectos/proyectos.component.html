@@ -1,0 +1,181 @@
+<div class="projects-container">
+  
+  <!-- Header de la sección -->
+  <div class="projects-header">
+    <div class="header-content">
+      <h1>{{ 'proyectos.title' | t }}</h1>
+      <p>{{ 'proyectos.subtitle' | t }}</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-primary" (click)="loadProjects()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        {{ 'proyectos.refresh' | t }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Filtros y búsqueda -->
+  <div class="filters-section">
+    <div class="search-box">
+      <div class="search-input">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/>
+          <path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <input 
+          type="text" 
+          [placeholder]="'proyectos.search_placeholder' | t"
+          [(ngModel)]="searchTerm"
+          (input)="onSearchChange($event)">
+      </div>
+    </div>
+    
+    <div class="filters">
+      <div class="filter-group">
+        <label>{{ 'proyectos.filter_status' | t }}</label>
+        <select [(ngModel)]="statusFilter" (change)="onStatusFilterChange($event)">
+          <option value="all">{{ 'proyectos.all_status' | t }}</option>
+          <option value="active">{{ 'proyectos.status_active' | t }}</option>
+          <option value="completed">{{ 'proyectos.status_completed' | t }}</option>
+          <option value="draft">{{ 'proyectos.status_draft' | t }}</option>
+        </select>
+      </div>
+      
+      <div class="filter-group">
+        <label>{{ 'proyectos.filter_type' | t }}</label>
+        <select [(ngModel)]="typeFilter" (change)="onTypeFilterChange($event)">
+          <option value="all">{{ 'proyectos.all_types' | t }}</option>
+          <option value="apartment">{{ 'proyectos.type_apartment' | t }}</option>
+          <option value="house">{{ 'proyectos.type_house' | t }}</option>
+          <option value="field">{{ 'proyectos.type_field' | t }}</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lista de proyectos -->
+  <div class="projects-list">
+    <div class="projects-grid">
+      <div class="project-card" *ngFor="let project of filteredProjects">
+        
+        <!-- Imagen del proyecto -->
+        <div class="project-image">
+          <img [src]="project.thumbnail || 'assets/logo1.png'" [alt]="project.name">
+          <div class="project-overlay">
+            <div class="project-type-badge">
+              <span class="type-icon">{{ getTypeIcon(project.type) }}</span>
+              <span class="type-text">{{ getTypeText(project.type) | t }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Información del proyecto -->
+        <div class="project-info">
+          <div class="project-header">
+            <h3 class="project-name">{{ project.name }}</h3>
+            <div class="project-status" [class]="getStatusClass(project.status)">
+              {{ getStatusText(project.status) | t }}
+            </div>
+          </div>
+
+          <p class="project-description">{{ project.description }}</p>
+
+          <!-- Detalles específicos del proyecto -->
+          <div class="project-details">
+            <div class="detail-item" *ngIf="project.apartmentsCount">
+              <span class="detail-label">{{ 'proyectos.apartments' | t }}:</span>
+              <span class="detail-value">{{ project.apartmentsCount }}</span>
+            </div>
+            
+            <div class="detail-item" *ngIf="project.floorsCount">
+              <span class="detail-label">{{ 'proyectos.floors' | t }}:</span>
+              <span class="detail-value">{{ project.floorsCount }}</span>
+            </div>
+            
+            <div class="detail-item" *ngIf="project.priceRange">
+              <span class="detail-label">{{ 'proyectos.price_range' | t }}:</span>
+              <span class="detail-value">
+                {{ formatPrice(project.priceRange.min, project.priceRange.currency) }} - 
+                {{ formatPrice(project.priceRange.max, project.priceRange.currency) }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Fechas -->
+          <div class="project-dates">
+            <div class="date-item">
+              <span class="date-label">{{ 'proyectos.created' | t }}:</span>
+              <span class="date-value">{{ formatDate(project.creationDate) }}</span>
+            </div>
+            <div class="date-item">
+              <span class="date-label">{{ 'proyectos.modified' | t }}:</span>
+              <span class="date-value">{{ formatDate(project.lastModified) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botones de acción -->
+        <div class="project-actions">
+          <!-- Botón principal con icono de ojo para preview -->
+          <button class="btn btn-preview" (click)="onPreviewProject(project)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            {{ 'proyectos.preview' | t }}
+          </button>
+
+          <!-- Botones secundarios -->
+          <div class="secondary-actions">
+            <button class="btn btn-edit" (click)="onEditProject(project)" title="{{ 'proyectos.edit' | t }}">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            
+            <button class="btn btn-delete" (click)="onDeleteProject(project)" title="{{ 'proyectos.delete' | t }}">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Estado vacío -->
+    <div class="empty-state" *ngIf="filteredProjects.length === 0">
+      <div class="empty-icon">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <polyline points="14,2 14,8 20,8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <line x1="16" y1="13" x2="8" y2="13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <line x1="16" y1="17" x2="8" y2="17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <polyline points="10,9 9,9 8,9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <h3>{{ 'proyectos.no_projects' | t }}</h3>
+      <p>{{ 'proyectos.no_projects_description' | t }}</p>
+    </div>
+  </div>
+
+  <!-- Paginación -->
+  <div class="pagination" *ngIf="filteredProjects.length > 0">
+    <div class="pagination-info">
+      <span>{{ 'proyectos.showing' | t }} {{ filteredProjects.length }} {{ 'proyectos.of' | t }} {{ projects.length }} {{ 'proyectos.projects' | t }}</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- Modal Component -->
+<app-modal
+  [isOpen]="isModalOpen"
+  [config]="modalConfig"
+  (confirm)="onModalConfirm()"
+  (cancel)="onModalCancel()"
+  (close)="onModalClose()">
+</app-modal>

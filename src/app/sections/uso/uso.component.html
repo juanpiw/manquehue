@@ -1,0 +1,317 @@
+<div class="analytics-container">
+  
+  <!-- Header de la sección -->
+  <div class="analytics-header">
+    <div class="header-content">
+      <h1>{{ 'uso.title' | t }}</h1>
+      <p>{{ 'uso.subtitle' | t }}</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-primary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2v6m0 0v6m0-6h6m-6 0H6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        {{ 'uso.export_report' | t }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Estadísticas principales -->
+  <div class="main-stats-section">
+    <h2>{{ 'uso.main_statistics' | t }}</h2>
+    <div class="stats-grid">
+      <div class="stat-card" *ngFor="let stat of mainStats">
+        <div class="stat-header">
+          <h3>{{ stat.title | t }}</h3>
+          <div class="stat-value">{{ stat.value }}</div>
+        </div>
+        <div class="stat-donut">
+          <app-stat-donut
+            [title]="''"
+            [value]="stat.value"
+            [max]="stat.max"
+            [bar]="stat.color"
+            [size]="80"
+            [thickness]="8">
+          </app-stat-donut>
+        </div>
+        <p class="stat-description">{{ stat.description | t }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Resumen ejecutivo -->
+  <div class="executive-summary">
+    <div class="summary-card">
+      <h3>{{ 'uso.executive_summary' | t }}</h3>
+      <div class="summary-metrics">
+        <div class="metric">
+          <span class="metric-label">{{ 'uso.completion_rate' | t }}</span>
+          <span class="metric-value">{{ getCompletionRate() }}%</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">{{ 'uso.monthly_growth' | t }}</span>
+          <span class="metric-value" [class.positive]="getMonthlyGrowth() > 0" [class.negative]="getMonthlyGrowth() < 0">
+            {{ getMonthlyGrowth() > 0 ? '+' : '' }}{{ getMonthlyGrowth() }}%
+          </span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">{{ 'uso.avg_features_per_project' | t }}</span>
+          <span class="metric-value">{{ getAverageFeaturesPerProject() }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Estadísticas por tipo de proyecto -->
+  <div class="project-types-section">
+    <h2>{{ 'uso.project_types' | t }}</h2>
+    <div class="project-types-grid">
+      <div class="type-card" *ngFor="let type of projectTypeStats">
+        <div class="type-header">
+          <h4>{{ type.type | t }}</h4>
+          <span class="type-count">{{ type.count }}</span>
+        </div>
+        <div class="type-progress">
+          <div class="progress-bar">
+            <div class="progress-fill" [style.width.%]="type.percentage"></div>
+          </div>
+          <span class="percentage">{{ type.percentage }}%</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Estadísticas de uso de características -->
+  <div class="features-usage-section">
+    <h2>{{ 'uso.features_usage' | t }}</h2>
+    <div class="features-grid">
+      <div class="feature-stat">
+        <div class="feature-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M21 19V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="feature-info">
+          <h4>{{ 'uso.image_uploads' | t }}</h4>
+          <span class="feature-count">{{ featureUsageStats.imageUploads }}</span>
+        </div>
+      </div>
+      
+      <div class="feature-stat">
+        <div class="feature-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M9 18V5l12-2v13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="6" cy="18" r="3" stroke="currentColor" stroke-width="2"/>
+            <circle cx="18" cy="16" r="3" stroke="currentColor" stroke-width="2"/>
+          </svg>
+        </div>
+        <div class="feature-info">
+          <h4>{{ 'uso.audio_uploads' | t }}</h4>
+          <span class="feature-count">{{ featureUsageStats.audioUploads }}</span>
+        </div>
+      </div>
+      
+      <div class="feature-stat">
+        <div class="feature-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M23 7l-7 4 7 4V7z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M14 4v16a2 2 0 01-2 2H4a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="feature-info">
+          <h4>{{ 'uso.video_uploads' | t }}</h4>
+          <span class="feature-count">{{ featureUsageStats.videoUploads }}</span>
+        </div>
+      </div>
+      
+      <div class="feature-stat">
+        <div class="feature-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <polyline points="14,2 14,8 20,8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="16" y1="13" x2="8" y2="13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="16" y1="17" x2="8" y2="17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <polyline points="10,9 9,9 8,9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="feature-info">
+          <h4>{{ 'uso.pdf_uploads' | t }}</h4>
+          <span class="feature-count">{{ featureUsageStats.pdfUploads }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Estadísticas de configuración -->
+  <div class="configuration-stats-section">
+    <h2>{{ 'uso.configuration_statistics' | t }}</h2>
+    <div class="config-stats-grid">
+      <div class="config-stat">
+        <h4>{{ 'uso.apartments_configured' | t }}</h4>
+        <span class="config-count">{{ configurationStats.apartmentsConfigured }}</span>
+      </div>
+      <div class="config-stat">
+        <h4>{{ 'uso.floors_configured' | t }}</h4>
+        <span class="config-count">{{ configurationStats.floorsConfigured }}</span>
+      </div>
+      <div class="config-stat">
+        <h4>{{ 'uso.bathrooms_configured' | t }}</h4>
+        <span class="config-count">{{ configurationStats.bathroomsConfigured }}</span>
+      </div>
+      <div class="config-stat">
+        <h4>{{ 'uso.rooms_configured' | t }}</h4>
+        <span class="config-count">{{ configurationStats.roomsConfigured }}</span>
+      </div>
+      <div class="config-stat">
+        <h4>{{ 'uso.terraces_configured' | t }}</h4>
+        <span class="config-count">{{ configurationStats.terracesConfigured }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Estadísticas de contenido -->
+  <div class="content-stats-section">
+    <h2>{{ 'uso.content_statistics' | t }}</h2>
+    <div class="content-stats-grid">
+      <div class="content-stat">
+        <div class="content-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2" stroke="currentColor" stroke-width="2"/>
+            <circle cx="8.5" cy="8.5" r="1.5" stroke="currentColor" stroke-width="2"/>
+            <polyline points="21,15 16,10 5,21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="content-info">
+          <h4>{{ 'uso.carousel_images' | t }}</h4>
+          <span class="content-count">{{ contentStats.carouselImages }}</span>
+        </div>
+      </div>
+      
+      <div class="content-stat">
+        <div class="content-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <polyline points="14,2 14,8 20,8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="16" y1="13" x2="8" y2="13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="16" y1="17" x2="8" y2="17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <polyline points="10,9 9,9 8,9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="content-info">
+          <h4>{{ 'uso.feature_descriptions' | t }}</h4>
+          <span class="content-count">{{ contentStats.featureDescriptions }}</span>
+        </div>
+      </div>
+      
+      <div class="content-stat">
+        <div class="content-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 6h16M4 10h16M4 14h16M4 18h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="content-info">
+          <h4>{{ 'uso.screen_titles' | t }}</h4>
+          <span class="content-count">{{ contentStats.screenTitles }}</span>
+        </div>
+      </div>
+      
+      <div class="content-stat">
+        <div class="content-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="content-info">
+          <h4>{{ 'uso.brief_descriptions' | t }}</h4>
+          <span class="content-count">{{ contentStats.briefDescriptions }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Métricas de rendimiento -->
+  <div class="performance-section">
+    <h2>{{ 'uso.performance_metrics' | t }}</h2>
+    <div class="performance-grid">
+      <div class="performance-card">
+        <h4>{{ 'uso.avg_load_time' | t }}</h4>
+        <div class="performance-value">
+          <span class="value">{{ performanceMetrics.averageLoadTime }}</span>
+          <span class="unit">s</span>
+        </div>
+      </div>
+      
+      <div class="performance-card">
+        <h4>{{ 'uso.uptime' | t }}</h4>
+        <div class="performance-value">
+          <span class="value">{{ performanceMetrics.uptime }}</span>
+          <span class="unit">%</span>
+        </div>
+      </div>
+      
+      <div class="performance-card">
+        <h4>{{ 'uso.error_rate' | t }}</h4>
+        <div class="performance-value">
+          <span class="value">{{ performanceMetrics.errorRate }}</span>
+          <span class="unit">%</span>
+        </div>
+      </div>
+      
+      <div class="performance-card">
+        <h4>{{ 'uso.user_satisfaction' | t }}</h4>
+        <div class="performance-value">
+          <span class="value">{{ performanceMetrics.userSatisfaction }}</span>
+          <span class="unit">/5</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Insights y recomendaciones -->
+  <div class="insights-section">
+    <h2>{{ 'uso.insights' | t }}</h2>
+    <div class="insights-grid">
+      <div class="insight-card">
+        <div class="insight-icon positive">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M22 11.08V12a10 10 0 11-5.93-9.14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <polyline points="22,4 12,14.01 9,11.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="insight-content">
+          <h4>{{ 'uso.most_used_feature' | t }}</h4>
+          <p>{{ getMostUsedFeature() | t }} {{ 'uso.is_most_popular' | t }}</p>
+        </div>
+      </div>
+      
+      <div class="insight-card">
+        <div class="insight-icon info">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+            <path d="M12 16v-4M12 8h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="insight-content">
+          <h4>{{ 'uso.popular_project_type' | t }}</h4>
+          <p>{{ getProjectTypeWithHighestCount() | t }} {{ 'uso.dominates_market' | t }}</p>
+        </div>
+      </div>
+      
+      <div class="insight-card">
+        <div class="insight-icon warning">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="12" y1="9" x2="12" y2="13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="12" y1="17" x2="12.01" y2="17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="insight-content">
+          <h4>{{ 'uso.optimization_opportunity' | t }}</h4>
+          <p>{{ 'uso.consider_improving' | t }} {{ 'uso.video_uploads' | t }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

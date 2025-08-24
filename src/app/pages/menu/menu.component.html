@@ -1,26 +1,31 @@
 <div class="container-menu">
+ <app-lang-switcher></app-lang-switcher>
+<div class="logo text-heading-4 text-semibold">DashManqué</div>
   <div class="sidebar">
-    <ul class="nav-links">
-      <li (click)="changeComponent('resumen')">
-        <img class="icon-menu" src="./../../../assets/icons/resumen.svg" alt="Resumen"><span class="link-name">Resumen</span>
+    <ul class="nav-links distancia">
+      <li (click)="changeComponent('resumen')" [class.active]="isActive('resumen')">
+        <img class="icon-menu" src="./../../../assets/icons/resumen.svg" alt="{{ 'menu.resumen' | t }}"><span class="link-name text-body text-medium">{{ 'menu.resumen' | t }}</span>
       </li>
-      <li (click)="changeComponent('proyectos')">
-        <img class="icon-menu" src="./../../../assets/icons/proyectos.svg" alt="Proyectos" ><span class="link-name">Proyectos</span>
+      <li (click)="changeComponent('proyectos')" [class.active]="isActive('proyectos')">
+        <img class="icon-menu" src="./../../../assets/icons/proyectos.svg" alt="{{ 'menu.proyectos' | t }}" ><span class="link-name text-body text-medium">{{ 'menu.proyectos' | t }}</span>
       </li>
-      <li (click)="changeComponent('uso')">
-        <img class="icon-menu" src="./../../../assets/icons/estadisticas.svg" alt="Estadísticas de uso" ><span class="link-name">Estadísticas de uso</span>
+      <li (click)="changeComponent('uso')" [class.active]="isActive('uso')">
+        <img class="icon-menu" src="./../../../assets/icons/estadisticas.svg" alt="{{ 'menu.estadisticas_uso' | t }}" ><span class="link-name text-body text-medium">{{ 'menu.estadisticas_uso' | t }}</span>
       </li>
-      <li (click)="changeComponent('configuracion')">
-        <img class="icon-menu" src="./../../../assets/icons/configuraciones.svg" alt="Configuraciones" ><span class="link-name">Configuraciones</span>
+      <li (click)="changeComponent('configuracion')" [class.active]="isActive('configuracion')">
+        <img class="icon-menu" src="./../../../assets/icons/configuraciones.svg" alt="{{ 'menu.configuraciones' | t }}" ><span class="link-name text-body text-medium">{{ 'menu.configuraciones' | t }}</span>
       </li>
-      <li (click)="changeComponent('nuevoProyecto')">
-        <img  class="icon-menu"src="./../../../assets/icons/nuevoproyecto.svg" alt="Nuevo proyecto" ><span class="link-name">Nuevo proyecto</span>
+      <li (click)="changeComponent('nuevoProyecto')" [class.active]="isActive('nuevoProyecto')">
+        <img  class="icon-menu"src="./../../../assets/icons/nuevoproyecto.svg" alt="{{ 'menu.nuevo_proyecto' | t }}" ><span class="link-name text-body text-medium">{{ 'menu.nuevo_proyecto' | t }}</span>
       </li>
-      <li (click)="changeComponent('Usuario')">
-        <img class="icon-menu" src="./../../../assets/icons/usuario.svg" alt="Usuario" ><span class="link-name">Usuario</span>
+      <li (click)="navigateToPreview()" [class.active]="isActive('preview')">
+        <img class="icon-menu" src="./../../../assets/icons/preview.svg" alt="{{ 'menu_preview' | t }}"><span class="link-name text-body text-medium">{{ 'menu_preview' | t }}</span>
       </li>
-      <li (click)="changeComponent('soporteyAyuda')">
-        <img class="icon-menu" src="./../../../assets/icons/soporte.svg" alt="Soporte y Ayuda"><span class="link-name">Soporte y Ayuda</span>
+      <li (click)="changeComponent('Usuario')" [class.active]="isActive('Usuario')">
+        <img class="icon-menu" src="./../../../assets/icons/usuario.svg" alt="{{ 'menu.usuario' | t }}" ><span class="link-name text-body text-medium">{{ 'menu.usuario' | t }}</span>
+      </li>
+      <li (click)="changeComponent('soporteyAyuda')" [class.active]="isActive('soporteyAyuda')">
+        <img class="icon-menu" src="./../../../assets/icons/soporte.svg" alt="{{ 'menu.soporte_ayuda' | t }}"><span class="link-name text-body text-medium">{{ 'menu.soporte_ayuda' | t }}</span>
       </li>
     </ul>
   </div>

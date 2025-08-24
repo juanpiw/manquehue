@@ -1,0 +1,121 @@
+<div class="preview-demo">
+  <!-- Header -->
+  <app-preview-header 
+    [config]="headerConfig"
+    (menuToggle)="onMenuToggle()"
+    (logoClick)="onLogoClick()">
+  </app-preview-header>
+
+  <!-- Navigation -->
+  <app-preview-navigation 
+    [config]="navigationConfig"
+    (itemClick)="onNavigationItemClick($event)">
+  </app-preview-navigation>
+
+  <!-- Hero Section -->
+  <app-preview-hero [config]="heroConfig"></app-preview-hero>
+
+  <!-- Description Section -->
+  <app-preview-description [config]="descriptionConfig"></app-preview-description>
+
+  <!-- Selector Section -->
+  <app-preview-selector 
+    [config]="selectorConfig"
+    (selectionChange)="onSelectorChange($event)">
+  </app-preview-selector>
+
+  <!-- Stats Section -->
+  <app-preview-stats [config]="statsConfig"></app-preview-stats>
+
+  <!-- Apartments Section -->
+  <section id="apartments" class="apartments-section">
+    <div class="apartments-container">
+      <!-- Left Sidebar -->
+      <div class="apartments-sidebar">
+        <!-- Apartment Type Selector -->
+        <app-apartment-type-selector 
+          [config]="apartmentTypeConfig"
+          (typeChange)="onApartmentTypeChange($event)">
+        </app-apartment-type-selector>
+
+        <!-- Apartment Filters -->
+        <app-apartment-filters 
+          [config]="apartmentFiltersConfig"
+          (filterChange)="onFilterChange($event)">
+        </app-apartment-filters>
+
+        <!-- Scroll Indicator -->
+        <div class="scroll-indicator">
+          <div class="scroll-bar">
+            <div class="scroll-progress" style="height: 30%;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Content -->
+      <div class="apartments-main">
+        <!-- Left Column - Apartment Details -->
+        <div class="apartments-left">
+          <!-- Selected Apartment Detail Card -->
+          <app-apartment-detail-card 
+            [config]="apartmentDetailConfig"
+            (cardClick)="onApartmentDetailClick()">
+          </app-apartment-detail-card>
+
+          <!-- Apartment List -->
+          <app-apartment-list 
+            [config]="apartmentListConfig"
+            (itemClick)="onApartmentListItemClick($event)">
+          </app-apartment-list>
+        </div>
+
+        <!-- Right Column - Apartment Model -->
+        <div class="apartments-right">
+          <app-apartment-model 
+            [config]="apartmentModelConfig"
+            (viewClick)="onApartmentModelViewClick()"
+            (contactClick)="onApartmentModelContactClick($event)">
+          </app-apartment-model>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section id="features" class="features-section">
+    <div class="features-container">
+      <!-- Left Panel - Model Detail -->
+      <div class="features-left">
+        <app-apartment-model-detail 
+          [config]="modelDetailConfig"
+          (floorTypeChange)="onFloorTypeChange($event)"
+          (sendPdfClick)="onSendPdf()"
+          (quoteModelClick)="onQuoteModel()">
+        </app-apartment-model-detail>
+      </div>
+
+      <!-- Right Panel - Gallery -->
+      <div class="features-right">
+        <app-apartment-gallery 
+          [config]="galleryConfig"
+          (imageChange)="onGalleryImageChange($event)"
+          (previousClick)="onGalleryPrevious()"
+          (nextClick)="onGalleryNext()">
+        </app-apartment-gallery>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <app-preview-footer 
+    [config]="footerConfig"
+    (buttonClick)="onFooterButtonClick()">
+  </app-preview-footer>
+
+  <!-- Scroll Indicator -->
+  <app-preview-scroll-indicator 
+    [config]="scrollConfig"
+    (sectionChange)="onSectionChange($event)">
+  </app-preview-scroll-indicator>
+</div>
+

@@ -1,0 +1,16 @@
+<section class="preview-hero" [class.centered]="config.centered" [class.size-small]="config.size === 'small'" [class.size-medium]="config.size === 'medium'" [class.size-large]="config.size === 'large'">
+  <div class="hero-container">
+    <div class="hero-content">
+      <h1 class="hero-title text-heading-1 text-bold">
+        {{ config.title }}
+      </h1>
+      
+      <p *ngIf="config.subtitle" class="hero-subtitle text-body-large text-regular">
+        {{ config.subtitle }}
+      </p>
+      
+      <div *ngIf="config.showDivider" class="hero-divider"></div>
+    </div>
+  </div>
+</section>
+

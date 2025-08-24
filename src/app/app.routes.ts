@@ -19,5 +19,10 @@ export const APP_ROUTES: Routes = [
       import('./pages/login/login.routes').then(m => m.LOGIN_ROUTES),
     // canActivate: [AuthLoginGuardCanActivate], // opcional
   },
+  {
+    path: 'preview',
+    loadChildren: () =>
+      import('./preview/preview.routes').then(m => m.PREVIEW_ROUTES),
+  },
   { path: '**', redirectTo: '' },
 ];

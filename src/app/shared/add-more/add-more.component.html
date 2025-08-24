@@ -1,0 +1,35 @@
+<button 
+  class="add-more-button"
+  [class]="'size-' + size + ' variant-' + variant"
+  [class.disabled]="disabled"
+  (click)="onClick($event)"
+  [attr.role]="'button'"
+  [attr.tabindex]="disabled ? -1 : 0"
+  [attr.aria-label]="'add_more.aria_label' | t"
+  [attr.disabled]="disabled">
+  
+  <!-- Ícono circular con signo + -->
+  <div class="icon-container" [class]="'icon-size-' + iconSize">
+    <svg 
+      class="plus-icon" 
+      viewBox="0 0 24 24" 
+      fill="none" 
+      xmlns="http://www.w3.org/2000/svg">
+      <path 
+        d="M12 5V19M5 12H19" 
+        stroke="currentColor" 
+        stroke-width="2" 
+        stroke-linecap="round" 
+        stroke-linejoin="round"/>
+    </svg>
+  </div>
+  
+  <!-- Texto del botón -->
+  <span class="button-text">{{ text | t }}</span>
+</button>
+
+
+
+
+
+

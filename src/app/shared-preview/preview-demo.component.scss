@@ -1,0 +1,177 @@
+.preview-demo {
+  font-family: var(--font-primary);
+  color: #374151;
+  line-height: 1.6;
+  min-height: 100vh;
+  overflow-y: auto;
+  background-color: #f8fafc;
+  scroll-behavior: smooth;
+}
+
+/* Ensure all sections are properly spaced */
+app-preview-header,
+app-preview-navigation,
+app-preview-hero,
+app-preview-description,
+app-preview-selector,
+app-preview-stats {
+  display: block;
+  width: 100%;
+}
+
+/* Apartments Section Styles */
+.apartments-section {
+  padding: 40px 20px;
+  background-color: #ffffff;
+  margin: 20px 0;
+  scroll-margin-top: 80px; /* Offset for fixed header */
+}
+
+.apartments-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  gap: 32px;
+}
+
+.apartments-sidebar {
+  width: 280px;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.apartments-main {
+  flex: 1;
+  display: flex;
+  gap: 24px;
+}
+
+.apartments-left {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.apartments-right {
+  width: 320px;
+  flex-shrink: 0;
+}
+
+/* Scroll Indicator */
+.scroll-indicator {
+  position: absolute;
+  left: -20px;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+}
+
+.scroll-bar {
+  width: 100%;
+  height: 100%;
+  background-color: #e5e7eb;
+  border-radius: 2px;
+  position: relative;
+}
+
+.scroll-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: #fbbf24;
+  border-radius: 2px;
+  transition: height 0.3s ease;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .apartments-container {
+    flex-direction: column;
+  }
+  
+  .apartments-sidebar {
+    width: 100%;
+    order: 2;
+  }
+  
+  .apartments-main {
+    order: 1;
+  }
+  
+  .apartments-right {
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .apartments-main {
+    flex-direction: column;
+  }
+  
+  .apartments-left,
+  .apartments-right {
+    width: 100%;
+  }
+  
+  .apartments-section {
+    padding: 20px 16px;
+  }
+  
+  .apartments-container {
+    gap: 24px;
+  }
+}
+
+/* Features Section Styles */
+.features-section {
+  padding: 40px 20px;
+
+  margin: 20px 0;
+  scroll-margin-top: 80px;
+}
+
+.features-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  gap: 32px;
+  min-height: 600px;
+}
+
+.features-left {
+  flex: 1;
+  max-width: 400px;
+}
+
+.features-right {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Responsive Design for Features */
+@media (max-width: 1200px) {
+  .features-container {
+    flex-direction: column;
+    gap: 24px;
+  }
+  
+  .features-left {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .features-section {
+    padding: 20px 16px;
+  }
+  
+  .features-container {
+    gap: 20px;
+    min-height: auto;
+  }
+}
+

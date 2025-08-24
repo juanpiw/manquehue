@@ -4,6 +4,13 @@ import { Subscription } from 'rxjs';
 import { MenuStateService } from '../../servicios/menuStateService';
 import { menuComponent } from '../menu/menu.component';
 import { NgClass, NgFor, NgIf } from '@angular/common';
+import { ResumenComponent } from '../../sections/resumen/resumen.component';
+import { ProyectosComponent } from '../../sections/proyectos/proyectos.component';
+import { NuevoProyectoComponent } from '../../sections/nuevo-proyecto/nuevo-proyecto.component';
+import { ConfiguracionComponent } from '../../sections/configuracion/configuracion.component';
+import { UsoComponent } from '../../sections/uso/uso.component';
+import { SoporteAyudaComponent } from '../../sections/soporte-ayuda/soporte-ayuda.component';
+import { UsuarioComponent } from '../../sections/usuario/usuario.component';
 
 
 @Component({
@@ -14,6 +21,13 @@ import { NgClass, NgFor, NgIf } from '@angular/common';
     NgIf,
     NgClass,
     NgFor,
+    ResumenComponent,
+    ProyectosComponent,
+    NuevoProyectoComponent,
+    ConfiguracionComponent,
+    UsoComponent,
+    SoporteAyudaComponent,
+    UsuarioComponent
    
   ],
   templateUrl: './dash.component.html',
@@ -29,8 +43,12 @@ export class dashComponent {
       });
     }
   
-    ngOnDestroy() {
-      this.subscription.unsubscribe();
-    }
+      ngOnDestroy() {
+    this.subscription.unsubscribe();
+  }
+
+  onNavigate(destination: 'nuevoProyecto' | 'proyectos') {
+    this.menuStateService.changeComponent(destination);
+  }
   
 }

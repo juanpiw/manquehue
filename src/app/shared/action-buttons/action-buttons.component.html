@@ -1,0 +1,43 @@
+<div class="action-buttons-container" [ngClass]="'layout-' + layout + ' alignment-' + alignment">
+  
+  <!-- Botones personalizados -->
+  <button 
+    *ngFor="let button of buttons" 
+    class="action-button custom-button text-body text-medium"
+    [ngClass]="button.customClass"
+    [disabled]="button.disabled"
+    (click)="onCustomButton(button)"
+  >
+    {{ button.text | t }}
+  </button>
+
+  <!-- Botón Cancelar -->
+  <button 
+    *ngIf="showCancel"
+    class="action-button cancel-button text-body text-medium"
+    (click)="onCancel()"
+  >
+    {{ cancelText | t }}
+  </button>
+
+  <!-- Botón Guardar -->
+  <button 
+    *ngIf="showSave"
+    class="action-button save-button text-body text-medium"
+    (click)="onSave()"
+  >
+    {{ saveText | t }}
+  </button>
+
+  <!-- Botón Ver -->
+  <button 
+    *ngIf="showView"
+    class="action-button view-button text-body text-medium"
+    (click)="onView()"
+  >
+    {{ viewText | t }}
+  </button>
+
+</div>
+
+

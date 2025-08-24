@@ -1,0 +1,149 @@
+.preview-selector {
+  .selector-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  &.layout-horizontal {
+    .radio-group,
+    .toggle-group {
+      display: flex;
+      gap: 1.5rem;
+      align-items: center;
+    }
+  }
+
+  &.layout-vertical {
+    .radio-group,
+    .toggle-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+  }
+
+  .selector-label {
+    color: var(--text-color, #333);
+    margin-bottom: 0.5rem;
+  }
+
+  // Radio Buttons
+  .radio-group {
+    .radio-option {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      padding: 0.5rem;
+      border-radius: 6px;
+      transition: background-color 0.2s ease;
+
+      &:hover:not(.disabled) {
+        background: rgba(0, 0, 0, 0.05);
+      }
+
+      &.selected {
+        background: rgba(0, 123, 255, 0.1);
+      }
+
+      &.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+    }
+
+    .radio-circle {
+      width: 16px;
+      height: 16px;
+      border: 2px solid var(--text-color, #333);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+
+      .radio-inner {
+        width: 8px;
+        height: 8px;
+        background: var(--primary-color, #007bff);
+        border-radius: 50%;
+      }
+    }
+
+    .radio-label {
+      color: var(--text-color, #333);
+    }
+  }
+
+  // Dropdown
+  .dropdown-container {
+    .dropdown-select {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 1px solid rgba(0, 0, 0, 0.2);
+      border-radius: 8px;
+      background: white;
+      color: var(--text-color, #333);
+      font-size: 1rem;
+      cursor: pointer;
+      transition: border-color 0.2s ease;
+
+      &:focus {
+        outline: none;
+        border-color: var(--primary-color, #007bff);
+      }
+    }
+  }
+
+  // Toggle
+  .toggle-group {
+    .toggle-option {
+      padding: 0.75rem 1.5rem;
+      border: 1px solid rgba(0, 0, 0, 0.2);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: center;
+
+      &:hover:not(.disabled) {
+        background: rgba(0, 0, 0, 0.05);
+      }
+
+      &.selected {
+        background: var(--primary-color, #007bff);
+        color: white;
+        border-color: var(--primary-color, #007bff);
+      }
+
+      &.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+    }
+
+    .toggle-label {
+      color: inherit;
+    }
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .preview-selector {
+    &.layout-horizontal {
+      .radio-group,
+      .toggle-group {
+        gap: 1rem;
+      }
+    }
+
+    .toggle-group {
+      .toggle-option {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+      }
+    }
+  }
+}
+

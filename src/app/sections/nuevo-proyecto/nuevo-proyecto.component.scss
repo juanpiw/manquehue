@@ -1,0 +1,436 @@
+.nuevo-proyecto-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  background: #fff;
+  min-height: 100vh;
+
+  .header {
+    text-align: center;
+    margin-bottom: 3rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid #e0e0e0;
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin: 0 0 1rem 0;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    p {
+      font-size: 1.2rem;
+      color: #666;
+      margin: 0;
+    }
+  }
+
+  .step-indicator-section {
+    margin-bottom: 3rem;
+  }
+
+  .steps-content {
+    .step-container {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      margin-bottom: 2rem;
+
+      .step-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        text-align: center;
+
+        h2 {
+          font-size: 1.8rem;
+          margin: 0 0 0.5rem 0;
+          font-weight: 600;
+        }
+
+        p {
+          font-size: 1.1rem;
+          margin: 0;
+          opacity: 0.9;
+        }
+      }
+
+      .step-content {
+        padding: 2rem;
+      }
+
+      .form-layout {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 3rem;
+        position: relative;
+
+        &::before {
+          content: '';
+          position: absolute;
+          left: 50%;
+          top: 0;
+          bottom: 0;
+          width: 1px;
+          background: linear-gradient(to bottom, transparent, #e3f2fd, transparent);
+          transform: translateX(-50%);
+        }
+
+        .left-column,
+        .right-column {
+          .form-section {
+            margin-bottom: 2rem;
+
+            h3 {
+              font-size: 1.1rem;
+              font-weight: 600;
+              color: #374151;
+              margin-bottom: 1rem;
+              padding-bottom: 0.5rem;
+              border-bottom: 1px solid #e5e7eb;
+            }
+
+            &:last-child {
+              margin-bottom: 0;
+            }
+          }
+        }
+
+        .key-data-group {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 1rem;
+          margin-bottom: 1.5rem;
+
+          .data-item {
+            .data-label {
+              display: flex;
+              align-items: center;
+              gap: 0.5rem;
+              margin-bottom: 0.5rem;
+              font-size: 0.9rem;
+              font-weight: 500;
+              color: #6b7280;
+
+              span {
+                color: #374151;
+              }
+            }
+          }
+        }
+
+        // Estilos específicos para el Paso 2
+        .aggregation-section {
+          .aggregation-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+
+            span {
+              font-weight: 500;
+              color: #495057;
+            }
+          }
+
+          .project-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+
+            .project-tag {
+              display: flex;
+              align-items: center;
+              gap: 0.5rem;
+              padding: 0.5rem 1rem;
+              background: #e3f2fd;
+              border: 1px solid #bbdefb;
+              border-radius: 20px;
+              font-size: 0.9rem;
+              color: #1976d2;
+
+              .tag-remove {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 16px;
+                height: 16px;
+                background: none;
+                border: none;
+                color: #1976d2;
+                cursor: pointer;
+                border-radius: 50%;
+                transition: all 0.2s ease;
+
+                &:hover {
+                  background: #1976d2;
+                  color: white;
+                }
+
+                svg {
+                  width: 12px;
+                  height: 12px;
+                }
+              }
+            }
+          }
+        }
+
+        .form-field {
+          margin-bottom: 1.5rem;
+
+          label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 0.5rem;
+          }
+        }
+
+        .price-range-group {
+          display: grid;
+          grid-template-columns: 1fr 1fr 1fr;
+          gap: 1rem;
+
+          .price-input {
+            label {
+              font-size: 0.8rem;
+              color: #6b7280;
+              margin-bottom: 0.25rem;
+            }
+          }
+        }
+
+        .pin-creation-group {
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+          flex-wrap: wrap;
+
+          .btn {
+            white-space: nowrap;
+          }
+        }
+
+        .step-actions {
+          .left-actions {
+            display: flex;
+            align-items: center;
+          }
+
+          .right-actions {
+            display: flex;
+            align-items: center;
+          }
+        }
+
+        // Estilos específicos para el Paso 3 - Layout de una columna
+        .form-layout-single {
+          max-width: 600px;
+          margin: 0 auto;
+
+          .top-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+          }
+
+          .form-field {
+            margin-bottom: 2rem;
+
+            label {
+              display: block;
+              font-size: 0.9rem;
+              font-weight: 500;
+              color: #374151;
+              margin-bottom: 0.75rem;
+            }
+          }
+
+          .media-upload-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+
+            .media-preview {
+              flex: 1;
+              max-width: 200px;
+
+              .media-placeholder {
+                width: 100%;
+                height: 120px;
+                border: 2px dashed #d1d5db;
+                border-radius: 8px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: #f9fafb;
+                color: #6b7280;
+                transition: all 0.2s ease;
+
+                &:hover {
+                  border-color: #3b82f6;
+                  background: #eff6ff;
+                  color: #3b82f6;
+                }
+
+                svg {
+                  width: 48px;
+                  height: 48px;
+                }
+              }
+            }
+
+            .btn-edit {
+              width: 40px;
+              height: 40px;
+              border-radius: 8px;
+              background: #8b5cf6;
+              border: none;
+              color: white;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              cursor: pointer;
+              transition: all 0.2s ease;
+              flex-shrink: 0;
+
+              &:hover {
+                background: #7c3aed;
+                transform: translateY(-1px);
+              }
+
+              &:active {
+                transform: translateY(0);
+              }
+
+              svg {
+                width: 16px;
+                height: 16px;
+              }
+            }
+          }
+
+          // Variante con overlay para ícono de edición
+          .media-group {
+            .media-preview {
+              position: relative;
+              display: inline-block;
+
+              .media-placeholder {
+                width: 120px;
+                height: 120px;
+                border: 2px solid #3b82f6;
+                border-radius: 12px;
+                background: #ffffff;
+                color: #3b82f6;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+              }
+
+              .btn-edit-overlay {
+                position: absolute;
+                right: -8px;
+                bottom: -8px;
+                width: 28px;
+                height: 28px;
+                border: none;
+                border-radius: 8px;
+                background: #8b5cf6;
+                color: #fff;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                box-shadow: 0 6px 16px rgba(139, 92, 246, 0.35);
+                transition: transform 0.15s ease, background 0.2s ease;
+
+                &:hover { background: #7c3aed; transform: translateY(-1px); }
+                &:active { transform: translateY(0); }
+              }
+            }
+          }
+        }
+      }
+
+      .step-actions {
+        padding: 1.5rem 2rem;
+        background: #f8f9fa;
+        border-top: 1px solid #e0e0e0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .nuevo-proyecto-container {
+    padding: 1rem;
+
+    .header h1 {
+      font-size: 2rem;
+    }
+
+    .steps-content .step-container {
+      .step-header {
+        padding: 1.5rem;
+
+        h2 {
+          font-size: 1.5rem;
+        }
+      }
+
+      .step-content {
+        padding: 1.5rem;
+
+        .form-layout {
+          grid-template-columns: 1fr;
+          gap: 2rem;
+
+          &::before {
+            display: none;
+          }
+        }
+      }
+
+             .step-actions {
+         padding: 1rem 1.5rem;
+         flex-direction: column;
+         gap: 1rem;
+       }
+
+       .form-layout-single {
+         .top-row {
+           grid-template-columns: 1fr;
+           gap: 1rem;
+         }
+
+         .media-upload-section {
+           flex-direction: column;
+           align-items: stretch;
+
+           .media-preview {
+             max-width: none;
+           }
+
+           .btn-edit {
+             align-self: flex-end;
+           }
+         }
+       }
+     }
+   }
+ }

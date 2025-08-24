@@ -1,0 +1,157 @@
+.project-type-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.selector-title {
+  font-size: 16px;
+  font-weight: 500;
+  color: #6b7280;
+  margin: 0;
+  padding: 0;
+}
+
+.type-options {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.type-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  
+  &:hover:not(.disabled) {
+    .type-circle {
+      transform: scale(1.05);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+    }
+    
+    .type-label {
+      color: #3b82f6;
+    }
+  }
+  
+  &.selected {
+    .type-circle {
+      background-color: #3b82f6;
+      border-color: #3b82f6;
+      transform: scale(1.1);
+      box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
+    }
+    
+    .type-icon {
+      color: #ffffff;
+    }
+    
+    .type-label {
+      color: #3b82f6;
+      font-weight: 600;
+    }
+  }
+  
+  &.disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+    
+    .type-circle {
+      background-color: #f3f4f6;
+      border-color: #d1d5db;
+    }
+    
+    .type-label {
+      color: #9ca3af;
+    }
+  }
+}
+
+.type-circle {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 3px solid #d1d5db;
+  background-color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.type-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+  transition: all 0.3s ease;
+  
+  svg {
+    width: 24px;
+    height: 24px;
+    stroke: currentColor;
+    fill: none;
+  }
+}
+
+.type-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  text-align: center;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .type-options {
+    gap: 16px;
+  }
+  
+  .type-circle {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .type-icon {
+    svg {
+      width: 20px;
+      height: 20px;
+    }
+  }
+  
+  .type-label {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .type-options {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .type-option {
+    flex-direction: row;
+    gap: 12px;
+  }
+  
+  .type-circle {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .type-icon {
+    svg {
+      width: 18px;
+      height: 18px;
+    }
+  }
+}
+

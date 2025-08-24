@@ -1,0 +1,24 @@
+:host { display:block; font-family:var(--font-primary); }
+
+.pc { max-width: 320px; }
+.title {
+  color:#6b7280; font-weight:500; margin:0 0 8px 0; font-size:20px;
+}
+
+.list { margin:0; padding:0; list-style:none; display:flex; flex-direction:column; gap:10px; }
+
+.link {
+  padding:0; border:none; background:none;
+  color:#3155ff; cursor:pointer; font-size:16px; text-align:left;
+  border-radius:6px; line-height:1.2;
+}
+.link:hover { text-decoration:underline; }
+.link:focus-visible { outline:3px solid rgba(49,85,255,.25); outline-offset:2px; }
+
+.empty { color:#9aa1a9; font-size:14px; }
+
+.skeleton {
+  height:18px; border-radius:6px; background:linear-gradient(90deg,#eee,#f6f6f6,#eee);
+  background-size:200% 100%; animation:shimmer 1.2s infinite linear;
+}
+@keyframes shimmer { to { background-position:-200% 0; } }

@@ -1,0 +1,34 @@
+<section class="preview-stats" 
+         [class.layout-horizontal]="config.layout === 'horizontal'"
+         [class.layout-vertical]="config.layout === 'vertical'"
+         [class.layout-grid]="config.layout === 'grid'"
+         [class.size-small]="config.size === 'small'"
+         [class.size-medium]="config.size === 'medium'"
+         [class.size-large]="config.size === 'large'"
+         [class.centered]="config.centered">
+  
+  <div class="stats-container">
+    <div class="stats-list">
+      <div *ngFor="let item of config.items; trackBy: trackByLabel; let last = last" 
+           class="stat-item"
+           [style.--stat-color]="item.color">
+        
+        <div class="stat-content">
+          <div class="stat-value text-heading-2 text-bold">
+            {{ item.value }}
+          </div>
+          
+          <div class="stat-label text-body text-medium">
+            {{ item.label }}
+          </div>
+        </div>
+        
+        <!-- Divider -->
+        <div *ngIf="config.showDividers && !last && config.layout === 'horizontal'" 
+             class="stat-divider">
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+

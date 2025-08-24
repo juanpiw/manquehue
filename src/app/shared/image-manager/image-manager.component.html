@@ -1,0 +1,174 @@
+<div class="image-manager-container">
+  <label *ngIf="showLabel" class="image-manager-label" [class.required]="required">
+    {{ getLabel() | t }}
+  </label>
+  
+  <div class="image-manager-wrapper">
+    <!-- Lista de imágenes -->
+    <div *ngIf="hasImages()" class="images-list">
+      <div 
+        *ngFor="let image of images; let i = index"
+        class="image-item"
+        [class.uploading]="image.status === 'uploading'"
+        [class.completed]="image.status === 'completed'"
+        [class.error]="image.status === 'error'"
+        [class.new]="image.isNew"
+      >
+        <!-- Preview de la imagen -->
+        <div class="image-preview">
+          <img 
+            *ngIf="getImagePreviewUrl(image)"
+            [src]="getImagePreviewUrl(image)" 
+            [alt]="image.name"
+            class="preview-img"
+          />
+          <div *ngIf="!getImagePreviewUrl(image)" class="no-preview">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M19 3H5C3.89543 3 3 3.89543 3 5V19C3 20.1046 3.89543 21 5 21H19C20.1046 21 21 20.1046 21 19V5C21 3.89543 20.1046 3 19 3Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M8.5 10C9.32843 10 10 9.32843 10 8.5C10 7.67157 9.32843 7 8.5 7C7.67157 7 7 7.67157 7 8.5C7 9.32843 7.67157 10 8.5 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M21 15L16 10L5 21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </div>
+        
+        <!-- Información de la imagen -->
+        <div class="image-info">
+          <div class="image-name">{{ image.name }}</div>
+          <div class="image-details">
+            <span *ngIf="image.size" class="image-size">{{ formatFileSize(image.size) }}</span>
+            <span *ngIf="image.type" class="image-type">{{ image.type }}</span>
+          </div>
+        </div>
+        
+        <!-- Barra de progreso -->
+        <div *ngIf="image.status === 'uploading'" class="progress-bar">
+          <div class="progress-fill" [style.width.%]="image.progress"></div>
+          <span class="progress-text">{{ image.progress }}%</span>
+        </div>
+        
+        <!-- Estado de la imagen -->
+        <div class="image-status">
+          <span *ngIf="image.status === 'pending'" class="status pending">Pendiente</span>
+          <span *ngIf="image.status === 'uploading'" class="status uploading">Subiendo...</span>
+          <span *ngIf="image.status === 'completed'" class="status completed">Completado</span>
+          <span *ngIf="image.status === 'error'" class="status error">{{ image.error }}</span>
+        </div>
+        
+        <!-- Botón de editar -->
+        <button 
+          *ngIf="image.status !== 'uploading'"
+          class="edit-button"
+          (click)="editImage(image)"
+          type="button"
+          [disabled]="disabled"
+          [title]="'Editar ' + image.name"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M11 4H4C3.46957 4 2.96086 4.21071 2.58579 4.58579C2.21071 4.96086 2 5.46957 2 6V20C2 20.5304 2.21071 21.0391 2.58579 21.4142C2.96086 21.7893 3.46957 22 4 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M18.5 2.50023C18.8978 2.10244 19.4374 1.87891 20 1.87891C20.5626 1.87891 21.1022 2.10244 21.5 2.50023C21.8978 2.89801 22.1213 3.43762 22.1213 4.00023C22.1213 4.56284 21.8978 5.10244 21.5 5.50023L12 15.0002L8 16.0002L9 12.0002L18.5 2.50023Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        
+        <!-- Botón de eliminar -->
+        <button 
+          *ngIf="image.status !== 'uploading'"
+          class="remove-button"
+          (click)="removeImage(image)"
+          type="button"
+          [disabled]="disabled"
+          [title]="'Eliminar ' + image.name"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+    
+    <!-- Botón agregar más -->
+    <div 
+      *ngIf="canAddMore()"
+      class="add-more-section"
+      [class.drag-over]="isDragOver"
+      [class.disabled]="disabled"
+      (click)="addMoreImages()"
+    >
+      <div class="add-more-content">
+        <!-- Icono de agregar -->
+        <div class="add-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        
+        <!-- Texto -->
+        <span class="add-text">{{ getAddMoreText() | t }}</span>
+      </div>
+    </div>
+    
+    <!-- Mensaje cuando no hay imágenes -->
+    <div *ngIf="!hasImages()" class="no-images">
+      <div class="no-images-content">
+        <div class="no-images-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M19 3H5C3.89543 3 3 3.89543 3 5V19C3 20.1046 3.89543 21 5 21H19C20.1046 21 21 20.1046 21 19V5C21 3.89543 20.1046 3 19 3Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M8.5 10C9.32843 10 10 9.32843 10 8.5C10 7.67157 9.32843 7 8.5 7C7.67157 7 7 7.67157 7 8.5C7 9.32843 7.67157 10 8.5 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M21 15L16 10L5 21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <p class="no-images-text">No hay imágenes. Haz clic en "{{ getAddMoreText() | t }}" para agregar.</p>
+      </div>
+    </div>
+    
+    <!-- Contador de imágenes -->
+    <div *ngIf="hasImages()" class="images-counter">
+      {{ getImagesCount() }} de {{ maxImages }} imágenes
+    </div>
+    
+    <!-- Barra de progreso global -->
+    <div *ngIf="hasImages()" class="global-progress-section">
+      <div class="global-progress-info">
+        <div class="global-progress-details">
+          <span class="global-progress-text">{{ getGlobalProgressText() | t }}</span>
+          <span class="global-progress-count" *ngIf="totalImages > 0">
+            ({{ completedImages }}/{{ totalImages }})
+          </span>
+        </div>
+        <span class="global-progress-percentage">{{ getGlobalProgressPercentage() }}%</span>
+      </div>
+      
+      <div class="global-progress-bar">
+        <div 
+          class="global-progress-fill" 
+          [style.width.%]="globalProgress"
+          [class.uploading]="isGlobalUploading()"
+        ></div>
+      </div>
+      
+      <!-- Información adicional -->
+      <div class="global-progress-stats" *ngIf="totalImages > 0">
+        <span class="stat-item" *ngIf="completedImages > 0">
+          <span class="stat-dot completed"></span>
+          {{ completedImages }} {{ (completedImages === 1 ? 'common.global_progress_image' : 'common.global_progress_images') | t }}
+        </span>
+        <span class="stat-item" *ngIf="uploadingImages > 0">
+          <span class="stat-dot uploading"></span>
+          {{ uploadingImages }} {{ (uploadingImages === 1 ? 'common.global_progress_image' : 'common.global_progress_images') | t }} {{ 'common.global_progress_uploading' | t }}
+        </span>
+        <span class="stat-item" *ngIf="totalImages - completedImages - uploadingImages > 0">
+          <span class="stat-dot pending"></span>
+          {{ totalImages - completedImages - uploadingImages }} {{ ((totalImages - completedImages - uploadingImages) === 1 ? 'common.global_progress_image' : 'common.global_progress_images') | t }} {{ 'common.global_progress_pending' | t }}
+        </span>
+      </div>
+      
+      <!-- Indicador de carga animado -->
+      <div *ngIf="isGlobalUploading()" class="global-loading-indicator">
+        <div class="loading-dots">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,161 @@
+<div class="live-preview-container">
+  <!-- Header -->
+  <div class="preview-header">
+    <div class="header-content">
+      <div class="title-section">
+        <h1 class="preview-title">{{ previewData.title | t }}</h1>
+        <div class="status-indicator" [class]="getStatusClass()">
+          <span class="status-dot"></span>
+          <span class="status-text">{{ getStatusText() | t }}</span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <!-- Botón Preview de Componentes -->
+        <button class="action-button components-btn" (click)="toggleComponentsPreview()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 6H20M4 12H20M4 18H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M8 3V9M16 3V9M8 15V21M16 15V21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Preview de Componentes
+        </button>
+        <button class="action-button refresh-btn" (click)="updatePreview({})">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M1 4V10H7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M23 20V14H17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M20.49 9C19.2214 7.33125 17.2013 6.5 15 6.5C10.8056 6.5 7.5 9.80558 7.5 14C7.5 18.1944 10.8056 21.5 15 21.5C17.2013 21.5 19.2214 20.6687 20.49 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          {{ 'common.preview_refresh' | t }}
+        </button>
+        <button class="action-button fullscreen-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M8 3H5C3.89543 3 3 3.89543 3 5V8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M16 3H19C20.1046 3 21 3.89543 21 5V8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M16 21H19C20.1046 21 21 20.1046 21 19V16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M8 21H5C3.89543 21 3 20.1046 3 19V16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          {{ 'common.preview_fullscreen' | t }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="preview-content">
+    <!-- Vista de Componentes -->
+    <div *ngIf="showComponentsPreview" class="components-preview">
+      <app-preview-demo></app-preview-demo>
+    </div>
+
+    <!-- Vista Normal -->
+    <div *ngIf="!showComponentsPreview" class="content-wrapper">
+      <!-- Preview Area -->
+      <div class="preview-area">
+        <div class="preview-frame">
+          <div class="frame-header">
+            <div class="frame-controls">
+              <span class="control-dot red"></span>
+              <span class="control-dot yellow"></span>
+              <span class="control-dot green"></span>
+            </div>
+            <div class="frame-title">Previsualización</div>
+          </div>
+          <div class="frame-content">
+            <div class="preview-placeholder">
+              <div class="placeholder-icon">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M14 2H6C4.89543 2 4 2.89543 4 4V20C4 21.1046 4.89543 22 6 22H18C19.1046 22 20 21.1046 20 20V8L14 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M14 2V8H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M16 13H8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M16 17H8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M10 9H9H8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <h3 class="placeholder-title">{{ previewData.title | t }}</h3>
+              <p class="placeholder-description">{{ previewData.description | t }}</p>
+              <div class="placeholder-info">
+                <span class="info-item">
+                  <strong>{{ 'common.preview_status_active' | t }}:</strong> {{ previewData.status }}
+                </span>
+                <span class="info-item">
+                  <strong>{{ 'common.preview_last_update' | t }}:</strong> {{ getFormattedDate() }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <div class="preview-sidebar">
+        <div class="sidebar-section">
+          <h3 class="section-title">{{ 'common.preview_project_info' | t }}</h3>
+          <div class="info-card">
+            <div class="info-row">
+              <span class="info-label">Título:</span>
+              <span class="info-value">{{ previewData.title | t }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Estado:</span>
+              <span class="info-value status-badge" [class]="getStatusClass()">
+                {{ getStatusText() | t }}
+              </span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">{{ 'common.preview_last_update' | t }}:</span>
+              <span class="info-value">{{ getFormattedDate() }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="sidebar-section">
+          <h3 class="section-title">{{ 'common.preview_quick_actions' | t }}</h3>
+          <div class="action-list">
+            <button class="action-item">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M11 4H4C3.46957 4 2.96086 4.21071 2.58579 4.58579C2.21071 4.96086 2 5.46957 2 6V20C2 20.5304 2.21071 21.0391 2.58579 21.4142C2.96086 21.7893 3.46957 22 4 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M18.5 2.50023C18.8978 2.10244 19.4374 1.87891 20 1.87891C20.5626 1.87891 21.1022 2.10244 21.5 2.50023C21.8978 2.89801 22.1213 3.43762 22.1213 4.00023C22.1213 4.56284 21.8978 5.10244 21.5 5.50023L12 15.0002L8 16.0002L9 12.0002L18.5 2.50023Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              {{ 'common.preview_edit_project' | t }}
+            </button>
+            <button class="action-item">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M7 10L12 15L17 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M12 15V3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              {{ 'common.preview_export' | t }}
+            </button>
+            <button class="action-item">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 20H21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M16.5 3.5C16.8978 3.10217 17.4374 2.87868 18 2.87868C18.5626 2.87868 19.1022 3.10217 19.5 3.5C19.8978 3.89782 20.1213 4.43739 20.1213 5C20.1213 5.56261 19.8978 6.10217 19.5 6.5L12 14L7 9L5.5 10.5L12 17L20.5 8.5C20.8978 8.10217 21.1213 7.56261 21.1213 7C21.1213 6.43739 20.8978 5.89782 20.5 5.5C20.1022 5.10217 19.5626 4.87868 19 4.87868C18.4374 4.87868 17.8978 5.10217 17.5 5.5L16.5 3.5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              {{ 'common.preview_optimize' | t }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="preview-footer">
+    <div class="footer-content">
+      <div class="footer-info">
+        <span class="footer-text">{{ 'common.preview_real_time' | t }}</span>
+        <span class="footer-separator">•</span>
+        <span class="footer-text">{{ 'common.preview_last_update' | t }}: {{ getFormattedDate() }}</span>
+      </div>
+      <div class="footer-actions">
+        <button class="footer-button">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M12 16V12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M12 8H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          {{ 'common.preview_help' | t }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,69 @@
+<div class="features-container">
+  <div class="features-header">
+    <h3>{{ 'features.title' | t }}</h3>
+    <p>{{ 'features.subtitle' | t }}</p>
+  </div>
+
+  <div class="features-list">
+    <div class="feature-item" *ngFor="let feature of features; let i = index">
+      <div class="feature-header">
+        <span class="feature-number">{{ i + 1 }}</span>
+        <button 
+          class="btn-remove" 
+          (click)="removeFeature(i)"
+          *ngIf="features.length > 1"
+          [attr.aria-label]="'features.remove_feature' | t">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="feature-fields">
+        <div class="field-group">
+          <label>{{ 'features.field_title' | t }}</label>
+          <app-input
+            [value]="feature.title"
+            [placeholder]="'features.title_placeholder' | t"
+            (valueChange)="onTitleChange($event, i)">
+          </app-input>
+        </div>
+
+        <div class="field-group">
+          <label>{{ 'features.field_description' | t }}</label>
+          <app-textarea
+            [value]="feature.description"
+            [placeholder]="'features.description_placeholder' | t"
+            (valueChange)="onDescriptionChange($event, i)">
+          </app-textarea>
+        </div>
+
+        <div class="field-group">
+          <label>{{ 'features.field_image_video' | t }}</label>
+          <app-image-manager
+            [images]="feature.imageVideo"
+            [maxImages]="1"
+            (imageAdd)="onImageAdd($event, i)">
+          </app-image-manager>
+        </div>
+
+        <div class="field-group">
+          <label>{{ 'features.field_audio' | t }}</label> 
+          <app-file-upload
+            [multiple]="false"
+            [maxFileSize]="10"
+            (fileSelect)="onFileSelect($event, i)">
+          </app-file-upload>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="features-actions">
+    <app-add-more
+      text="features.add_more"
+      size="md"
+      (addMore)="addFeature()">
+    </app-add-more>
+  </div>
+</div>

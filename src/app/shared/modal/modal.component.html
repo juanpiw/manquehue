@@ -1,0 +1,54 @@
+<div class="modal-overlay" *ngIf="isOpen" (click)="onBackdropClick($event)" style="background: rgba(0, 0, 0, 0.4) !important; backdrop-filter: blur(8px) !important; position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; z-index: 999999 !important; display: flex !important; align-items: center !important; justify-content: center !important; animation: fadeIn 0.3s ease-out !important;">
+  <div class="modal-container" style="background: rgba(255, 255, 255, 0.95) !important; border: 1px solid rgba(255, 255, 255, 0.2) !important; border-radius: 16px !important; backdrop-filter: blur(10px) !important; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important; max-width: 500px !important; width: 90% !important; max-height: 90vh !important; z-index: 1000000 !important; position: relative !important; overflow: hidden !important; animation: slideIn 0.4s ease-out !important;">
+    
+    <!-- Header del modal -->
+    <div class="modal-header">
+      <h2 class="modal-title text-heading-3 text-semibold">{{ config.title }}</h2>
+      <button class="modal-close" (click)="onClose()" type="button">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Contenido del modal -->
+    <div class="modal-content">
+      <!-- Mensaje del modal -->
+      <p class="modal-message text-body text-regular" *ngIf="config.message">
+        {{ config.message }}
+      </p>
+
+      <!-- Input de texto (opcional) -->
+      <div class="modal-input" *ngIf="config.showInput">
+        <input 
+          type="text" 
+          [placeholder]="config.inputPlaceholder"
+          [(ngModel)]="inputValue"
+          class="input-field"
+          (keyup.enter)="onConfirm()">
+      </div>
+    </div>
+
+    <!-- Footer del modal con botones -->
+    <div class="modal-footer">
+      <!-- Botón de cancelar (opcional) -->
+      <button 
+        *ngIf="config.showCancel"
+        class="btn btn-secondary text-body text-medium" 
+        (click)="onCancel()"
+        type="button">
+        {{ config.cancelText }}
+      </button>
+
+      <!-- Botón de confirmar -->
+      <button 
+        class="btn text-body text-medium" 
+        [class]="getConfirmButtonClass()"
+        (click)="onConfirm()"
+        type="button">
+        {{ config.confirmText }}
+      </button>
+    </div>
+
+  </div>
+</div>

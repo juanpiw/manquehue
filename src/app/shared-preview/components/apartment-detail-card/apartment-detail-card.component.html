@@ -1,0 +1,28 @@
+<div class="apartment-detail-card" (click)="onCardClick()">
+  <!-- Superficie Section -->
+  <div class="superficie-section">
+    <h4 class="section-title text-heading-5 text-semibold">Superficie</h4>
+    <div class="superficie-details">
+      <div class="superficie-item">
+        <span class="label text-body text-regular">Interior:</span>
+        <span class="value text-body text-medium">{{ config.details.superficie.interior }}</span>
+      </div>
+      <div class="superficie-item">
+        <span class="label text-body text-regular">Terraza:</span>
+        <span class="value text-body text-medium">{{ config.details.superficie.terraza }}</span>
+      </div>
+      <div class="superficie-item">
+        <span class="label text-body text-regular">Total:</span>
+        <span class="value text-body text-medium">{{ config.details.superficie.total }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Inline Details -->
+  <div class="inline-details">
+    <span class="detail-item text-body text-regular">{{ config.details.orientacion }}</span>
+    <span class="detail-item text-body text-regular">baños {{ config.details.banos }}</span>
+    <span class="detail-item text-body text-regular">Habitaciones {{ config.details.habitaciones }}</span>
+    <span class="detail-item text-body text-regular">piso {{ config.details.piso }}</span>
+  </div>
+</div>

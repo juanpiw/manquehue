@@ -1,0 +1,37 @@
+<div class="apartment-filters">
+  <div 
+    *ngFor="let filter of config.filters; trackBy: trackByLabel"
+    class="filter-item">
+    
+    <label class="filter-label text-body text-medium">{{ filter.label }}</label>
+    
+    <!-- Text Input -->
+    <input 
+      *ngIf="filter.type === 'text'"
+      type="text"
+      class="filter-input text-body text-regular"
+      [value]="filter.value"
+      (input)="onFilterChange(filter.label, $event)">
+    
+    <!-- Number Input -->
+    <input 
+      *ngIf="filter.type === 'number'"
+      type="number"
+      class="filter-input text-body text-regular"
+      [value]="filter.value"
+      (input)="onFilterChange(filter.label, $event)">
+    
+    <!-- Select Input -->
+    <select 
+      *ngIf="filter.type === 'select'"
+      class="filter-select text-body text-regular"
+      [value]="filter.value"
+      (change)="onFilterChange(filter.label, $event)">
+      <option 
+        *ngFor="let option of filter.options"
+        [value]="option">
+        {{ option }}
+      </option>
+    </select>
+  </div>
+</div>

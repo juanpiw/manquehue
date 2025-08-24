@@ -1,0 +1,86 @@
+<div class="file-upload-container">
+  <label *ngIf="showLabel" class="file-upload-label" [class.required]="required">
+    {{ getLabel() | t }}
+  </label>
+  
+  <div class="file-upload-wrapper">
+    <!-- Área de drag & drop -->
+    <div 
+      class="file-upload-area"
+      [class.drag-over]="isDragOver"
+      [class.disabled]="disabled"
+      [class.has-files]="hasFiles()"
+      (click)="openFileSelector()"
+    >
+      <div class="upload-content">
+        <!-- Icono de upload -->
+        <div class="upload-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 16L12 8M12 8L15 11M12 8L9 11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M3 15V16C3 18.8284 3 20.2426 3.87868 21.1213C4.75736 22 6.17157 22 9 22H15C17.8284 22 19.2426 22 20.1213 21.1213C21 20.2426 21 18.8284 21 16V15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        
+        <!-- Texto del placeholder -->
+        <div class="upload-text">
+          <p class="placeholder-text">{{ getPlaceholder() | t }}</p>
+          <p class="accepted-types">Tipos aceptados: {{ getAcceptedTypesText() }}</p>
+          <p class="max-size">Tamaño máximo: {{ formatFileSize(maxFileSize) }}</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Lista de archivos subidos -->
+    <div *ngIf="hasFiles()" class="uploaded-files">
+      <div 
+        *ngFor="let uploadedFile of uploadedFiles; let i = index"
+        class="file-item"
+        [class.uploading]="uploadedFile.status === 'uploading'"
+        [class.completed]="uploadedFile.status === 'completed'"
+        [class.error]="uploadedFile.status === 'error'"
+      >
+        <!-- Información del archivo -->
+        <div class="file-info">
+          <div class="file-name">{{ uploadedFile.name }}</div>
+          <div class="file-details">
+            <span class="file-size">{{ formatFileSize(uploadedFile.size) }}</span>
+            <span class="file-type">{{ uploadedFile.type }}</span>
+          </div>
+        </div>
+        
+        <!-- Barra de progreso -->
+        <div *ngIf="uploadedFile.status === 'uploading'" class="progress-bar">
+          <div class="progress-fill" [style.width.%]="uploadedFile.progress"></div>
+          <span class="progress-text">{{ uploadedFile.progress }}%</span>
+        </div>
+        
+        <!-- Estado del archivo -->
+        <div class="file-status">
+          <span *ngIf="uploadedFile.status === 'pending'" class="status pending">Pendiente</span>
+          <span *ngIf="uploadedFile.status === 'uploading'" class="status uploading">Subiendo...</span>
+          <span *ngIf="uploadedFile.status === 'completed'" class="status completed">Completado</span>
+          <span *ngIf="uploadedFile.status === 'error'" class="status error">{{ uploadedFile.error }}</span>
+        </div>
+        
+        <!-- Botón de eliminar -->
+        <button 
+          *ngIf="uploadedFile.status !== 'uploading'"
+          class="remove-button"
+          (click)="removeFile(uploadedFile)"
+          type="button"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+    
+    <!-- Contador de archivos -->
+    <div *ngIf="hasFiles()" class="file-counter">
+      {{ getUploadedFilesCount() }} de {{ maxFiles }} archivos
+    </div>
+  </div>
+</div>
+
+

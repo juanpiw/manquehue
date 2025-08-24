@@ -1,0 +1,29 @@
+<footer class="preview-footer" 
+        [class.layout-horizontal]="config.layout === 'horizontal'"
+        [class.layout-vertical]="config.layout === 'vertical'">
+  
+  <div class="footer-container">
+    <!-- Divider -->
+    <div *ngIf="config.showDivider" class="footer-divider"></div>
+    
+    <div class="footer-content">
+      <!-- Address -->
+      <div *ngIf="config.address" class="footer-address">
+        <span class="address-text text-body text-regular">
+          {{ config.address }}
+        </span>
+      </div>
+      
+      <!-- Action Button -->
+      <div *ngIf="config.buttonText" class="footer-action">
+        <button 
+          class="action-button text-body text-medium"
+          (click)="onButtonClick()"
+          type="button">
+          {{ config.buttonText }}
+        </button>
+      </div>
+    </div>
+  </div>
+</footer>
+

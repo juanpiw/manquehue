@@ -1,0 +1,32 @@
+<div class="step-indicator-container">
+  
+  <!-- Título -->
+  <div *ngIf="showTitle" class="step-title text-heading-5 text-semibold">
+    {{ title | t }}
+  </div>
+
+  <!-- Indicador de pasos -->
+  <div class="steps-container">
+    <div 
+      *ngFor="let step of steps; trackBy: trackByStepId"
+      class="step-item"
+      [ngClass]="{
+        'active': isStepActive(step),
+        'completed': isStepCompleted(step),
+        'disabled': isStepDisabled(step),
+        'clickable': clickable && !isStepDisabled(step)
+      }"
+      (click)="onStepClick(step)"
+    >
+      <div class="step-circle">
+        <span class="step-number text-body text-medium">{{ step.id }}</span>
+      </div>
+      <div *ngIf="step.title" class="step-label text-body text-medium">
+        {{ step.title | t }}
+      </div>
+    </div>
+  </div>
+
+</div>
+
+

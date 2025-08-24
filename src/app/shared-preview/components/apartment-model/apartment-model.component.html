@@ -1,0 +1,69 @@
+<div class="apartment-model">
+  <!-- Header -->
+  <div class="model-header">
+    <h3 class="model-title text-heading-4 text-semibold">{{ config.title }}</h3>
+    <button class="view-button text-body text-medium" (click)="onViewClick()">
+      ver
+    </button>
+  </div>
+
+  <!-- Floor Plan -->
+  <div class="floor-plan-container">
+    <div class="floor-plan-placeholder">
+      <!-- Placeholder for floor plan image -->
+      <svg width="200" height="150" viewBox="0 0 200 150" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Living Room -->
+        <rect x="10" y="10" width="80" height="40" fill="#e5e7eb" stroke="#d1d5db" stroke-width="1"/>
+        <text x="50" y="32" text-anchor="middle" fill="#6b7280" font-size="10">Living</text>
+        
+        <!-- Kitchen -->
+        <rect x="10" y="60" width="40" height="30" fill="#f3f4f6" stroke="#d1d5db" stroke-width="1"/>
+        <text x="30" y="77" text-anchor="middle" fill="#6b7280" font-size="8">Kitchen</text>
+        
+        <!-- Bedroom 1 -->
+        <rect x="110" y="10" width="50" height="35" fill="#e5e7eb" stroke="#d1d5db" stroke-width="1"/>
+        <text x="135" y="27" text-anchor="middle" fill="#6b7280" font-size="8">Bed 1</text>
+        
+        <!-- Bedroom 2 -->
+        <rect x="110" y="55" width="50" height="35" fill="#e5e7eb" stroke="#d1d5db" stroke-width="1"/>
+        <text x="135" y="72" text-anchor="middle" fill="#6b7280" font-size="8">Bed 2</text>
+        
+        <!-- Bathroom 1 -->
+        <rect x="170" y="10" width="20" height="25" fill="#f3f4f6" stroke="#d1d5db" stroke-width="1"/>
+        <text x="180" y="22" text-anchor="middle" fill="#6b7280" font-size="6">Bath</text>
+        
+        <!-- Bathroom 2 -->
+        <rect x="170" y="45" width="20" height="25" fill="#f3f4f6" stroke="#d1d5db" stroke-width="1"/>
+        <text x="180" y="57" text-anchor="middle" fill="#6b7280" font-size="6">Bath</text>
+        
+        <!-- Terrace -->
+        <rect x="10" y="100" width="180" height="20" fill="#fef3c7" stroke="#f59e0b" stroke-width="1"/>
+        <text x="100" y="112" text-anchor="middle" fill="#92400e" font-size="8">Terrace</text>
+        
+        <!-- Doors -->
+        <line x1="90" y1="30" x2="110" y2="30" stroke="#374151" stroke-width="2"/>
+        <line x1="50" y1="60" x2="50" y2="70" stroke="#374151" stroke-width="2"/>
+        <line x1="160" y1="27" x2="170" y2="27" stroke="#374151" stroke-width="2"/>
+        <line x1="160" y1="72" x2="170" y2="72" stroke="#374151" stroke-width="2"/>
+      </svg>
+    </div>
+  </div>
+
+  <!-- Contact Information -->
+  <div class="contact-info">
+    <div class="contact-name text-body text-medium">{{ config.contact.name }}</div>
+    <div class="contact-actions">
+      <button class="contact-button" (click)="onContactClick('email')" title="Email">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 4H20C21.1 4 22 4.9 22 6V18C22 19.1 21.1 20 20 20H4C2.9 20 2 19.1 2 18V6C2 4.9 2.9 4 4 4Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M22 6L12 13L2 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <button class="contact-button" (click)="onContactClick('phone')" title="Phone">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M22 16.92V19.92C22.0011 20.1985 21.9441 20.4742 21.8325 20.7294C21.7209 20.9846 21.5573 21.2136 21.3521 21.4019C21.1469 21.5902 20.9046 21.7335 20.6407 21.8227C20.3769 21.9119 20.0975 21.9452 19.82 21.92C16.7428 21.5856 13.787 20.5341 11.19 18.85C8.77382 17.3146 6.72533 15.2661 5.18999 12.85C3.49997 10.2412 2.44824 7.27099 2.11999 4.18C2.09477 3.90347 2.12787 3.62476 2.21649 3.36162C2.30512 3.09849 2.44756 2.85669 2.63476 2.65189C2.82196 2.44708 3.04965 2.2836 3.30351 2.17182C3.55737 2.06004 3.83172 2.00252 4.10999 2.002H7.10999C7.59522 1.99522 8.06574 2.16708 8.43376 2.48353C8.80178 2.79999 9.042 3.23945 9.10999 3.72C9.23662 4.68007 9.47144 5.62273 9.80999 6.53C9.94454 6.88792 9.97348 7.27675 9.89381 7.65319C9.81415 8.02963 9.62877 8.36836 9.35999 8.62L8.08999 9.88C9.51355 12.4075 11.5925 14.4865 14.12 15.91L15.38 14.64C15.6316 14.3712 15.9704 14.1858 16.3468 14.1062C16.7232 14.0265 17.1121 14.0555 17.47 14.19C18.3773 14.5286 19.3199 14.7634 20.28 14.89C20.7658 14.9585 21.2094 15.2032 21.5265 15.5775C21.8437 15.9518 22.0122 16.4296 21.9999 16.92H22Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+</div>

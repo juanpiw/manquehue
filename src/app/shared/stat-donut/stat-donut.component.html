@@ -1,0 +1,23 @@
+<div class="stat" [style.--size.px]="size">
+  @if (title) {
+    <div class="title text-body text-medium">{{ title }}</div>
+  }
+
+  <div class="wrap">
+    <svg class="donut" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+      <circle class="track"
+              [attr.r]="r" cx="50" cy="50"
+              [attr.stroke]="track"
+              [attr.stroke-width]="thickness" />
+      <circle class="bar"
+              [attr.r]="r" cx="50" cy="50"
+              [attr.stroke]="bar"
+              [attr.stroke-width]="thickness"
+              [attr.stroke-dasharray]="dash" />
+    </svg>
+
+    @if (showFraction) {
+      <div class="fraction text-heading-4 text-bold">{{ value }}/{{ max }}</div>
+    }
+  </div>
+</div>
