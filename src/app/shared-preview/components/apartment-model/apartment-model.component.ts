@@ -41,3 +41,4 @@ export class ApartmentModelComponent {
     this.contactClick.emit(type);
   }
 }
+

@@ -33,3 +33,4 @@ export class ApartmentListComponent {
     return item.id;
   }
 }
+

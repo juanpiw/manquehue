@@ -1,0 +1,52 @@
+<div class="video-background-container">
+  <!-- Video Sections -->
+  <div 
+    *ngFor="let section of config.sections; trackBy: trackBySection; let i = index"
+    class="video-section"
+    [id]="'video' + (i + 1)"
+    [class.active]="section.active"
+    [class.visible]="i === config.currentSection">
+    
+    <video 
+      [id]="'video' + (i + 1) + 'Element'"
+      [autoplay]="section.autoplay"
+      [loop]="section.loop"
+      [muted]="section.muted"
+      playsinline
+      preload="metadata">
+      <source [src]="section.videoSrc" type="video/mp4">
+      Your browser does not support the video tag.
+    </video>
+
+    <!-- Video Overlay -->
+    <div class="video-overlay" *ngIf="config.showOverlay">
+      <div class="video-content">
+        <div class="head-contenido" *ngIf="section.title || section.description">
+          <h1 class="titulo_scroll" *ngIf="section.title">{{ section.title }}</h1>
+          <p *ngIf="section.description">{{ section.description }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Video Navigation Controls -->
+  <div class="video-navigation" *ngIf="config.sections.length > 1">
+    <button 
+      *ngFor="let section of config.sections; trackBy: trackBySection; let i = index"
+      class="nav-button"
+      [class.active]="i === config.currentSection"
+      (click)="onSectionClick(i)"
+      type="button"
+      [attr.aria-label]="'Go to ' + (section.title || 'section ' + (i + 1))">
+      <span class="nav-indicator"></span>
+      <span class="nav-label">{{ section.title || 'Section ' + (i + 1) }}</span>
+    </button>
+  </div>
+
+  <!-- Loading Indicator -->
+  <div class="video-loading" *ngIf="!config.sections.length">
+    <div class="loading-spinner"></div>
+    <p>Loading videos...</p>
+  </div>
+</div>
+

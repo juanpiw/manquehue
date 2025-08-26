@@ -1,4 +1,13 @@
 .preview-selector {
+  // Asegurar que todo el texto sea blanco por defecto
+  color: white !important;
+  display:flex;
+  justify-content: center;
+  
+  * {
+    color: white !important;
+  }
+
   .selector-container {
     display: flex;
     flex-direction: column;
@@ -11,6 +20,11 @@
       display: flex;
       gap: 1.5rem;
       align-items: center;
+      color: white !important;
+      
+      * {
+        color: white !important;
+      }
     }
   }
 
@@ -24,7 +38,7 @@
   }
 
   .selector-label {
-    color: var(--text-color, #333);
+    color: white;
     margin-bottom: 0.5rem;
   }
 
@@ -40,11 +54,11 @@
       transition: background-color 0.2s ease;
 
       &:hover:not(.disabled) {
-        background: rgba(0, 0, 0, 0.05);
+        background: rgba(255, 255, 255, 0.1);
       }
 
       &.selected {
-        background: rgba(0, 123, 255, 0.1);
+        background: rgba(251, 191, 36, 0.2);
       }
 
       &.disabled {
@@ -56,7 +70,7 @@
     .radio-circle {
       width: 16px;
       height: 16px;
-      border: 2px solid var(--text-color, #333);
+      border: 2px solid white;
       border-radius: 50%;
       display: flex;
       align-items: center;
@@ -66,13 +80,13 @@
       .radio-inner {
         width: 8px;
         height: 8px;
-        background: var(--primary-color, #007bff);
+        background: #fbbf24;
         border-radius: 50%;
       }
     }
 
     .radio-label {
-      color: var(--text-color, #333);
+      color: white !important;
     }
   }
 
@@ -81,17 +95,22 @@
     .dropdown-select {
       width: 100%;
       padding: 0.75rem 1rem;
-      border: 1px solid rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.3);
       border-radius: 8px;
-      background: white;
-      color: var(--text-color, #333);
+      background: rgba(0, 0, 0, 0.5);
+      color: white;
       font-size: 1rem;
       cursor: pointer;
       transition: border-color 0.2s ease;
 
       &:focus {
         outline: none;
-        border-color: var(--primary-color, #007bff);
+        border-color: #fbbf24;
+      }
+
+      option {
+        background: rgba(0, 0, 0, 0.9);
+        color: white;
       }
     }
   }
@@ -100,20 +119,23 @@
   .toggle-group {
     .toggle-option {
       padding: 0.75rem 1.5rem;
-      border: 1px solid rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.3);
       border-radius: 8px;
       cursor: pointer;
       transition: all 0.2s ease;
       text-align: center;
+      background: rgba(0, 0, 0, 0.5);
+      color: white;
 
       &:hover:not(.disabled) {
-        background: rgba(0, 0, 0, 0.05);
+        background: rgba(0, 0, 0, 0.7);
+        border-color: rgba(255, 255, 255, 0.5);
       }
 
       &.selected {
-        background: var(--primary-color, #007bff);
-        color: white;
-        border-color: var(--primary-color, #007bff);
+        background: #fbbf24;
+        color: black;
+        border-color: #fbbf24;
       }
 
       &.disabled {
@@ -146,4 +168,5 @@
     }
   }
 }
+
 

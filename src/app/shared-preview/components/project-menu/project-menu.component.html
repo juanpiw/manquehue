@@ -1,0 +1,45 @@
+<div class="project-menu-overlay" 
+     [class.visible]="config.isOpen"
+     (click)="onOverlayClick($event)"
+     [style.--animation-duration]="config.animationDuration + 'ms'">
+  
+  <div class="project-menu-container">
+    <!-- Header -->
+    <div class="project-menu-header">
+      <h2 class="project-menu-title">{{ config.title }}</h2>
+      
+      <button *ngIf="config.showCloseButton" 
+              class="project-menu-close"
+              (click)="onCloseClick()"
+              type="button"
+              aria-label="Cerrar menú">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Projects List -->
+    <div class="project-menu-content">
+      <div class="projects-list">
+        <button 
+          *ngFor="let project of config.projects; trackBy: trackByProject"
+          class="project-item"
+          [class.active]="project.active"
+          (click)="onProjectClick(project)"
+          type="button">
+          
+          <!-- Selection Indicator -->
+          <div class="project-indicator">
+            <div class="indicator-circle" *ngIf="project.active"></div>
+          </div>
+          
+          <!-- Project Name -->
+          <span class="project-name">{{ project.name }}</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+

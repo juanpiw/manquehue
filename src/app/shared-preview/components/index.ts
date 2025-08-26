@@ -22,3 +22,7 @@ export * from './preview-footer/preview-footer.component';
 // Preview Scroll Indicator Component
 export * from './preview-scroll-indicator/preview-scroll-indicator.component';
 
+// Location Tag Component
+export * from './location-tag/location-tag.component';
+
+

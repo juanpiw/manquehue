@@ -1,0 +1,35 @@
+<div class="equipment-selector">
+  <!-- Header Section -->
+  <div class="equipment-header">
+    <h2 class="equipment-title">{{ config.title }}</h2>
+    <p class="equipment-description">{{ config.description }}</p>
+  </div>
+
+  <!-- Equipment Options List -->
+  <div class="equipment-content">
+    <div class="options-container">
+      <div 
+        *ngFor="let option of config.options"
+        class="equipment-option"
+        [class.selected]="option.selected"
+        (click)="onOptionClick(option.id)">
+        <span class="option-label">{{ option.label }}</span>
+      </div>
+    </div>
+
+    <!-- Scrollbar -->
+    <div class="scrollbar" *ngIf="config.showScrollbar">
+      <div class="scrollbar-track">
+        <div class="scrollbar-thumb" style="height: 30%;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quote Button -->
+  <div class="quote-section" *ngIf="config.showQuoteButton">
+    <button class="quote-button" (click)="onQuoteClick()">
+      {{ config.quoteButtonText }}
+    </button>
+  </div>
+</div>
+

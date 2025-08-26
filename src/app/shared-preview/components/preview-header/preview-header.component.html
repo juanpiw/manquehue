@@ -32,5 +32,12 @@
       </svg>
     </button>
   </div>
+
+  <!-- Project Menu -->
+  <app-project-menu 
+    [config]="projectMenuConfig"
+    (projectSelect)="onProjectSelect($event)"
+    (closeMenu)="onProjectMenuClose()">
+  </app-project-menu>
 </header>
 

@@ -42,3 +42,4 @@ export class ApartmentGalleryComponent {
     this.nextClick.emit();
   }
 }
+

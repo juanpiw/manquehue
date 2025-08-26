@@ -1,35 +1,62 @@
 <div class="preview-demo">
-  <!-- Header -->
-  <app-preview-header 
-    [config]="headerConfig"
-    (menuToggle)="onMenuToggle()"
-    (logoClick)="onLogoClick()">
-  </app-preview-header>
+  <!-- Video Background Container -->
+  <div class="video-background-wrapper">
+    <video 
+      #backgroundVideo
+      muted
+      playsinline
+      preload="metadata"
+      class="background-video">
+    </video>
+  </div>
+    <!-- Section 1: Hero Section -->
+  <section id="section-1" class="section-1">
+    <!-- Header -->
+    <app-preview-header 
+      [config]="headerConfig"
+      (menuToggle)="onMenuToggle()"
+      (logoClick)="onLogoClick()"
+      (projectSelect)="onProjectSelect($event)">
+    </app-preview-header>
 
-  <!-- Navigation -->
-  <app-preview-navigation 
-    [config]="navigationConfig"
-    (itemClick)="onNavigationItemClick($event)">
-  </app-preview-navigation>
+    <!-- Navigation -->
+    <app-preview-navigation 
+      [config]="navigationConfig"
+      (itemClick)="onNavigationItemClick($event)">
+    </app-preview-navigation>
 
-  <!-- Hero Section -->
-  <app-preview-hero [config]="heroConfig"></app-preview-hero>
+    <!-- Hero Section -->
+    <app-preview-hero [config]="heroConfig"></app-preview-hero>
 
-  <!-- Description Section -->
-  <app-preview-description [config]="descriptionConfig"></app-preview-description>
+    <!-- Description Section -->
+    <app-preview-description 
+      [config]="descriptionConfig"
+      [projectId]="'mirador-del-golf'"
+      [sectionId]="'description'">
+    </app-preview-description>
 
-  <!-- Selector Section -->
-  <app-preview-selector 
-    [config]="selectorConfig"
-    (selectionChange)="onSelectorChange($event)">
-  </app-preview-selector>
+    <!-- Selector Section -->
+    <app-preview-selector 
+      [config]="selectorConfig"
+      (selectionChange)="onSelectorChange($event)">
+    </app-preview-selector>
 
-  <!-- Stats Section -->
-  <app-preview-stats [config]="statsConfig"></app-preview-stats>
-
-  <!-- Apartments Section -->
+    <!-- Stats Section -->
+    <app-preview-stats [config]="statsConfig"></app-preview-stats>
+    
+    <!-- Location Tag -->
+    <div class="location-tag-container">
+      <app-location-tag [config]="locationTagConfig"></app-location-tag>
+    </div>
+  </section>
+ 
+ 
+ 
+ 
+  <!-- Section 2: Apartments Section -->
   <section id="apartments" class="apartments-section">
-    <div class="apartments-container">
+    <div class="apartments-container" 
+         [class.animate-in]="isApartmentContainerAnimated">
       <!-- Left Sidebar -->
       <div class="apartments-sidebar">
         <!-- Apartment Type Selector -->
@@ -71,51 +98,104 @@
 
         <!-- Right Column - Apartment Model -->
         <div class="apartments-right">
-          <app-apartment-model 
-            [config]="apartmentModelConfig"
-            (viewClick)="onApartmentModelViewClick()"
-            (contactClick)="onApartmentModelContactClick($event)">
-          </app-apartment-model>
+          <!-- Apartment Model with Animation -->
+          <div class="apartment-model-container" 
+               [class.visible]="isApartmentModelVisible"
+               [class.hidden]="!isApartmentModelVisible">
+            <app-apartment-model 
+              [config]="apartmentModelConfig"
+              (viewClick)="onApartmentModelViewClick()"
+              (contactClick)="onApartmentModelContactClick($event)">
+            </app-apartment-model>
+            
+            <!-- Close Button -->
+            <button class="close-model-button" (click)="onApartmentModelClose()">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Features Section -->
+  <!-- Section 3: Features Section -->
   <section id="features" class="features-section">
+    <!-- Back Button -->
+    <button class="back-button" (click)="onBackToApartments()" title="Volver a Apartamentos">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span>Volver</span>
+    </button>
+    
     <div class="features-container">
       <!-- Left Panel - Model Detail -->
       <div class="features-left">
         <app-apartment-model-detail 
           [config]="modelDetailConfig"
           (floorTypeChange)="onFloorTypeChange($event)"
-          (sendPdfClick)="onSendPdf()"
-          (quoteModelClick)="onQuoteModel()">
+          (sendPdfClick)="onSendPdf($event)"
+          (quoteModelClick)="onQuoteModel($event)">
         </app-apartment-model-detail>
       </div>
 
-      <!-- Right Panel - Gallery -->
-      <div class="features-right">
-        <app-apartment-gallery 
-          [config]="galleryConfig"
-          (imageChange)="onGalleryImageChange($event)"
-          (previousClick)="onGalleryPrevious()"
-          (nextClick)="onGalleryNext()">
-        </app-apartment-gallery>
-      </div>
-    </div>
-  </section>
+               <!-- Right Panel - Gallery and Carousel -->
+         <div class="features-right">
+           <app-apartment-gallery 
+             [config]="galleryConfig"
+             (imageChange)="onGalleryImageChange($event)"
+             (previousClick)="onGalleryPrevious()"
+             (nextClick)="onGalleryNext()">
+           </app-apartment-gallery>
+           
+           <!-- Image Carousel -->
+           <div class="carousel-wrapper">
+             <div class="carousel-frost-container">
+               <app-image-carousel 
+                 [config]="carouselConfig"
+                 (imageChange)="onCarouselImageChange($event)"
+                 (previousClick)="onCarouselPrevious()"
+                 (nextClick)="onCarouselNext()">
+               </app-image-carousel>
+             </div>
+           </div>
+         </div>
+              </div>
+     </section>
+  <!-- Section 4: Equipment Section -->
+     <section id="equipment" class="equipment-section">
+       <div class="equipment-container">
+         <app-equipment-selector 
+           [config]="equipmentConfig"
+           (optionChange)="onEquipmentOptionChange($event)"
+           (quoteClick)="onEquipmentQuoteClick()">
+         </app-equipment-selector>
+       </div>
+     </section>
 
-  <!-- Footer -->
+     <!-- Footer -->
   <app-preview-footer 
     [config]="footerConfig"
     (buttonClick)="onFooterButtonClick()">
   </app-preview-footer>
 
-  <!-- Scroll Indicator -->
-  <app-preview-scroll-indicator 
-    [config]="scrollConfig"
-    (sectionChange)="onSectionChange($event)">
-  </app-preview-scroll-indicator>
-</div>
+     <!-- Scroll Indicator -->
+   <app-preview-scroll-indicator 
+     [config]="scrollConfig"
+     (sectionChange)="onSectionChange($event)"
+     (sectionNavigate)="onSectionNavigate($event)">
+   </app-preview-scroll-indicator>
+
+   <!-- Contact Modal -->
+   <app-contact-modal 
+     [config]="contactModalConfig"
+     [isOpen]="isContactModalOpen"
+     (closeModal)="onContactModalClose()"
+     (contactSubmit)="onContactSubmit($event)"
+     (contactMethodChange)="onContactMethodChange($event)">
+   </app-contact-modal>
+ </div>
+
 

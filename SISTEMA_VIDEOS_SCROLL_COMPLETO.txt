@@ -1,0 +1,481 @@
+===========================================
+SISTEMA DE VIDEOS POR SCROLL - HTML/JS
+===========================================
+
+ESTRUCTURA DE ARCHIVOS:
+proyecto/
+├── index.html
+├── styles.css
+├── script.js
+├── assets/
+│   └── videos/
+│       ├── video-0.mp4  (HOME - reposo)
+│       ├── video-1.mp4  (HOME - animación)
+│       ├── video-3.mp4  (APARTAMENTS - reposo)
+│       ├── video-4.mp4  (APARTAMENTS - animación)
+│       ├── video-5.mp4  (CONTACT - animación)
+│       ├── video-6.mp4  (CONTACT - reposo)
+│       ├── video-7.mp4  (FEATURES - reposo)
+│       └── video-8.mp4  (FEATURES - animación)
+
+===========================================
+1. INDEX.HTML
+===========================================
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mirador del Golf</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Video Background Container -->
+    <div class="video-background-wrapper">
+        <video 
+            id="backgroundVideo"
+            muted
+            playsinline
+            preload="metadata"
+            class="background-video">
+        </video>
+    </div>
+
+    <!-- Section 1: Hero Section -->
+    <section id="section-1" class="section-1">
+        <div class="content">
+            <h1>Mirador del Golf</h1>
+            <p>Exclusivas casas y departamentos ubicados en el sector más privilegiado de Piedra Roja</p>
+        </div>
+    </section>
+
+    <!-- Section 2: Apartments Section -->
+    <section id="apartments" class="apartments-section">
+        <div class="content">
+            <h2>Apartamentos</h2>
+            <p>Descubre nuestros exclusivos apartamentos con las mejores vistas.</p>
+        </div>
+    </section>
+
+    <!-- Section 3: Features Section -->
+    <section id="features" class="features-section">
+        <div class="content">
+            <h2>Características</h2>
+            <p>Explora las características únicas de nuestro proyecto.</p>
+        </div>
+    </section>
+
+    <!-- Section 4: Equipment Section -->
+    <section id="equipment" class="equipment-section">
+        <div class="content">
+            <h2>Equipamiento</h2>
+            <p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</p>
+        </div>
+    </section>
+
+    <script src="script.js"></script>
+</body>
+</html>
+
+===========================================
+2. STYLES.CSS
+===========================================
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    overflow-x: hidden;
+}
+
+/* Video Background */
+.video-background-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    overflow: hidden;
+}
+
+.background-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+/* Sections */
+section {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 1;
+}
+
+.content {
+    text-align: center;
+    color: white;
+    background: rgba(0, 0, 0, 0.5);
+    padding: 2rem;
+    border-radius: 10px;
+    max-width: 800px;
+}
+
+h1, h2 {
+    margin-bottom: 1rem;
+    font-size: 3rem;
+}
+
+p {
+    font-size: 1.2rem;
+    line-height: 1.6;
+}
+
+/* Section specific styles */
+.section-1 {
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.apartments-section {
+    background: rgba(0, 0, 0, 0.4);
+}
+
+.features-section {
+    background: rgba(0, 0, 0, 0.4);
+}
+
+.equipment-section {
+    background: rgba(0, 0, 0, 0.4);
+}
+
+===========================================
+3. SCRIPT.JS
+===========================================
+
+class VideoScrollSystem {
+    constructor() {
+        this.videoElement = document.getElementById('backgroundVideo');
+        this.currentSection = 0;
+        this.isChangingVideo = false;
+        
+        // Configuración de videos por sección
+        this.videoConfig = {
+            sections: [
+                {
+                    id: 'section-1',
+                    label: 'HOME',
+                    animationVideo: 'assets/videos/video-1.mp4',
+                    restVideo: 'assets/videos/video-0.mp4'
+                },
+                {
+                    id: 'apartments',
+                    label: 'APARTAMENTS',
+                    animationVideo: 'assets/videos/video-4.mp4',
+                    restVideo: 'assets/videos/video-3.mp4'
+                },
+                {
+                    id: 'features',
+                    label: 'FEATURES',
+                    animationVideo: 'assets/videos/video-8.mp4',
+                    restVideo: 'assets/videos/video-7.mp4'
+                },
+                {
+                    id: 'equipment',
+                    label: 'CONTACT',
+                    animationVideo: 'assets/videos/video-5.mp4',
+                    restVideo: 'assets/videos/video-6.mp4'
+                }
+            ]
+        };
+        
+        this.init();
+    }
+    
+    init() {
+        console.log('🎬 VideoScrollSystem initialized');
+        
+        if (!this.videoElement) {
+            console.error('❌ Video element not found');
+            return;
+        }
+        
+        console.log('✅ Video element found');
+        
+        // Configurar video inicial
+        this.setupVideoElement();
+        
+        // Iniciar secuencia de video inicial
+        this.startInitialVideoSequence();
+        
+        // Configurar listeners de scroll
+        this.setupScrollListener();
+        
+        // Detección inicial de sección
+        setTimeout(() => {
+            this.showScrollPosition();
+        }, 500);
+    }
+    
+    setupVideoElement() {
+        this.videoElement.muted = true;
+        this.videoElement.playsInline = true;
+        this.videoElement.preload = 'metadata';
+    }
+    
+    startInitialVideoSequence() {
+        console.log('🎬 STARTING INITIAL VIDEO SEQUENCE');
+        
+        setTimeout(() => {
+            this.playVideo('assets/videos/video-1.mp4', () => {
+                this.playVideo('assets/videos/video-0.mp4', null, true);
+            });
+        }, 100);
+    }
+    
+    setupScrollListener() {
+        console.log('🎧 SETTING UP SCROLL LISTENER');
+        
+        // Escuchar scroll constantemente
+        window.addEventListener('scroll', () => {
+            console.log('📜 SCROLL DETECTED!');
+            this.showScrollPosition();
+        }, { passive: false });
+        
+        // También escuchar en resize
+        window.addEventListener('resize', () => {
+            console.log('📐 RESIZE DETECTED!');
+            this.showScrollPosition();
+        }, { passive: false });
+        
+        // Escuchar también en wheel events
+        window.addEventListener('wheel', () => {
+            console.log('🎡 WHEEL DETECTED!');
+            this.showScrollPosition();
+        }, { passive: false });
+        
+        console.log('✅ SCROLL LISTENER SETUP COMPLETE');
+    }
+    
+    showScrollPosition() {
+        const scrollY = window.scrollY;
+        const windowHeight = window.innerHeight;
+        const documentHeight = document.documentElement.scrollHeight;
+        const scrollPercentage = (scrollY / (documentHeight - windowHeight)) * 100;
+        
+        console.log(`📍 SCROLL POSITION: ${scrollY}px (${scrollPercentage.toFixed(1)}%)`);
+        console.log(`🎬 Current video section: ${this.currentSection}`);
+        
+        let currentSectionLabel = 'NONE';
+        
+        this.videoConfig.sections.forEach((section, index) => {
+            const element = document.getElementById(section.id);
+            if (element) {
+                const rect = element.getBoundingClientRect();
+                const elementTop = rect.top + scrollY;
+                const elementBottom = elementTop + rect.height;
+                
+                // Verificar si estamos en esta sección (umbral del 30%)
+                const isInSection = scrollY >= elementTop - windowHeight * 0.3 && 
+                                   scrollY < elementBottom - windowHeight * 0.3;
+                
+                console.log(`📏 ${section.label}: Top=${elementTop}, Bottom=${elementBottom}, InSection=${isInSection}`);
+                
+                if (isInSection) {
+                    currentSectionLabel = section.label;
+                }
+                
+                // Si estamos en esta sección y no es la actual, cambiar video
+                if (isInSection && this.currentSection !== index) {
+                    console.log(`🎯 CHANGING TO ${section.label} SECTION!`);
+                    console.log(`🔍 Current section index: ${this.currentSection}, New section index: ${index}`);
+                    this.changeVideoBackground(section.label, index);
+                } else if (isInSection) {
+                    console.log(`⏭️ Already in ${section.label} section (index: ${index}, current: ${this.currentSection})`);
+                }
+            }
+        });
+        
+        console.log(`🎯 CURRENT SECTION: ${currentSectionLabel}`);
+    }
+    
+    changeVideoBackground(sectionLabel, sectionIndex) {
+        console.log(`🎬 CHANGE VIDEO CALLED: ${sectionLabel}`);
+        
+        // Evitar cambiar el video si ya está reproduciendo la misma sección
+        const currentSectionLabel = this.getCurrentSectionLabel();
+        console.log(`🔍 Current section label: "${currentSectionLabel}", New section: "${sectionLabel}"`);
+        
+        if (currentSectionLabel === sectionLabel) {
+            console.log(`⏭️ Already playing ${sectionLabel}, skipping...`);
+            return;
+        }
+        
+        // Actualizar el estado de las secciones
+        this.updateVideoSectionStates(sectionLabel);
+        
+        // Reproducir videos según la sección
+        switch (sectionLabel) {
+            case 'HOME':
+                console.log(`🎬 Playing HOME videos: video-1.mp4 → video-0.mp4`);
+                this.playVideo('assets/videos/video-1.mp4', () => {
+                    this.playVideo('assets/videos/video-0.mp4', null, true);
+                });
+                break;
+            case 'APARTAMENTS':
+                console.log(`🎬 Playing APARTAMENTS videos: video-4.mp4 → video-3.mp4`);
+                this.playVideo('assets/videos/video-4.mp4', () => {
+                    this.playVideo('assets/videos/video-3.mp4', null, true);
+                });
+                break;
+            case 'FEATURES':
+                console.log(`🎬 Playing FEATURES videos: video-8.mp4 → video-7.mp4`);
+                this.playVideo('assets/videos/video-8.mp4', () => {
+                    this.playVideo('assets/videos/video-7.mp4', null, true);
+                });
+                break;
+            case 'CONTACT':
+                console.log(`🎬 Playing CONTACT videos: video-5.mp4 → video-6.mp4`);
+                this.playVideo('assets/videos/video-5.mp4', () => {
+                    this.playVideo('assets/videos/video-6.mp4', null, true);
+                });
+                break;
+            default:
+                console.log(`🎬 Playing DEFAULT videos: video-1.mp4 → video-0.mp4`);
+                this.playVideo('assets/videos/video-1.mp4', () => {
+                    this.playVideo('assets/videos/video-0.mp4', null, true);
+                });
+        }
+        
+        // Actualizar sección actual DESPUÉS del cambio
+        this.currentSection = sectionIndex;
+    }
+    
+    getCurrentSectionLabel() {
+        const sections = ['HOME', 'APARTAMENTS', 'FEATURES', 'CONTACT'];
+        const currentLabel = sections[this.currentSection] || 'HOME';
+        console.log(`🔍 getCurrentSectionLabel: index=${this.currentSection}, label="${currentLabel}"`);
+        return currentLabel;
+    }
+    
+    updateVideoSectionStates(activeSection) {
+        console.log(`🔄 Updating video section states to: ${activeSection}`);
+    }
+    
+    playVideo(src, onEnded = null, loop = false) {
+        console.log(`🎥 PLAY VIDEO: ${src} (loop: ${loop})`);
+        
+        if (this.videoElement) {
+            // Limpiar eventos anteriores
+            this.videoElement.onended = null;
+            this.videoElement.onerror = null;
+            
+            // Configurar el video
+            this.videoElement.src = src;
+            this.videoElement.loop = loop;
+            this.videoElement.muted = true;
+            this.videoElement.playsInline = true;
+            this.videoElement.preload = 'metadata';
+            
+            // Configurar eventos
+            if (onEnded) {
+                this.videoElement.onended = onEnded;
+            }
+            
+            this.videoElement.onerror = (error) => {
+                console.error('Error playing video:', error);
+                // Fallback: intentar reproducir el video de reposo
+                if (!loop) {
+                    this.playVideo('assets/videos/video-0.mp4', null, true);
+                }
+            };
+            
+            // Intentar reproducir el video
+            const playPromise = this.videoElement.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(error => {
+                    console.error('Error playing video:', error);
+                    // Fallback: intentar reproducir el video de reposo
+                    if (!loop) {
+                        this.playVideo('assets/videos/video-0.mp4', null, true);
+                    }
+                });
+            }
+        } else {
+            console.error('Video element not found');
+        }
+    }
+}
+
+// Inicializar el sistema cuando el DOM esté listo
+document.addEventListener('DOMContentLoaded', () => {
+    new VideoScrollSystem();
+});
+
+===========================================
+CARACTERÍSTICAS IMPLEMENTADAS
+===========================================
+
+✅ Detección de Scroll en Tiempo Real
+- Escucha eventos de scroll, wheel y resize
+- Muestra posición exacta del scroll
+- Logs detallados para debugging
+
+✅ Detección Inteligente de Secciones
+- Basada en comentarios HTML específicos
+- Umbral del 30% del viewport para detección
+- Calcula posición relativa de cada sección
+
+✅ Sistema de Videos por Sección
+- Cada sección tiene video de animación y video de reposo
+- Transición automática: animación → reposo en loop
+- Fallback automático si falla un video
+
+✅ Manejo de Estados
+- Evita cambios innecesarios de video
+- Actualiza estado después del cambio de video
+- Logs detallados de cada operación
+
+✅ Optimizaciones
+- Passive listeners para mejor rendimiento
+- Preload metadata para carga rápida
+- Manejo de errores robusto
+
+===========================================
+CÓMO USAR
+===========================================
+
+1. Crear la estructura de archivos como se muestra arriba
+2. Colocar los videos en assets/videos/ con los nombres especificados
+3. Abrir index.html en un navegador
+4. Hacer scroll para ver los videos cambiar automáticamente
+
+===========================================
+LOGS ESPERADOS
+===========================================
+
+🎬 VideoScrollSystem initialized
+✅ Video element found
+🎬 STARTING INITIAL VIDEO SEQUENCE
+🎧 SETTING UP SCROLL LISTENER
+✅ SCROLL LISTENER SETUP COMPLETE
+🎥 PLAY VIDEO: assets/videos/video-1.mp4 (loop: false)
+📜 SCROLL DETECTED!
+📍 SCROLL POSITION: 500px (15.2%)
+🎯 CHANGING TO APARTAMENTS SECTION!
+🎬 CHANGE VIDEO CALLED: APARTAMENTS
+🎬 Playing APARTAMENTS videos: video-4.mp4 → video-3.mp4
+
+===========================================
+FIN DEL ARCHIVO
+===========================================

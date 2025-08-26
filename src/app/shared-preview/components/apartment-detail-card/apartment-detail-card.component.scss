@@ -1,16 +1,19 @@
 .apartment-detail-card {
-  background-color: #f9fafb;
+  background-color: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border-radius: 12px;
   padding: 20px;
   cursor: pointer;
   transition: all 0.2s ease;
-  border: 1px solid #e5e7eb;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   
   &:hover {
-    background-color: #f3f4f6;
-    border-color: #d1d5db;
+    background-color: rgba(0, 0, 0, 0.8);
+    border-color: rgba(255, 255, 255, 0.2);
     transform: translateY(-2px);
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
   }
 }
 
@@ -19,7 +22,7 @@
 }
 
 .section-title {
-  color: #374151;
+  color: #ffffff;
   margin-bottom: 12px;
 }
 
@@ -35,11 +38,11 @@
   align-items: center;
   
   .label {
-    color: #6b7280;
+    color: #d1d5db;
   }
   
   .value {
-    color: #374151;
+    color: #ffffff;
     font-weight: 500;
   }
 }
@@ -49,13 +52,14 @@
   flex-wrap: wrap;
   gap: 12px;
   padding-top: 12px;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .detail-item {
-  color: #6b7280;
-  background-color: #f3f4f6;
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.1);
   padding: 4px 8px;
   border-radius: 6px;
   font-size: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }

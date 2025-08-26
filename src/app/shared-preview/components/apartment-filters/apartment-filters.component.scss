@@ -3,6 +3,13 @@
   flex-direction: column;
   gap: 16px;
   margin-bottom: 24px;
+  background-color: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
 .filter-item {
@@ -12,28 +19,28 @@
 }
 
 .filter-label {
-  color: #374151;
+  color: #ffffff;
   font-size: 14px;
 }
 
 .filter-input,
 .filter-select {
   padding: 8px 12px;
-  border: 1px solid #d1d5db;
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 8px;
-  background-color: #ffffff;
-  color: #374151;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
   font-size: 14px;
   transition: all 0.2s ease;
   
   &:focus {
     outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    border-color: rgba(255, 255, 255, 0.4);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
   }
   
   &::placeholder {
-    color: #9ca3af;
+    color: #d1d5db;
   }
 }
 

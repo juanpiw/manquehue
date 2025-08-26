@@ -142,3 +142,102 @@
     </button>
   </div>
 </div>
+
+<!-- Quote Modal -->
+<div class="modal-overlay" *ngIf="showQuoteModal" (click)="onModalBackdropClick($event)">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title">Cotizar Modelo</h3>
+      <button class="modal-close" (click)="closeQuoteModal()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+    
+    <div class="modal-body">
+      <form (ngSubmit)="onSubmitQuote()" #quoteFormRef="ngForm">
+        <div class="form-group">
+          <label for="name" class="form-label">Nombre *</label>
+          <input 
+            type="text" 
+            id="name" 
+            name="name"
+            [(ngModel)]="quoteForm.name"
+            class="form-input"
+            [class.error]="formErrors['name']"
+            placeholder="Ingrese su nombre completo">
+          <div class="error-message" *ngIf="formErrors['name']">
+            {{ formErrors['name'] }}
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="email" class="form-label">Correo Electrónico *</label>
+          <input 
+            type="email" 
+            id="email" 
+            name="email"
+            [(ngModel)]="quoteForm.email"
+            class="form-input"
+            [class.error]="formErrors['email']"
+            placeholder="ejemplo@correo.com">
+          <div class="error-message" *ngIf="formErrors['email']">
+            {{ formErrors['email'] }}
+          </div>
+        </div>
+        
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" (click)="closeQuoteModal()">
+            Cancelar
+          </button>
+          <button type="submit" class="btn btn-primary">
+            Enviar Cotización
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- PDF Modal -->
+<div class="modal-overlay" *ngIf="showPdfModal" (click)="onPdfModalBackdropClick($event)">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title">Enviar PDF</h3>
+      <button class="modal-close" (click)="closePdfModal()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+    
+    <div class="modal-body">
+      <form (ngSubmit)="onSubmitPdf()" #pdfFormRef="ngForm">
+        <div class="form-group">
+          <label for="pdf-email" class="form-label">Correo Electrónico *</label>
+          <input 
+            type="email" 
+            id="pdf-email" 
+            name="email"
+            [(ngModel)]="pdfForm.email"
+            class="form-input"
+            [class.error]="pdfFormErrors['email']"
+            placeholder="ejemplo@correo.com">
+          <div class="error-message" *ngIf="pdfFormErrors['email']">
+            {{ pdfFormErrors['email'] }}
+          </div>
+        </div>
+        
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" (click)="closePdfModal()">
+            Cancelar
+          </button>
+          <button type="submit" class="btn btn-primary">
+            Enviar PDF
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

@@ -1,11 +1,72 @@
 .preview-demo {
   font-family: var(--font-primary);
-  color: #374151;
+  color: #ffffff;
   line-height: 1.6;
-  min-height: 100vh;
-  overflow-y: auto;
-  background-color: #f8fafc;
+  background-color: transparent;
   scroll-behavior: smooth;
+  position: relative;
+  z-index: 2;
+  overflow-y: auto;
+  height: 100vh;
+}
+
+/* Global white text for top sections */
+.preview-demo > *:not(.apartments-section):not(.features-section):not(.equipment-section) {
+  color: white !important;
+}
+
+.preview-demo > *:not(.apartments-section):not(.features-section):not(.equipment-section) * {
+  color: white !important;
+}
+
+/* Video Background Wrapper */
+.video-background-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  z-index: 1;
+  overflow: hidden;
+}
+
+/* Background Video */
+.background-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+/* Video overlay for better text readability */
+.video-background-wrapper::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.4) 0%,
+    rgba(0, 0, 0, 0.2) 50%,
+    rgba(0, 0, 0, 0.4) 100%
+  );
+  pointer-events: none;
+}
+
+/* Section 1: Hero Section (Full Viewport) */
+.section-1 {
+  height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+  padding: 20px;
+  box-sizing: border-box;
 }
 
 /* Ensure all sections are properly spaced */
@@ -17,21 +78,171 @@ app-preview-selector,
 app-preview-stats {
   display: block;
   width: 100%;
+  position: relative;
+  z-index: 2;
+  color: white !important;
 }
 
-/* Apartments Section Styles */
+/* Force white text for specific elements */
+app-preview-header *,
+app-preview-navigation *,
+app-preview-hero *,
+app-preview-description *,
+app-preview-selector *,
+app-preview-stats * {
+  color: white !important;
+}
+
+/* Specific text elements that need to be white */
+.preview-demo h1, 
+.preview-demo h2, 
+.preview-demo h3, 
+.preview-demo h4, 
+.preview-demo h5, 
+.preview-demo h6,
+.preview-demo p, 
+.preview-demo span, 
+.preview-demo div, 
+.preview-demo button, 
+.preview-demo label {
+  color: white !important;
+}
+
+/* Navigation specific styles */
+.preview-demo .nav-item, 
+.preview-demo .nav-link, 
+.preview-demo .navigation-item {
+  color: white !important;
+}
+
+/* Hero title specific */
+.preview-demo .hero-title, 
+.preview-demo .title, 
+.preview-demo .main-title {
+  color: white !important;
+}
+
+/* Description text */
+.preview-demo .description, 
+.preview-demo .description-text {
+  color: white !important;
+}
+
+/* Stats numbers and labels */
+.preview-demo .stat-value, 
+.preview-demo .stat-label {
+  color: white !important;
+}
+
+/* Selector options */
+.preview-demo .selector-option, 
+.preview-demo .radio-option {
+  color: white !important;
+}
+
+/* Force white for specific elements that might be overridden */
+.preview-demo .hero-title.text-heading-1.text-bold {
+  color: white !important;
+}
+
+.preview-demo .description-text.text-body-large.text-regular {
+  color: white !important;
+}
+
+.preview-demo .text-heading-1,
+.preview-demo .text-body-large {
+  color: white !important;
+}
+
+/* Stats specific */
+.preview-demo .stat-value,
+.preview-demo .stat-label,
+.preview-demo .text-bold,
+.preview-demo .text-regular {
+  color: white !important;
+}
+
+/* Section 2: Apartments Section (Full Viewport) */
 .apartments-section {
+  height: 100vh;
+  width: 100%;
   padding: 40px 20px;
-  background-color: #ffffff;
-  margin: 20px 0;
-  scroll-margin-top: 80px; /* Offset for fixed header */
+  margin: 0;
+  scroll-margin-top: 0;
+  position: relative;
+  z-index: 2;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+}
+
+/* Location Tag Container */
+.location-tag-container {
+  position: relative;
+  margin-top: 24px;
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  
+  // Animación de entrada
+  opacity: 0;
+  transform: translateY(-20px);
+  animation: locationTagFadeIn 0.8s ease-out 0.5s forwards;
+}
+
+@keyframes locationTagFadeIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .apartments-container {
-  max-width: 1400px;
-  margin: 0 auto;
+  max-width: 1200px; // Reducido de 1400px a 1200px para dejar más espacio al video
+  margin: 0 0 0 40px; // Cambiado de "0 auto" a "0 0 0 40px" para alinear a la izquierda
   display: flex;
   gap: 32px;
+  height: 100%;
+  align-items: center;
+  
+  // Animación de entrada de izquierda a derecha
+  opacity: 0;
+  transform: translateX(-100px) scale(0.95);
+  transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+  will-change: transform, opacity;
+  
+  &.animate-in {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+  
+  &.animate-out {
+    opacity: 0;
+    transform: translateX(-100px) scale(0.95);
+  }
+  
+  // Efecto de entrada escalonada para los elementos hijos
+  .apartments-sidebar,
+  .apartments-main {
+    opacity: 0;
+    transform: translateX(-50px);
+    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    transition-delay: 0.2s;
+  }
+  
+  &.animate-in {
+    .apartments-sidebar {
+      opacity: 1;
+      transform: translateX(0);
+      transition-delay: 0.3s;
+    }
+    
+    .apartments-main {
+      opacity: 1;
+      transform: translateX(0);
+      transition-delay: 0.5s;
+    }
+  }
 }
 
 .apartments-sidebar {
@@ -89,6 +300,8 @@ app-preview-stats {
 @media (max-width: 1200px) {
   .apartments-container {
     flex-direction: column;
+    margin: 0 0 0 20px; // Reducir margen en pantallas más pequeñas
+    max-width: 1000px;
   }
   
   .apartments-sidebar {
@@ -106,6 +319,14 @@ app-preview-stats {
 }
 
 @media (max-width: 768px) {
+  .section-1,
+  .apartments-section,
+  .features-section,
+  .equipment-section {
+    height: 100vh;
+    padding: 20px 16px;
+  }
+  
   .apartments-main {
     flex-direction: column;
   }
@@ -115,29 +336,40 @@ app-preview-stats {
     width: 100%;
   }
   
-  .apartments-section {
-    padding: 20px 16px;
-  }
-  
   .apartments-container {
     gap: 24px;
+    margin: 0 0 0 10px; // Margen mínimo en móviles
+    max-width: calc(100% - 20px); // Asegurar que no se salga de la pantalla
+  }
+  
+  // Location tag responsive
+  .location-tag-container {
+    margin-top: 16px;
   }
 }
 
-/* Features Section Styles */
+/* Section 3: Features Section (Full Viewport) */
 .features-section {
+  height: 100vh;
+  width: 100%;
   padding: 40px 20px;
-
-  margin: 20px 0;
-  scroll-margin-top: 80px;
+  //                                                                                                                             background-color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+  scroll-margin-top: 0;
+  position: relative;
+  z-index: 2;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
 }
 
 .features-container {
-  max-width: 1400px;
-  margin: 0 auto;
+  max-width: 1200px;
+  margin: 0 0 0 40px;
   display: flex;
   gap: 32px;
-  min-height: 600px;
+  height: 100%;
+  align-items: center;
 }
 
 .features-left {
@@ -145,11 +377,93 @@ app-preview-stats {
   max-width: 400px;
 }
 
-.features-right {
-  flex: 1;
+ .features-right {
+   flex: 1;
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+   justify-content: flex-start;
+   gap: 32px;
+ }
+
+ .carousel-wrapper {
+   width: 100%;
+   max-width: 400px;
+   margin: 0 auto;
+   /* Push to bottom within the column */
+   margin-top: auto;
+ }
+
+ .carousel-frost-container {
+   background: rgba(0, 0, 0, 0.7);
+   border: 1px solid rgba(255, 255, 255, 0.2);
+   border-radius: 16px;
+   padding: 24px;
+   backdrop-filter: blur(8px);
+   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+   
+   &:hover {
+     border-color: rgba(255, 255, 255, 0.3);
+     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+   }
+ }
+
+/* Back Button */
+.back-button {
+  position: absolute;
+  top: 40px;
+  left: 40px;
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: rgba(0, 0, 0, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50px;
+  color: #f3f4f6;
+  font-weight: 500;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(8px);
+  z-index: 10;
+  
+  // Animación de entrada elegante
+  opacity: 0;
+  transform: translateX(-30px);
+  animation: backButtonSlideIn 0.8s ease-out 0.3s forwards;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    background: rgba(0, 0, 0, 0.8);
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+  
+  &:active {
+    transform: translateY(0);
+  }
+  
+  svg {
+    transition: transform 0.3s ease;
+  }
+  
+  &:hover svg {
+    transform: translateX(-2px);
+  }
+  
+  span {
+    white-space: nowrap;
+  }
+}
+
+@keyframes backButtonSlideIn {
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 /* Responsive Design for Features */
@@ -157,6 +471,8 @@ app-preview-stats {
   .features-container {
     flex-direction: column;
     gap: 24px;
+    margin: 0 0 0 20px;
+    max-width: 1000px;
   }
   
   .features-left {
@@ -172,6 +488,172 @@ app-preview-stats {
   .features-container {
     gap: 20px;
     min-height: auto;
+    margin: 0 0 0 10px;
+    max-width: calc(100% - 20px);
+  }
+  
+  .carousel-frost-container {
+    padding: 16px;
+    border-radius: 12px;
+  }
+  
+  .back-button {
+    top: 20px;
+    left: 20px;
+    padding: 10px 14px;
+    font-size: 0.8rem;
+    background: rgba(0, 0, 0, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    
+    span {
+      display: none; // Ocultar texto en móviles, solo mostrar icono
+    }
   }
 }
+
+/* Section 4: Equipment Section (Full Viewport) */
+.equipment-section {
+  height: 100vh;
+  width: 100%;
+  padding: 40px 20px;
+ // background-color: rgba(107, 114, 128, 0.9);
+  margin: 0;
+  scroll-margin-top: 0;
+  position: relative;
+  z-index: 2;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+}
+
+.equipment-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+ /* Responsive Design for Equipment */
+ @media (max-width: 768px) {
+   .equipment-section {
+     padding: 20px 16px;
+   }
+
+   .equipment-container {
+     height: 400px;
+   }
+ }
+
+/* Apartment Model Animation Styles */
+.apartment-model-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transform: translateY(30px) scale(0.95);
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+
+  &.visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: all;
+  }
+
+  &.hidden {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+    pointer-events: none;
+  }
+}
+
+.close-model-button {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: rgba(0, 0, 0, 0.8);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  color: #f3f4f6;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  z-index: 10;
+  backdrop-filter: blur(4px);
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.9);
+    border-color: #fbbf24;
+    transform: scale(1.1);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+/* Responsive Design for Apartment Model */
+@media (max-width: 768px) {
+  .apartment-model-container {
+    transform: translateY(20px) scale(0.95);
+    
+    &.visible {
+      transform: translateY(0) scale(1);
+    }
+    
+    &.hidden {
+      transform: translateY(20px) scale(0.95);
+    }
+  }
+
+  .close-model-button {
+    width: 36px;
+    height: 36px;
+    top: -8px;
+    right: -8px;
+
+    svg {
+      width: 14px;
+      height: 14px;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .apartment-model-container {
+    transform: translateY(15px) scale(0.95);
+    
+    &.visible {
+      transform: translateY(0) scale(1);
+    }
+    
+    &.hidden {
+      transform: translateY(15px) scale(0.95);
+    }
+  }
+
+  .close-model-button {
+    width: 32px;
+    height: 32px;
+    top: -6px;
+    right: -6px;
+
+    svg {
+      width: 12px;
+      height: 12px;
+    }
+  }
+}
+
+ 
 

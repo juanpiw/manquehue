@@ -7,10 +7,58 @@
   
   <div class="description-container" [style.max-width]="config.maxWidth">
     <div class="description-content">
-      <p class="description-text text-body-large text-regular">
+      <p style="color:white!important;"
+         class="description-text text-body-large text-regular">
         {{ config.text }}
       </p>
+      
+      <!-- Audio Button -->
+      <div class="audio-controls" *ngIf="config.audio?.src">
+        <button 
+          class="audio-button"
+          [class.playing]="isPlaying"
+          [class.loading]="isLoading"
+          [class.error]="hasError"
+          (click)="toggleAudio()"
+          [disabled]="isLoading || hasError"
+          [title]="getAudioButtonTitle()">
+          
+          <!-- Loading State -->
+          <div class="loading-spinner" *ngIf="isLoading">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-dasharray="31.416" stroke-dashoffset="31.416">
+                <animate attributeName="stroke-dasharray" dur="2s" values="0 31.416;15.708 15.708;0 31.416" repeatCount="indefinite"/>
+                <animate attributeName="stroke-dashoffset" dur="2s" values="0;-15.708;-31.416" repeatCount="indefinite"/>
+              </circle>
+            </svg>
+          </div>
+          
+          <!-- Error State -->
+          <svg *ngIf="hasError" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+            <path d="M15 9L9 15M9 9L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          
+          <!-- Play State -->
+          <svg *ngIf="!isPlaying && !isLoading && !hasError" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+            <path d="M10 8L16 12L10 16V8Z" fill="currentColor"/>
+          </svg>
+          
+          <!-- Pause State -->
+          <svg *ngIf="isPlaying && !isLoading && !hasError" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+            <path d="M10 8H10V16M14 8H14V16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        
+        <!-- Audio Status Text -->
+        <span class="audio-status" *ngIf="hasError">
+          Error al cargar audio
+        </span>
+      </div>
     </div>
   </div>
 </section>
+
 

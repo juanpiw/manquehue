@@ -37,3 +37,4 @@ export class ApartmentTypeSelectorComponent {
     return type.id;
   }
 }
+

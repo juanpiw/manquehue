@@ -7,6 +7,11 @@ export interface ScrollIndicatorConfig {
   position?: 'left' | 'right';
   size?: 'small' | 'medium' | 'large';
   showLabels?: boolean;
+  sections?: {
+    id: number;
+    label: string;
+    elementId?: string;
+  }[];
 }
 
 @Component({
@@ -26,6 +31,7 @@ export class PreviewScrollIndicatorComponent {
   };
 
   @Output() sectionChange = new EventEmitter<number>();
+  @Output() sectionNavigate = new EventEmitter<{id: number, label: string, elementId?: string}>();
 
   get sections(): number[] {
     return Array.from({ length: this.config.totalSections }, (_, i) => i + 1);
@@ -33,6 +39,12 @@ export class PreviewScrollIndicatorComponent {
 
   onSectionClick(section: number): void {
     this.sectionChange.emit(section);
+    
+    // Emit navigation event with section details
+    const sectionConfig = this.config.sections?.find(s => s.id === section);
+    if (sectionConfig) {
+      this.sectionNavigate.emit(sectionConfig);
+    }
   }
 
   isActive(section: number): boolean {
@@ -41,5 +53,10 @@ export class PreviewScrollIndicatorComponent {
 
   trackBySection(index: number, section: number): number {
     return section;
+  }
+
+  getSectionLabel(section: number): string {
+    const sectionConfig = this.config.sections?.find(s => s.id === section);
+    return sectionConfig?.label || section.toString();
   }
 }
