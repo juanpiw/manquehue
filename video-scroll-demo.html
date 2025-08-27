@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Videos por Scroll - Demo</title>
+    <link rel="stylesheet" href="video-scroll-styles.css">
+</head>
+<body>
+    <!-- Contenedor principal del preview demo -->
+    <div class="preview-demo">
+        <!-- Video de fondo -->
+        <video id="backgroundVideo" class="background-video" autoplay muted loop>
+            <source src="src/assets/videos/video-0.mp4" type="video/mp4">
+        </video>
+
+        <!-- Header con navegación -->
+        <header class="preview-header">
+            <div class="header-content">
+                <div class="logo-container">
+                    <img src="src/assets/images/logo.png" alt="Logo" class="logo" onerror="this.style.display='none'">
+                    <span class="logo-text">Manquehue</span>
+                </div>
+                <nav class="nav-menu">
+                    <button class="menu-toggle" id="menuToggle">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </button>
+                    <ul class="nav-list" id="navList">
+                        <li class="nav-item active" data-section="section-1">
+                            <a href="#section-1">Home</a>
+                        </li>
+                        <li class="nav-item" data-section="apartments">
+                            <a href="#apartments">Apartamentos</a>
+                        </li>
+                        <li class="nav-item" data-section="features">
+                            <a href="#features">Características</a>
+                        </li>
+                        <li class="nav-item" data-section="equipment">
+                            <a href="#equipment">Equipamiento</a>
+                        </li>
+                    </ul>
+                    <div class="nav-underline" id="navUnderline"></div>
+                </nav>
+            </div>
+        </header>
+
+        <!-- Indicador de scroll -->
+        <div class="scroll-indicator">
+            <div class="scroll-dot active" data-section="section-1"></div>
+            <div class="scroll-dot" data-section="apartments"></div>
+            <div class="scroll-dot" data-section="features"></div>
+            <div class="scroll-dot" data-section="equipment"></div>
+        </div>
+
+        <!-- Sección Hero (HOME) -->
+        <section id="section-1" class="hero-section">
+            <div class="hero-content">
+                <h1 class="hero-title">Bosques de Lo Curro</h1>
+                <p class="hero-subtitle">Un lugar tranquilo en un gran vecindario</p>
+                <div class="hero-description">
+                    <p>Descubre la excelencia en cada detalle de nuestro proyecto residencial exclusivo.</p>
+                </div>
+                <div class="hero-actions">
+                    <button class="btn-primary contactModelBtn">Solicitar Información</button>
+                    <button class="btn-secondary">Ver Galería</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sección Selector de Proyecto -->
+        <section class="project-selector">
+            <div class="selector-content">
+                <h2 class="selector-title">Selecciona tu Proyecto</h2>
+                <div class="selector-options">
+                    <div class="selector-option active" data-project="manquehue">
+                        <h3>Manquehue</h3>
+                        <p>Proyecto principal</p>
+                    </div>
+                    <div class="selector-option" data-project="altos">
+                        <h3>Altos de Manquehue</h3>
+                        <p>Nuevo desarrollo</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sección de Estadísticas -->
+        <section class="stats-section">
+            <div class="stats-content">
+                <div class="stat-item">
+                    <div class="stat-number" data-target="150">0</div>
+                    <div class="stat-label">Apartamentos</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" data-target="25">0</div>
+                    <div class="stat-label">Tipos de Dpto</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" data-target="98">0</div>
+                    <div class="stat-label">% Vendidos</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" data-target="2024">0</div>
+                    <div class="stat-label">Entrega</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sección de Apartamentos -->
+        <section id="apartments" class="apartments-section">
+            <div class="apartments-content">
+                <h2 class="section-title">Descubre nuestros exclusivos apartamentos</h2>
+                <p class="section-subtitle">Con las mejores vistas y acabados de lujo</p>
+                
+                <!-- Selector de tipo de apartamento -->
+                <div class="apartment-type-selector">
+                    <button class="type-btn active" data-type="all">Todos</button>
+                    <button class="type-btn" data-type="1d">1 Dormitorio</button>
+                    <button class="type-btn" data-type="2d">2 Dormitorios</button>
+                    <button class="type-btn" data-type="3d">3 Dormitorios</button>
+                </div>
+
+                <!-- Filtros de apartamentos -->
+                <div class="apartment-filters">
+                    <div class="filter-group">
+                        <label>Superficie:</label>
+                        <select class="filter-select" id="surfaceFilter">
+                            <option value="">Todas</option>
+                            <option value="40-60">40-60 m²</option>
+                            <option value="60-80">60-80 m²</option>
+                            <option value="80-100">80-100 m²</option>
+                            <option value="100+">100+ m²</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Precio:</label>
+                        <select class="filter-select" id="priceFilter">
+                            <option value="">Todos</option>
+                            <option value="2000-3000">$2.000-3.000 UF</option>
+                            <option value="3000-4000">$3.000-4.000 UF</option>
+                            <option value="4000-5000">$4.000-5.000 UF</option>
+                            <option value="5000+">$5.000+ UF</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Lista de apartamentos -->
+                <div class="apartment-list" id="apartmentList">
+                    <!-- Los apartamentos se cargarán dinámicamente -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Sección de Características -->
+        <section id="features" class="features-section">
+            <div class="features-content">
+                <h2 class="section-title">Explora las características únicas</h2>
+                <p class="section-subtitle">de nuestro proyecto</p>
+                
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">🏠</div>
+                        <h3>Diseño Arquitectónico</h3>
+                        <p>Arquitectura moderna y funcional diseñada para maximizar las vistas y la comodidad.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🌳</div>
+                        <h3>Áreas Verdes</h3>
+                        <p>Extensas áreas verdes y jardines que conectan con la naturaleza del sector.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🏊‍♂️</div>
+                        <h3>Piscina</h3>
+                        <p>Piscina temperada con vista panorámica y áreas de descanso.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🏋️‍♂️</div>
+                        <h3>Gimnasio</h3>
+                        <p>Gimnasio completamente equipado con equipos de última generación.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sección de Equipamiento -->
+        <section id="equipment" class="equipment-section">
+            <div class="equipment-content">
+                <h2 class="section-title">Equipamiento de Lujo</h2>
+                <p class="section-subtitle">Todo lo que necesitas para una vida extraordinaria</p>
+                
+                <!-- Selector de equipamiento -->
+                <div class="equipment-selector">
+                    <div class="equipment-category active" data-category="amenities">
+                        <h3>Amenities</h3>
+                        <ul class="equipment-list">
+                            <li>Piscina temperada</li>
+                            <li>Gimnasio completo</li>
+                            <li>Sala de eventos</li>
+                            <li>Quincho con parrilla</li>
+                            <li>Jardín infantil</li>
+                            <li>Estacionamiento visitas</li>
+                        </ul>
+                    </div>
+                    <div class="equipment-category" data-category="security">
+                        <h3>Seguridad</h3>
+                        <ul class="equipment-list">
+                            <li>Control de acceso 24/7</li>
+                            <li>Cámaras de seguridad</li>
+                            <li>Alarma de incendio</li>
+                            <li>Seguridad perimetral</li>
+                        </ul>
+                    </div>
+                    <div class="equipment-category" data-category="technology">
+                        <h3>Tecnología</h3>
+                        <ul class="equipment-list">
+                            <li>Fibra óptica</li>
+                            <li>WiFi en áreas comunes</li>
+                            <li>Sistema de domótica</li>
+                            <li>App de residentes</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Etiqueta de ubicación -->
+        <div class="location-tag">
+            <div class="location-content">
+                <div class="location-icon">📍</div>
+                <div class="location-info">
+                    <h4>Ubicación Privilegiada</h4>
+                    <p>Lo Curro, Las Condes</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Carrusel Frost Container -->
+        <div class="carousel-frost-container">
+            <div class="carousel-content">
+                <h3>Galería de Imágenes</h3>
+                <div class="carousel-wrapper">
+                    <div class="carousel-track" id="carouselTrack">
+                        <div class="carousel-slide">
+                            <img src="src/assets/images/gallery-1.jpg" alt="Imagen 1" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlbiAxPC90ZXh0Pjwvc3ZnPg=='">
+                        </div>
+                        <div class="carousel-slide">
+                            <img src="src/assets/images/gallery-2.jpg" alt="Imagen 2" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlbiAyPC90ZXh0Pjwvc3ZnPg=='">
+                        </div>
+                        <div class="carousel-slide">
+                            <img src="src/assets/images/gallery-3.jpg" alt="Imagen 3" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlbiAzPC90ZXh0Pjwvc3ZnPg=='">
+                        </div>
+                    </div>
+                    <button class="carousel-btn prev" id="carouselPrev">‹</button>
+                    <button class="carousel-btn next" id="carouselNext">›</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Botón de regreso -->
+        <button class="back-button" id="backButton">
+            <span>←</span>
+            <span>Volver</span>
+        </button>
+
+        <!-- Footer -->
+        <footer class="preview-footer">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>Contacto</h4>
+                    <p>📧 info@manquehue.cl</p>
+                    <p>📞 +56 2 2345 6789</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Ubicación</h4>
+                    <p>📍 Lo Curro, Las Condes</p>
+                    <p>🏢 Santiago, Chile</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Síguenos</h4>
+                    <div class="social-links">
+                        <a href="#" class="social-link">📘 Facebook</a>
+                        <a href="#" class="social-link">📷 Instagram</a>
+                        <a href="#" class="social-link">🐦 Twitter</a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Manquehue. Todos los derechos reservados.</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Modales -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal" id="contactModal">
+            <div class="modal-header">
+                <h3>Solicitar Información</h3>
+                <button class="modal-close" id="modalClose">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form class="contact-form" id="contactForm">
+                    <div class="form-group">
+                        <label for="name">Nombre completo</label>
+                        <input type="text" id="name" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">Teléfono</label>
+                        <input type="tel" id="phone" name="phone">
+                    </div>
+                    <div class="form-group">
+                        <label for="message">Mensaje</label>
+                        <textarea id="message" name="message" rows="4"></textarea>
+                    </div>
+                    <button type="submit" class="btn-primary">Enviar Solicitud</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts modulares -->
+    <script src="js/VideoScrollSystem.js"></script>
+    <script src="js/NavigationSystem.js"></script>
+    <script src="js/ComponentManager.js"></script>
+    <script src="js/AnimationController.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
