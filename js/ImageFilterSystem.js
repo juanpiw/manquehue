@@ -168,8 +168,10 @@ class ImageFilterSystem {
                     
                     const cantidadImagenes = precios[precioKey];
                     for (let i = 1; i <= cantidadImagenes; i++) {
+                        // Mapear las claves a los nombres de directorio correctos
+                        const tipoDir = this.mapTipoToDirectory(tipoKey);
                         availableImages.push({
-                            path: `video/imagenes/${tipoKey}/${superficieKey}/${precioKey}/imagen_${i}.svg`,
+                            path: `video/imagenes/${tipoDir}/${superficieKey}/${precioKey}/planta_${i}.png`,
                             tipo: tipoKey,
                             superficie: superficieKey,
                             precio: precioKey,
@@ -191,8 +193,10 @@ class ImageFilterSystem {
             Object.entries(superficies).forEach(([superficie, precios]) => {
                 Object.entries(precios).forEach(([precio, cantidad]) => {
                     for (let i = 1; i <= cantidad; i++) {
+                        // Mapear las claves a los nombres de directorio correctos
+                        const tipoDir = this.mapTipoToDirectory(tipo);
                         allImages.push({
-                            path: `video/imagenes/${tipo}/${superficie}/${precio}/imagen_${i}.svg`,
+                            path: `video/imagenes/${tipoDir}/${superficie}/${precio}/planta_${i}.png`,
                             tipo,
                             superficie,
                             precio,
@@ -224,6 +228,15 @@ class ImageFilterSystem {
             '5000+': 'precio_5000_plus'
         };
         return mapping[precio] || precio;
+    }
+    
+    mapTipoToDirectory(tipo) {
+        const mapping = {
+            '1d': '1_dormitorio',
+            '2d': '2_dormitorios',
+            '3d': '3_dormitorios'
+        };
+        return mapping[tipo] || tipo;
     }
     
     updateImages() {
@@ -294,10 +307,16 @@ class ImageFilterSystem {
         const superficieText = this.getSuperficieText(image.superficie);
         const precioText = this.getPrecioText(image.precio);
         
+        console.log('🏗️ Creando tarjeta con imagen:', image.path);
+        console.log('🏗️ Tipo:', image.tipo, 'Superficie:', image.superficie, 'Precio:', image.precio);
+        console.log('🏗️ Ruta completa:', image.path);
+        
+        // Crear el HTML de manera más limpia para evitar problemas de concatenación
+        const fallbackImage = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iUGxhbnRhIGRlICR7dGlwb1RleHR9PC90ZXh0Pjwvc3ZnPg==';
+        
         card.innerHTML = `
             <div class="apartment-image">
-                <img src="${image.path}" alt="${tipoText}" 
-                     onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlbiAxPC90ZXh0Pjwvc3ZnPg=='">
+                <img src="${image.path}" alt="${tipoText}" onerror="this.src='${fallbackImage}'">
             </div>
             <div class="apartment-info">
                 <h3>${tipoText}</h3>
@@ -967,6 +986,9 @@ class ImageFilterSystem {
     showApartmentDetails(apartment, superficie, precio) {
         console.log('📋 Transformando tarjeta a modo detalles:', { apartment, superficie, precio });
         
+        // Ocultar inmediatamente el fondo oscuro SIN TIMER
+        this.hideSectionBackground();
+        
         // Encontrar la tarjeta activa
         const apartmentList = document.getElementById('apartmentList');
         if (!apartmentList) return;
@@ -977,15 +999,346 @@ class ImageFilterSystem {
             return;
         }
         
-        // Animación de encogimiento elegante
-        activeCard.style.transform = 'scale(0.8)';
-        activeCard.style.opacity = '0.7';
-        activeCard.style.transition = 'all 0.5s ease';
+        // Transformar la tarjeta en modo detalles INMEDIATAMENTE
+        this.transformCardToDetails(activeCard, apartment, superficie, precio);
+    }
+    
+    hideSectionBackground() {
+        console.log('🌫️ Ocultando fondo oscuro de la sección INMEDIATAMENTE...');
         
+        // Agregar clase CSS para activar modo detalles inmediatamente
+        const apartmentsSection = document.querySelector('.apartments-section');
+        if (apartmentsSection) {
+            apartmentsSection.classList.add('details-mode-active');
+            apartmentsSection.style.background = 'transparent';
+            apartmentsSection.style.backdropFilter = 'none';
+            apartmentsSection.style.transition = 'none'; // SIN TRANSICIÓN
+        }
+        
+        // Ocultar el contenido de la sección
+        const apartmentsContent = document.querySelector('.apartments-content');
+        if (apartmentsContent) {
+            apartmentsContent.style.background = 'transparent';
+            apartmentsContent.style.backdropFilter = 'none';
+            apartmentsContent.style.boxShadow = 'none';
+            apartmentsContent.style.transition = 'none'; // SIN TRANSICIÓN
+        }
+        
+        // Ocultar títulos INMEDIATAMENTE
+        const sectionTitle = document.querySelector('.apartments-section .section-title');
+        if (sectionTitle) {
+            sectionTitle.style.display = 'none';
+            sectionTitle.style.transition = 'none'; // SIN TRANSICIÓN
+        }
+        
+        const sectionSubtitle = document.querySelector('.apartments-section .section-subtitle');
+        if (sectionSubtitle) {
+            sectionSubtitle.style.display = 'none';
+            sectionSubtitle.style.transition = 'none'; // SIN TRANSICIÓN
+        }
+        
+        // Ocultar el overlay gradiente INMEDIATAMENTE
+        const apartmentsSectionWithBefore = document.querySelector('.apartments-section.animate-in');
+        if (apartmentsSectionWithBefore) {
+            apartmentsSectionWithBefore.style.setProperty('--before-display', 'none');
+            apartmentsSectionWithBefore.style.setProperty('--before-opacity', '0');
+        }
+        
+        // Forzar repaint para asegurar que los cambios se apliquen inmediatamente
+        apartmentsSection?.offsetHeight;
+        
+        console.log('✅ Fondo oscuro ocultado INMEDIATAMENTE');
+    }
+    
+    toggleCollapse() {
+        console.log('📦 Alternando estado de contracción...');
+        
+        const detailsCard = document.querySelector('.apartment-card.details-mode');
+        const collapseBtn = document.querySelector('.btn-collapse');
+        
+        if (!detailsCard || !collapseBtn) {
+            console.log('❌ No se encontraron elementos necesarios');
+            return;
+        }
+        
+        const isCollapsed = detailsCard.classList.contains('collapsed');
+        
+        if (isCollapsed) {
+            // Expandir
+            detailsCard.classList.remove('collapsed');
+            collapseBtn.classList.remove('collapsed');
+            console.log('📈 Tarjeta expandida');
+        } else {
+            // Contraer
+            detailsCard.classList.add('collapsed');
+            collapseBtn.classList.add('collapsed');
+            console.log('📉 Tarjeta contraída');
+        }
+    }
+    
+    showHeroVideo() {
+        console.log('🎬 Mostrando video del hero...');
+        
+        // Ocultar elementos del hero para mostrar el video
+        this.hideHeroElements();
+        
+        // Cambiar el video de fondo si es necesario
+        this.switchToHeroVideo();
+        
+        // Mostrar controles de navegación
+        this.showVideoControls();
+        
+        console.log('✅ Video del hero activado');
+    }
+    
+    hideHeroElements() {
+        console.log('🌫️ Ocultando elementos del hero...');
+        
+        // Ocultar la sección de estadísticas
+        const previewStats = document.querySelector('.preview-stats');
+        if (previewStats) {
+            previewStats.style.opacity = '0';
+            previewStats.style.transform = 'translateY(-20px)';
+            previewStats.style.transition = 'all 0.5s ease';
+            setTimeout(() => {
+                previewStats.style.display = 'none';
+            }, 500);
+        }
+        
+        // Ocultar el botón de recorrer
+        const heroRecorrerBtn = document.querySelector('.hero-recorrer-button');
+        if (heroRecorrerBtn) {
+            heroRecorrerBtn.style.opacity = '0';
+            heroRecorrerBtn.style.transform = 'translateY(-20px)';
+            heroRecorrerBtn.style.transition = 'all 0.5s ease';
+            setTimeout(() => {
+                heroRecorrerBtn.style.display = 'none';
+            }, 500);
+        }
+        
+        // Ocultar el location tag
+        const locationTag = document.querySelector('.location-tag-container');
+        if (locationTag) {
+            locationTag.style.opacity = '0';
+            locationTag.style.transform = 'translateY(-20px)';
+            locationTag.style.transition = 'all 0.5s ease';
+            setTimeout(() => {
+                locationTag.style.display = 'none';
+            }, 500);
+        }
+        
+        // Ocultar el título del hero si existe
+        const heroTitle = document.querySelector('.preview-hero .hero-title');
+        if (heroTitle) {
+            heroTitle.style.opacity = '0';
+            heroTitle.style.transform = 'translateY(-20px)';
+            heroTitle.style.transition = 'all 0.5s ease';
+            setTimeout(() => {
+                heroTitle.style.display = 'none';
+            }, 500);
+        }
+        
+        console.log('✅ Elementos del hero ocultados');
+    }
+    
+    switchToHeroVideo() {
+        console.log('🎥 Cambiando a video del hero...');
+        
+        // Buscar el video de fondo
+        const backgroundVideo = document.querySelector('.background-video');
+        if (backgroundVideo) {
+            // Cambiar a un video específico del hero (puedes ajustar la ruta)
+            backgroundVideo.src = 'video/apartamento/video-1.mp4';
+            backgroundVideo.style.opacity = '1';
+            backgroundVideo.style.zIndex = '1';
+            
+            // Asegurar que el video esté reproduciéndose
+            backgroundVideo.play().catch(e => {
+                console.log('⚠️ Error reproduciendo video:', e);
+            });
+        }
+        
+        // Agregar clase al body para indicar que estamos en modo video
+        document.body.classList.add('hero-video-mode');
+        
+        console.log('✅ Video del hero activado');
+    }
+    
+    restoreHeroElements() {
+        console.log('🔄 Restaurando elementos del hero...');
+        
+        // Remover clase del body
+        document.body.classList.remove('hero-video-mode');
+        
+        // Restaurar la sección de estadísticas
+        const previewStats = document.querySelector('.preview-stats');
+        if (previewStats) {
+            previewStats.style.display = '';
+            previewStats.style.opacity = '';
+            previewStats.style.transform = '';
+            previewStats.style.transition = '';
+        }
+        
+        // Restaurar el botón de recorrer
+        const heroRecorrerBtn = document.querySelector('.hero-recorrer-button');
+        if (heroRecorrerBtn) {
+            heroRecorrerBtn.style.display = '';
+            heroRecorrerBtn.style.opacity = '';
+            heroRecorrerBtn.style.transform = '';
+            heroRecorrerBtn.style.transition = '';
+        }
+        
+        // Restaurar el location tag
+        const locationTag = document.querySelector('.location-tag-container');
+        if (locationTag) {
+            locationTag.style.display = '';
+            locationTag.style.opacity = '';
+            locationTag.style.transform = '';
+            locationTag.style.transition = '';
+        }
+        
+        // Restaurar el título del hero si existe
+        const heroTitle = document.querySelector('.preview-hero .hero-title');
+        if (heroTitle) {
+            heroTitle.style.display = '';
+            heroTitle.style.opacity = '';
+            heroTitle.style.transform = '';
+            heroTitle.style.transition = '';
+        }
+        
+        console.log('✅ Elementos del hero restaurados');
+    }
+    
+    showVideoControls() {
+        console.log('🎮 Mostrando controles de video...');
+        
+        // Crear controles de video
+        const videoControlsHTML = `
+            <div class="video-controls" style="position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%); z-index: 1000; display: flex; gap: 1rem; align-items: center;">
+                <button class="btn-video-control btn-next" onclick="window.imageFilterSystem.nextHeroVideo()" style="background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); border: none; color: #000; padding: 0.8rem 1.5rem; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3); display: flex; align-items: center; gap: 0.5rem;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    Siguiente Video
+                </button>
+                <button class="btn-video-control btn-stop" onclick="window.imageFilterSystem.stopHeroVideo()" style="background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.3); color: white; padding: 0.8rem 1.5rem; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; backdrop-filter: blur(10px); display: flex; align-items: center; gap: 0.5rem;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    Volver
+                </button>
+            </div>
+        `;
+        
+        // Insertar controles en el body
+        document.body.insertAdjacentHTML('beforeend', videoControlsHTML);
+        
+        // Animar entrada de controles
         setTimeout(() => {
-            // Transformar la tarjeta en modo detalles
-            this.transformCardToDetails(activeCard, apartment, superficie, precio);
-        }, 500);
+            const controls = document.querySelector('.video-controls');
+            if (controls) {
+                controls.style.opacity = '1';
+                controls.style.transform = 'translateX(-50%) translateY(0)';
+            }
+        }, 100);
+        
+        console.log('✅ Controles de video mostrados');
+    }
+    
+    nextHeroVideo() {
+        console.log('⏭️ Cambiando al siguiente video...');
+        
+        // Array de videos disponibles
+        const heroVideos = [
+            'video/apartamento/video-0.mp4'  // Video principal - ya existe
+            // 'video/apartamento/video-1.mp4',  // Descomenta cuando lo cargues
+            // 'video/casa/video-0.mp4',         // Descomenta cuando lo cargues
+            // 'video/casa/video-1.mp4',         // Descomenta cuando lo cargues
+            // 'video/equipamiento/gym.mp4',     // Descomenta cuando lo cargues
+            // 'video/equipamiento/kincho.mp4',  // Descomenta cuando lo cargues
+            // 'video/equipamiento/picisna.mp4'  // Descomenta cuando lo cargues
+        ];
+        
+        // Obtener video actual
+        const backgroundVideo = document.querySelector('.background-video');
+        if (!backgroundVideo) return;
+        
+        // Encontrar índice del video actual
+        const currentSrc = backgroundVideo.src;
+        const currentIndex = heroVideos.findIndex(video => currentSrc.includes(video.split('/').pop()));
+        const nextIndex = (currentIndex + 1) % heroVideos.length;
+        
+        // Cambiar al siguiente video
+        backgroundVideo.src = heroVideos[nextIndex];
+        backgroundVideo.play().catch(e => {
+            console.log('⚠️ Error reproduciendo video:', e);
+        });
+        
+        // Mostrar indicador de cambio
+        const videoName = heroVideos[nextIndex].split('/').pop().replace('.mp4', '');
+        this.showVideoChangeIndicator(`Reproduciendo: ${videoName}`);
+        
+        console.log('✅ Video cambiado a:', heroVideos[nextIndex]);
+    }
+    
+    stopHeroVideo() {
+        console.log('⏹️ Deteniendo video y restaurando página...');
+        
+        // Ocultar controles de video
+        const videoControls = document.querySelector('.video-controls');
+        if (videoControls) {
+            videoControls.style.opacity = '0';
+            videoControls.style.transform = 'translateX(-50%) translateY(20px)';
+            setTimeout(() => {
+                videoControls.remove();
+            }, 300);
+        }
+        
+        // Restaurar elementos del hero
+        this.restoreHeroElements();
+        
+        // Restaurar video original
+        const backgroundVideo = document.querySelector('.background-video');
+        if (backgroundVideo) {
+            backgroundVideo.src = 'video/apartamento/video-0.mp4';
+            backgroundVideo.style.opacity = '0.3';
+            backgroundVideo.style.zIndex = '0';
+        }
+        
+        console.log('✅ Página restaurada a la normalidad');
+    }
+    
+    showVideoChangeIndicator(message) {
+        console.log('📺 Mostrando indicador de cambio:', message);
+        
+        // Crear indicador temporal
+        const indicatorHTML = `
+            <div class="video-change-indicator" style="position: fixed; top: 2rem; left: 50%; transform: translateX(-50%); background: rgba(0, 0, 0, 0.8); color: white; padding: 1rem 2rem; border-radius: 10px; font-weight: 600; z-index: 1001; backdrop-filter: blur(10px); opacity: 0; transition: all 0.3s ease;">
+                ${message}
+            </div>
+        `;
+        
+        // Insertar indicador
+        document.body.insertAdjacentHTML('beforeend', indicatorHTML);
+        
+        // Animar entrada
+        setTimeout(() => {
+            const indicator = document.querySelector('.video-change-indicator');
+            if (indicator) {
+                indicator.style.opacity = '1';
+            }
+        }, 100);
+        
+        // Remover después de 2 segundos
+        setTimeout(() => {
+            const indicator = document.querySelector('.video-change-indicator');
+            if (indicator) {
+                indicator.style.opacity = '0';
+                setTimeout(() => {
+                    indicator.remove();
+                }, 300);
+            }
+        }, 2000);
     }
     
     transformCardToDetails(card, apartment, superficie, precio) {
@@ -1000,6 +1353,11 @@ class ImageFilterSystem {
                         Volver
                     </button>
                     <h3 class="details-title">${apartment}</h3>
+                    <button class="btn-collapse" onclick="window.imageFilterSystem.toggleCollapse()" title="Contraer/Expandir">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
                 </div>
                 
                 <div class="details-content">
@@ -1105,10 +1463,10 @@ class ImageFilterSystem {
         card.classList.add('details-mode');
         card.classList.remove('recorrido-active');
         
-        // Animación de expansión
+        // Animación de expansión INMEDIATA
         card.style.transform = 'scale(1)';
         card.style.opacity = '1';
-        card.style.transition = 'all 0.5s ease';
+        card.style.transition = 'all 0.3s ease';
         
         // Agregar estilos específicos para el modo detalles
         this.addDetailsModeStyles();
@@ -1125,14 +1483,253 @@ class ImageFilterSystem {
         const styles = `
             <style id="detailsModeStyles">
                 .apartment-card.details-mode {
-                    max-width: 1200px !important;
-                    width: 100% !important;
+                    max-width: 700px !important;
+                    width: 80% !important;
                     height: auto !important;
-                    min-height: 600px !important;
+                    min-height: 400px !important;
                     background: rgba(0, 0, 0, 0.9) !important;
                     border: 2px solid rgba(255, 255, 255, 0.2) !important;
-                    border-radius: 20px !important;
+                    border-radius: 15px !important;
                     overflow: hidden !important;
+                    margin-left: 0 !important;
+                    margin-right: auto !important;
+                    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1) !important;
+                }
+                
+                .apartment-card.details-mode.collapsed {
+                    max-width: 60px !important;
+                    width: 60px !important;
+                    min-height: 60px !important;
+                    overflow: hidden !important;
+                }
+                
+                .apartment-card.details-mode.collapsed .details-content {
+                    opacity: 0 !important;
+                    transform: translateX(-100%) !important;
+                    pointer-events: none !important;
+                }
+                
+                .apartment-card.details-mode.collapsed .details-title {
+                    opacity: 0 !important;
+                    transform: translateX(-100%) !important;
+                }
+                
+                .apartment-card.details-mode.collapsed .btn-back {
+                    opacity: 0 !important;
+                    transform: translateX(-100%) !important;
+                }
+                
+                /* Animaciones suaves para el contenido */
+                .details-content {
+                    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1) !important;
+                }
+                
+                .details-title {
+                    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1) !important;
+                }
+                
+                .btn-back {
+                    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1) !important;
+                }
+                
+                /* Estado colapsado - solo mostrar el botón de contraer */
+                .apartment-card.details-mode.collapsed .btn-collapse {
+                    position: absolute !important;
+                    top: 50% !important;
+                    left: 50% !important;
+                    transform: translate(-50%, -50%) !important;
+                    margin: 0 !important;
+                    z-index: 10 !important;
+                }
+                
+                .apartment-card.details-mode.collapsed .btn-collapse svg {
+                    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1) !important;
+                }
+                
+                /* Estilos para el botón de recorrer del hero */
+                .hero-recorrer-btn {
+                    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%) !important;
+                    border: none !important;
+                    color: #000 !important;
+                    padding: 1rem 2rem !important;
+                    border-radius: 12px !important;
+                    font-weight: 600 !important;
+                    font-size: 1.1rem !important;
+                    cursor: pointer !important;
+                    transition: all 0.3s ease !important;
+                    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3) !important;
+                    display: flex !important;
+                    align-items: center !important;
+                    justify-content: center !important;
+                    gap: 0.5rem !important;
+                }
+                
+                .hero-recorrer-btn:hover {
+                    transform: translateY(-2px) !important;
+                    box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4) !important;
+                }
+                
+                .hero-recorrer-btn:active {
+                    transform: translateY(0) !important;
+                }
+                
+                /* Modo video del hero */
+                .hero-video-mode .preview-hero {
+                    background: transparent !important;
+                }
+                
+                .hero-video-mode .background-video {
+                    opacity: 1 !important;
+                    z-index: 1 !important;
+                }
+                
+                /* Estilos para controles de video */
+                .video-controls {
+                    position: fixed !important;
+                    bottom: 2rem !important;
+                    left: 50% !important;
+                    transform: translateX(-50%) translateY(20px) !important;
+                    z-index: 1000 !important;
+                    display: flex !important;
+                    gap: 1rem !important;
+                    align-items: center !important;
+                    opacity: 0 !important;
+                    transition: all 0.3s ease !important;
+                }
+                
+                .video-controls.show {
+                    opacity: 1 !important;
+                    transform: translateX(-50%) translateY(0) !important;
+                }
+                
+                .btn-video-control {
+                    padding: 0.8rem 1.5rem !important;
+                    border-radius: 10px !important;
+                    font-weight: 600 !important;
+                    cursor: pointer !important;
+                    transition: all 0.3s ease !important;
+                    display: flex !important;
+                    align-items: center !important;
+                    gap: 0.5rem !important;
+                    border: none !important;
+                }
+                
+                .btn-video-control.btn-next {
+                    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%) !important;
+                    color: #000 !important;
+                    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3) !important;
+                }
+                
+                .btn-video-control.btn-next:hover {
+                    transform: translateY(-2px) !important;
+                    box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4) !important;
+                }
+                
+                .btn-video-control.btn-stop {
+                    background: rgba(255, 255, 255, 0.2) !important;
+                    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+                    color: white !important;
+                    backdrop-filter: blur(10px) !important;
+                }
+                
+                .btn-video-control.btn-stop:hover {
+                    background: rgba(255, 255, 255, 0.3) !important;
+                    transform: translateY(-2px) !important;
+                }
+                
+                /* Indicador de cambio de video */
+                .video-change-indicator {
+                    position: fixed !important;
+                    top: 2rem !important;
+                    left: 50% !important;
+                    transform: translateX(-50%) !important;
+                    background: rgba(0, 0, 0, 0.8) !important;
+                    color: white !important;
+                    padding: 1rem 2rem !important;
+                    border-radius: 10px !important;
+                    font-weight: 600 !important;
+                    z-index: 1001 !important;
+                    backdrop-filter: blur(10px) !important;
+                    opacity: 0 !important;
+                    transition: all 0.3s ease !important;
+                }
+                
+                .apartment-list:has(.apartment-card.details-mode) {
+                    justify-content: flex-start !important;
+                    align-items: flex-start !important;
+                }
+                
+                /* Ocultar el fondo oscuro cuando está en modo detalles */
+                .apartments-section:has(.apartment-card.details-mode) {
+                    background: transparent !important;
+                    backdrop-filter: none !important;
+                }
+                
+                .apartments-content:has(.apartment-card.details-mode) {
+                    background: transparent !important;
+                    backdrop-filter: none !important;
+                }
+                
+                /* Ocultar títulos cuando está en modo detalles */
+                .apartments-section:has(.apartment-card.details-mode) .section-title,
+                .apartments-section:has(.apartment-card.details-mode) .section-subtitle {
+                    display: none !important;
+                }
+                
+                /* Mejorar visibilidad del video de fondo en modo detalles */
+                .apartments-section:has(.apartment-card.details-mode) {
+                    position: relative;
+                    z-index: 1;
+                    background: transparent !important;
+                    backdrop-filter: none !important;
+                }
+                
+                .apartments-section:has(.apartment-card.details-mode)::before {
+                    display: none !important;
+                }
+                
+                /* Asegurar que el contenido también sea transparente */
+                .apartments-section:has(.apartment-card.details-mode) .apartments-content {
+                    background: transparent !important;
+                    backdrop-filter: none !important;
+                    box-shadow: none !important;
+                }
+                
+                /* Ocultar overlay gradiente inmediatamente */
+                .apartments-section.details-mode-active::before {
+                    display: none !important;
+                    opacity: 0 !important;
+                }
+                
+                /* Clase para activar modo detalles inmediatamente */
+                .apartments-section.details-mode-active {
+                    background: transparent !important;
+                    backdrop-filter: none !important;
+                    transition: none !important;
+                }
+                
+                .apartments-section.details-mode-active .apartments-content {
+                    background: transparent !important;
+                    backdrop-filter: none !important;
+                    box-shadow: none !important;
+                    transition: none !important;
+                }
+                
+                .apartments-section.details-mode-active .section-title,
+                .apartments-section.details-mode-active .section-subtitle {
+                    display: none !important;
+                    transition: none !important;
+                }
+                
+                .apartments-section.details-mode-active .apartments-content {
+                    background: transparent !important;
+                    backdrop-filter: none !important;
+                    box-shadow: none !important;
+                }
+                
+                .apartments-section.details-mode-active .section-title,
+                .apartments-section.details-mode-active .section-subtitle {
+                    display: none !important;
                 }
                 
                 .apartment-details-mode {
@@ -1145,8 +1742,8 @@ class ImageFilterSystem {
                 .details-header {
                     display: flex;
                     align-items: center;
-                    gap: 1rem;
-                    padding: 1.5rem;
+                    gap: 0.75rem;
+                    padding: 0.75rem;
                     border-bottom: 1px solid rgba(255, 255, 255, 0.2);
                     background: rgba(255, 255, 255, 0.05);
                 }
@@ -1155,13 +1752,13 @@ class ImageFilterSystem {
                     background: rgba(255, 255, 255, 0.1);
                     border: 1px solid rgba(255, 255, 255, 0.3);
                     color: white;
-                    padding: 0.5rem 1rem;
-                    border-radius: 8px;
+                    padding: 0.4rem 0.8rem;
+                    border-radius: 6px;
                     cursor: pointer;
                     display: flex;
                     align-items: center;
-                    gap: 0.5rem;
-                    font-size: 0.9rem;
+                    gap: 0.4rem;
+                    font-size: 0.8rem;
                     transition: all 0.3s ease;
                 }
                 
@@ -1169,33 +1766,57 @@ class ImageFilterSystem {
                     background: rgba(255, 255, 255, 0.2);
                 }
                 
+                .btn-collapse {
+                    background: rgba(255, 255, 255, 0.1);
+                    border: 1px solid rgba(255, 255, 255, 0.3);
+                    color: white;
+                    padding: 0.4rem 0.8rem;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    gap: 0.4rem;
+                    font-size: 0.8rem;
+                    transition: all 0.3s ease;
+                    margin-left: auto;
+                }
+                
+                .btn-collapse:hover {
+                    background: rgba(255, 255, 255, 0.2);
+                    transform: scale(1.05);
+                }
+                
+                .btn-collapse.collapsed svg {
+                    transform: rotate(180deg);
+                }
+                
                 .details-title {
                     margin: 0;
-                    font-size: 1.5rem;
+                    font-size: 1.1rem;
                     font-weight: 600;
                 }
                 
                 .details-content {
                     display: flex;
                     flex: 1;
-                    gap: 2rem;
-                    padding: 1.5rem;
+                    gap: 1rem;
+                    padding: 0.75rem;
                 }
                 
                 .details-left-panel {
                     flex: 1;
                     display: flex;
                     flex-direction: column;
-                    gap: 1.5rem;
+                    gap: 0.75rem;
                 }
                 
                 .apartment-specs {
                     display: grid;
                     grid-template-columns: 1fr 1fr;
-                    gap: 1rem;
+                    gap: 0.5rem;
                     background: rgba(255, 255, 255, 0.05);
-                    padding: 1.5rem;
-                    border-radius: 12px;
+                    padding: 0.75rem;
+                    border-radius: 10px;
                     border: 1px solid rgba(255, 255, 255, 0.1);
                 }
                 
@@ -1203,69 +1824,69 @@ class ImageFilterSystem {
                     display: flex;
                     justify-content: space-between;
                     align-items: center;
-                    padding: 0.5rem;
+                    padding: 0.4rem;
                     background: rgba(255, 255, 255, 0.1);
-                    border-radius: 8px;
+                    border-radius: 6px;
                 }
                 
                 .spec-item label {
                     color: #cccccc;
-                    font-size: 0.9rem;
+                    font-size: 0.75rem;
                 }
                 
                 .spec-item span {
                     color: white;
                     font-weight: 600;
-                    font-size: 1rem;
+                    font-size: 0.8rem;
                 }
                 
                 .orientation-section {
                     background: rgba(255, 255, 255, 0.05);
-                    padding: 1rem;
-                    border-radius: 12px;
+                    padding: 0.6rem;
+                    border-radius: 10px;
                     border: 1px solid rgba(255, 255, 255, 0.1);
                 }
                 
                 .orientation-section label {
                     color: #cccccc;
-                    font-size: 0.9rem;
+                    font-size: 0.75rem;
                     display: block;
-                    margin-bottom: 0.5rem;
+                    margin-bottom: 0.3rem;
                 }
                 
                 .orientation-section span {
                     color: white;
                     font-weight: 600;
-                    font-size: 1.1rem;
+                    font-size: 0.9rem;
                 }
                 
                 .floor-type-section {
                     background: rgba(255, 255, 255, 0.05);
-                    padding: 1rem;
-                    border-radius: 12px;
+                    padding: 0.6rem;
+                    border-radius: 10px;
                     border: 1px solid rgba(255, 255, 255, 0.1);
                 }
                 
                 .floor-type-section label {
                     color: #cccccc;
-                    font-size: 0.9rem;
+                    font-size: 0.75rem;
                     display: block;
-                    margin-bottom: 0.5rem;
+                    margin-bottom: 0.3rem;
                 }
                 
                 .floor-type-options {
                     display: flex;
-                    gap: 0.5rem;
+                    gap: 0.4rem;
                 }
                 
                 .floor-type-btn {
                     background: rgba(255, 255, 255, 0.1);
                     border: 1px solid rgba(255, 255, 255, 0.3);
                     color: white;
-                    padding: 0.5rem 1rem;
-                    border-radius: 6px;
+                    padding: 0.3rem 0.6rem;
+                    border-radius: 5px;
                     cursor: pointer;
-                    font-size: 0.9rem;
+                    font-size: 0.75rem;
                     transition: all 0.3s ease;
                 }
                 
@@ -1281,21 +1902,21 @@ class ImageFilterSystem {
                 
                 .floor-plan {
                     background: rgba(255, 255, 255, 0.05);
-                    padding: 1rem;
-                    border-radius: 12px;
+                    padding: 0.6rem;
+                    border-radius: 10px;
                     border: 1px solid rgba(255, 255, 255, 0.1);
                 }
                 
                 .floor-plan h4 {
-                    margin: 0 0 1rem 0;
+                    margin: 0 0 0.5rem 0;
                     color: white;
-                    font-size: 1.1rem;
+                    font-size: 0.9rem;
                 }
                 
                 .floor-plan-image {
                     width: 100%;
-                    height: 200px;
-                    border-radius: 8px;
+                    height: 120px;
+                    border-radius: 6px;
                     overflow: hidden;
                     background: rgba(255, 255, 255, 0.1);
                 }
@@ -1308,23 +1929,23 @@ class ImageFilterSystem {
                 
                 .action-buttons {
                     display: flex;
-                    gap: 1rem;
+                    gap: 0.5rem;
                     margin-top: auto;
                 }
                 
                 .action-buttons button {
                     flex: 1;
-                    padding: 1rem;
-                    border-radius: 8px;
+                    padding: 0.6rem;
+                    border-radius: 6px;
                     font-weight: 600;
                     cursor: pointer;
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    gap: 0.5rem;
+                    gap: 0.4rem;
                     transition: all 0.3s ease;
                     border: none;
-                    font-size: 0.9rem;
+                    font-size: 0.75rem;
                 }
                 
                 .action-buttons .btn-secondary {
@@ -1347,17 +1968,17 @@ class ImageFilterSystem {
                     flex: 1;
                     display: flex;
                     flex-direction: column;
-                    gap: 1rem;
+                    gap: 0.75rem;
                     justify-content: center;
                 }
                 
                 .image-gallery {
                     display: flex;
                     align-items: center;
-                    gap: 1rem;
+                    gap: 0.5rem;
                     background: rgba(255, 255, 255, 0.05);
-                    padding: 1rem;
-                    border-radius: 12px;
+                    padding: 0.6rem;
+                    border-radius: 10px;
                     border: 1px solid rgba(255, 255, 255, 0.1);
                 }
                 
@@ -1365,8 +1986,8 @@ class ImageFilterSystem {
                     background: rgba(255, 255, 255, 0.1);
                     border: 1px solid rgba(255, 255, 255, 0.3);
                     color: white;
-                    width: 40px;
-                    height: 40px;
+                    width: 30px;
+                    height: 30px;
                     border-radius: 50%;
                     cursor: pointer;
                     display: flex;
@@ -1381,16 +2002,16 @@ class ImageFilterSystem {
                 
                 .thumbnail-container {
                     display: flex;
-                    gap: 0.5rem;
+                    gap: 0.4rem;
                     flex: 1;
                     overflow-x: auto;
-                    padding: 0.5rem 0;
+                    padding: 0.4rem 0;
                 }
                 
                 .thumbnail {
-                    min-width: 80px;
-                    height: 60px;
-                    border-radius: 8px;
+                    min-width: 60px;
+                    height: 40px;
+                    border-radius: 6px;
                     overflow: hidden;
                     cursor: pointer;
                     border: 2px solid transparent;
@@ -1518,6 +2139,39 @@ class ImageFilterSystem {
         const apartment = card.querySelector('.details-title')?.textContent || '1 Dormitorio';
         const superficie = '40-60 m²';
         const precio = '$2.000-3.000 UF';
+        
+        // Restaurar el fondo de la sección
+        const apartmentsSection = document.querySelector('.apartments-section');
+        if (apartmentsSection) {
+            apartmentsSection.classList.remove('details-mode-active');
+            apartmentsSection.style.background = '';
+            apartmentsSection.style.backdropFilter = '';
+        }
+        
+        const apartmentsContent = document.querySelector('.apartments-content');
+        if (apartmentsContent) {
+            apartmentsContent.style.background = '';
+            apartmentsContent.style.backdropFilter = '';
+            apartmentsContent.style.boxShadow = '';
+        }
+        
+        // Restaurar títulos
+        const sectionTitle = document.querySelector('.apartments-section .section-title');
+        if (sectionTitle) {
+            sectionTitle.style.display = '';
+        }
+        
+        const sectionSubtitle = document.querySelector('.apartments-section .section-subtitle');
+        if (sectionSubtitle) {
+            sectionSubtitle.style.display = '';
+        }
+        
+        // Limpiar estado de contracción
+        card.classList.remove('collapsed');
+        const collapseBtn = document.querySelector('.btn-collapse');
+        if (collapseBtn) {
+            collapseBtn.classList.remove('collapsed');
+        }
         
         const originalHTML = `
             <div class="apartment-image">
