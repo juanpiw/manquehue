@@ -634,6 +634,9 @@ class ImageFilterSystem {
         
         // Agregar clase al body para estilos específicos
         document.body.classList.add('recorrido-mode');
+        
+        // Bloquear el scroll para mantener la sección visible
+        this.lockScrollToCurrentSection();
     }
     
     getRecorridoVideoPath(apartment, superficie, precio) {
@@ -902,6 +905,9 @@ class ImageFilterSystem {
     exitRecorridoMode() {
         console.log('🚪 Saliendo del modo recorrido...');
         
+        // Desbloquear el scroll
+        this.unlockScroll();
+        
         // Remover clase del body
         document.body.classList.remove('recorrido-mode');
         
@@ -1007,6 +1013,9 @@ class ImageFilterSystem {
         
         // Activar animaciones llamativas del botón volver
         this.enhanceBackButtonVisibility();
+        
+        // Bloquear el scroll para mantener la sección visible
+        this.lockScrollToCurrentSection();
     }
     
     hideSectionBackground() {
@@ -1054,90 +1063,6 @@ class ImageFilterSystem {
         apartmentsSection?.offsetHeight;
         
         console.log('✅ Fondo oscuro ocultado INMEDIATAMENTE');
-    }
-    
-    addDetailsBackgroundVideo(apartment) {
-        console.log('🎬 Agregando video de fondo para modo detalles...', { apartment });
-        
-        // Remover video anterior si existe
-        this.removeDetailsBackgroundVideo();
-        
-        // Crear el elemento de video
-        const detailsVideo = document.createElement('video');
-        detailsVideo.id = 'detailsBackgroundVideo';
-        detailsVideo.className = 'details-background-video';
-        detailsVideo.autoplay = true;
-        detailsVideo.muted = true;
-        detailsVideo.loop = true;
-        detailsVideo.playsInline = true;
-        
-        // Seleccionar video según el tipo de apartamento
-        let videoPath = 'video/casa/video-0.mp4'; // Video por defecto
-        
-        if (apartment) {
-            if (apartment.includes('1 Dormitorio')) {
-                videoPath = 'video/apartamento/video-0.mp4';
-            } else if (apartment.includes('2 Dormitorios')) {
-                videoPath = 'video/apartamento/video-1.mp4';
-            } else if (apartment.includes('3 Dormitorios')) {
-                videoPath = 'video/casa/video-1.mp4';
-            }
-        }
-        
-        // Agregar fuente de video
-        const videoSource = document.createElement('source');
-        videoSource.src = videoPath;
-        videoSource.type = 'video/mp4';
-        detailsVideo.appendChild(videoSource);
-        
-        // Agregar estilos CSS inline para posicionamiento
-        detailsVideo.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            z-index: 1;
-            opacity: 0.8;
-            transition: opacity 0.5s ease;
-        `;
-        
-        // Insertar el video después del video principal
-        const mainVideo = document.getElementById('backgroundVideo');
-        if (mainVideo && mainVideo.parentNode) {
-            mainVideo.parentNode.insertBefore(detailsVideo, mainVideo.nextSibling);
-        } else {
-            // Si no hay video principal, insertar al inicio del body
-            document.body.insertBefore(detailsVideo, document.body.firstChild);
-        }
-        
-        // Reproducir el video
-        detailsVideo.play().catch(error => {
-            console.log('⚠️ Error al reproducir video de detalles:', error);
-            // Si falla, intentar con el video por defecto
-            if (videoPath !== 'video/casa/video-0.mp4') {
-                console.log('🔄 Intentando con video por defecto...');
-                videoSource.src = 'video/casa/video-0.mp4';
-                detailsVideo.load();
-                detailsVideo.play().catch(err => {
-                    console.log('❌ Error al reproducir video por defecto:', err);
-                });
-            }
-        });
-        
-        console.log('✅ Video de fondo para detalles agregado:', videoPath);
-    }
-    
-    removeDetailsBackgroundVideo() {
-        console.log('🎬 Removiendo video de fondo de detalles...');
-        
-        const detailsVideo = document.getElementById('detailsBackgroundVideo');
-        if (detailsVideo) {
-            detailsVideo.pause();
-            detailsVideo.remove();
-            console.log('✅ Video de fondo de detalles removido');
-        }
     }
     
     toggleCollapse() {
@@ -1488,7 +1413,7 @@ class ImageFilterSystem {
                         <div class="floor-plan">
                             <h4>Plano del Apartamento</h4>
                             <div class="floor-plan-image">
-                                <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPlBsYW5vIDNEIEFwYXJ0YW1lbnRvPC90ZXh0Pjwvc3ZnPg==" alt="Plano 3D" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPlBsYW5vIDNEIEFwYXJ0YW1lbnRvPC90ZXh0Pjwvc3ZnPg=='">
+                                <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPlBsYW5vIDNEIEFwYXJ0YW1lbnRvPC90ZXh0Pjwvc3ZnPg== alt="Plano 3D" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPlBsYW5vIDNEIEFwYXJ0YW1lbnRvPC90ZXh0Pjwvc3ZnPg=='">
                             </div>
                         </div>
                         
@@ -1605,8 +1530,41 @@ class ImageFilterSystem {
                 }
                 
                 .apartment-card.details-mode.collapsed .btn-back {
-                    opacity: 0 !important;
-                    transform: translateX(-100%) !important;
+                    position: absolute !important;
+                    top: 10px !important;
+                    left: 10px !important;
+                    width: 40px !important;
+                    height: 40px !important;
+                    padding: 8px !important;
+                    border-radius: 50% !important;
+                    opacity: 1 !important;
+                    transform: none !important;
+                    z-index: 15 !important;
+                    display: flex !important;
+                    align-items: center !important;
+                    justify-content: center !important;
+                    background: linear-gradient(135deg, #007bff, #00d4ff) !important;
+                    border: 2px solid rgba(255, 255, 255, 0.3) !important;
+                    box-shadow: 0 4px 15px rgba(0, 123, 255, 0.4) !important;
+                    font-size: 0 !important;
+                    white-space: nowrap !important;
+                    overflow: hidden !important;
+                }
+                
+                .apartment-card.details-mode.collapsed .btn-back::after {
+                    content: "" !important;
+                }
+                
+                .apartment-card.details-mode.collapsed .btn-back svg {
+                    width: 20px !important;
+                    height: 20px !important;
+                    color: white !important;
+                    flex-shrink: 0 !important;
+                }
+                
+                .apartment-card.details-mode.collapsed .btn-back svg path {
+                    stroke: white !important;
+                    stroke-width: 2 !important;
                 }
                 
                 /* Animaciones suaves para el contenido */
@@ -2216,6 +2174,9 @@ class ImageFilterSystem {
         // Remover efectos de atención del botón volver
         this.removeBackButtonAttention();
         
+        // Desbloquear el scroll
+        this.unlockScroll();
+        
         // Encontrar la tarjeta en modo detalles
         const detailsCard = document.querySelector('.apartment-card.details-mode');
         if (!detailsCard) return;
@@ -2780,7 +2741,151 @@ class ImageFilterSystem {
         const prevIndex = (this.currentFeaturesModalImageIndex - 1 + this.featuresImages.length) % this.featuresImages.length;
         this.openFeaturesImageModal(prevIndex);
     }
-
+    
+    // Método para bloquear el scroll en la sección actual
+    lockScrollToCurrentSection() {
+        console.log('🔒 Bloqueando scroll en la sección actual...');
+        
+        // Guardar la posición actual del scroll
+        this.savedScrollPosition = window.pageYOffset;
+        
+        // Agregar clase al body para bloquear scroll
+        document.body.classList.add('scroll-locked');
+        
+        // Agregar event listeners para prevenir scroll
+        this.scrollPreventionHandler = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        };
+        
+        // Prevenir scroll con rueda del mouse
+        document.addEventListener('wheel', this.scrollPreventionHandler, { passive: false });
+        
+        // Prevenir scroll con touch en dispositivos móviles
+        document.addEventListener('touchmove', this.scrollPreventionHandler, { passive: false });
+        
+        // Prevenir scroll con teclado
+        document.addEventListener('keydown', (e) => {
+            if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' '].includes(e.key)) {
+                e.preventDefault();
+                return false;
+            }
+        });
+        
+        console.log('✅ Scroll bloqueado en la sección actual');
+    }
+    
+    // Método para desbloquear el scroll
+    unlockScroll() {
+        console.log('🔓 Desbloqueando scroll...');
+        
+        // Remover clase del body
+        document.body.classList.remove('scroll-locked');
+        
+        // Remover event listeners
+        if (this.scrollPreventionHandler) {
+            document.removeEventListener('wheel', this.scrollPreventionHandler);
+            document.removeEventListener('touchmove', this.scrollPreventionHandler);
+            this.scrollPreventionHandler = null;
+        }
+        
+        // Restaurar posición del scroll si se guardó
+        if (this.savedScrollPosition !== undefined) {
+            window.scrollTo({
+                top: this.savedScrollPosition,
+                behavior: 'smooth'
+            });
+            this.savedScrollPosition = undefined;
+        }
+        
+        console.log('✅ Scroll desbloqueado');
+    }
+    
+    addDetailsBackgroundVideo(apartment) {
+        console.log('🎬 Agregando video de fondo para modo detalles...', { apartment });
+        
+        // Remover video anterior si existe
+        this.removeDetailsBackgroundVideo();
+        
+        // Crear el elemento de video
+        const detailsVideo = document.createElement('video');
+        detailsVideo.id = 'detailsBackgroundVideo';
+        detailsVideo.className = 'details-background-video';
+        detailsVideo.autoplay = true;
+        detailsVideo.muted = true;
+        detailsVideo.loop = true;
+        detailsVideo.playsInline = true;
+        
+        // Seleccionar video según el tipo de apartamento
+        let videoPath = 'video/casa/video-0.mp4'; // Video por defecto
+        
+        if (apartment) {
+            if (apartment.includes('1 Dormitorio')) {
+                videoPath = 'video/apartamento/video-0.mp4';
+            } else if (apartment.includes('2 Dormitorios')) {
+                videoPath = 'video/apartamento/video-1.mp4';
+            } else if (apartment.includes('3 Dormitorios')) {
+                videoPath = 'video/casa/video-1.mp4';
+            }
+        }
+        
+        // Agregar fuente de video
+        const videoSource = document.createElement('source');
+        videoSource.src = videoPath;
+        videoSource.type = 'video/mp4';
+        detailsVideo.appendChild(videoSource);
+        
+        // Agregar estilos CSS inline para posicionamiento
+        detailsVideo.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 1;
+            opacity: 0.8;
+            transition: opacity 0.5s ease;
+        `;
+        
+        // Insertar el video después del video principal
+        const mainVideo = document.getElementById('backgroundVideo');
+        if (mainVideo && mainVideo.parentNode) {
+            mainVideo.parentNode.insertBefore(detailsVideo, mainVideo.nextSibling);
+        } else {
+            // Si no hay video principal, insertar al inicio del body
+            document.body.insertBefore(detailsVideo, document.body.firstChild);
+        }
+        
+        // Reproducir el video
+        detailsVideo.play().catch(error => {
+            console.log('⚠️ Error al reproducir video de detalles:', error);
+            // Si falla, intentar con el video por defecto
+            if (videoPath !== 'video/casa/video-0.mp4') {
+                console.log('🔄 Intentando con video por defecto...');
+                videoSource.src = 'video/casa/video-0.mp4';
+                detailsVideo.load();
+                detailsVideo.play().catch(err => {
+                    console.log('❌ Error al reproducir video por defecto:', err);
+                });
+            }
+        });
+        
+        console.log('✅ Video de fondo para detalles agregado:', videoPath);
+    }
+    
+    removeDetailsBackgroundVideo() {
+        console.log('🎬 Removiendo video de fondo de detalles...');
+        
+        const detailsVideo = document.getElementById('detailsBackgroundVideo');
+        if (detailsVideo) {
+            detailsVideo.pause();
+            detailsVideo.remove();
+            console.log('✅ Video de fondo de detalles removido');
+        }
+    }
+    
     // Método para agregar animaciones llamativas al botón volver
     addBackButtonAttention() {
         const backButton = document.querySelector('.btn-back');
