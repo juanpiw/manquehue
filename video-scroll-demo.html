@@ -21,6 +21,312 @@
         body.navigating {
             overflow: hidden;
         }
+
+        /* Iris Chat Widget Styles - Azul y Negro con Frost */
+        :root {
+            --n8n-chat-primary-color: #1a1a2e;
+            --n8n-chat-accent-color: #16213e;
+            --n8n-chat-message-user-bg-color: #0f3460;
+            --n8n-chat-bg-color: rgba(255, 255, 255, 0.95);
+            --n8n-chat-text-color: #333333;
+            --n8n-chat-message-bot-bg-color: rgba(248, 249, 250, 0.9);
+            --n8n-chat-message-bot-text-color: #1a1a2e;
+        }
+        
+        .chat-layout .chat-header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)!important;
+            border-top-left-radius: 20px!important;
+            border-top-right-radius: 20px!important;
+            backdrop-filter: blur(10px)!important;
+        }
+
+        .chat-window-wrapper .chat-window{
+            border: none!important;
+            border-radius: 20px!important;
+            box-shadow: 0 10px 40px rgba(26, 26, 46, 0.3)!important;
+            backdrop-filter: blur(15px)!important;
+            background: rgba(255, 255, 255, 0.95)!important;
+            bottom: 100px !important;
+            right: 20px !important;
+            position: fixed !important;
+            max-width: 400px !important;
+            width: 90vw !important;
+        }
+
+        .chat-message-from-user {
+            background: linear-gradient(135deg, #0f3460 0%, #16213e 100%)!important;
+            border-radius: 18px 18px 4px 18px!important;
+            color: white!important;
+        }
+
+        .chat-message-from-bot {
+            background: rgba(248, 249, 250, 0.9)!important;
+            border: 1px solid rgba(26, 26, 46, 0.1)!important;
+            border-radius: 18px 18px 18px 4px!important;
+            backdrop-filter: blur(5px)!important;
+        }
+
+        .chat-input-container {
+            border-top: 1px solid rgba(26, 26, 46, 0.1)!important;
+            backdrop-filter: blur(10px)!important;
+        }
+
+        .chat-input {
+            border: 2px solid rgba(26, 26, 46, 0.2)!important;
+            border-radius: 25px!important;
+            background: rgba(255, 255, 255, 0.9)!important;
+            backdrop-filter: blur(5px)!important;
+        }
+
+        .chat-input:focus {
+            border-color: #0f3460!important;
+            box-shadow: 0 0 0 3px rgba(15, 52, 96, 0.1)!important;
+        }
+
+        .chat-send-button {
+            background: linear-gradient(135deg, #0f3460 0%, #16213e 100%)!important;
+            border-radius: 50%!important;
+            color: white!important;
+        }
+
+        .chat-send-button:hover {
+            transform: scale(1.05)!important;
+            box-shadow: 0 4px 15px rgba(15, 52, 96, 0.3)!important;
+        }
+
+        /* Ocultar el botón nativo de n8n pero mantenerlo funcional */
+        .chat-window-toggle {
+            opacity: 0 !important;
+            pointer-events: none !important;
+            position: absolute !important;
+            left: -9999px !important;
+        }
+
+        /* Iris Integration Styles - Azul y Negro con Frost */
+        .iris-chat-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 10000;
+        }
+
+        .iris-toggle-button {
+            position: fixed;
+            bottom: 30px;
+            right: 20px;
+            width: 55px;
+            height: 55px;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            color: white;
+            font-size: 22px;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(26, 26, 46, 0.3);
+            transition: all 0.3s ease;
+            z-index: 10003;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .iris-toggle-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 12px 35px rgba(26, 26, 46, 0.4);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        .iris-toggle-button:active {
+            transform: scale(0.95);
+        }
+
+        .iris-toggle-button i {
+            transition: transform 0.3s ease;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+        }
+
+        .iris-toggle-button.active i {
+            transform: rotate(180deg);
+        }
+
+        /* Estilos para el botón cuando el chat está abierto */
+        .iris-toggle-button.chat-open {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        .iris-toggle-button.chat-open i {
+            transform: rotate(45deg);
+        }
+
+        /* Animación de ondas radiales para llamar la atención */
+        .iris-toggle-button::before,
+        .iris-toggle-button::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 55px;
+            height: 55px;
+            border: 4px solid rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            animation: none;
+            pointer-events: none;
+        }
+
+        .iris-toggle-button.attention-mode::before {
+            animation: irisWave1 2s ease-out infinite;
+        }
+
+        .iris-toggle-button.attention-mode::after {
+            animation: irisWave2 2s ease-out infinite 0.5s;
+        }
+
+        @keyframes irisWave1 {
+            0% {
+                width: 55px;
+                height: 55px;
+                opacity: 1;
+                border-width: 4px;
+            }
+            100% {
+                width: 90px;
+                height: 90px;
+                opacity: 0;
+                border-width: 2px;
+            }
+        }
+
+        @keyframes irisWave2 {
+            0% {
+                width: 55px;
+                height: 55px;
+                opacity: 1;
+                border-width: 4px;
+            }
+            100% {
+                width: 110px;
+                height: 110px;
+                opacity: 0;
+                border-width: 2px;
+            }
+        }
+
+        /* Efecto de pulso adicional */
+        .iris-toggle-button.attention-mode {
+            animation: irisPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes irisPulse {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 8px 25px rgba(26, 26, 46, 0.3);
+            }
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 12px 35px rgba(26, 26, 46, 0.5);
+            }
+        }
+
+        /* Iris Video Control Integration - Azul y Negro con Frost */
+        .iris-video-controls {
+            position: fixed;
+            top: 50%;
+            left: 20px;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 15px 50px rgba(26, 26, 46, 0.15);
+            z-index: 9999;
+            display: none;
+            border: 1px solid rgba(26, 26, 46, 0.1);
+        }
+
+        .iris-video-controls.active {
+            display: block;
+            animation: slideInLeft 0.5s ease-out;
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateY(-50%) translateX(-100%);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(-50%) translateX(0);
+            }
+        }
+
+        .iris-video-controls h3 {
+            margin: 0 0 20px 0;
+            color: #1a1a2e;
+            font-size: 1.3rem;
+            text-align: center;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .iris-video-btn {
+            display: block;
+            width: 100%;
+            padding: 12px 18px;
+            margin: 8px 0;
+            background: linear-gradient(135deg, #0f3460 0%, #16213e 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 15px rgba(15, 52, 96, 0.2);
+        }
+
+        .iris-video-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(15, 52, 96, 0.3);
+            background: linear-gradient(135deg, #16213e 0%, #0f3460 100%);
+        }
+
+        .iris-video-btn:active {
+            transform: translateY(-1px);
+        }
+
+        /* Responsive adjustments for Iris */
+        @media (max-width: 768px) {
+            .iris-toggle-button {
+                width: 50px;
+                height: 50px;
+                font-size: 20px;
+                bottom: 25px;
+                right: 15px;
+            }
+
+            .iris-video-controls {
+                left: 10px;
+                right: 10px;
+                transform: translateY(-50%);
+                width: auto;
+                max-width: 280px;
+            }
+
+            .iris-video-controls h3 {
+                font-size: 1.1rem;
+            }
+
+            .iris-video-btn {
+                padding: 10px 15px;
+                font-size: 0.9rem;
+            }
+        }
     </style>
     
     <!-- Google Analytics -->
@@ -730,6 +1036,291 @@
                 console.log('❌ AnimationController not available');
             }
         }
+
+        // ========== IRIS INTEGRATION ==========
+        
+        // Iris Video Control System
+        const irisVideoLibrary = {
+            'apartamento': 'video/apartamento/video-0.mp4',
+            'casa': 'video/casa/video-0.mp4',
+            'amenities': 'video/equipamiento/picisna.mp4',
+            'security': 'video/equipamiento/kincho.mp4',
+            'technology': 'video/equipamiento/gym.mp4',
+            'default': 'video/apartamento/video-0.mp4'
+        };
+
+        // Function to change video with smooth transition
+        function irisChangeVideo(videoKey) {
+            const video = document.getElementById('backgroundVideo');
+            const videoPath = irisVideoLibrary[videoKey] || irisVideoLibrary['default'];
+            
+            if (video) {
+                // Fade out current video
+                video.style.opacity = '0';
+                
+                setTimeout(() => {
+                    // Change video source
+                    video.src = videoPath;
+                    video.load();
+                    
+                    // Fade in new video
+                    video.style.opacity = '1';
+                    video.play().catch(e => {
+                        console.log('Video autoplay prevented:', e);
+                    });
+                    
+                    // Track video change
+                    gtag('event', 'iris_video_changed', {
+                        'event_category': 'Iris Integration',
+                        'event_label': `Video Changed to ${videoKey}`,
+                        'value': 1
+                    });
+                }, 300);
+            }
+        }
+
+        // Function to detect video change commands from Iris
+        function irisDetectVideoCommands(message) {
+            const videoCommands = {
+                'apartamento': 'apartamento',
+                'departamento': 'apartamento',
+                'casa': 'casa',
+                'amenities': 'amenities',
+                'amenities': 'amenities',
+                'seguridad': 'security',
+                'security': 'security',
+                'tecnología': 'technology',
+                'technology': 'technology',
+                'piscina': 'amenities',
+                'gimnasio': 'technology',
+                'kincho': 'security'
+            };
+            
+            const lowerMessage = message.toLowerCase();
+            
+            for (const [keyword, videoKey] of Object.entries(videoCommands)) {
+                if (lowerMessage.includes(keyword)) {
+                    irisChangeVideo(videoKey);
+                    return true;
+                }
+            }
+            
+            return false;
+        }
+
+        // Global functions for Iris to control videos from n8n
+        window.irisControlVideo = function(videoKey) {
+            irisChangeVideo(videoKey);
+            return true;
+        };
+        
+        window.irisShowApartamento = function() {
+            return window.irisControlVideo('apartamento');
+        };
+        
+        window.irisShowCasa = function() {
+            return window.irisControlVideo('casa');
+        };
+        
+        window.irisShowAmenities = function() {
+            return window.irisControlVideo('amenities');
+        };
+        
+        window.irisShowSecurity = function() {
+            return window.irisControlVideo('security');
+        };
+        
+        window.irisShowTechnology = function() {
+            return window.irisControlVideo('technology');
+        };
+
+        // Iris Video Controls Toggle
+        function toggleIrisVideoControls() {
+            const controls = document.getElementById('irisVideoControls');
+            if (controls) {
+                controls.classList.toggle('active');
+            }
+        }
+
+        // Initialize Iris when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add Iris toggle button to the page
+            const irisButton = document.createElement('button');
+            irisButton.className = 'iris-toggle-button';
+            irisButton.innerHTML = '<i class="fas fa-comments"></i>';
+            irisButton.title = 'Chat con Iris - Asistente Virtual de Mirador del Golf';
+            irisButton.onclick = function() {
+                // Toggle chat state
+                const isChatOpen = irisButton.classList.contains('chat-open');
+                
+                if (isChatOpen) {
+                    // Close chat
+                    irisButton.classList.remove('chat-open');
+                    irisButton.innerHTML = '<i class="fas fa-comments"></i>';
+                    irisButton.title = 'Chat con Iris - Asistente Virtual de Mirador del Golf';
+                    
+                    // Hide chat window - try multiple selectors
+                    const chatWindow = document.querySelector('.chat-window-wrapper, .chat-window, [data-testid="chat-window"]');
+                    if (chatWindow) {
+                        chatWindow.style.display = 'none';
+                    }
+                    
+                    // Also try to close via n8n toggle
+                    const n8nToggle = document.querySelector('.chat-window-toggle');
+                    if (n8nToggle && n8nToggle.style.display !== 'none') {
+                        n8nToggle.click();
+                    }
+                } else {
+                    // Open chat
+                    irisButton.classList.add('chat-open');
+                    irisButton.innerHTML = '<i class="fas fa-times"></i>';
+                    irisButton.title = 'Cerrar chat';
+                    
+                    // First try to trigger the n8n chat toggle to open
+                    const n8nToggle = document.querySelector('.chat-window-toggle');
+                    if (n8nToggle) {
+                        n8nToggle.click();
+                    }
+                    
+                    // Then show chat window - try multiple selectors
+                    setTimeout(() => {
+                        const chatWindow = document.querySelector('.chat-window-wrapper, .chat-window, [data-testid="chat-window"]');
+                        if (chatWindow) {
+                            chatWindow.style.display = 'block';
+                            chatWindow.style.zIndex = '10002';
+                            chatWindow.style.opacity = '1';
+                        }
+                    }, 100);
+                }
+            };
+            document.body.appendChild(irisButton);
+
+            // Add Iris video controls panel
+            const irisControls = document.createElement('div');
+            irisControls.id = 'irisVideoControls';
+            irisControls.className = 'iris-video-controls';
+            irisControls.innerHTML = `
+                <h3>Controles de Video</h3>
+                <button class="iris-video-btn" onclick="irisChangeVideo('apartamento')">Apartamentos</button>
+                <button class="iris-video-btn" onclick="irisChangeVideo('casa')">Casas</button>
+                <button class="iris-video-btn" onclick="irisChangeVideo('amenities')">Amenities</button>
+                <button class="iris-video-btn" onclick="irisChangeVideo('security')">Seguridad</button>
+                <button class="iris-video-btn" onclick="irisChangeVideo('technology')">Tecnología</button>
+            `;
+            document.body.appendChild(irisControls);
+
+            // Add Font Awesome for icons
+            const fontAwesome = document.createElement('link');
+            fontAwesome.rel = 'stylesheet';
+            fontAwesome.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css';
+            document.head.appendChild(fontAwesome);
+            
+            // Activate attention animation after 5 seconds
+            setTimeout(() => {
+                irisButton.classList.add('attention-mode');
+                
+                // Remove attention mode after 10 seconds
+                setTimeout(() => {
+                    irisButton.classList.remove('attention-mode');
+                }, 10000);
+            }, 5000);
+        });
+    </script>
+
+    <!-- Iris Chat Widget -->
+    <link href="https://cdn.jsdelivr.net/npm/@n8n/chat/dist/style.css" rel="stylesheet" />
+    <script type="module">
+        import { createChat } from 'https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js';
+
+        // Initialize Iris chat widget
+        const irisChatInstance = createChat({
+            webhookUrl: 'https://impactrender.app.n8n.cloud/webhook/57a76c39-7ea3-4ce2-b5f5-41c6adf02c34/chat',
+            webhookConfig: {
+                method: 'POST',
+                headers: {}
+            },
+            mode: 'window',
+            chatInputKey: 'chatInput',
+            chatSessionKey: 'sessionId',
+            loadPreviousSession: false,
+            metadata: {
+                page_type: 'video_scroll_demo',
+                source: 'dash_imanquehue'
+            },
+            showWelcomeScreen: false,
+            defaultLanguage: 'es',
+            initialMessages: [
+                "¡Hola! Soy Iris, tu asistente virtual de Mirador del Golf. Puedo ayudarte a explorar nuestros exclusivos apartamentos, mostrar las amenidades del proyecto o responder cualquier consulta sobre este desarrollo premium en Piedra Roja. ¿En qué puedo ayudarte hoy?"
+            ],
+            i18n: {
+                es: {
+                    title: 'Iris - Mirador del Golf',
+                    subtitle: "Tu asistente virtual inmobiliario",
+                    footer: '',
+                    getStarted: 'Iniciar nueva conversación',
+                    inputPlaceholder: 'Pregunta sobre apartamentos, amenidades...',
+                },
+            },
+            enableStreaming: false,
+        });
+
+        // Set up proper z-index for chat window but don't hide it initially
+        setTimeout(() => {
+            const chatWindow = document.querySelector('.chat-window-wrapper, .chat-window, [data-testid="chat-window"]');
+            if (chatWindow) {
+                chatWindow.style.zIndex = '10002';
+                // Only hide if it's not already visible
+                if (chatWindow.style.display === 'none' || chatWindow.style.display === '') {
+                    chatWindow.style.display = 'none';
+                }
+            }
+        }, 1000);
+
+        // Store chat instance globally
+        window.irisChatInstance = irisChatInstance;
+        
+        // Listen for Iris messages to control videos
+        function setupIrisVideoControlListener() {
+            const chatObserver = new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+                    if (mutation.type === 'childList') {
+                        mutation.addedNodes.forEach((node) => {
+                            if (node.nodeType === 1) { // Element node
+                                // Look for bot messages (Iris responses)
+                                const botMessages = node.querySelectorAll('.chat-message-from-bot .chat-message-markdown');
+                                
+                                botMessages.forEach((messageElement) => {
+                                    const messageText = messageElement.textContent || messageElement.innerText;
+                                    
+                                    // Check if message contains video commands
+                                    irisDetectVideoCommands(messageText);
+                                });
+                            }
+                        });
+                    }
+                });
+            });
+            
+            // Start observing chat messages
+            chatObserver.observe(document.body, {
+                childList: true,
+                subtree: true
+            });
+        }
+        
+        // Setup video control after chat is initialized
+        setTimeout(setupIrisVideoControlListener, 3000);
+
+        // Add custom method to open chat programmatically
+        window.openIrisChat = function() {
+            const irisButton = document.querySelector('.iris-toggle-button');
+            
+            if (irisButton && !irisButton.classList.contains('chat-open')) {
+                irisButton.click();
+                return true;
+            }
+            return false;
+        };
     </script>
 </body>
 </html>
