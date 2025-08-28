@@ -528,7 +528,7 @@ app-preview-stats * {
 
 .equipment-container {
   max-width: 1400px;
-  margin: 0 auto;
+  margin: 0 0 0 40px;
   height: 100%;
   display: flex;
   align-items: center;
@@ -542,6 +542,7 @@ app-preview-stats * {
 
    .equipment-container {
      height: 400px;
+     margin: 0 0 0 20px;
    }
  }
 

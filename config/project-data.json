@@ -1,0 +1,204 @@
+{
+  "apartamento": {
+    "title": "Mirador del Golf - Apartamentos",
+    "description": "Exclusivos apartamentos ubicados en el sector más privilegiado de Piedra Roja, dentro del Club de Golf Hacienda Chicureo Club. Diseñado para aprovechar al máximo las vistas hacia el Valle de Chicureo y el cajón cordillerano gracias a sus amplios ventanales de piso a cielo. Es un proyecto versátil, que invita a compartir y a disfrutar de sus amplios espacios integrados y amplias terrazas. El proyecto ofrece las opciones de elegir un gran jardín privado, salidas exclusivas al parque o azoteas.",
+    "videos": {
+      "section-1": [
+        "video/apartamento/video-0.mp4",
+        "video/apartamento/video-5.mp4"
+      ],
+      "apartments": [
+        "video/apartamento/video-1.mp4",
+        "video/apartamento/video-6.mp4"
+      ],
+      "features": [
+        "video/apartamento/video-3.mp4",
+        "video/apartamento/video-7.mp4"
+      ],
+      "equipment": [
+        "video/apartamento/video-4.mp4",
+        "video/apartamento/video-8.mp4"
+      ]
+    },
+    "stats": [
+      {
+        "value": "8",
+        "label": "Minutos del metro"
+      },
+      {
+        "value": "12",
+        "label": "Minutos del centro"
+      },
+      {
+        "value": "5",
+        "label": "Minutos del mall"
+      }
+    ],
+    "features": [
+      {
+        "icon": "🏠",
+        "title": "Diseño Arquitectónico",
+        "description": "Arquitectura moderna y funcional diseñada para maximizar las vistas y la comodidad en apartamentos de lujo."
+      },
+      {
+        "icon": "🌳",
+        "title": "Áreas Verdes",
+        "description": "Extensas áreas verdes y jardines que conectan con la naturaleza del sector residencial."
+      },
+      {
+        "icon": "🏊‍♂️",
+        "title": "Piscina",
+        "description": "Piscina temperada con vista panorámica y áreas de descanso exclusivas para residentes."
+      },
+      {
+        "icon": "🏋️‍♂️",
+        "title": "Gimnasio",
+        "description": "Gimnasio completamente equipado con equipos de última generación para apartamentos."
+      }
+    ],
+    "apartments": [
+      {
+        "type": "1 Dormitorio",
+        "surface": "45-65 m²",
+        "price": "2.500-3.200 UF",
+        "image": "src/assets/images/apartamento-1d.jpg"
+      },
+      {
+        "type": "2 Dormitorios",
+        "surface": "65-85 m²",
+        "price": "3.200-4.000 UF",
+        "image": "src/assets/images/apartamento-2d.jpg"
+      },
+      {
+        "type": "3 Dormitorios",
+        "surface": "85-110 m²",
+        "price": "4.000-5.200 UF",
+        "image": "src/assets/images/apartamento-3d.jpg"
+      }
+    ],
+    "equipment": {
+      "amenities": [
+        "Piscina temperada",
+        "Gimnasio completo",
+        "Sala de eventos",
+        "Quincho con parrilla",
+        "Jardín infantil",
+        "Estacionamiento visitas"
+      ],
+      "security": [
+        "Control de acceso 24/7",
+        "Cámaras de seguridad",
+        "Alarma de incendio",
+        "Seguridad perimetral"
+      ],
+      "technology": [
+        "Fibra óptica",
+        "WiFi en áreas comunes",
+        "Sistema de domótica",
+        "App de residentes"
+      ]
+    }
+  },
+  "casa": {
+    "title": "Mirador del Golf - Casas",
+    "description": "Exclusivas casas ubicadas en el sector más privilegiado de Piedra Roja, dentro del Club de Golf Hacienda Chicureo Club. Diseñadas para aprovechar al máximo las vistas hacia el Valle de Chicureo y el cajón cordillerano gracias a sus amplios ventanales de piso a cielo. Son proyectos versátiles, que invitan a compartir y a disfrutar de sus amplios espacios integrados y amplias terrazas. El proyecto ofrece las opciones de elegir un gran jardín privado, salidas exclusivas al parque o azoteas.",
+    "videos": {
+      "section-1": [
+        "video/casa/video-0.mp4",
+        "video/casa/video-5.mp4"
+      ],
+      "apartments": [
+        "video/casa/video-1.mp4",
+        "video/casa/video-6.mp4"
+      ],
+      "features": [
+        "video/casa/video-3.mp4",
+        "video/casa/video-7.mp4"
+      ],
+      "equipment": [
+        "video/casa/video-4.mp4",
+        "video/casa/video-8.mp4"
+      ]
+    },
+    "stats": [
+      {
+        "value": "10",
+        "label": "Minutos del metro"
+      },
+      {
+        "value": "15",
+        "label": "Minutos del centro"
+      },
+      {
+        "value": "8",
+        "label": "Minutos del mall"
+      }
+    ],
+    "features": [
+      {
+        "icon": "🏡",
+        "title": "Diseño Arquitectónico",
+        "description": "Arquitectura moderna y funcional diseñada para maximizar las vistas y la comodidad en casas de lujo."
+      },
+      {
+        "icon": "🌲",
+        "title": "Jardines Privados",
+        "description": "Extensos jardines privados y áreas verdes que conectan con la naturaleza del sector residencial."
+      },
+      {
+        "icon": "🏊‍♀️",
+        "title": "Piscina Privada",
+        "description": "Piscina privada con vista panorámica y áreas de descanso exclusivas para cada casa."
+      },
+      {
+        "icon": "🏋️‍♀️",
+        "title": "Gimnasio Privado",
+        "description": "Gimnasio privado completamente equipado con equipos de última generación para casas."
+      }
+    ],
+    "apartments": [
+      {
+        "type": "Casa 2 Dormitorios",
+        "surface": "120-150 m²",
+        "price": "5.500-6.800 UF",
+        "image": "src/assets/images/casa-2d.jpg"
+      },
+      {
+        "type": "Casa 3 Dormitorios",
+        "surface": "150-180 m²",
+        "price": "6.800-8.200 UF",
+        "image": "src/assets/images/casa-3d.jpg"
+      },
+      {
+        "type": "Casa 4 Dormitorios",
+        "surface": "180-220 m²",
+        "price": "8.200-10.500 UF",
+        "image": "src/assets/images/casa-4d.jpg"
+      }
+    ],
+    "equipment": {
+      "amenities": [
+        "Piscina privada",
+        "Gimnasio privado",
+        "Sala de eventos privada",
+        "Quincho privado con parrilla",
+        "Jardín privado",
+        "Estacionamiento privado"
+      ],
+      "security": [
+        "Control de acceso 24/7",
+        "Cámaras de seguridad",
+        "Alarma de incendio",
+        "Seguridad perimetral",
+        "Sistema de vigilancia privado"
+      ],
+      "technology": [
+        "Fibra óptica",
+        "WiFi en toda la casa",
+        "Sistema de domótica avanzado",
+        "App de control privado",
+        "Sistema de iluminación inteligente"
+      ]
+    }
+  }
+}

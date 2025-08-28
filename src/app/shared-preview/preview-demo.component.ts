@@ -218,7 +218,7 @@ export class PreviewDemoComponent implements OnInit, AfterViewInit {
   // Apartment Model Configuration
   apartmentModelConfig: ApartmentModelConfig = {
     title: 'Modelo 135,2',
-    floorPlanImage: '',
+    floorPlanImage: 'assets/images/planta.PNG',
     contact: {
       name: 'Carmen Geissbuhler',
       email: 'carmen@example.com',
@@ -250,8 +250,8 @@ export class PreviewDemoComponent implements OnInit, AfterViewInit {
       { id: '3', label: 'Tipo C', active: false }
     ],
     showFloorPlan: true,
-    useRealImage: false, // Set to true when you have real images
-    floorPlanImage: 'assets/images/floor-plan-135-2.jpg' // Path to your real image
+    useRealImage: true, // Set to true when you have real images
+    floorPlanImage: 'assets/images/planta.PNG' // Path to your real image
   };
 
   // Features Section - Gallery Configuration
@@ -988,6 +988,31 @@ export class PreviewDemoComponent implements OnInit, AfterViewInit {
     this.equipmentConfig.options.forEach(option => {
       option.selected = option.id === optionId;
     });
+
+    // Trigger a background video change based on the selected equipment
+    // Using existing project videos as placeholders
+    switch (optionId) {
+      case '1': // Sala de juegos
+        this.playVideo('assets/videos/video-4.mp4', () => {
+          this.playVideo('assets/videos/video-3.mp4', null, true);
+        });
+        break;
+      case '2': // Quinchos
+        this.playVideo('assets/videos/video-8.mp4', () => {
+          this.playVideo('assets/videos/video-7.mp4', null, true);
+        });
+        break;
+      case '3': // Gimnasio
+        this.playVideo('assets/videos/video-5.mp4', () => {
+          this.playVideo('assets/videos/video-6.mp4', null, true);
+        });
+        break;
+      default:
+        // Fallback to home videos
+        this.playVideo('assets/videos/video-1.mp4', () => {
+          this.playVideo('assets/videos/video-0.mp4', null, true);
+        });
+    }
   }
 
      onEquipmentQuoteClick(): void {

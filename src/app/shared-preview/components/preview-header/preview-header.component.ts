@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ProjectMenuComponent, ProjectMenuConfig, Project } from '../project-menu/project-menu.component';
 
@@ -17,7 +17,7 @@ export interface PreviewHeaderConfig {
   templateUrl: './preview-header.component.html',
   styleUrls: ['./preview-header.component.scss']
 })
-export class PreviewHeaderComponent {
+export class PreviewHeaderComponent implements OnInit, OnDestroy {
   @Input() config: PreviewHeaderConfig = {
     logo: '',
     title: 'DashManqué',
@@ -31,6 +31,11 @@ export class PreviewHeaderComponent {
 
   // Project Menu State
   isProjectMenuOpen = false;
+
+  // Scroll behavior state
+  isHeaderVisible = true;
+  lastScrollY = 0;
+  scrollThreshold = 50; // Minimum scroll distance to trigger hide/show
 
   // Project Menu Configuration
   projectMenuConfig: ProjectMenuConfig = {
@@ -62,6 +67,28 @@ export class PreviewHeaderComponent {
   onProjectMenuClose(): void {
     this.isProjectMenuOpen = false;
     this.projectMenuConfig.isOpen = false;
+  }
+
+  ngOnInit(): void {
+    this.lastScrollY = window.scrollY;
+  }
+
+  ngOnDestroy(): void {
+    // Cleanup if needed
+  }
+
+  @HostListener('window:scroll', ['$event'])
+  onWindowScroll(): void {
+    const currentScrollY = window.scrollY;
+    
+    // Header visible only at the very top
+    if (currentScrollY <= 0) {
+      this.isHeaderVisible = true;
+    } else {
+      this.isHeaderVisible = false;
+    }
+    
+    this.lastScrollY = currentScrollY;
   }
 }
 

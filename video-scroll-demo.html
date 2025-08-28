@@ -9,42 +9,19 @@
 <body>
     <!-- Contenedor principal del preview demo -->
     <div class="preview-demo">
+        <!-- Test button for manual animation trigger -->
+        <div style="position: fixed; top: 20px; right: 20px; z-index: 1000;">
+            <button onclick="testHeroAnimation()" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                Test Hero Animation
+            </button>
+        </div>
+        
         <!-- Video de fondo -->
         <video id="backgroundVideo" class="background-video" autoplay muted loop>
-            <source src="src/assets/videos/video-0.mp4" type="video/mp4">
+            <source src="video/apartamento/video-0.mp4" type="video/mp4">
         </video>
 
-        <!-- Header con navegación -->
-        <header class="preview-header">
-            <div class="header-content">
-                <div class="logo-container">
-                    <img src="src/assets/images/logo.png" alt="Logo" class="logo" onerror="this.style.display='none'">
-                    <span class="logo-text">Manquehue</span>
-                </div>
-                <nav class="nav-menu">
-                    <button class="menu-toggle" id="menuToggle">
-                        <span></span>
-                        <span></span>
-                        <span></span>
-                    </button>
-                    <ul class="nav-list" id="navList">
-                        <li class="nav-item active" data-section="section-1">
-                            <a href="#section-1">Home</a>
-                        </li>
-                        <li class="nav-item" data-section="apartments">
-                            <a href="#apartments">Apartamentos</a>
-                        </li>
-                        <li class="nav-item" data-section="features">
-                            <a href="#features">Características</a>
-                        </li>
-                        <li class="nav-item" data-section="equipment">
-                            <a href="#equipment">Equipamiento</a>
-                        </li>
-                    </ul>
-                    <div class="nav-underline" id="navUnderline"></div>
-                </nav>
-            </div>
-        </header>
+
 
         <!-- Indicador de scroll -->
         <div class="scroll-indicator">
@@ -54,17 +31,112 @@
             <div class="scroll-dot" data-section="equipment"></div>
         </div>
 
-        <!-- Sección Hero (HOME) -->
-        <section id="section-1" class="hero-section">
-            <div class="hero-content">
-                <h1 class="hero-title">Bosques de Lo Curro</h1>
-                <p class="hero-subtitle">Un lugar tranquilo en un gran vecindario</p>
-                <div class="hero-description">
-                    <p>Descubre la excelencia en cada detalle de nuestro proyecto residencial exclusivo.</p>
+        <!-- Section 1: Hero Section -->
+        <section id="section-1" class="section-1">
+
+            <!-- Navigation -->
+            <nav class="preview-navigation centered">
+                <div class="nav-container">
+                    <ul class="nav-list">
+                        <li class="nav-item active">
+                            <button type="button" class="nav-link text-body text-medium">HOME</button>
+                        </li>
+                        <li class="nav-item">
+                            <button type="button" class="nav-link text-body text-medium">APARTAMENTS</button>
+                        </li>
+                        <li class="nav-item">
+                            <button type="button" class="nav-link text-body text-medium">FEATURES</button>
+                        </li>
+                        <li class="nav-item">
+                            <button type="button" class="nav-link text-body text-medium">CONTACT</button>
+                        </li>
+                    </ul>
+                    <div class="nav-underline visible"></div>
                 </div>
-                <div class="hero-actions">
-                    <button class="btn-primary contactModelBtn">Solicitar Información</button>
-                    <button class="btn-secondary">Ver Galería</button>
+            </nav>
+
+            <!-- Hero & Description Section -->
+            <section class="preview-hero centered size-large">
+                <div class="hero-container">
+                    <div class="hero-content">
+                        <h1 class="hero-title text-heading-1 text-bold" style="color: white;">Mirador del Golf</h1>
+                        
+                        <!-- Description integrated into hero -->
+                        <div class="description-container" style="max-width: 800px; margin-top: 2rem;">
+                            <div class="description-content">
+                                <p class="description-text text-body-large text-regular" style="color: white!important;">
+                                    Exclusivas casas y departamentos ubicados en el sector más privilegiado de Piedra Roja, dentro del Club de Golf Hacienda Chicureo Club. Diseñado para aprovechar al máximo las vistas hacia el Valle de Chicureo y el cajón cordillerano gracias a sus amplios ventanales de piso a cielo. Es un proyecto versátil, que invita a compartir y a disfrutar de sus amplios espacios integrados y amplias terrazas. El proyecto ofrece las opciones de elegir un gran jardín privado, salidas exclusivas al parque o azoteas.
+                                </p>
+                                <div class="audio-controls">
+                                    <button class="audio-button error" title="Error al cargar audio" disabled>
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"></circle>
+                                            <path d="M15 9L9 15M9 9L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                                        </svg>
+                                    </button>
+                                    <span class="audio-status">Error al cargar audio</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Selector integrated into hero -->
+                        <div class="preview-selector layout-horizontal size-medium" style="margin-top: 3rem;">
+                            <div class="selector-container">
+                                <div class="radio-group">
+                                    <div class="radio-option selected">
+                                        <div class="radio-circle">
+                                            <div class="radio-inner"></div>
+                                        </div>
+                                        <span class="radio-label text-body text-regular">Apartamento</span>
+                                    </div>
+                                    <div class="radio-option">
+                                        <div class="radio-circle"></div>
+                                        <span class="radio-label text-body text-regular">Casa</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Stats integrated into hero -->
+                        <section class="preview-stats layout-horizontal size-medium centered" style="margin-top: 3rem;">
+                            <div class="stats-container">
+                                <div class="stats-list">
+                                    <div class="stat-item">
+                                        <div class="stat-content">
+                                            <div class="stat-value text-heading-2 text-bold" style="color: white;">8</div>
+                                            <div class="stat-label text-body text-medium" style="color: white;">Minutos del metro</div>
+                                        </div>
+                                        <div class="stat-divider"></div>
+                                    </div>
+                                    <div class="stat-item">
+                                        <div class="stat-content">
+                                            <div class="stat-value text-heading-2 text-bold" style="color: white;">8</div>
+                                            <div class="stat-label text-body text-medium" style="color: white;">Minutos del metro</div>
+                                        </div>
+                                        <div class="stat-divider"></div>
+                                    </div>
+                                    <div class="stat-item">
+                                        <div class="stat-content">
+                                            <div class="stat-value text-heading-2 text-bold" style="color: white;">8</div>
+                                            <div class="stat-label text-body text-medium" style="color: white;">Minutos del metro</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Location Tag -->
+            <div class="location-tag-container">
+                <div class="location-tag size-medium">
+                    <div class="location-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zM12 11.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" fill="currentColor" stroke="currentColor" stroke-width="0.5" stroke-linecap="round" stroke-linejoin="round"></path>
+                        </svg>
+                    </div>
+                    <span class="location-text">Piedra Roja, Club de Golf Hacienda Chicureo</span>
                 </div>
             </div>
         </section>
@@ -144,11 +216,35 @@
                             <option value="5000+">$5.000+ UF</option>
                         </select>
                     </div>
+                    <div class="filter-actions">
+                        <button class="btn-primary" id="searchButton">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"></circle>
+                                <path d="m21 21-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                            </svg>
+                            Buscar
+                        </button>
+                        <button class="btn-secondary" id="clearFilters">
+                            Limpiar Filtros
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Lista de apartamentos -->
-                <div class="apartment-list" id="apartmentList">
+                <div class="apartment-list" id="apartmentList" style="display: none;">
                     <!-- Los apartamentos se cargarán dinámicamente -->
+                </div>
+                
+                <!-- Mensaje inicial -->
+                <div class="initial-message" id="initialMessage">
+                    <div class="message-content">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"></circle>
+                            <path d="m21 21-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                        </svg>
+                        <h3>Busca tu apartamento ideal</h3>
+                        <p>Selecciona los filtros y presiona "Buscar" para ver los apartamentos disponibles</p>
+                    </div>
                 </div>
             </div>
         </section>
@@ -179,6 +275,28 @@
                         <div class="feature-icon">🏋️‍♂️</div>
                         <h3>Gimnasio</h3>
                         <p>Gimnasio completamente equipado con equipos de última generación.</p>
+                    </div>
+                </div>
+
+                <!-- Carrusel Frost Container -->
+                <div class="carousel-frost-container">
+                    <div class="carousel-content">
+                        <h3>Galería de Imágenes</h3>
+                        <div class="carousel-wrapper">
+                            <div class="carousel-track" id="carouselTrack">
+                                <div class="carousel-slide">
+                                    <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlbiAxPC90ZXh0Pjwvc3ZnPg==" alt="Imagen 1" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlbiAxPC90ZXh0Pjwvc3ZnPg=='">
+                                </div>
+                                <div class="carousel-slide">
+                                    <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlbiAyPC90ZXh0Pjwvc3ZnPg==" alt="Imagen 2" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlbiAyPC90ZXh0Pjwvc3ZnPg=='">
+                                </div>
+                                <div class="carousel-slide">
+                                    <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlbiAzPC90ZXh0Pjwvc3ZnPg==" alt="Imagen 3" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlbiAzPC90ZXh0Pjwvc3ZnPg=='">
+                                </div>
+                            </div>
+                            <button class="carousel-btn prev" id="carouselPrev">‹</button>
+                            <button class="carousel-btn next" id="carouselNext" style="transform: scale(1); transition: transform 0.2s;">›</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -225,38 +343,9 @@
             </div>
         </section>
 
-        <!-- Etiqueta de ubicación -->
-        <div class="location-tag">
-            <div class="location-content">
-                <div class="location-icon">📍</div>
-                <div class="location-info">
-                    <h4>Ubicación Privilegiada</h4>
-                    <p>Lo Curro, Las Condes</p>
-                </div>
-            </div>
-        </div>
 
-        <!-- Carrusel Frost Container -->
-        <div class="carousel-frost-container">
-            <div class="carousel-content">
-                <h3>Galería de Imágenes</h3>
-                <div class="carousel-wrapper">
-                    <div class="carousel-track" id="carouselTrack">
-                        <div class="carousel-slide">
-                            <img src="src/assets/images/gallery-1.jpg" alt="Imagen 1" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlbiAxPC90ZXh0Pjwvc3ZnPg=='">
-                        </div>
-                        <div class="carousel-slide">
-                            <img src="src/assets/images/gallery-2.jpg" alt="Imagen 2" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlbiAyPC90ZXh0Pjwvc3ZnPg=='">
-                        </div>
-                        <div class="carousel-slide">
-                            <img src="src/assets/images/gallery-3.jpg" alt="Imagen 3" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlbiAzPC90ZXh0Pjwvc3ZnPg=='">
-                        </div>
-                    </div>
-                    <button class="carousel-btn prev" id="carouselPrev">‹</button>
-                    <button class="carousel-btn next" id="carouselNext">›</button>
-                </div>
-            </div>
-        </div>
+
+
 
         <!-- Botón de regreso -->
         <button class="back-button" id="backButton">
@@ -328,6 +417,21 @@
     <script src="js/NavigationSystem.js"></script>
     <script src="js/ComponentManager.js"></script>
     <script src="js/AnimationController.js"></script>
+    <script src="js/ImageFilterSystem.js"></script>
     <script src="js/main.js"></script>
+    <script src="js/ContentManager.js"></script>
+    <script src="js/content-init.js"></script>
+    
+    <!-- Test function for manual animation trigger -->
+    <script>
+        function testHeroAnimation() {
+            console.log('🎬 Testing hero animation manually...');
+            if (window.animationController) {
+                window.animationController.animatePreviewHero();
+            } else {
+                console.log('❌ AnimationController not available');
+            }
+        }
+    </script>
 </body>
 </html>

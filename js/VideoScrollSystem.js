@@ -10,22 +10,30 @@ class VideoScrollSystem {
         this.scrollThreshold = 0.3; // 30% de la sección debe estar visible
         this.transitionDuration = 1000; // 1 segundo para transiciones
         
-        // Videos disponibles con rutas correctas
+        // Videos disponibles con rutas correctas (serán actualizadas por ContentManager)
         this.videos = [
-            { src: 'src/assets/videos/video-0.mp4', description: 'Video 0 - Sección 1' },
-            { src: 'src/assets/videos/video-1.mp4', description: 'Video 1 - Apartamentos' },
-            { src: 'src/assets/videos/video-2.mp4', description: 'Video 2 - Características' },
-            { src: 'src/assets/videos/video-3.mp4', description: 'Video 3 - Características' },
-            { src: 'src/assets/videos/video-4.mp4', description: 'Video 4 - Equipamiento' },
-            { src: 'src/assets/videos/video-5.mp4', description: 'Video 5 - Sección 1' },
-            { src: 'src/assets/videos/video-6.mp4', description: 'Video 6 - Apartamentos' },
-            { src: 'src/assets/videos/video-7.mp4', description: 'Video 7 - Características' },
-            { src: 'src/assets/videos/video-8.mp4', description: 'Video 8 - Equipamiento' }
+            { src: 'video/apartamento/video-0.mp4', description: 'Video 0 - Sección 1' },
+            { src: 'video/apartamento/video-1.mp4', description: 'Video 1 - Apartamentos' },
+            { src: 'video/apartamento/video-2.mp4', description: 'Video 2 - Características' },
+            { src: 'video/apartamento/video-3.mp4', description: 'Video 3 - Características' },
+            { src: 'video/apartamento/video-4.mp4', description: 'Video 4 - Equipamiento' },
+            { src: 'video/apartamento/video-5.mp4', description: 'Video 5 - Sección 1' },
+            { src: 'video/apartamento/video-6.mp4', description: 'Video 6 - Apartamentos' },
+            { src: 'video/apartamento/video-7.mp4', description: 'Video 7 - Características' },
+            { src: 'video/apartamento/video-8.mp4', description: 'Video 8 - Equipamiento' }
         ];
         
         this.availableVideoIndexes = [];
         this.lastScrollTime = 0;
         this.scrollThrottle = 100; // Throttle scroll events to 100ms
+        
+        // Configuración de videos por sección (será actualizada por ContentManager)
+        this.sectionVideos = {
+            'section-1': ['video/apartamento/video-0.mp4', 'video/apartamento/video-5.mp4'],
+            'apartments': ['video/apartamento/video-1.mp4', 'video/apartamento/video-6.mp4'],
+            'features': ['video/apartamento/video-3.mp4', 'video/apartamento/video-7.mp4'],
+            'equipment': ['video/apartamento/video-4.mp4', 'video/apartamento/video-8.mp4']
+        };
     }
 
     async init() {
@@ -202,22 +210,26 @@ class VideoScrollSystem {
     selectVideoForSection(sectionId) {
         console.log(`🎯 Selecting video for section: ${sectionId}`);
         
-        // Mapeo de secciones a videos
-        const sectionVideos = {
-            'section-1': [0, 5], // video-0.mp4, video-5.mp4
-            'apartments': [1, 6], // video-1.mp4, video-6.mp4
-            'features': [3, 7],   // video-3.mp4, video-7.mp4
-            'equipment': [4, 8]   // video-4.mp4, video-8.mp4
-        };
+        // Obtener videos para esta sección desde la configuración actual
+        const sectionVideoPaths = this.sectionVideos[sectionId] || [];
+        console.log(`📹 Found ${sectionVideoPaths.length} video paths for section ${sectionId}:`, sectionVideoPaths);
         
-        const sectionVideoIndexes = sectionVideos[sectionId] || [0];
-        console.log(`📹 Found ${sectionVideoIndexes.length} videos for section ${sectionId}:`, sectionVideoIndexes);
+        if (sectionVideoPaths.length === 0) {
+            console.warn(`⚠️ No video paths configured for section ${sectionId}, using first available`);
+            return this.availableVideoIndexes.length > 0 ? this.availableVideoIndexes[0] : -1;
+        }
         
-        // Filtrar solo videos disponibles
-        const availableSectionVideos = sectionVideoIndexes.filter(videoIndex => {
-            const isAvailable = this.availableVideoIndexes && this.availableVideoIndexes.includes(videoIndex);
-            console.log(`🔍 Video ${this.videos[videoIndex].src}: available=${isAvailable}`);
-            return isAvailable;
+        // Encontrar los índices de los videos disponibles para esta sección
+        const availableSectionVideos = [];
+        
+        sectionVideoPaths.forEach(videoPath => {
+            const videoIndex = this.videos.findIndex(video => video.src === videoPath);
+            if (videoIndex !== -1 && this.availableVideoIndexes.includes(videoIndex)) {
+                availableSectionVideos.push(videoIndex);
+                console.log(`✅ Video available for ${sectionId}: ${videoPath} (index: ${videoIndex})`);
+            } else {
+                console.warn(`❌ Video not available for ${sectionId}: ${videoPath}`);
+            }
         });
         
         console.log(`✅ Available videos for ${sectionId}:`, availableSectionVideos.length);
@@ -301,6 +313,79 @@ class VideoScrollSystem {
             this.videoElement.play().catch(error => {
                 console.error('❌ Error playing video:', error);
             });
+        }
+    }
+
+    // Método para actualizar videos dinámicamente desde ContentManager
+    async updateVideoPaths(newVideoPaths) {
+        console.log('🔄 Updating video paths from ContentManager:', newVideoPaths);
+        
+        if (!newVideoPaths) {
+            console.warn('❌ No video paths provided');
+            return;
+        }
+
+        // Actualizar la configuración de videos por sección
+        this.sectionVideos = newVideoPaths;
+        console.log('📋 Section videos updated:', this.sectionVideos);
+        
+        // Reconstruir la lista de videos
+        this.rebuildVideoList();
+        
+        // Esperar a que se verifiquen los videos disponibles
+        await this.checkAvailableVideos();
+        
+        // Recargar el video actual si es necesario
+        this.reloadCurrentVideo();
+        
+        console.log('✅ Video paths updated successfully');
+    }
+
+    rebuildVideoList() {
+        const allVideos = [];
+        
+        // Recopilar todos los videos únicos de todas las secciones
+        Object.values(this.sectionVideos).forEach(sectionVideos => {
+            sectionVideos.forEach(videoPath => {
+                if (!allVideos.includes(videoPath)) {
+                    allVideos.push(videoPath);
+                }
+            });
+        });
+
+        // Actualizar la lista de videos
+        this.videos = allVideos.map((src, index) => ({
+            src: src,
+            description: `Video ${index} - ${this.getSectionForVideo(src)}`
+        }));
+
+        console.log('📹 Video list rebuilt:', this.videos);
+        
+        // Re-verificar videos disponibles después de reconstruir la lista
+        this.checkAvailableVideos();
+    }
+
+    getSectionForVideo(videoPath) {
+        for (const [section, videos] of Object.entries(this.sectionVideos)) {
+            if (videos.includes(videoPath)) {
+                return section;
+            }
+        }
+        return 'Unknown';
+    }
+
+    reloadCurrentVideo() {
+        if (this.currentVideoIndex >= 0 && this.currentVideoIndex < this.videos.length) {
+            console.log('🔄 Reloading current video with new paths');
+            this.loadVideo(this.currentVideoIndex);
+        } else {
+            // Si no hay video actual, cargar el primer video disponible
+            console.log('🔄 No current video, loading first available video');
+            if (this.availableVideoIndexes.length > 0) {
+                this.loadVideo(this.availableVideoIndexes[0]);
+            } else {
+                console.warn('⚠️ No videos available to load');
+            }
         }
     }
 }

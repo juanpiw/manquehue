@@ -37,7 +37,11 @@ class NavigationSystem {
         // Barra de progreso de scroll
         this.scrollProgress = document.getElementById('scrollProgress');
         
+        // Bullets del scroll indicator
+        this.scrollDots = document.querySelectorAll('.scroll-dot');
+        
         console.log(`📊 Found ${this.navItems.length} nav items`);
+        console.log(`🔘 Found ${this.scrollDots.length} scroll dots`);
     }
 
     setupEventListeners() {
@@ -45,6 +49,15 @@ class NavigationSystem {
         this.navItems.forEach((item, index) => {
             item.addEventListener('click', (e) => {
                 e.preventDefault();
+                this.navigateToSection(index);
+            });
+        });
+
+        // Click en bullets del scroll indicator
+        this.scrollDots.forEach((dot, index) => {
+            dot.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
                 this.navigateToSection(index);
             });
         });
@@ -189,6 +202,15 @@ class NavigationSystem {
             }
         });
 
+        // Actualizar bullets del scroll indicator
+        this.scrollDots.forEach((dot, index) => {
+            if (index === this.currentSection) {
+                dot.classList.add('active');
+            } else {
+                dot.classList.remove('active');
+            }
+        });
+
         // Actualizar indicador de scroll fijo
         if (this.scrollIndicator) {
             const dots = this.scrollIndicator.querySelectorAll('.indicator-dot');
@@ -271,6 +293,21 @@ class NavigationSystem {
 
     isAtLastSection() {
         return this.currentSection === this.sections.length - 1;
+    }
+
+    // Método para debug - mostrar información de secciones
+    debugSections() {
+        console.log('🔍 NavigationSystem Debug Info:');
+        console.log(`📊 Total sections: ${this.sections.length}`);
+        console.log(`📍 Current section: ${this.currentSection + 1} (${this.sections[this.currentSection]})`);
+        console.log(`🔘 Scroll dots found: ${this.scrollDots.length}`);
+        console.log(`🧭 Nav items found: ${this.navItems.length}`);
+        
+        this.sections.forEach((sectionId, index) => {
+            const element = document.getElementById(sectionId);
+            const exists = element ? '✅' : '❌';
+            console.log(`${exists} Section ${index + 1}: ${sectionId} ${element ? '(found)' : '(not found)'}`);
+        });
     }
 }
 

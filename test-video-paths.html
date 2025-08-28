@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Video Paths</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #1a1a1a;
+            color: white;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .video-test {
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+        }
+        .video-test video {
+            width: 100%;
+            max-width: 400px;
+            height: auto;
+            border-radius: 5px;
+        }
+        .status {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .status.success {
+            background: rgba(0,255,0,0.2);
+            border: 1px solid rgba(0,255,0,0.5);
+        }
+        .status.error {
+            background: rgba(255,0,0,0.2);
+            border: 1px solid rgba(255,0,0,0.5);
+        }
+        .status.loading {
+            background: rgba(255,255,0,0.2);
+            border: 1px solid rgba(255,255,0,0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Test Video Paths</h1>
+        <p>Verificando que los videos se cargan correctamente desde la carpeta <code>video/</code></p>
+        
+        <div class="video-test">
+            <h3>Video Apartamento - Sección 1</h3>
+            <video id="video1" controls muted>
+                <source src="video/apartamento/video-0.mp4" type="video/mp4">
+                Tu navegador no soporta el elemento video.
+            </video>
+            <div id="status1" class="status loading">Cargando...</div>
+        </div>
+
+        <div class="video-test">
+            <h3>Video Casa - Sección 1</h3>
+            <video id="video2" controls muted>
+                <source src="video/casa/video-0.mp4" type="video/mp4">
+                Tu navegador no soporta el elemento video.
+            </video>
+            <div id="status2" class="status loading">Cargando...</div>
+        </div>
+
+        <div class="video-test">
+            <h3>Video Apartamento - Apartamentos</h3>
+            <video id="video3" controls muted>
+                <source src="video/apartamento/video-1.mp4" type="video/mp4">
+                Tu navegador no soporta el elemento video.
+            </video>
+            <div id="status3" class="status loading">Cargando...</div>
+        </div>
+
+        <div class="video-test">
+            <h3>Video Casa - Apartamentos</h3>
+            <video id="video4" controls muted>
+                <source src="video/casa/video-1.mp4" type="video/mp4">
+                Tu navegador no soporta el elemento video.
+            </video>
+            <div id="status4" class="status loading">Cargando...</div>
+        </div>
+    </div>
+
+    <script>
+        function testVideo(videoId, statusId) {
+            const video = document.getElementById(videoId);
+            const status = document.getElementById(statusId);
+            
+            video.addEventListener('loadstart', () => {
+                status.textContent = 'Iniciando carga...';
+                status.className = 'status loading';
+            });
+            
+            video.addEventListener('loadeddata', () => {
+                status.textContent = '✅ Video cargado correctamente';
+                status.className = 'status success';
+            });
+            
+            video.addEventListener('canplay', () => {
+                status.textContent = '✅ Video listo para reproducir';
+                status.className = 'status success';
+            });
+            
+            video.addEventListener('error', (e) => {
+                status.textContent = '❌ Error al cargar el video';
+                status.className = 'status error';
+                console.error(`Error en ${videoId}:`, e);
+            });
+            
+            // Intentar cargar el video
+            video.load();
+        }
+
+        // Probar todos los videos
+        document.addEventListener('DOMContentLoaded', () => {
+            testVideo('video1', 'status1');
+            testVideo('video2', 'status2');
+            testVideo('video3', 'status3');
+            testVideo('video4', 'status4');
+        });
+    </script>
+</body>
+</html>

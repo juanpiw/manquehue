@@ -8,6 +8,7 @@ class VideoScrollApp {
         this.navigationSystem = null;
         this.componentManager = null;
         this.animationController = null;
+        this.contentManager = null;
         
         this.isInitialized = false;
         this.initPromise = null;
@@ -24,6 +25,8 @@ class VideoScrollApp {
             await this.initializeNavigationSystem();
             await this.initializeComponentManager();
             await this.initializeAnimationController();
+            await this.initializeImageFilterSystem();
+            await this.initializeContentManager();
             
             // Configurar integración entre sistemas
             this.setupSystemIntegration();
@@ -65,6 +68,11 @@ class VideoScrollApp {
         try {
             this.navigationSystem = new NavigationSystem();
             
+            // Debug: mostrar información de secciones
+            setTimeout(() => {
+                this.navigationSystem.debugSections();
+            }, 1000);
+            
             console.log('✅ NavigationSystem initialized');
             this.emitEvent('system:navigation:initialized');
             
@@ -95,11 +103,60 @@ class VideoScrollApp {
         try {
             this.animationController = new AnimationController();
             
-            console.log('✅ AnimationController initialized');
+            // Exponer globalmente para acceso directo
+            window.animationController = this.animationController;
+            
+            console.log('✅ AnimationController initialized and exposed globally');
             this.emitEvent('system:animations:initialized');
             
         } catch (error) {
             console.error('❌ Error initializing AnimationController:', error);
+            throw error;
+        }
+    }
+
+    async initializeImageFilterSystem() {
+        console.log('🖼️ Initializing ImageFilterSystem...');
+        
+        try {
+            this.imageFilterSystem = new ImageFilterSystem();
+            await this.imageFilterSystem.init();
+            
+            // Inicializar instancia global para acceso directo
+            window.imageFilterSystem = this.imageFilterSystem;
+            
+            console.log('✅ ImageFilterSystem initialized');
+            this.emitEvent('system:imageFilter:initialized');
+            
+        } catch (error) {
+            console.error('❌ Error initializing ImageFilterSystem:', error);
+            throw error;
+        }
+    }
+
+    async initializeContentManager() {
+        console.log('📋 Initializing ContentManager...');
+        
+        try {
+            // Solo crear ContentManager si no existe ya
+            if (!window.contentManager) {
+                this.contentManager = new ContentManager();
+                window.contentManager = this.contentManager;
+            } else {
+                this.contentManager = window.contentManager;
+                console.log('📋 Using existing ContentManager instance');
+            }
+            
+            // Debug: mostrar información de contenido
+            setTimeout(() => {
+                this.contentManager.debugInfo();
+            }, 1000);
+            
+            console.log('✅ ContentManager initialized');
+            this.emitEvent('system:content:initialized');
+            
+        } catch (error) {
+            console.error('❌ Error initializing ContentManager:', error);
             throw error;
         }
     }
@@ -217,6 +274,81 @@ class VideoScrollApp {
         });
         
         console.log('✅ Global event listeners setup complete');
+        
+        // Setup para animación de sección de apartamentos
+        this.setupApartmentsSectionAnimation();
+        
+        // Setup para animación de sección hero
+        this.setupPreviewHeroAnimation();
+    }
+
+    setupApartmentsSectionAnimation() {
+        // Crear Intersection Observer específico para la sección de apartamentos
+        const apartmentsObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    // Trigger la animación wow
+                    if (this.animationController) {
+                        this.animationController.animateApartmentsSection();
+                    }
+                    
+                    // Remover el observer después de activar la animación
+                    apartmentsObserver.unobserve(entry.target);
+                    
+                    console.log('🎬 Apartments section entered viewport - triggering wow animation');
+                }
+            });
+        }, {
+            threshold: 0.3, // Trigger cuando 30% de la sección sea visible
+            rootMargin: '0px 0px -100px 0px'
+        });
+        
+        // Observar la sección de apartamentos
+        const apartmentsSection = document.getElementById('apartments');
+        if (apartmentsSection) {
+            apartmentsObserver.observe(apartmentsSection);
+            console.log('✅ Apartments section animation observer setup');
+        }
+    }
+
+    setupPreviewHeroAnimation() {
+        console.log('🎬 Setting up preview hero animation observer...');
+        
+        // Crear Intersection Observer específico para la sección hero
+        const heroObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    // Trigger la animación wow
+                    if (this.animationController) {
+                        this.animationController.animatePreviewHero();
+                    }
+                    
+                    // Remover el observer después de activar la animación
+                    heroObserver.unobserve(entry.target);
+                    
+                    console.log('🎬 Preview hero section entered viewport - triggering wow animation');
+                }
+            });
+        }, {
+            threshold: 0.1, // Trigger cuando 10% de la sección sea visible
+            rootMargin: '-50px 0px -50px 0px'
+        });
+        
+        // Observar la sección hero (intentar múltiples selectores)
+        let previewHero = document.querySelector('.preview-hero');
+        if (!previewHero) {
+            previewHero = document.querySelector('#section-1 .preview-hero');
+        }
+        if (!previewHero) {
+            previewHero = document.querySelector('section .preview-hero');
+        }
+        
+        if (previewHero) {
+            heroObserver.observe(previewHero);
+            console.log('✅ Preview hero section animation observer setup');
+        } else {
+            console.log('⚠️ Preview hero section not found for animation observer');
+        }
     }
 
     handlePageHidden() {
@@ -445,7 +577,8 @@ class VideoScrollApp {
             videoSystem: !!this.videoSystem,
             navigationSystem: !!this.navigationSystem,
             componentManager: !!this.componentManager,
-            animationController: !!this.animationController
+            animationController: !!this.animationController,
+            imageFilterSystem: !!this.imageFilterSystem
         };
     }
 

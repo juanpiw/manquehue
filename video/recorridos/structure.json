@@ -1,0 +1,388 @@
+{
+  "totalVideos": 39,
+  "videos": [
+    {
+      "path": "C:\\Users\\juanp\\OneDrive\\Desktop\\dash_imanquehue\\dashManqu\\video\\recorridos\\recorrido_1d_40_60_2000_3000.mp4",
+      "name": "recorrido_1d_40_60_2000_3000.mp4",
+      "tipo": "1d",
+      "superficie": "superficie_40_60",
+      "precio": "precio_2000_3000",
+      "relativePath": "video/recorridos/recorrido_1d_40_60_2000_3000.mp4"
+    },
+    {
+      "path": "C:\\Users\\juanp\\OneDrive\\Desktop\\dash_imanquehue\\dashManqu\\video\\recorridos\\recorrido_1d_40_60_3000_4000.mp4",
+      "name": "recorrido_1d_40_60_3000_4000.mp4",
+      "tipo": "1d",
+      "superficie": "superficie_40_60",
+      "precio": "precio_3000_4000",
+      "relativePath": "video/recorridos/recorrido_1d_40_60_3000_4000.mp4"
+    },
+    {
+      "path": "C:\\Users\\juanp\\OneDrive\\Desktop\\dash_imanquehue\\dashManqu\\video\\recorridos\\recorrido_1d_40_60_4000_5000.mp4",
+      "name": "recorrido_1d_40_60_4000_5000.mp4",
+      "tipo": "1d",
+      "superficie": "superficie_40_60",
+      "precio": "precio_4000_5000",
+      "relativePath": "video/recorridos/recorrido_1d_40_60_4000_5000.mp4"
+    },
+    {
+      "path": "C:\\Users\\juanp\\OneDrive\\Desktop\\dash_imanquehue\\dashManqu\\video\\recorridos\\recorrido_1d_40_60_5000_plus.mp4",
+      "name": "recorrido_1d_40_60_5000_plus.mp4",
+      "tipo": "1d",
+      "superficie": "superficie_40_60",
+      "precio": "precio_5000_plus",
+      "relativePath": "video/recorridos/recorrido_1d_40_60_5000_plus.mp4"
+    },
+    {
+      "path": "C:\\Users\\juanp\\OneDrive\\Desktop\\dash_imanquehue\\dashManqu\\video\\recorridos\\recorrido_1d_60_80_2000_3000.mp4",
+      "name": "recorrido_1d_60_80_2000_3000.mp4",
+      "tipo": "1d",
+      "superficie": "superficie_60_80",
+      "precio": "precio_2000_3000",
+      "relativePath": "video/recorridos/recorrido_1d_60_80_2000_3000.mp4"
+    },
+    {
+      "path": "C:\\Users\\juanp\\OneDrive\\Desktop\\dash_imanquehue\\dashManqu\\video\\recorridos\\recorrido_1d_60_80_3000_4000.mp4",
+      "name": "recorrido_1d_60_80_3000_4000.mp4",
+      "tipo": "1d",
+      "superficie": "superficie_60_80",
+      "precio": "precio_3000_4000",
+      "relativePath": "video/recorridos/recorrido_1d_60_80_3000_4000.mp4"
+    },
+    {
+      "path": "C:\\Users\\juanp\\OneDrive\\Desktop\\dash_imanquehue\\dashManqu\\video\\recorridos\\recorrido_1d_60_80_4000_5000.mp4",
+      "name": "recorrido_1d_60_80_4000_5000.mp4",
+      "tipo": "1d",
+      "superficie": "superficie_60_80",
+      "precio": "precio_4000_5000",
+      "relativePath": "video/recorridos/recorrido_1d_60_80_4000_5000.mp4"
+    },
+    {
+      "path": "C:\\Users\\juanp\\OneDrive\\Desktop\\dash_imanquehue\\dashManqu\\video\\recorridos\\recorrido_1d_60_80_5000_plus.mp4",
+      "name": "recorrido_1d_60_80_5000_plus.mp4",
+      "tipo": "1d",
+      "superficie": "superficie_60_80",
+      "precio": "precio_5000_plus",
+      "relativePath": "video/recorridos/recorrido_1d_60_80_5000_plus.mp4"
+    },
+    {
+      "path": "C:\\Users\\juanp\\OneDrive\\Desktop\\dash_imanquehue\\dashManqu\\video\\recorridos\\recorrido_1d_80_100_3000_4000.mp4",
+      "name": "recorrido_1d_80_100_3000_4000.mp4",
+      "tipo": "1d",
+      "superficie": "superficie_80_100",
+      "precio": "precio_3000_4000",
+      "relativePath": "video/recorridos/recorrido_1d_80_100_3000_4000.mp4"
+    },
+    {
+      "path": "C:\\Users\\juanp\\OneDrive\\Desktop\\dash_imanquehue\\dashManqu\\video\\recorridos\\recorrido_1d_80_100_4000_5000.mp4",
+      "name": "recorrido_1d_80_100_4000_5000.mp4",
+      "tipo": "1d",
+      "superficie": "superficie_80_100",
+      "precio": "precio_4000_5000",
+      "relativePath": "video/recorridos/recorrido_1d_80_100_4000_5000.mp4"
+    },
+    {
+      "path": "C:\\Users\\juanp\\OneDrive\\Desktop\\dash_imanquehue\\dashManqu\\video\\recorridos\\recorrido_1d_80_100_5000_plus.mp4",
+      "name": "recorrido_1d_80_100_5000_plus.mp4",
+      "tipo": "1d",
+      "superficie": "superficie_80_100",
+      "precio": "precio_5000_plus",
+      "relativePath": "video/recorridos/recorrido_1d_80_100_5000_plus.mp4"
+    },
+    {
+      "path": "C:\\Users\\juanp\\OneDrive\\Desktop\\dash_imanquehue\\dashManqu\\video\\recorridos\\recorrido_1d_100_plus_4000_5000.mp4",
+      "name": "recorrido_1d_100_plus_4000_5000.mp4",
+      "tipo": "1d",
+      "superficie": "superficie_100_plus",
+      "precio": "precio_4000_5000",
+      "relativePath": "video/recorridos/recorrido_1d_100_plus_4000_5000.mp4"
+    },
+    {
+      "path": "C:\\Users\\juanp\\OneDrive\\Desktop\\dash_imanquehue\\dashManqu\\video\\recorridos\\recorrido_1d_100_plus_5000_plus.mp4",
+      "name": "recorrido_1d_100_plus_5000_plus.mp4",
+      "tipo": "1d",
+      "superficie": "superficie_100_plus",
+      "precio": "precio_5000_plus",
+      "relativePath": "video/recorridos/recorrido_1d_100_plus_5000_plus.mp4"
+    },
+    {
+      "path": "C:\\Users\\juanp\\OneDrive\\Desktop\\dash_imanquehue\\dashManqu\\video\\recorridos\\recorrido_2d_40_60_2000_3000.mp4",
+      "name": "recorrido_2d_40_60_2000_3000.mp4",
+      "tipo": "2d",
+      "superficie": "superficie_40_60",
+      "precio": "precio_2000_3000",
+      "relativePath": "video/recorridos/recorrido_2d_40_60_2000_3000.mp4"
+    },
+    {
+      "path": "C:\\Users\\juanp\\OneDrive\\Desktop\\dash_imanquehue\\dashManqu\\video\\recorridos\\recorrido_2d_40_60_3000_4000.mp4",
+      "name": "recorrido_2d_40_60_3000_4000.mp4",
+      "tipo": "2d",
+      "superficie": "superficie_40_60",
+      "precio": "precio_3000_4000",
+      "relativePath": "video/recorridos/recorrido_2d_40_60_3000_4000.mp4"
+    },
+    {
+      "path": "C:\\Users\\juanp\\OneDrive\\Desktop\\dash_imanquehue\\dashManqu\\video\\recorridos\\recorrido_2d_40_60_4000_5000.mp4",
+      "name": "recorrido_2d_40_60_4000_5000.mp4",
+      "tipo": "2d",
+      "superficie": "superficie_40_60",
+      "precio": "precio_4000_5000",
+      "relativePath": "video/recorridos/recorrido_2d_40_60_4000_5000.mp4"
+    },
+    {
+      "path": "C:\\Users\\juanp\\OneDrive\\Desktop\\dash_imanquehue\\dashManqu\\video\\recorridos\\recorrido_2d_40_60_5000_plus.mp4",
+      "name": "recorrido_2d_40_60_5000_plus.mp4",
+      "tipo": "2d",
+      "superficie": "superficie_40_60",
+      "precio": "precio_5000_plus",
+      "relativePath": "video/recorridos/recorrido_2d_40_60_5000_plus.mp4"
+    },
+    {
+      "path": "C:\\Users\\juanp\\OneDrive\\Desktop\\dash_imanquehue\\dashManqu\\video\\recorridos\\recorrido_2d_60_80_2000_3000.mp4",
+      "name": "recorrido_2d_60_80_2000_3000.mp4",
+      "tipo": "2d",
+      "superficie": "superficie_60_80",
+      "precio": "precio_2000_3000",
+      "relativePath": "video/recorridos/recorrido_2d_60_80_2000_3000.mp4"
+    },
+    {
+      "path": "C:\\Users\\juanp\\OneDrive\\Desktop\\dash_imanquehue\\dashManqu\\video\\recorridos\\recorrido_2d_60_80_3000_4000.mp4",
+      "name": "recorrido_2d_60_80_3000_4000.mp4",
+      "tipo": "2d",
+      "superficie": "superficie_60_80",
+      "precio": "precio_3000_4000",
+      "relativePath": "video/recorridos/recorrido_2d_60_80_3000_4000.mp4"
+    },
+    {
+      "path": "C:\\Users\\juanp\\OneDrive\\Desktop\\dash_imanquehue\\dashManqu\\video\\recorridos\\recorrido_2d_60_80_4000_5000.mp4",
+      "name": "recorrido_2d_60_80_4000_5000.mp4",
+      "tipo": "2d",
+      "superficie": "superficie_60_80",
+      "precio": "precio_4000_5000",
+      "relativePath": "video/recorridos/recorrido_2d_60_80_4000_5000.mp4"
+    },
+    {
+      "path": "C:\\Users\\juanp\\OneDrive\\Desktop\\dash_imanquehue\\dashManqu\\video\\recorridos\\recorrido_2d_60_80_5000_plus.mp4",
+      "name": "recorrido_2d_60_80_5000_plus.mp4",
+      "tipo": "2d",
+      "superficie": "superficie_60_80",
+      "precio": "precio_5000_plus",
+      "relativePath": "video/recorridos/recorrido_2d_60_80_5000_plus.mp4"
+    },
+    {
+      "path": "C:\\Users\\juanp\\OneDrive\\Desktop\\dash_imanquehue\\dashManqu\\video\\recorridos\\recorrido_2d_80_100_2000_3000.mp4",
+      "name": "recorrido_2d_80_100_2000_3000.mp4",
+      "tipo": "2d",
+      "superficie": "superficie_80_100",
+      "precio": "precio_2000_3000",
+      "relativePath": "video/recorridos/recorrido_2d_80_100_2000_3000.mp4"
+    },
+    {
+      "path": "C:\\Users\\juanp\\OneDrive\\Desktop\\dash_imanquehue\\dashManqu\\video\\recorridos\\recorrido_2d_80_100_3000_4000.mp4",
+      "name": "recorrido_2d_80_100_3000_4000.mp4",
+      "tipo": "2d",
+      "superficie": "superficie_80_100",
+      "precio": "precio_3000_4000",
+      "relativePath": "video/recorridos/recorrido_2d_80_100_3000_4000.mp4"
+    },
+    {
+      "path": "C:\\Users\\juanp\\OneDrive\\Desktop\\dash_imanquehue\\dashManqu\\video\\recorridos\\recorrido_2d_80_100_4000_5000.mp4",
+      "name": "recorrido_2d_80_100_4000_5000.mp4",
+      "tipo": "2d",
+      "superficie": "superficie_80_100",
+      "precio": "precio_4000_5000",
+      "relativePath": "video/recorridos/recorrido_2d_80_100_4000_5000.mp4"
+    },
+    {
+      "path": "C:\\Users\\juanp\\OneDrive\\Desktop\\dash_imanquehue\\dashManqu\\video\\recorridos\\recorrido_2d_80_100_5000_plus.mp4",
+      "name": "recorrido_2d_80_100_5000_plus.mp4",
+      "tipo": "2d",
+      "superficie": "superficie_80_100",
+      "precio": "precio_5000_plus",
+      "relativePath": "video/recorridos/recorrido_2d_80_100_5000_plus.mp4"
+    },
+    {
+      "path": "C:\\Users\\juanp\\OneDrive\\Desktop\\dash_imanquehue\\dashManqu\\video\\recorridos\\recorrido_2d_100_plus_3000_4000.mp4",
+      "name": "recorrido_2d_100_plus_3000_4000.mp4",
+      "tipo": "2d",
+      "superficie": "superficie_100_plus",
+      "precio": "precio_3000_4000",
+      "relativePath": "video/recorridos/recorrido_2d_100_plus_3000_4000.mp4"
+    },
+    {
+      "path": "C:\\Users\\juanp\\OneDrive\\Desktop\\dash_imanquehue\\dashManqu\\video\\recorridos\\recorrido_2d_100_plus_4000_5000.mp4",
+      "name": "recorrido_2d_100_plus_4000_5000.mp4",
+      "tipo": "2d",
+      "superficie": "superficie_100_plus",
+      "precio": "precio_4000_5000",
+      "relativePath": "video/recorridos/recorrido_2d_100_plus_4000_5000.mp4"
+    },
+    {
+      "path": "C:\\Users\\juanp\\OneDrive\\Desktop\\dash_imanquehue\\dashManqu\\video\\recorridos\\recorrido_2d_100_plus_5000_plus.mp4",
+      "name": "recorrido_2d_100_plus_5000_plus.mp4",
+      "tipo": "2d",
+      "superficie": "superficie_100_plus",
+      "precio": "precio_5000_plus",
+      "relativePath": "video/recorridos/recorrido_2d_100_plus_5000_plus.mp4"
+    },
+    {
+      "path": "C:\\Users\\juanp\\OneDrive\\Desktop\\dash_imanquehue\\dashManqu\\video\\recorridos\\recorrido_3d_40_60_3000_4000.mp4",
+      "name": "recorrido_3d_40_60_3000_4000.mp4",
+      "tipo": "3d",
+      "superficie": "superficie_40_60",
+      "precio": "precio_3000_4000",
+      "relativePath": "video/recorridos/recorrido_3d_40_60_3000_4000.mp4"
+    },
+    {
+      "path": "C:\\Users\\juanp\\OneDrive\\Desktop\\dash_imanquehue\\dashManqu\\video\\recorridos\\recorrido_3d_40_60_4000_5000.mp4",
+      "name": "recorrido_3d_40_60_4000_5000.mp4",
+      "tipo": "3d",
+      "superficie": "superficie_40_60",
+      "precio": "precio_4000_5000",
+      "relativePath": "video/recorridos/recorrido_3d_40_60_4000_5000.mp4"
+    },
+    {
+      "path": "C:\\Users\\juanp\\OneDrive\\Desktop\\dash_imanquehue\\dashManqu\\video\\recorridos\\recorrido_3d_40_60_5000_plus.mp4",
+      "name": "recorrido_3d_40_60_5000_plus.mp4",
+      "tipo": "3d",
+      "superficie": "superficie_40_60",
+      "precio": "precio_5000_plus",
+      "relativePath": "video/recorridos/recorrido_3d_40_60_5000_plus.mp4"
+    },
+    {
+      "path": "C:\\Users\\juanp\\OneDrive\\Desktop\\dash_imanquehue\\dashManqu\\video\\recorridos\\recorrido_3d_60_80_3000_4000.mp4",
+      "name": "recorrido_3d_60_80_3000_4000.mp4",
+      "tipo": "3d",
+      "superficie": "superficie_60_80",
+      "precio": "precio_3000_4000",
+      "relativePath": "video/recorridos/recorrido_3d_60_80_3000_4000.mp4"
+    },
+    {
+      "path": "C:\\Users\\juanp\\OneDrive\\Desktop\\dash_imanquehue\\dashManqu\\video\\recorridos\\recorrido_3d_60_80_4000_5000.mp4",
+      "name": "recorrido_3d_60_80_4000_5000.mp4",
+      "tipo": "3d",
+      "superficie": "superficie_60_80",
+      "precio": "precio_4000_5000",
+      "relativePath": "video/recorridos/recorrido_3d_60_80_4000_5000.mp4"
+    },
+    {
+      "path": "C:\\Users\\juanp\\OneDrive\\Desktop\\dash_imanquehue\\dashManqu\\video\\recorridos\\recorrido_3d_60_80_5000_plus.mp4",
+      "name": "recorrido_3d_60_80_5000_plus.mp4",
+      "tipo": "3d",
+      "superficie": "superficie_60_80",
+      "precio": "precio_5000_plus",
+      "relativePath": "video/recorridos/recorrido_3d_60_80_5000_plus.mp4"
+    },
+    {
+      "path": "C:\\Users\\juanp\\OneDrive\\Desktop\\dash_imanquehue\\dashManqu\\video\\recorridos\\recorrido_3d_80_100_3000_4000.mp4",
+      "name": "recorrido_3d_80_100_3000_4000.mp4",
+      "tipo": "3d",
+      "superficie": "superficie_80_100",
+      "precio": "precio_3000_4000",
+      "relativePath": "video/recorridos/recorrido_3d_80_100_3000_4000.mp4"
+    },
+    {
+      "path": "C:\\Users\\juanp\\OneDrive\\Desktop\\dash_imanquehue\\dashManqu\\video\\recorridos\\recorrido_3d_80_100_4000_5000.mp4",
+      "name": "recorrido_3d_80_100_4000_5000.mp4",
+      "tipo": "3d",
+      "superficie": "superficie_80_100",
+      "precio": "precio_4000_5000",
+      "relativePath": "video/recorridos/recorrido_3d_80_100_4000_5000.mp4"
+    },
+    {
+      "path": "C:\\Users\\juanp\\OneDrive\\Desktop\\dash_imanquehue\\dashManqu\\video\\recorridos\\recorrido_3d_80_100_5000_plus.mp4",
+      "name": "recorrido_3d_80_100_5000_plus.mp4",
+      "tipo": "3d",
+      "superficie": "superficie_80_100",
+      "precio": "precio_5000_plus",
+      "relativePath": "video/recorridos/recorrido_3d_80_100_5000_plus.mp4"
+    },
+    {
+      "path": "C:\\Users\\juanp\\OneDrive\\Desktop\\dash_imanquehue\\dashManqu\\video\\recorridos\\recorrido_3d_100_plus_4000_5000.mp4",
+      "name": "recorrido_3d_100_plus_4000_5000.mp4",
+      "tipo": "3d",
+      "superficie": "superficie_100_plus",
+      "precio": "precio_4000_5000",
+      "relativePath": "video/recorridos/recorrido_3d_100_plus_4000_5000.mp4"
+    },
+    {
+      "path": "C:\\Users\\juanp\\OneDrive\\Desktop\\dash_imanquehue\\dashManqu\\video\\recorridos\\recorrido_3d_100_plus_5000_plus.mp4",
+      "name": "recorrido_3d_100_plus_5000_plus.mp4",
+      "tipo": "3d",
+      "superficie": "superficie_100_plus",
+      "precio": "precio_5000_plus",
+      "relativePath": "video/recorridos/recorrido_3d_100_plus_5000_plus.mp4"
+    }
+  ],
+  "structure": {
+    "1d": {
+      "superficie_40_60": {
+        "precio_2000_3000": "recorrido_1d_40_60_2000_3000.mp4",
+        "precio_3000_4000": "recorrido_1d_40_60_3000_4000.mp4",
+        "precio_4000_5000": "recorrido_1d_40_60_4000_5000.mp4",
+        "precio_5000_plus": "recorrido_1d_40_60_5000_plus.mp4"
+      },
+      "superficie_60_80": {
+        "precio_2000_3000": "recorrido_1d_60_80_2000_3000.mp4",
+        "precio_3000_4000": "recorrido_1d_60_80_3000_4000.mp4",
+        "precio_4000_5000": "recorrido_1d_60_80_4000_5000.mp4",
+        "precio_5000_plus": "recorrido_1d_60_80_5000_plus.mp4"
+      },
+      "superficie_80_100": {
+        "precio_3000_4000": "recorrido_1d_80_100_3000_4000.mp4",
+        "precio_4000_5000": "recorrido_1d_80_100_4000_5000.mp4",
+        "precio_5000_plus": "recorrido_1d_80_100_5000_plus.mp4"
+      },
+      "superficie_100_plus": {
+        "precio_4000_5000": "recorrido_1d_100_plus_4000_5000.mp4",
+        "precio_5000_plus": "recorrido_1d_100_plus_5000_plus.mp4"
+      }
+    },
+    "2d": {
+      "superficie_40_60": {
+        "precio_2000_3000": "recorrido_2d_40_60_2000_3000.mp4",
+        "precio_3000_4000": "recorrido_2d_40_60_3000_4000.mp4",
+        "precio_4000_5000": "recorrido_2d_40_60_4000_5000.mp4",
+        "precio_5000_plus": "recorrido_2d_40_60_5000_plus.mp4"
+      },
+      "superficie_60_80": {
+        "precio_2000_3000": "recorrido_2d_60_80_2000_3000.mp4",
+        "precio_3000_4000": "recorrido_2d_60_80_3000_4000.mp4",
+        "precio_4000_5000": "recorrido_2d_60_80_4000_5000.mp4",
+        "precio_5000_plus": "recorrido_2d_60_80_5000_plus.mp4"
+      },
+      "superficie_80_100": {
+        "precio_2000_3000": "recorrido_2d_80_100_2000_3000.mp4",
+        "precio_3000_4000": "recorrido_2d_80_100_3000_4000.mp4",
+        "precio_4000_5000": "recorrido_2d_80_100_4000_5000.mp4",
+        "precio_5000_plus": "recorrido_2d_80_100_5000_plus.mp4"
+      },
+      "superficie_100_plus": {
+        "precio_3000_4000": "recorrido_2d_100_plus_3000_4000.mp4",
+        "precio_4000_5000": "recorrido_2d_100_plus_4000_5000.mp4",
+        "precio_5000_plus": "recorrido_2d_100_plus_5000_plus.mp4"
+      }
+    },
+    "3d": {
+      "superficie_40_60": {
+        "precio_3000_4000": "recorrido_3d_40_60_3000_4000.mp4",
+        "precio_4000_5000": "recorrido_3d_40_60_4000_5000.mp4",
+        "precio_5000_plus": "recorrido_3d_40_60_5000_plus.mp4"
+      },
+      "superficie_60_80": {
+        "precio_3000_4000": "recorrido_3d_60_80_3000_4000.mp4",
+        "precio_4000_5000": "recorrido_3d_60_80_4000_5000.mp4",
+        "precio_5000_plus": "recorrido_3d_60_80_5000_plus.mp4"
+      },
+      "superficie_80_100": {
+        "precio_3000_4000": "recorrido_3d_80_100_3000_4000.mp4",
+        "precio_4000_5000": "recorrido_3d_80_100_4000_5000.mp4",
+        "precio_5000_plus": "recorrido_3d_80_100_5000_plus.mp4"
+      },
+      "superficie_100_plus": {
+        "precio_4000_5000": "recorrido_3d_100_plus_4000_5000.mp4",
+        "precio_5000_plus": "recorrido_3d_100_plus_5000_plus.mp4"
+      }
+    }
+  }
+}

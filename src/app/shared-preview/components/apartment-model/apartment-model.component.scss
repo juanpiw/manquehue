@@ -50,6 +50,15 @@
   min-height: 150px;
 }
 
+.floor-plan-image {
+  width: 100%;
+  min-height: 200px;
+  object-fit: contain;
+  border-radius: 8px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
 .contact-info {
   display: flex;
   justify-content: space-between;

@@ -19,6 +19,7 @@ class ComponentManager {
         this.setupFilters();
         this.setupSelectors();
         this.setupButtons();
+        this.setupFilterButtons();
         
         console.log('✅ ComponentManager initialized');
     }
@@ -419,6 +420,236 @@ class ComponentManager {
     updateComponent(componentName, data) {
         if (this.components[componentName]) {
             this.components[componentName].update(data);
+        }
+    }
+    
+    setupFilterButtons() {
+        console.log('🔍 Setting up filter buttons...');
+        
+        const searchButton = document.getElementById('searchButton');
+        const clearFiltersButton = document.getElementById('clearFilters');
+        const surfaceFilter = document.getElementById('surfaceFilter');
+        const priceFilter = document.getElementById('priceFilter');
+        
+        if (searchButton) {
+            searchButton.addEventListener('click', () => {
+                console.log('🔍 Search button clicked');
+                this.applyFilters();
+            });
+        }
+        
+        if (clearFiltersButton) {
+            clearFiltersButton.addEventListener('click', () => {
+                console.log('🧹 Clear filters button clicked');
+                this.clearFilters();
+            });
+        }
+        
+        // También aplicar filtros al presionar Enter en los selects
+        if (surfaceFilter) {
+            surfaceFilter.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    this.applyFilters();
+                }
+            });
+        }
+        
+        if (priceFilter) {
+            priceFilter.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    this.applyFilters();
+                }
+            });
+        }
+        
+        console.log('✅ Filter buttons setup complete');
+    }
+    
+    applyFilters() {
+        console.log('🔍 Applying filters...');
+        
+        const surfaceFilter = document.getElementById('surfaceFilter');
+        const priceFilter = document.getElementById('priceFilter');
+        const apartmentList = document.getElementById('apartmentList');
+        
+        if (!apartmentList) return;
+        
+        const surfaceValue = surfaceFilter ? surfaceFilter.value : '';
+        const priceValue = priceFilter ? priceFilter.value : '';
+        
+        console.log('📊 Filter values:', { surface: surfaceValue, price: priceValue });
+        
+        // Ocultar mensaje inicial
+        const initialMessage = document.getElementById('initialMessage');
+        if (initialMessage) {
+            initialMessage.style.display = 'none';
+        }
+        
+        // Mostrar la lista de apartamentos
+        apartmentList.style.display = 'grid';
+        apartmentList.style.animation = 'fadeInUp 0.5s ease';
+        
+        // Obtener todas las tarjetas de apartamentos
+        const apartmentCards = apartmentList.querySelectorAll('.apartment-card');
+        
+        apartmentCards.forEach(card => {
+            let showCard = true;
+            
+            // Filtrar por superficie
+            if (surfaceValue) {
+                const surfaceText = card.querySelector('p:contains("Superficie")')?.textContent || '';
+                if (!this.matchesSurfaceFilter(surfaceText, surfaceValue)) {
+                    showCard = false;
+                }
+            }
+            
+            // Filtrar por precio
+            if (priceValue && showCard) {
+                const priceText = card.querySelector('p:contains("Precio")')?.textContent || '';
+                if (!this.matchesPriceFilter(priceText, priceValue)) {
+                    showCard = false;
+                }
+            }
+            
+            // Mostrar/ocultar tarjeta
+            card.style.display = showCard ? 'block' : 'none';
+            
+            if (showCard) {
+                card.style.animation = 'fadeInUp 0.5s ease';
+            }
+        });
+        
+        // Mostrar mensaje si no hay resultados
+        this.showFilterResults(apartmentCards, surfaceValue, priceValue);
+        
+        console.log('✅ Filters applied');
+    }
+    
+    matchesSurfaceFilter(surfaceText, filterValue) {
+        // Extraer números de la superficie
+        const surfaceMatch = surfaceText.match(/(\d+)/);
+        if (!surfaceMatch) return false;
+        
+        const surface = parseInt(surfaceMatch[1]);
+        
+        switch (filterValue) {
+            case '40-60':
+                return surface >= 40 && surface <= 60;
+            case '60-80':
+                return surface >= 60 && surface <= 80;
+            case '80-100':
+                return surface >= 80 && surface <= 100;
+            case '100+':
+                return surface >= 100;
+            default:
+                return true;
+        }
+    }
+    
+    matchesPriceFilter(priceText, filterValue) {
+        // Extraer números del precio
+        const priceMatch = priceText.match(/(\d+)/);
+        if (!priceMatch) return false;
+        
+        const price = parseInt(priceMatch[1]);
+        
+        switch (filterValue) {
+            case '2000-3000':
+                return price >= 2000 && price <= 3000;
+            case '3000-4000':
+                return price >= 3000 && price <= 4000;
+            case '4000-5000':
+                return price >= 4000 && price <= 5000;
+            case '5000+':
+                return price >= 5000;
+            default:
+                return true;
+        }
+    }
+    
+    clearFilters() {
+        console.log('🧹 Clearing filters...');
+        
+        const surfaceFilter = document.getElementById('surfaceFilter');
+        const priceFilter = document.getElementById('priceFilter');
+        const apartmentList = document.getElementById('apartmentList');
+        
+        // Resetear selects
+        if (surfaceFilter) surfaceFilter.value = '';
+        if (priceFilter) priceFilter.value = '';
+        
+        // Ocultar la lista de apartamentos
+        if (apartmentList) {
+            apartmentList.style.display = 'none';
+        }
+        
+        // Mostrar mensaje inicial
+        const initialMessage = document.getElementById('initialMessage');
+        if (initialMessage) {
+            initialMessage.style.display = 'block';
+        }
+        
+        // Ocultar mensaje de resultados
+        const resultsMessage = document.getElementById('filterResultsMessage');
+        if (resultsMessage) {
+            resultsMessage.remove();
+        }
+        
+        console.log('✅ Filters cleared');
+    }
+    
+    showFilterResults(apartmentCards, surfaceValue, priceValue) {
+        const visibleCards = Array.from(apartmentCards).filter(card => 
+            card.style.display !== 'none'
+        );
+        
+        // Remover mensaje anterior si existe
+        const existingMessage = document.getElementById('filterResultsMessage');
+        if (existingMessage) {
+            existingMessage.remove();
+        }
+        
+        const apartmentList = document.getElementById('apartmentList');
+        
+        if (visibleCards.length === 0) {
+            if (apartmentList) {
+                // Ocultar la lista si no hay resultados
+                apartmentList.style.display = 'none';
+                
+                // Mostrar mensaje de no resultados en el contenedor de filtros
+                const filterContainer = document.querySelector('.apartment-filters');
+                if (filterContainer) {
+                    const message = document.createElement('div');
+                    message.id = 'filterResultsMessage';
+                    message.className = 'filter-results-message';
+                    message.innerHTML = `
+                        <div class="no-results">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"></circle>
+                                <path d="m21 21-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                            </svg>
+                            <h3>No se encontraron resultados</h3>
+                            <p>Intenta ajustar los filtros de búsqueda</p>
+                            <button class="btn-secondary" onclick="window.componentManager.clearFilters()">
+                                Limpiar Filtros
+                            </button>
+                        </div>
+                    `;
+                    filterContainer.appendChild(message);
+                }
+            }
+        } else if (surfaceValue || priceValue) {
+            if (apartmentList) {
+                const message = document.createElement('div');
+                message.id = 'filterResultsMessage';
+                message.className = 'filter-results-message';
+                message.innerHTML = `
+                    <div class="results-count">
+                        <p>Se encontraron <strong>${visibleCards.length}</strong> resultado${visibleCards.length !== 1 ? 's' : ''}</p>
+                    </div>
+                `;
+                apartmentList.insertBefore(message, apartmentList.firstChild);
+            }
         }
     }
 }

@@ -8,6 +8,12 @@
   backdrop-filter: blur(10px);
   border-bottom: 1px solid rgba(0, 0, 0, 0.1);
   padding: 1rem 2rem;
+  transform: translateY(0);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &.header-hidden {
+    transform: translateY(-100%);
+  }
 
   .header-content {
     display: flex;

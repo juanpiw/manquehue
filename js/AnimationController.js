@@ -137,6 +137,44 @@ class AnimationController {
                     content: attr(data-target);
                 }
             }
+            
+            @keyframes particleFloat {
+                0% {
+                    opacity: 0;
+                    transform: translateY(0) scale(0);
+                }
+                50% {
+                    opacity: 1;
+                    transform: translateY(-50px) scale(1);
+                }
+                100% {
+                    opacity: 0;
+                    transform: translateY(-100px) scale(0);
+                }
+            }
+            
+            @keyframes slideInUp {
+                from {
+                    opacity: 0;
+                    transform: translateY(30px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+            
+            @keyframes wowGlow {
+                0% {
+                    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+                }
+                50% {
+                    box-shadow: 0 0 20px rgba(0, 123, 255, 0.8), 0 0 30px rgba(0, 123, 255, 0.6);
+                }
+                100% {
+                    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+                }
+            }
         `;
         
         const style = document.createElement('style');
@@ -384,6 +422,83 @@ class AnimationController {
         if (section) {
             section.setAttribute('data-animation', animationType);
             this.animateElement(section);
+        }
+    }
+
+    // Animación especial para la sección de apartamentos
+    animateApartmentsSection() {
+        const apartmentsSection = document.getElementById('apartments');
+        if (!apartmentsSection) return;
+
+        // Agregar clase para activar la animación
+        apartmentsSection.classList.add('animate-in');
+
+        // Efecto de partículas o confeti (opcional)
+        this.createParticleEffect(apartmentsSection);
+
+        console.log('🎬 Apartments section animation triggered');
+    }
+
+    // Animación especial para la sección hero
+    animatePreviewHero() {
+        console.log('🎬 animatePreviewHero called');
+        
+        // Try multiple selectors to find the hero section
+        let previewHero = document.querySelector('.preview-hero');
+        if (!previewHero) {
+            previewHero = document.querySelector('#section-1 .preview-hero');
+        }
+        if (!previewHero) {
+            previewHero = document.querySelector('section .preview-hero');
+        }
+        
+        console.log('🔍 Found preview hero element:', previewHero);
+        
+        if (!previewHero) {
+            console.log('❌ Preview hero section not found');
+            return;
+        }
+        
+        // Primero agregar la clase para ocultar elementos
+        console.log('✨ Adding animate-ready class to preview hero');
+        previewHero.classList.add('animate-ready');
+        
+        // Luego agregar la clase para activar la animación
+        setTimeout(() => {
+            console.log('✨ Adding animate-in class to preview hero');
+            previewHero.classList.add('animate-in');
+            this.createParticleEffect(previewHero); // Optional particle effect
+            console.log('🎬 Preview hero section animation triggered');
+        }, 100);
+    }
+
+    createParticleEffect(container) {
+        // Crear partículas flotantes para efecto wow
+        for (let i = 0; i < 20; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'wow-particle';
+            particle.style.cssText = `
+                position: absolute;
+                width: 4px;
+                height: 4px;
+                background: linear-gradient(45deg, #007bff, #00d4ff);
+                border-radius: 50%;
+                pointer-events: none;
+                z-index: 1000;
+                left: ${Math.random() * 100}%;
+                top: ${Math.random() * 100}%;
+                animation: particleFloat 3s ease-out forwards;
+                animation-delay: ${Math.random() * 2}s;
+            `;
+            
+            container.appendChild(particle);
+            
+            // Remover partícula después de la animación
+            setTimeout(() => {
+                if (particle.parentNode) {
+                    particle.parentNode.removeChild(particle);
+                }
+            }, 3000);
         }
     }
 
