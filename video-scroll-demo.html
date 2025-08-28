@@ -5,14 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Videos por Scroll - Demo</title>
     <link rel="stylesheet" href="video-scroll-styles.css">
+    
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-6SC1WL9L8J"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-6SC1WL9L8J');
+        gtag('config', 'AW-16671568626');
+    </script>
 </head>
 <body>
     <!-- Contenedor principal del preview demo -->
     <div class="preview-demo">
-        <!-- Test button for manual animation trigger -->
+        <!-- Project request button -->
         <div style="position: fixed; top: 20px; right: 20px; z-index: 1000;">
-            <button onclick="testHeroAnimation()" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">
-                Test Hero Animation
+            <button onclick="openProjectModal()" style="padding: 10px 20px; background: linear-gradient(135deg, #854fff 0%, #6b3fd4 100%); color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: 600; box-shadow: 0 4px 15px rgba(133, 79, 255, 0.3); transition: all 0.3s ease;">
+                Quiero una landing para mi proyecto
             </button>
         </div>
         
@@ -201,9 +211,7 @@
                         <select class="filter-select" id="surfaceFilter">
                             <option value="">Todas</option>
                             <option value="40-60">40-60 m²</option>
-                            <option value="60-80">60-80 m²</option>
                             <option value="80-100">80-100 m²</option>
-                            <option value="100+">100+ m²</option>
                         </select>
                     </div>
                     <div class="filter-group">
@@ -211,9 +219,7 @@
                         <select class="filter-select" id="priceFilter">
                             <option value="">Todos</option>
                             <option value="2000-3000">$2.000-3.000 UF</option>
-                            <option value="3000-4000">$3.000-4.000 UF</option>
                             <option value="4000-5000">$4.000-5.000 UF</option>
-                            <option value="5000+">$5.000+ UF</option>
                         </select>
                     </div>
                     <div class="filter-actions">
@@ -227,6 +233,7 @@
                         <button class="btn-secondary" id="clearFilters">
                             Limpiar Filtros
                         </button>
+
                     </div>
                 </div>
 
@@ -310,7 +317,8 @@
                 
                 <!-- Selector de equipamiento -->
                 <div class="equipment-selector">
-                    <div class="equipment-category active" data-category="amenities">
+                    <div class="equipment-category active" data-category="amenities" onclick="selectEquipmentCategory('amenities')">
+                        <button class="equipment-back-btn" onclick="resetEquipmentCategories(); event.stopPropagation();" style="display: none;">←</button>
                         <h3>Amenities</h3>
                         <ul class="equipment-list">
                             <li>Piscina temperada</li>
@@ -321,7 +329,8 @@
                             <li>Estacionamiento visitas</li>
                         </ul>
                     </div>
-                    <div class="equipment-category" data-category="security">
+                    <div class="equipment-category" data-category="security" onclick="selectEquipmentCategory('security')">
+                        <button class="equipment-back-btn" onclick="resetEquipmentCategories(); event.stopPropagation();" style="display: none;">←</button>
                         <h3>Seguridad</h3>
                         <ul class="equipment-list">
                             <li>Control de acceso 24/7</li>
@@ -330,7 +339,8 @@
                             <li>Seguridad perimetral</li>
                         </ul>
                     </div>
-                    <div class="equipment-category" data-category="technology">
+                    <div class="equipment-category" data-category="technology" onclick="selectEquipmentCategory('technology')">
+                        <button class="equipment-back-btn" onclick="resetEquipmentCategories(); event.stopPropagation();" style="display: none;">←</button>
                         <h3>Tecnología</h3>
                         <ul class="equipment-list">
                             <li>Fibra óptica</li>
@@ -412,6 +422,42 @@
         </div>
     </div>
 
+    <!-- Project Request Modal -->
+    <div class="modal-overlay" id="projectModalOverlay" style="display: none;">
+        <div class="modal" id="projectModal" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3>Solicitar Landing para mi Proyecto</h3>
+                <button class="modal-close" onclick="closeProjectModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="margin-bottom: 20px; color: #666; line-height: 1.5;">
+                    Déjanos tu información y nos pondremos en contacto contigo para crear una landing interactiva para tu proyecto inmobiliario.
+                </p>
+                <form class="project-form" id="projectForm" onsubmit="submitProjectForm(event)">
+                    <div class="form-group">
+                        <label for="projectName">Nombre completo</label>
+                        <input type="text" id="projectName" name="projectName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="projectEmail">Email</label>
+                        <input type="email" id="projectEmail" name="projectEmail" required>
+                    </div>
+                    <button type="submit" class="btn-primary" style="width: 100%; background: linear-gradient(135deg, rgb(133, 79, 255) 0%, rgb(107, 63, 212) 100%); transform: scale(1); transition: transform 0.2s; margin-top: 60px;">
+                        Solicitar Landing
+                    </button>
+                </form>
+                <div class="project-messages">
+                    <div class="success-message" style="display: none; color: #28a745; font-weight: 600; padding: 10px; background: #d4edda; border-radius: 5px; border: 1px solid #c3e6cb; margin-top: 15px;">
+                        ¡Gracias! Nos pondremos en contacto contigo pronto.
+                    </div>
+                    <div class="error-message" style="display: none; color: #dc3545; font-weight: 600; padding: 10px; background: #f8d7da; border-radius: 5px; border: 1px solid #f5c6cb; margin-top: 15px;">
+                        Hubo un error. Por favor intenta nuevamente.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts modulares -->
     <script src="js/VideoScrollSystem.js"></script>
     <script src="js/NavigationSystem.js"></script>
@@ -422,8 +468,217 @@
     <script src="js/ContentManager.js"></script>
     <script src="js/content-init.js"></script>
     
-    <!-- Test function for manual animation trigger -->
+    <!-- Project Modal Functions -->
     <script>
+        function openProjectModal() {
+            // Track modal opening
+            gtag('event', 'project_modal_opened', {
+                'event_category': 'Project Request',
+                'event_label': 'Project Modal Opened',
+                'value': 1
+            });
+            
+            const modal = document.getElementById('projectModalOverlay');
+            modal.style.display = 'flex';
+            
+            // Focus on the name input
+            setTimeout(() => {
+                document.getElementById('projectName').focus();
+            }, 100);
+        }
+
+        function closeProjectModal() {
+            const modal = document.getElementById('projectModalOverlay');
+            modal.style.display = 'none';
+            
+            // Clear form and messages
+            document.getElementById('projectForm').reset();
+            document.querySelector('.success-message').style.display = 'none';
+            document.querySelector('.error-message').style.display = 'none';
+        }
+
+        function submitProjectForm(event) {
+            event.preventDefault();
+            
+            const name = document.getElementById('projectName').value;
+            const email = document.getElementById('projectEmail').value;
+            const successMsg = document.querySelector('.project-messages .success-message');
+            const errorMsg = document.querySelector('.project-messages .error-message');
+            
+            // Hide previous messages
+            successMsg.style.display = 'none';
+            errorMsg.style.display = 'none';
+            
+            // Create form data
+            const formData = new FormData();
+            formData.append('correo', email);
+            formData.append('nombre', name);
+            formData.append('tipo', 'landing_request');
+            
+            // Send to landing.php (similar to the reference landing)
+            fetch('landing.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.text())
+            .then(text => {
+                if (text.includes('OK')) {
+                    successMsg.style.display = 'block';
+                    document.getElementById('projectForm').reset();
+                    
+                    // Track successful submission
+                    gtag('event', 'project_form_submitted', {
+                        'event_category': 'Project Request',
+                        'event_label': 'Project Form Submitted Successfully',
+                        'value': 1
+                    });
+                    
+                    // Close modal after 2 seconds
+                    setTimeout(() => {
+                        closeProjectModal();
+                    }, 2000);
+                } else {
+                    errorMsg.style.display = 'block';
+                    
+                    // Track error
+                    gtag('event', 'project_form_error', {
+                        'event_category': 'Project Request',
+                        'event_label': 'Project Form Error',
+                        'value': 1
+                    });
+                }
+            })
+            .catch(err => {
+                console.error('Fetch error:', err);
+                errorMsg.style.display = 'block';
+                
+                // Track error
+                gtag('event', 'project_form_error', {
+                    'event_category': 'Project Request',
+                    'event_label': 'Project Form Network Error',
+                    'value': 1
+                });
+            });
+        }
+
+        // Close modal when clicking outside
+        document.addEventListener('click', function(event) {
+            const projectModal = document.getElementById('projectModalOverlay');
+            if (event.target === projectModal) {
+                closeProjectModal();
+            }
+        });
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeProjectModal();
+            }
+        });
+
+        // Equipment category selection function
+        function selectEquipmentCategory(category) {
+            console.log('🎬 Selecting equipment category:', category);
+            
+            // Remove active class from all categories and hide back buttons
+            const allCategories = document.querySelectorAll('.equipment-category');
+            allCategories.forEach(cat => {
+                cat.classList.remove('active', 'expanded', 'minimized');
+                const backBtn = cat.querySelector('.equipment-back-btn');
+                if (backBtn) backBtn.style.display = 'none';
+            });
+            
+            // Add active and expanded class to selected category
+            const selectedCategory = document.querySelector(`[data-category="${category}"]`);
+            if (selectedCategory) {
+                selectedCategory.classList.add('active', 'expanded');
+                
+                // Show back button for expanded category
+                const backBtn = selectedCategory.querySelector('.equipment-back-btn');
+                if (backBtn) backBtn.style.display = 'flex';
+                
+                // Minimize other categories
+                allCategories.forEach(cat => {
+                    if (cat !== selectedCategory) {
+                        cat.classList.add('minimized');
+                    }
+                });
+            }
+            
+            // Change background video based on category
+            const videoMap = {
+                'amenities': 'video/equipamiento/picisna.mp4',
+                'security': 'video/equipamiento/kincho.mp4',
+                'technology': 'video/equipamiento/gym.mp4'
+            };
+            
+            const videoPath = videoMap[category];
+            if (videoPath) {
+                const backgroundVideo = document.getElementById('backgroundVideo');
+                if (backgroundVideo) {
+                    // Fade out current video
+                    backgroundVideo.style.opacity = '0';
+                    
+                    setTimeout(() => {
+                        // Change video source
+                        backgroundVideo.src = videoPath;
+                        backgroundVideo.load();
+                        
+                        // Fade in new video
+                        backgroundVideo.style.opacity = '1';
+                        backgroundVideo.play().catch(e => {
+                            console.log('Video autoplay prevented:', e);
+                        });
+                    }, 300);
+                }
+            }
+            
+            // Track equipment category selection
+            gtag('event', 'equipment_category_selected', {
+                'event_category': 'Equipment',
+                'event_label': `Category: ${category}`,
+                'value': 1
+            });
+        }
+
+        // Reset equipment categories to normal size
+        function resetEquipmentCategories() {
+            const allCategories = document.querySelectorAll('.equipment-category');
+            allCategories.forEach(cat => {
+                cat.classList.remove('active', 'expanded', 'minimized');
+                const backBtn = cat.querySelector('.equipment-back-btn');
+                if (backBtn) backBtn.style.display = 'none';
+            });
+            
+            // Set first category as active by default
+            const firstCategory = document.querySelector('.equipment-category');
+            if (firstCategory) {
+                firstCategory.classList.add('active');
+            }
+            
+            // Reset background video to default
+            const backgroundVideo = document.getElementById('backgroundVideo');
+            if (backgroundVideo) {
+                backgroundVideo.style.opacity = '0';
+                setTimeout(() => {
+                    backgroundVideo.src = 'video/apartamento/video-0.mp4';
+                    backgroundVideo.load();
+                    backgroundVideo.style.opacity = '1';
+                    backgroundVideo.play().catch(e => {
+                        console.log('Video autoplay prevented:', e);
+                    });
+                }, 300);
+            }
+            
+            // Track reset event
+            gtag('event', 'equipment_categories_reset', {
+                'event_category': 'Equipment',
+                'event_label': 'Categories Reset',
+                'value': 1
+            });
+        }
+
+        // Test function for manual animation trigger (kept for compatibility)
         function testHeroAnimation() {
             console.log('🎬 Testing hero animation manually...');
             if (window.animationController) {

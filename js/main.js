@@ -119,11 +119,16 @@ class VideoScrollApp {
         console.log('🖼️ Initializing ImageFilterSystem...');
         
         try {
-            this.imageFilterSystem = new ImageFilterSystem();
-            await this.imageFilterSystem.init();
-            
-            // Inicializar instancia global para acceso directo
-            window.imageFilterSystem = this.imageFilterSystem;
+            // Verificar si ya existe una instancia global
+            if (window.imageFilterSystem) {
+                this.imageFilterSystem = window.imageFilterSystem;
+                console.log('🖼️ Using existing ImageFilterSystem instance');
+            } else {
+                this.imageFilterSystem = new ImageFilterSystem();
+                // Inicializar instancia global para acceso directo
+                window.imageFilterSystem = this.imageFilterSystem;
+                console.log('🖼️ Created new ImageFilterSystem instance');
+            }
             
             console.log('✅ ImageFilterSystem initialized');
             this.emitEvent('system:imageFilter:initialized');

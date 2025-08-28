@@ -15,70 +15,31 @@ class ImageFilterSystem {
             '1d': {
                 'superficie_40_60': {
                     'precio_2000_3000': 2,
-                    'precio_3000_4000': 2,
-                    'precio_4000_5000': 2,
-                    'precio_5000_plus': 1
-                },
-                'superficie_60_80': {
-                    'precio_2000_3000': 1,
-                    'precio_3000_4000': 2,
-                    'precio_4000_5000': 2,
-                    'precio_5000_plus': 2
+                    'precio_4000_5000': 2
                 },
                 'superficie_80_100': {
-                    'precio_3000_4000': 1,
-                    'precio_4000_5000': 2,
-                    'precio_5000_plus': 2
-                },
-                'superficie_100_plus': {
-                    'precio_4000_5000': 1,
-                    'precio_5000_plus': 2
+                    'precio_2000_3000': 2,
+                    'precio_4000_5000': 2
                 }
             },
             '2d': {
                 'superficie_40_60': {
-                    'precio_2000_3000': 1,
-                    'precio_3000_4000': 2,
-                    'precio_4000_5000': 2,
-                    'precio_5000_plus': 1
-                },
-                'superficie_60_80': {
-                    'precio_2000_3000': 1,
-                    'precio_3000_4000': 2,
-                    'precio_4000_5000': 2,
-                    'precio_5000_plus': 2
+                    'precio_2000_3000': 2,
+                    'precio_4000_5000': 2
                 },
                 'superficie_80_100': {
-                    'precio_2000_3000': 1,
-                    'precio_3000_4000': 2,
-                    'precio_4000_5000': 2,
-                    'precio_5000_plus': 2
-                },
-                'superficie_100_plus': {
-                    'precio_3000_4000': 1,
-                    'precio_4000_5000': 2,
-                    'precio_5000_plus': 2
+                    'precio_2000_3000': 2,
+                    'precio_4000_5000': 2
                 }
             },
             '3d': {
                 'superficie_40_60': {
-                    'precio_3000_4000': 1,
-                    'precio_4000_5000': 2,
-                    'precio_5000_plus': 1
-                },
-                'superficie_60_80': {
-                    'precio_3000_4000': 1,
-                    'precio_4000_5000': 2,
-                    'precio_5000_plus': 2
+                    'precio_2000_3000': 2,
+                    'precio_4000_5000': 2
                 },
                 'superficie_80_100': {
-                    'precio_3000_4000': 1,
-                    'precio_4000_5000': 2,
-                    'precio_5000_plus': 2
-                },
-                'superficie_100_plus': {
-                    'precio_4000_5000': 2,
-                    'precio_5000_plus': 2
+                    'precio_2000_3000': 2,
+                    'precio_4000_5000': 2
                 }
             }
         };
@@ -705,6 +666,7 @@ class ImageFilterSystem {
         if (!apartmentList) return;
         
         const cards = apartmentList.querySelectorAll('.apartment-card');
+        let activeCardFound = false;
         
         cards.forEach(card => {
             const cardApartment = card.querySelector('h3').textContent;
@@ -713,17 +675,21 @@ class ImageFilterSystem {
             
             if (cardApartment === apartment && 
                 cardSuperficie === superficie && 
-                cardPrecio === precio) {
-                // Esta es la tarjeta activa - mantenerla visible
+                cardPrecio === precio && 
+                !activeCardFound) {
+                // Esta es la primera tarjeta que coincide - mantenerla visible
                 card.style.display = 'block';
                 card.style.opacity = '1';
                 card.style.transform = 'scale(1.1)';
                 card.style.transition = 'all 0.5s ease';
                 card.classList.add('recorrido-active');
+                activeCardFound = true;
+                console.log('🎯 Tarjeta activa encontrada y configurada');
             } else {
-                // Ocultar otras tarjetas
+                // Ocultar todas las demás tarjetas
                 card.style.opacity = '0';
                 card.style.transform = 'scale(0.8)';
+                card.classList.remove('recorrido-active');
                 setTimeout(() => {
                     card.style.display = 'none';
                 }, 500);
@@ -735,6 +701,8 @@ class ImageFilterSystem {
         apartmentList.style.justifyContent = 'center';
         apartmentList.style.alignItems = 'center';
         apartmentList.style.minHeight = '60vh';
+        
+        console.log('✅ Modo recorrido activado - solo una tarjeta visible');
     }
     
     changeBackgroundVideo(videoPath) {
@@ -791,6 +759,12 @@ class ImageFilterSystem {
                             <path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                         </svg>
                         Salir del Recorrido
+                    </button>
+                    <button class="btn-secondary" onclick="window.imageFilterSystem.showApartmentDetails('${apartment}', '${superficie}', '${precio}')">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        Detalles
                     </button>
                     <button class="btn-primary" onclick="window.imageFilterSystem.toggleVideoPlayback()">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -946,6 +920,717 @@ class ImageFilterSystem {
             }
         }
     }
+    
+    showApartmentDetails(apartment, superficie, precio) {
+        console.log('📋 Transformando tarjeta a modo detalles:', { apartment, superficie, precio });
+        
+        // Encontrar la tarjeta activa
+        const apartmentList = document.getElementById('apartmentList');
+        if (!apartmentList) return;
+        
+        const activeCard = apartmentList.querySelector('.apartment-card.recorrido-active');
+        if (!activeCard) {
+            console.log('❌ No se encontró tarjeta activa');
+            return;
+        }
+        
+        // Animación de encogimiento elegante
+        activeCard.style.transform = 'scale(0.8)';
+        activeCard.style.opacity = '0.7';
+        activeCard.style.transition = 'all 0.5s ease';
+        
+        setTimeout(() => {
+            // Transformar la tarjeta en modo detalles
+            this.transformCardToDetails(activeCard, apartment, superficie, precio);
+        }, 500);
+    }
+    
+    transformCardToDetails(card, apartment, superficie, precio) {
+        // Crear el nuevo contenido con carrusel
+        const detailsHTML = `
+            <div class="apartment-details-mode">
+                <div class="details-header">
+                    <button class="btn-back" onclick="window.imageFilterSystem.exitDetailsMode()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        Volver
+                    </button>
+                    <h3 class="details-title">${apartment}</h3>
+                </div>
+                
+                <div class="details-content">
+                    <div class="details-left-panel">
+                        <div class="apartment-specs">
+                            <div class="spec-item">
+                                <label>Habitación:</label>
+                                <span>2</span>
+                            </div>
+                            <div class="spec-item">
+                                <label>Área:</label>
+                                <span>55,43 M²</span>
+                            </div>
+                            <div class="spec-item">
+                                <label>Balcón:</label>
+                                <span>12m²</span>
+                            </div>
+                            <div class="spec-item">
+                                <label>Área:</label>
+                                <span>4</span>
+                            </div>
+                        </div>
+                        
+                        <div class="orientation-section">
+                            <label>Orientación:</label>
+                            <span>Norte</span>
+                        </div>
+                        
+                        <div class="floor-type-section">
+                            <label>Tipo de piso:</label>
+                            <div class="floor-type-options">
+                                <button class="floor-type-btn active">Tipo A</button>
+                                <button class="floor-type-btn">Tipo B</button>
+                                <button class="floor-type-btn">Tipo C</button>
+                            </div>
+                        </div>
+                        
+                        <div class="floor-plan">
+                            <h4>Plano del Apartamento</h4>
+                            <div class="floor-plan-image">
+                                <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPlBsYW5vIDNEIEFwYXJ0YW1lbnRvPC90ZXh0Pjwvc3ZnPg==" alt="Plano 3D" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPlBsYW5vIDNEIEFwYXJ0YW1lbnRvPC90ZXh0Pjwvc3ZnPg=='">
+                            </div>
+                        </div>
+                        
+                        <div class="action-buttons">
+                            <button class="btn-secondary" onclick="window.imageFilterSystem.sendPDF('${apartment}')">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <polyline points="14,2 14,8 20,8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <line x1="16" y1="13" x2="8" y2="13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <line x1="16" y1="17" x2="8" y2="17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <polyline points="10,9 9,9 8,9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                                Enviar PDF
+                            </button>
+                            <button class="btn-primary quote-btn" onclick="window.imageFilterSystem.quoteModel('${apartment}')">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="currentColor"/>
+                                </svg>
+                                Cotizar Modelo
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="details-right-panel">
+
+                        
+                        <div class="image-gallery">
+                            <button class="gallery-nav prev" onclick="window.imageFilterSystem.prevImage()">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </button>
+                            
+                            <div class="thumbnail-container">
+                                <div class="thumbnail active" data-index="0" onclick="window.imageFilterSystem.openImageModal(0)">
+                                    <img src="video/imagenes/carrousel/car_01.png" alt="Imagen 1" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iSW1hZ2VuIDE8L3RleHQ+PC9zdmc+'">
+                                </div>
+                                <div class="thumbnail" data-index="1" onclick="window.imageFilterSystem.openImageModal(1)">
+                                    <img src="video/imagenes/carrousel/car_02.png" alt="Imagen 2" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iSW1hZ2VuIDI8L3RleHQ+PC9zdmc+'">
+                                </div>
+                                <div class="thumbnail" data-index="2" onclick="window.imageFilterSystem.openImageModal(2)">
+                                    <img src="video/imagenes/carrousel/car_03.png" alt="Imagen 3" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iSW1hZ2VuIDM8L3RleHQ+PC9zdmc+'">
+                                </div>
+                                <div class="thumbnail" data-index="3">
+                                    <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkJhw7FvPC90ZXh0Pjwvc3ZnPg==" alt="Baño" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkJhw7FvPC90ZXh0Pjwvc3ZnPg==">
+                                </div>
+                            </div>
+                            
+                            <button class="gallery-nav next" onclick="window.imageFilterSystem.nextImage()">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Reemplazar el contenido de la tarjeta
+        card.innerHTML = detailsHTML;
+        card.classList.add('details-mode');
+        card.classList.remove('recorrido-active');
+        
+        // Animación de expansión
+        card.style.transform = 'scale(1)';
+        card.style.opacity = '1';
+        card.style.transition = 'all 0.5s ease';
+        
+        // Agregar estilos específicos para el modo detalles
+        this.addDetailsModeStyles();
+        
+        // Inicializar el carrusel
+        this.initializeImageCarousel();
+        
+        console.log('✅ Tarjeta transformada a modo detalles');
+    }
+    
+    addDetailsModeStyles() {
+        if (document.getElementById('detailsModeStyles')) return;
+        
+        const styles = `
+            <style id="detailsModeStyles">
+                .apartment-card.details-mode {
+                    max-width: 1200px !important;
+                    width: 100% !important;
+                    height: auto !important;
+                    min-height: 600px !important;
+                    background: rgba(0, 0, 0, 0.9) !important;
+                    border: 2px solid rgba(255, 255, 255, 0.2) !important;
+                    border-radius: 20px !important;
+                    overflow: hidden !important;
+                }
+                
+                .apartment-details-mode {
+                    display: flex;
+                    flex-direction: column;
+                    height: 100%;
+                    color: white;
+                }
+                
+                .details-header {
+                    display: flex;
+                    align-items: center;
+                    gap: 1rem;
+                    padding: 1.5rem;
+                    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+                    background: rgba(255, 255, 255, 0.05);
+                }
+                
+                .btn-back {
+                    background: rgba(255, 255, 255, 0.1);
+                    border: 1px solid rgba(255, 255, 255, 0.3);
+                    color: white;
+                    padding: 0.5rem 1rem;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    font-size: 0.9rem;
+                    transition: all 0.3s ease;
+                }
+                
+                .btn-back:hover {
+                    background: rgba(255, 255, 255, 0.2);
+                }
+                
+                .details-title {
+                    margin: 0;
+                    font-size: 1.5rem;
+                    font-weight: 600;
+                }
+                
+                .details-content {
+                    display: flex;
+                    flex: 1;
+                    gap: 2rem;
+                    padding: 1.5rem;
+                }
+                
+                .details-left-panel {
+                    flex: 1;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 1.5rem;
+                }
+                
+                .apartment-specs {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 1rem;
+                    background: rgba(255, 255, 255, 0.05);
+                    padding: 1.5rem;
+                    border-radius: 12px;
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                }
+                
+                .spec-item {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: 0.5rem;
+                    background: rgba(255, 255, 255, 0.1);
+                    border-radius: 8px;
+                }
+                
+                .spec-item label {
+                    color: #cccccc;
+                    font-size: 0.9rem;
+                }
+                
+                .spec-item span {
+                    color: white;
+                    font-weight: 600;
+                    font-size: 1rem;
+                }
+                
+                .orientation-section {
+                    background: rgba(255, 255, 255, 0.05);
+                    padding: 1rem;
+                    border-radius: 12px;
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                }
+                
+                .orientation-section label {
+                    color: #cccccc;
+                    font-size: 0.9rem;
+                    display: block;
+                    margin-bottom: 0.5rem;
+                }
+                
+                .orientation-section span {
+                    color: white;
+                    font-weight: 600;
+                    font-size: 1.1rem;
+                }
+                
+                .floor-type-section {
+                    background: rgba(255, 255, 255, 0.05);
+                    padding: 1rem;
+                    border-radius: 12px;
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                }
+                
+                .floor-type-section label {
+                    color: #cccccc;
+                    font-size: 0.9rem;
+                    display: block;
+                    margin-bottom: 0.5rem;
+                }
+                
+                .floor-type-options {
+                    display: flex;
+                    gap: 0.5rem;
+                }
+                
+                .floor-type-btn {
+                    background: rgba(255, 255, 255, 0.1);
+                    border: 1px solid rgba(255, 255, 255, 0.3);
+                    color: white;
+                    padding: 0.5rem 1rem;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    font-size: 0.9rem;
+                    transition: all 0.3s ease;
+                }
+                
+                .floor-type-btn.active {
+                    background: #FFD700;
+                    color: #000;
+                    border-color: #FFD700;
+                }
+                
+                .floor-type-btn:hover {
+                    background: rgba(255, 255, 255, 0.2);
+                }
+                
+                .floor-plan {
+                    background: rgba(255, 255, 255, 0.05);
+                    padding: 1rem;
+                    border-radius: 12px;
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                }
+                
+                .floor-plan h4 {
+                    margin: 0 0 1rem 0;
+                    color: white;
+                    font-size: 1.1rem;
+                }
+                
+                .floor-plan-image {
+                    width: 100%;
+                    height: 200px;
+                    border-radius: 8px;
+                    overflow: hidden;
+                    background: rgba(255, 255, 255, 0.1);
+                }
+                
+                .floor-plan-image img {
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
+                }
+                
+                .action-buttons {
+                    display: flex;
+                    gap: 1rem;
+                    margin-top: auto;
+                }
+                
+                .action-buttons button {
+                    flex: 1;
+                    padding: 1rem;
+                    border-radius: 8px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 0.5rem;
+                    transition: all 0.3s ease;
+                    border: none;
+                    font-size: 0.9rem;
+                }
+                
+                .action-buttons .btn-secondary {
+                    background: rgba(255, 255, 255, 0.1);
+                    color: white;
+                    border: 1px solid rgba(255, 255, 255, 0.3);
+                }
+                
+                .action-buttons .btn-primary {
+                    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+                    color: #000;
+                }
+                
+                .action-buttons button:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+                }
+                
+                .details-right-panel {
+                    flex: 1;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 1rem;
+                    justify-content: center;
+                }
+                
+                .image-gallery {
+                    display: flex;
+                    align-items: center;
+                    gap: 1rem;
+                    background: rgba(255, 255, 255, 0.05);
+                    padding: 1rem;
+                    border-radius: 12px;
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                }
+                
+                .gallery-nav {
+                    background: rgba(255, 255, 255, 0.1);
+                    border: 1px solid rgba(255, 255, 255, 0.3);
+                    color: white;
+                    width: 40px;
+                    height: 40px;
+                    border-radius: 50%;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    transition: all 0.3s ease;
+                }
+                
+                .gallery-nav:hover {
+                    background: rgba(255, 255, 255, 0.2);
+                }
+                
+                .thumbnail-container {
+                    display: flex;
+                    gap: 0.5rem;
+                    flex: 1;
+                    overflow-x: auto;
+                    padding: 0.5rem 0;
+                }
+                
+                .thumbnail {
+                    min-width: 80px;
+                    height: 60px;
+                    border-radius: 8px;
+                    overflow: hidden;
+                    cursor: pointer;
+                    border: 2px solid transparent;
+                    transition: all 0.3s ease;
+                    background: rgba(255, 255, 255, 0.1);
+                }
+                
+                .thumbnail.active {
+                    border-color: #FFD700;
+                    transform: scale(1.05);
+                }
+                
+                .thumbnail img {
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
+                }
+                
+                .thumbnail:hover {
+                    transform: scale(1.05);
+                }
+                
+                @media (max-width: 768px) {
+                    .details-content {
+                        flex-direction: column;
+                    }
+                    
+                    .apartment-specs {
+                        grid-template-columns: 1fr;
+                    }
+                    
+                    .action-buttons {
+                        flex-direction: column;
+                    }
+                }
+            </style>
+        `;
+        
+        document.head.insertAdjacentHTML('beforeend', styles);
+    }
+    
+    initializeImageCarousel() {
+        this.currentImageIndex = 0;
+        this.images = [
+            'video/imagenes/carrousel/car_01.png',
+            'video/imagenes/carrousel/car_02.png',
+            'video/imagenes/carrousel/car_03.png',
+            'video/imagenes/carrousel/car_04.png',
+            'video/imagenes/carrousel/car_05.png',
+            'video/imagenes/carrousel/car_06.png'
+        ];
+        
+        // Agregar event listeners a los thumbnails (si existen)
+        const thumbnails = document.querySelectorAll('.thumbnail');
+        thumbnails.forEach((thumbnail, index) => {
+            thumbnail.addEventListener('click', (e) => {
+                e.stopPropagation(); // Evitar que se propague al click del thumbnail
+                this.openImageModal(index);
+            });
+        });
+        
+        console.log('✅ Carrusel de imágenes inicializado con 6 imágenes');
+    }
+    
+    showImage(index) {
+        this.currentImageIndex = index;
+        
+        // Actualizar imagen principal
+        const mainImage = document.querySelector('.main-image');
+        if (mainImage) {
+            mainImage.src = this.images[index];
+        }
+        
+        // Actualizar thumbnails activos
+        const thumbnails = document.querySelectorAll('.thumbnail');
+        thumbnails.forEach((thumbnail, i) => {
+            if (i === index) {
+                thumbnail.classList.add('active');
+            } else {
+                thumbnail.classList.remove('active');
+            }
+        });
+        
+        console.log('🖼️ Imagen cambiada a índice:', index);
+    }
+    
+    nextImage() {
+        const nextIndex = (this.currentImageIndex + 1) % this.images.length;
+        this.showImage(nextIndex);
+    }
+    
+    prevImage() {
+        const prevIndex = (this.currentImageIndex - 1 + this.images.length) % this.images.length;
+        this.showImage(prevIndex);
+    }
+    
+    exitDetailsMode() {
+        console.log('🚪 Saliendo del modo detalles...');
+        
+        // Encontrar la tarjeta en modo detalles
+        const detailsCard = document.querySelector('.apartment-card.details-mode');
+        if (!detailsCard) return;
+        
+        // Restaurar la tarjeta original
+        this.restoreOriginalCard(detailsCard);
+        
+        // Remover estilos específicos
+        const styles = document.getElementById('detailsModeStyles');
+        if (styles) styles.remove();
+        
+        console.log('✅ Modo detalles desactivado');
+    }
+    
+    restoreOriginalCard(card) {
+        // Restaurar el contenido original de la tarjeta
+        const apartment = card.querySelector('.details-title')?.textContent || '1 Dormitorio';
+        const superficie = '40-60 m²';
+        const precio = '$2.000-3.000 UF';
+        
+        const originalHTML = `
+            <div class="apartment-image">
+                <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlbiAxPC90ZXh0Pjwvc3ZnPg==" alt="${apartment}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlbiAxPC90ZXh0Pjwvc3ZnPg=='">
+            </div>
+            <div class="apartment-info">
+                <h3>${apartment}</h3>
+                <p><strong>Superficie:</strong> ${superficie}</p>
+                <p><strong>Precio:</strong> ${precio}</p>
+                <div class="apartment-actions">
+                    <button class="btn-secondary watchVideoBtn" data-apartment="${apartment}" data-superficie="${superficie}" data-precio="${precio}">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M8 5v14l11-7z" fill="currentColor"></path>
+                        </svg>
+                        Recorrer
+                    </button>
+                    <button class="btn-primary contactModelBtn" data-apartment="${apartment}" data-superficie="${superficie}" data-precio="${precio}">
+                        Solicitar Información
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        card.innerHTML = originalHTML;
+        card.classList.remove('details-mode');
+        card.classList.add('recorrido-active');
+        
+        // Restaurar estilos originales
+        card.style.maxWidth = '';
+        card.style.width = '';
+        card.style.height = '';
+        card.style.minHeight = '';
+        card.style.background = '';
+        card.style.border = '';
+        card.style.borderRadius = '';
+        card.style.overflow = '';
+        
+        console.log('✅ Tarjeta original restaurada');
+    }
+    
+    sendPDF(apartment) {
+        console.log('📄 Enviando PDF para:', apartment);
+        // Aquí puedes implementar la lógica para enviar PDF
+        alert(`PDF enviado para ${apartment}`);
+    }
+    
+    quoteModel(apartment) {
+        console.log('💰 Cotizando modelo:', apartment);
+        // Aquí puedes implementar la lógica para cotizar
+        this.createContactModal(apartment, '40-60 m²', '$2.000-3.000 UF');
+    }
+    
+    openImageModal(imageIndex) {
+        console.log('🖼️ Abriendo imagen en modal:', imageIndex);
+        
+        // Remover modal existente si hay uno
+        const existingModal = document.getElementById('imageModal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+        
+        const imageUrl = this.images[imageIndex];
+        const imageTitle = `Imagen ${imageIndex + 1} del Apartamento`;
+        
+        const modalHTML = `
+            <div class="modal-overlay" id="imageModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.95); display: flex; align-items: center; justify-content: center; z-index: 10000;">
+                <div class="image-modal-container" style="position: relative; max-width: 90vw; max-height: 90vh; display: flex; flex-direction: column; align-items: center;">
+                    
+                    <!-- Header del modal -->
+                    <div class="image-modal-header" style="display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 1rem 2rem; background: rgba(0, 0, 0, 0.8); border-radius: 10px 10px 0 0;">
+                        <h3 style="margin: 0; color: white; font-size: 1.2rem; font-weight: 600;">${imageTitle}</h3>
+                        <button class="modal-close" onclick="this.closest('.modal-overlay').remove()" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3); color: white; font-size: 1.5rem; cursor: pointer; padding: 0.5rem; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease;">
+                            &times;
+                        </button>
+                    </div>
+                    
+                    <!-- Imagen principal -->
+                    <div class="image-modal-content" style="position: relative; max-width: 100%; max-height: 80vh; overflow: hidden; border-radius: 0 0 10px 10px; background: rgba(0, 0, 0, 0.5);">
+                        <img src="${imageUrl}" alt="${imageTitle}" style="max-width: 100%; max-height: 100%; object-fit: contain; display: block;" 
+                             onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlbiAke imageIndex + 1}</dGV4dD48L3N2Zz4='">
+                        
+                        <!-- Botón anterior -->
+                        <button class="modal-nav-btn prev" onclick="window.imageFilterSystem.prevImageModal()" style="position: absolute; left: 20px; top: 50%; transform: translateY(-50%); background: rgba(0, 0, 0, 0.7); border: 1px solid rgba(255, 255, 255, 0.3); color: white; width: 50px; height: 50px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; transition: all 0.3s ease;">
+                            &#8249;
+                        </button>
+                        
+                        <!-- Botón siguiente -->
+                        <button class="modal-nav-btn next" onclick="window.imageFilterSystem.nextImageModal()" style="position: absolute; right: 20px; top: 50%; transform: translateY(-50%); background: rgba(0, 0, 0, 0.7); border: 1px solid rgba(255, 255, 255, 0.3); color: white; width: 50px; height: 50px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; transition: all 0.3s ease;">
+                            &#8250;
+                        </button>
+                    </div>
+                    
+                    <!-- Footer con navegación -->
+                    <div class="image-modal-footer" style="display: flex; align-items: center; gap: 1rem; padding: 1rem 2rem; background: rgba(0, 0, 0, 0.8); border-radius: 0 0 10px 10px; width: 100%; justify-content: center;">
+                        <span style="color: white; font-size: 0.9rem;">${imageIndex + 1} de ${this.images.length}</span>
+                        <div style="display: flex; gap: 0.5rem;">
+                            ${this.images.map((_, i) => `
+                                <div class="modal-indicator ${i === imageIndex ? 'active' : ''}" 
+                                     onclick="window.imageFilterSystem.openImageModal(${i})"
+                                     style="width: 8px; height: 8px; border-radius: 50%; background: ${i === imageIndex ? '#FFD700' : 'rgba(255, 255, 255, 0.5)'}; cursor: pointer; transition: all 0.3s ease;">
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+        
+        // Guardar el índice actual
+        this.currentModalImageIndex = imageIndex;
+        
+        // Agregar event listeners
+        document.addEventListener('keydown', this.handleModalKeyboard.bind(this));
+        
+        // Agregar efecto hover a los botones
+        const modalNavBtns = document.querySelectorAll('.modal-nav-btn');
+        modalNavBtns.forEach(btn => {
+            btn.addEventListener('mouseenter', () => {
+                btn.style.background = 'rgba(255, 255, 255, 0.2)';
+            });
+            btn.addEventListener('mouseleave', () => {
+                btn.style.background = 'rgba(0, 0, 0, 0.7)';
+            });
+        });
+        
+        const closeBtn = document.querySelector('.modal-close');
+        closeBtn.addEventListener('mouseenter', () => {
+            closeBtn.style.background = 'rgba(255, 255, 255, 0.2)';
+        });
+        closeBtn.addEventListener('mouseleave', () => {
+            closeBtn.style.background = 'rgba(255, 255, 255, 0.1)';
+        });
+        
+        console.log('✅ Modal de imagen abierto');
+    }
+    
+    handleModalKeyboard(e) {
+        if (e.key === 'Escape') {
+            this.closeImageModal();
+        } else if (e.key === 'ArrowLeft') {
+            this.prevImageModal();
+        } else if (e.key === 'ArrowRight') {
+            this.nextImageModal();
+        }
+    }
+    
+    closeImageModal() {
+        const modal = document.getElementById('imageModal');
+        if (modal) {
+            modal.remove();
+        }
+        document.removeEventListener('keydown', this.handleModalKeyboard.bind(this));
+    }
+    
+    nextImageModal() {
+        const nextIndex = (this.currentModalImageIndex + 1) % this.images.length;
+        this.openImageModal(nextIndex);
+    }
+    
+    prevImageModal() {
+        const prevIndex = (this.currentModalImageIndex - 1 + this.images.length) % this.images.length;
+        this.openImageModal(prevIndex);
+    }
 }
 
 // Export for global use
@@ -961,3 +1646,17 @@ window.initImageFilterSystem = function() {
     }
     return window.imageFilterSystem;
 };
+
+// Solo crear la instancia si no existe ya una instancia global
+// Esto evita crear múltiples instancias cuando se carga desde main.js
+if (!window.imageFilterSystem) {
+    // Verificar si ya existe una instancia creada por main.js
+    setTimeout(() => {
+        if (!window.imageFilterSystem) {
+            console.log('🖼️ Creating ImageFilterSystem instance from ImageFilterSystem.js');
+            window.imageFilterSystem = new ImageFilterSystem();
+        } else {
+            console.log('🖼️ Using existing ImageFilterSystem instance from main.js');
+        }
+    }, 100);
+}
