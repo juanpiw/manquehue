@@ -50,6 +50,7 @@ class ImageFilterSystem {
     init() {
         console.log('🖼️ Initializing ImageFilterSystem...');
         this.setupEventListeners();
+        this.setupBackButton();
         console.log('✅ ImageFilterSystem initialized');
     }
     
@@ -683,6 +684,24 @@ class ImageFilterSystem {
                 card.style.transform = 'scale(1.1)';
                 card.style.transition = 'all 0.5s ease';
                 card.classList.add('recorrido-active');
+                
+                // Ocultar los botones de acción para evitar confusión
+                const actionButtons = card.querySelector('.apartment-actions');
+                if (actionButtons) {
+                    actionButtons.style.display = 'none';
+                }
+                
+                // Ocultar la sección de filtros para mantener la interfaz limpia
+                const filtersSection = document.querySelector('.apartment-filters');
+                if (filtersSection) {
+                    filtersSection.style.display = 'none';
+                }
+                
+                const typeSelector = document.querySelector('.apartment-type-selector');
+                if (typeSelector) {
+                    typeSelector.style.display = 'none';
+                }
+                
                 activeCardFound = true;
                 console.log('🎯 Tarjeta activa encontrada y configurada');
             } else {
@@ -690,6 +709,13 @@ class ImageFilterSystem {
                 card.style.opacity = '0';
                 card.style.transform = 'scale(0.8)';
                 card.classList.remove('recorrido-active');
+                
+                // Asegurar que los botones estén visibles en las tarjetas ocultas
+                const actionButtons = card.querySelector('.apartment-actions');
+                if (actionButtons) {
+                    actionButtons.style.display = 'flex';
+                }
+                
                 setTimeout(() => {
                     card.style.display = 'none';
                 }, 500);
@@ -894,7 +920,24 @@ class ImageFilterSystem {
             card.style.opacity = '1';
             card.style.transform = 'scale(1)';
             card.classList.remove('recorrido-active');
+            
+            // Restaurar visibilidad de los botones de acción
+            const actionButtons = card.querySelector('.apartment-actions');
+            if (actionButtons) {
+                actionButtons.style.display = 'flex';
+            }
         });
+        
+        // Restaurar visibilidad de los filtros
+        const filtersSection = document.querySelector('.apartment-filters');
+        if (filtersSection) {
+            filtersSection.style.display = 'flex';
+        }
+        
+        const typeSelector = document.querySelector('.apartment-type-selector');
+        if (typeSelector) {
+            typeSelector.style.display = 'flex';
+        }
     }
     
     restoreBackgroundVideo() {
@@ -1383,6 +1426,15 @@ class ImageFilterSystem {
                         flex-direction: column;
                     }
                 }
+                
+                @keyframes spin {
+                    from {
+                        transform: rotate(0deg);
+                    }
+                    to {
+                        transform: rotate(360deg);
+                    }
+                }
             </style>
         `;
         
@@ -1507,9 +1559,150 @@ class ImageFilterSystem {
     }
     
     sendPDF(apartment) {
-        console.log('📄 Enviando PDF para:', apartment);
-        // Aquí puedes implementar la lógica para enviar PDF
-        alert(`PDF enviado para ${apartment}`);
+        console.log('📄 Abriendo modal para enviar PDF:', apartment);
+        
+        // Remover modal existente si hay uno
+        const existingModal = document.getElementById('pdfModal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+        
+        const modalHTML = `
+            <div class="modal-overlay" id="pdfModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); display: flex; align-items: center; justify-content: center; z-index: 10000;">
+                <div class="modal" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 15px; max-width: 500px; width: 90%; backdrop-filter: blur(10px);">
+                    <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; border-bottom: 1px solid rgba(255, 255, 255, 0.2);">
+                        <h3 style="margin: 0; color: white; font-size: 1.5rem; font-weight: 600;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 0.5rem; display: inline-block; vertical-align: middle;">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <polyline points="14,2 14,8 20,8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <line x1="16" y1="13" x2="8" y2="13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <line x1="16" y1="17" x2="8" y2="17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <polyline points="10,9 9,9 8,9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            Enviar PDF
+                        </h3>
+                        <button class="modal-close" onclick="this.closest('.modal-overlay').remove()" style="background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; padding: 0.5rem;">&times;</button>
+                    </div>
+                    <div class="modal-body" style="padding: 1.5rem;">
+                        <div style="background: rgba(255, 255, 255, 0.05); padding: 1.5rem; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.2); margin-bottom: 1.5rem;">
+                            <h4 style="margin: 0 0 1rem 0; color: white; font-size: 1.2rem;">${apartment}</h4>
+                            <p style="margin: 0; color: #cccccc; font-size: 0.95rem;">Ingresa tu correo electrónico para recibir el PDF con toda la información del apartamento.</p>
+                        </div>
+                        
+                        <form id="pdfForm" onsubmit="window.imageFilterSystem.submitPDFForm(event, '${apartment}')" style="display: flex; flex-direction: column; gap: 1rem;">
+                            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                                <label for="email" style="color: white; font-size: 0.9rem; font-weight: 500;">Correo Electrónico</label>
+                                <input type="email" id="email" name="email" required 
+                                       placeholder="tu@correo.com"
+                                       style="padding: 1rem; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 8px; color: white; font-size: 1rem; transition: all 0.3s ease;"
+                                       onfocus="this.style.borderColor='#FFD700'; this.style.background='rgba(255, 255, 255, 0.15)'"
+                                       onblur="this.style.borderColor='rgba(255, 255, 255, 0.3)'; this.style.background='rgba(255, 255, 255, 0.1)'">
+                                <div id="emailError" style="color: #ff6b6b; font-size: 0.8rem; display: none;"></div>
+                            </div>
+                            
+                            <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                                <button type="button" class="btn-secondary" onclick="this.closest('.modal-overlay').remove()" 
+                                        style="flex: 1; padding: 1rem; background: rgba(255, 255, 255, 0.1); color: white; border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+                                    Cancelar
+                                </button>
+                                <button type="submit" class="btn-primary" id="submitBtn"
+                                        style="flex: 1; padding: 1rem; background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                    Enviar PDF
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+        
+        // Agregar event listener para cerrar con Escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const modal = document.getElementById('pdfModal');
+                if (modal) modal.remove();
+            }
+        });
+        
+        // Focus en el input de email
+        setTimeout(() => {
+            const emailInput = document.getElementById('email');
+            if (emailInput) emailInput.focus();
+        }, 100);
+        
+        console.log('✅ Modal de PDF abierto');
+    }
+    
+    submitPDFForm(event, apartment) {
+        event.preventDefault();
+        
+        const emailInput = document.getElementById('email');
+        const submitBtn = document.getElementById('submitBtn');
+        const emailError = document.getElementById('emailError');
+        
+        const email = emailInput.value.trim();
+        
+        // Validación básica de email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            emailError.textContent = 'Por favor ingresa un correo electrónico válido';
+            emailError.style.display = 'block';
+            emailInput.style.borderColor = '#ff6b6b';
+            return;
+        }
+        
+        // Ocultar error si existe
+        emailError.style.display = 'none';
+        emailInput.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+        
+        // Cambiar estado del botón
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = `
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="animation: spin 1s linear infinite;">
+                <path d="M21 12a9 9 0 11-6.219-8.56" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Enviando...
+        `;
+        submitBtn.disabled = true;
+        submitBtn.style.opacity = '0.7';
+        
+        // Simular envío (aquí puedes implementar la lógica real)
+        setTimeout(() => {
+            console.log('📧 PDF enviado a:', email, 'para apartamento:', apartment);
+            
+            // Mostrar mensaje de éxito
+            const modal = document.getElementById('pdfModal');
+            if (modal) {
+                modal.innerHTML = `
+                    <div class="modal-overlay" id="pdfModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); display: flex; align-items: center; justify-content: center; z-index: 10000;">
+                        <div class="modal" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 15px; max-width: 500px; width: 90%; backdrop-filter: blur(10px); text-align: center;">
+                            <div class="modal-body" style="padding: 2rem;">
+                                <div style="margin-bottom: 1.5rem;">
+                                    <svg width="60" height="60" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="color: #4CAF50;">
+                                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                        <polyline points="22,4 12,14.01 9,11.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </div>
+                                <h3 style="margin: 0 0 1rem 0; color: white; font-size: 1.5rem; font-weight: 600;">¡PDF Enviado!</h3>
+                                <p style="margin: 0 0 1.5rem 0; color: #cccccc; font-size: 1rem;">El PDF con la información de <strong>${apartment}</strong> ha sido enviado a <strong>${email}</strong></p>
+                                <button class="btn-primary" onclick="this.closest('.modal-overlay').remove()" 
+                                        style="padding: 1rem 2rem; background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+                                    Cerrar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+        }, 2000); // Simular 2 segundos de envío
+        
+        console.log('✅ Formulario de PDF enviado');
     }
     
     quoteModel(apartment) {
@@ -1630,6 +1823,212 @@ class ImageFilterSystem {
     prevImageModal() {
         const prevIndex = (this.currentModalImageIndex - 1 + this.images.length) % this.images.length;
         this.openImageModal(prevIndex);
+    }
+    
+    setupBackButton() {
+        const backButton = document.getElementById('backButton');
+        if (backButton) {
+            backButton.addEventListener('click', (e) => {
+                e.preventDefault();
+                
+                // Mostrar confirmación antes de recargar
+                if (confirm('¿Estás seguro de que quieres volver al inicio? Se perderá el progreso actual.')) {
+                    console.log('🔄 Recargando página desde botón Volver...');
+                    
+                    // Agregar efecto visual antes de recargar
+                    backButton.style.transform = 'scale(0.95)';
+                    backButton.style.opacity = '0.7';
+                    
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 200);
+                }
+            });
+            
+            // Efectos hover adicionales
+            backButton.addEventListener('mouseenter', () => {
+                backButton.style.transform = 'scale(1.05)';
+                backButton.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.3)';
+            });
+            
+            backButton.addEventListener('mouseleave', () => {
+                backButton.style.transform = 'scale(1)';
+                backButton.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.2)';
+            });
+            
+            console.log('✅ Botón Volver configurado');
+        }
+    }
+    
+    // Variables para el carrusel de features
+    featuresCurrentSlide = 0;
+    featuresImages = [
+        'video/imagenes/carrousel/car_01.png',
+        'video/imagenes/carrousel/car_02.png',
+        'video/imagenes/carrousel/car_03.png',
+        'video/imagenes/carrousel/car_04.png',
+        'video/imagenes/carrousel/car_05.png',
+        'video/imagenes/carrousel/car_06.png'
+    ];
+    
+    featuresSlideTitles = [
+        'Vista Principal',
+        'Áreas Comunes',
+        'Interiores',
+        'Exteriores',
+        'Amenities',
+        'Detalles'
+    ];
+    
+    // Funciones del carrusel de features
+    nextFeaturesSlide() {
+        this.featuresCurrentSlide = (this.featuresCurrentSlide + 1) % this.featuresImages.length;
+        this.updateFeaturesCarousel();
+    }
+    
+    prevFeaturesSlide() {
+        this.featuresCurrentSlide = (this.featuresCurrentSlide - 1 + this.featuresImages.length) % this.featuresImages.length;
+        this.updateFeaturesCarousel();
+    }
+    
+    goToFeaturesSlide(index) {
+        this.featuresCurrentSlide = index;
+        this.updateFeaturesCarousel();
+    }
+    
+    updateFeaturesCarousel() {
+        const track = document.getElementById('featuresCarouselTrack');
+        const indicators = document.querySelectorAll('#featuresCarouselIndicators .indicator');
+        
+        if (track) {
+            const slideWidth = track.querySelector('.carousel-slide').offsetWidth;
+            track.style.transform = `translateX(-${this.featuresCurrentSlide * slideWidth}px)`;
+        }
+        
+        // Actualizar indicadores
+        indicators.forEach((indicator, index) => {
+            if (index === this.featuresCurrentSlide) {
+                indicator.classList.add('active');
+            } else {
+                indicator.classList.remove('active');
+            }
+        });
+        
+        console.log('🖼️ Carrusel de features actualizado a slide:', this.featuresCurrentSlide);
+    }
+    
+    openFeaturesImageModal(imageIndex) {
+        console.log('🖼️ Abriendo imagen de features en modal:', imageIndex);
+        
+        // Remover modal existente si hay uno
+        const existingModal = document.getElementById('featuresImageModal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+        
+        const imageUrl = this.featuresImages[imageIndex];
+        const imageTitle = this.featuresSlideTitles[imageIndex];
+        
+        const modalHTML = `
+            <div class="modal-overlay" id="featuresImageModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.95); display: flex; align-items: center; justify-content: center; z-index: 10000;">
+                <div class="image-modal-container" style="position: relative; max-width: 90vw; max-height: 90vh; display: flex; flex-direction: column; align-items: center;">
+                    
+                    <!-- Header del modal -->
+                    <div class="image-modal-header" style="display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 1rem 2rem; background: rgba(0, 0, 0, 0.8); border-radius: 10px 10px 0 0;">
+                        <h3 style="margin: 0; color: white; font-size: 1.2rem; font-weight: 600;">${imageTitle}</h3>
+                        <button class="modal-close" onclick="this.closest('.modal-overlay').remove()" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3); color: white; font-size: 1.5rem; cursor: pointer; padding: 0.5rem; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease;">
+                            &times;
+                        </button>
+                    </div>
+                    
+                    <!-- Imagen principal -->
+                    <div class="image-modal-content" style="position: relative; max-width: 100%; max-height: 80vh; overflow: hidden; border-radius: 0 0 10px 10px; background: rgba(0, 0, 0, 0.5);">
+                        <img src="${imageUrl}" alt="${imageTitle}" style="max-width: 100%; max-height: 100%; object-fit: contain; display: block;" 
+                             onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlbiAke imageIndex + 1}</dGV4dD48L3N2Zz4='">
+                        
+                        <!-- Botón anterior -->
+                        <button class="modal-nav-btn prev" onclick="window.imageFilterSystem.prevFeaturesImageModal()" style="position: absolute; left: 20px; top: 50%; transform: translateY(-50%); background: rgba(0, 0, 0, 0.7); border: 1px solid rgba(255, 255, 255, 0.3); color: white; width: 50px; height: 50px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; transition: all 0.3s ease;">
+                            &#8249;
+                        </button>
+                        
+                        <!-- Botón siguiente -->
+                        <button class="modal-nav-btn next" onclick="window.imageFilterSystem.nextFeaturesImageModal()" style="position: absolute; right: 20px; top: 50%; transform: translateY(-50%); background: rgba(0, 0, 0, 0.7); border: 1px solid rgba(255, 255, 255, 0.3); color: white; width: 50px; height: 50px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; transition: all 0.3s ease;">
+                            &#8250;
+                        </button>
+                    </div>
+                    
+                    <!-- Footer con navegación -->
+                    <div class="image-modal-footer" style="display: flex; align-items: center; gap: 1rem; padding: 1rem 2rem; background: rgba(0, 0, 0, 0.8); border-radius: 0 0 10px 10px; width: 100%; justify-content: center;">
+                        <span style="color: white; font-size: 0.9rem;">${imageIndex + 1} de ${this.featuresImages.length}</span>
+                        <div style="display: flex; gap: 0.5rem;">
+                            ${this.featuresImages.map((_, i) => `
+                                <div class="modal-indicator ${i === imageIndex ? 'active' : ''}" 
+                                     onclick="window.imageFilterSystem.openFeaturesImageModal(${i})"
+                                     style="width: 8px; height: 8px; border-radius: 50%; background: ${i === imageIndex ? '#FFD700' : 'rgba(255, 255, 255, 0.5)'}; cursor: pointer; transition: all 0.3s ease;">
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+        
+        // Guardar el índice actual
+        this.currentFeaturesModalImageIndex = imageIndex;
+        
+        // Agregar event listeners
+        document.addEventListener('keydown', this.handleFeaturesModalKeyboard.bind(this));
+        
+        // Agregar efecto hover a los botones
+        const modalNavBtns = document.querySelectorAll('.modal-nav-btn');
+        modalNavBtns.forEach(btn => {
+            btn.addEventListener('mouseenter', () => {
+                btn.style.background = 'rgba(255, 255, 255, 0.2)';
+            });
+            btn.addEventListener('mouseleave', () => {
+                btn.style.background = 'rgba(0, 0, 0, 0.7)';
+            });
+        });
+        
+        const closeBtn = document.querySelector('.modal-close');
+        closeBtn.addEventListener('mouseenter', () => {
+            closeBtn.style.background = 'rgba(255, 255, 255, 0.2)';
+        });
+        closeBtn.addEventListener('mouseleave', () => {
+            closeBtn.style.background = 'rgba(255, 255, 255, 0.1)';
+        });
+        
+        console.log('✅ Modal de imagen de features abierto');
+    }
+    
+    handleFeaturesModalKeyboard(e) {
+        if (e.key === 'Escape') {
+            this.closeFeaturesImageModal();
+        } else if (e.key === 'ArrowLeft') {
+            this.prevFeaturesImageModal();
+        } else if (e.key === 'ArrowRight') {
+            this.nextFeaturesImageModal();
+        }
+    }
+    
+    closeFeaturesImageModal() {
+        const modal = document.getElementById('featuresImageModal');
+        if (modal) {
+            modal.remove();
+        }
+        document.removeEventListener('keydown', this.handleFeaturesModalKeyboard.bind(this));
+    }
+    
+    nextFeaturesImageModal() {
+        const nextIndex = (this.currentFeaturesModalImageIndex + 1) % this.featuresImages.length;
+        this.openFeaturesImageModal(nextIndex);
+    }
+    
+    prevFeaturesImageModal() {
+        const prevIndex = (this.currentFeaturesModalImageIndex - 1 + this.featuresImages.length) % this.featuresImages.length;
+        this.openFeaturesImageModal(prevIndex);
     }
 }
 

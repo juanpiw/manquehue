@@ -262,47 +262,62 @@
                 <h2 class="section-title">Explora las características únicas</h2>
                 <p class="section-subtitle">de nuestro proyecto</p>
                 
-                <div class="features-grid">
-                    <div class="feature-card">
-                        <div class="feature-icon">🏠</div>
-                        <h3>Diseño Arquitectónico</h3>
-                        <p>Arquitectura moderna y funcional diseñada para maximizar las vistas y la comodidad.</p>
-                    </div>
-                    <div class="feature-card">
-                        <div class="feature-icon">🌳</div>
-                        <h3>Áreas Verdes</h3>
-                        <p>Extensas áreas verdes y jardines que conectan con la naturaleza del sector.</p>
-                    </div>
-                    <div class="feature-card">
-                        <div class="feature-icon">🏊‍♂️</div>
-                        <h3>Piscina</h3>
-                        <p>Piscina temperada con vista panorámica y áreas de descanso.</p>
-                    </div>
-                    <div class="feature-card">
-                        <div class="feature-icon">🏋️‍♂️</div>
-                        <h3>Gimnasio</h3>
-                        <p>Gimnasio completamente equipado con equipos de última generación.</p>
-                    </div>
-                </div>
-
-                <!-- Carrusel Frost Container -->
+                <!-- Carrusel Elegante de Imágenes -->
                 <div class="carousel-frost-container">
                     <div class="carousel-content">
-                        <h3>Galería de Imágenes</h3>
+                        <h3>Galería de Imágenes del Proyecto</h3>
+                        <p class="carousel-subtitle">Descubre los espacios y detalles que hacen único este proyecto</p>
                         <div class="carousel-wrapper">
-                            <div class="carousel-track" id="carouselTrack">
-                                <div class="carousel-slide">
-                                    <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlbiAxPC90ZXh0Pjwvc3ZnPg==" alt="Imagen 1" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlbiAxPC90ZXh0Pjwvc3ZnPg=='">
+                            <div class="carousel-track" id="featuresCarouselTrack">
+                                <div class="carousel-slide" onclick="window.imageFilterSystem.openFeaturesImageModal(0)">
+                                    <img src="video/imagenes/carrousel/car_01.png" alt="Vista del Proyecto 1" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iVmlzdGEgMSBkZWwgUHJveWVjdG88L3RleHQ+PC9zdmc+'">
+                                    <div class="slide-overlay">
+                                        <span class="slide-title">Vista Principal</span>
+                                    </div>
                                 </div>
-                                <div class="carousel-slide">
-                                    <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlbiAyPC90ZXh0Pjwvc3ZnPg==" alt="Imagen 2" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlbiAyPC90ZXh0Pjwvc3ZnPg=='">
+                                <div class="carousel-slide" onclick="window.imageFilterSystem.openFeaturesImageModal(1)">
+                                    <img src="video/imagenes/carrousel/car_02.png" alt="Vista del Proyecto 2" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iVmlzdGEgMiBkZWwgUHJveWVjdG88L3RleHQ+PC9zdmc+'">
+                                    <div class="slide-overlay">
+                                        <span class="slide-title">Áreas Comunes</span>
+                                    </div>
                                 </div>
-                                <div class="carousel-slide">
-                                    <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlbiAzPC90ZXh0Pjwvc3ZnPg==" alt="Imagen 3" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlbiAzPC90ZXh0Pjwvc3ZnPg=='">
+                                <div class="carousel-slide" onclick="window.imageFilterSystem.openFeaturesImageModal(2)">
+                                    <img src="video/imagenes/carrousel/car_03.png" alt="Vista del Proyecto 3" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iVmlzdGEgMyBkZWwgUHJveWVjdG88L3RleHQ+PC9zdmc+'">
+                                    <div class="slide-overlay">
+                                        <span class="slide-title">Interiores</span>
+                                    </div>
+                                </div>
+                                <div class="carousel-slide" onclick="window.imageFilterSystem.openFeaturesImageModal(3)">
+                                    <img src="video/imagenes/carrousel/car_04.png" alt="Vista del Proyecto 4" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iVmlzdGEgNCBkZWwgUHJveWVjdG88L3RleHQ+PC9zdmc+'">
+                                    <div class="slide-overlay">
+                                        <span class="slide-title">Exteriores</span>
+                                    </div>
+                                </div>
+                                <div class="carousel-slide" onclick="window.imageFilterSystem.openFeaturesImageModal(4)">
+                                    <img src="video/imagenes/carrousel/car_05.png" alt="Vista del Proyecto 5" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iVmlzdGEgNSBkZWwgUHJveWVjdG88L3RleHQ+PC9zdmc+'">
+                                    <div class="slide-overlay">
+                                        <span class="slide-title">Amenities</span>
+                                    </div>
+                                </div>
+                                <div class="carousel-slide" onclick="window.imageFilterSystem.openFeaturesImageModal(5)">
+                                    <img src="video/imagenes/carrousel/car_06.png" alt="Vista del Proyecto 6" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iVmlzdGEgNiBkZWwgUHJveWVjdG88L3RleHQ+PC9zdmc+'">
+                                    <div class="slide-overlay">
+                                        <span class="slide-title">Detalles</span>
+                                    </div>
                                 </div>
                             </div>
-                            <button class="carousel-btn prev" id="carouselPrev">‹</button>
-                            <button class="carousel-btn next" id="carouselNext" style="transform: scale(1); transition: transform 0.2s;">›</button>
+                            <button class="carousel-btn prev" id="featuresCarouselPrev" onclick="window.imageFilterSystem.prevFeaturesSlide()">‹</button>
+                            <button class="carousel-btn next" id="featuresCarouselNext" onclick="window.imageFilterSystem.nextFeaturesSlide()">›</button>
+                        </div>
+                        
+                        <!-- Indicadores del carrusel -->
+                        <div class="carousel-indicators" id="featuresCarouselIndicators">
+                            <div class="indicator active" onclick="window.imageFilterSystem.goToFeaturesSlide(0)"></div>
+                            <div class="indicator" onclick="window.imageFilterSystem.goToFeaturesSlide(1)"></div>
+                            <div class="indicator" onclick="window.imageFilterSystem.goToFeaturesSlide(2)"></div>
+                            <div class="indicator" onclick="window.imageFilterSystem.goToFeaturesSlide(3)"></div>
+                            <div class="indicator" onclick="window.imageFilterSystem.goToFeaturesSlide(4)"></div>
+                            <div class="indicator" onclick="window.imageFilterSystem.goToFeaturesSlide(5)"></div>
                         </div>
                     </div>
                 </div>

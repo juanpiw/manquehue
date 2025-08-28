@@ -2316,3 +2316,140 @@ body {
     0% { transform: translateY(0px) rotate(0deg); opacity: 1; }
     100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
 }
+
+/* ===========================================
+   CARRUSEL DE FEATURES - ESTILOS ADICIONALES
+   =========================================== */
+
+.carousel-subtitle {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.carousel-slide {
+    position: relative;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+}
+
+.carousel-slide:hover {
+    transform: scale(1.02);
+}
+
+.carousel-slide:hover .slide-overlay {
+    opacity: 1;
+}
+
+.slide-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+    padding: 1rem;
+    opacity: 0;
+    transition: var(--transition-smooth);
+}
+
+.slide-title {
+    color: white;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.carousel-indicators {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    cursor: pointer;
+    transition: var(--transition-smooth);
+}
+
+.indicator:hover {
+    background: rgba(255, 255, 255, 0.6);
+    transform: scale(1.2);
+}
+
+.indicator.active {
+    background: var(--accent-color);
+    transform: scale(1.3);
+}
+
+/* Mejoras para el carrusel de features */
+.carousel-frost-container {
+    max-width: 800px;
+    margin: 3rem auto;
+}
+
+.carousel-content h3 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 0.5rem;
+}
+
+.carousel-wrapper {
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.carousel-slide img {
+    height: 300px;
+    transition: var(--transition-smooth);
+}
+
+.carousel-slide:hover img {
+    transform: scale(1.05);
+}
+
+.carousel-btn {
+    width: 50px;
+    height: 50px;
+    font-size: 1.5rem;
+    background: rgba(0, 0, 0, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.carousel-btn:hover {
+    background: rgba(0, 123, 255, 0.8);
+    border-color: var(--accent-color);
+    transform: translateY(-50%) scale(1.1);
+}
+
+/* Responsive para el carrusel */
+@media (max-width: 768px) {
+    .carousel-frost-container {
+        margin: 2rem 1rem;
+        padding: 1rem;
+    }
+    
+    .carousel-slide img {
+        height: 200px;
+    }
+    
+    .carousel-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 1.2rem;
+    }
+    
+    .carousel-content h3 {
+        font-size: 1.2rem;
+    }
+    
+    .carousel-subtitle {
+        font-size: 0.8rem;
+    }
+}
