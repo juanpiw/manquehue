@@ -7,12 +7,19 @@ class NavigationSystem {
         this.currentSection = 0;
         this.sections = ['section-1', 'apartments', 'features', 'equipment'];
         this.isNavigating = false;
-        this.navigationDelay = 1000; // Delay entre navegaciones
+        this.navigationDelay = 400; // Reducido de 600ms a 400ms para mayor fluidez
         
         // Elementos de navegación
         this.navItems = [];
         this.scrollIndicator = null;
         this.scrollProgress = null;
+        
+        // Mejoras para scroll más suave
+        this.scrollSensitivity = 0.6; // Reducido de 0.8 a 0.6 para mayor sensibilidad
+        this.scrollThreshold = 0.3; // Reducido de 0.4 a 0.3 para mayor responsividad
+        this.lastScrollTime = 0;
+        this.scrollCooldown = 150; // Reducido de 300ms a 150ms para scroll manual más fluido
+        this.isManualScroll = false; // Flag para detectar scroll manual
         
         this.init();
     }

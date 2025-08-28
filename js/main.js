@@ -9,6 +9,7 @@ class VideoScrollApp {
         this.componentManager = null;
         this.animationController = null;
         this.contentManager = null;
+        this.scrollCoordinator = null;
         
         this.isInitialized = false;
         this.initPromise = null;
@@ -25,6 +26,7 @@ class VideoScrollApp {
             await this.initializeNavigationSystem();
             await this.initializeComponentManager();
             await this.initializeAnimationController();
+            await this.initializeScrollCoordinator();
             await this.initializeImageFilterSystem();
             await this.initializeContentManager();
             
@@ -111,6 +113,24 @@ class VideoScrollApp {
             
         } catch (error) {
             console.error('❌ Error initializing AnimationController:', error);
+            throw error;
+        }
+    }
+
+    async initializeScrollCoordinator() {
+        console.log('🎯 Initializing ScrollCoordinator...');
+        
+        try {
+            this.scrollCoordinator = new ScrollCoordinator();
+            
+            // Exponer globalmente para acceso directo
+            window.scrollCoordinator = this.scrollCoordinator;
+            
+            console.log('✅ ScrollCoordinator initialized and exposed globally');
+            this.emitEvent('system:scrollCoordinator:initialized');
+            
+        } catch (error) {
+            console.error('❌ Error initializing ScrollCoordinator:', error);
             throw error;
         }
     }

@@ -5,6 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Videos por Scroll - Demo</title>
     <link rel="stylesheet" href="video-scroll-styles.css">
+    <style>
+        /* Mejoras adicionales para scroll más suave */
+        html {
+            scroll-behavior: smooth;
+            scroll-padding-top: 0;
+        }
+        
+        body {
+            -webkit-overflow-scrolling: touch;
+            scroll-behavior: smooth;
+        }
+        
+        /* Prevenir scroll nativo durante navegación */
+        body.navigating {
+            overflow: hidden;
+        }
+    </style>
     
     <!-- Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-6SC1WL9L8J"></script>
@@ -488,6 +505,7 @@
     <script src="js/NavigationSystem.js"></script>
     <script src="js/ComponentManager.js"></script>
     <script src="js/AnimationController.js"></script>
+    <script src="js/ScrollCoordinator.js"></script>
     <script src="js/ImageFilterSystem.js"></script>
     <script src="js/main.js"></script>
     <script src="js/ContentManager.js"></script>

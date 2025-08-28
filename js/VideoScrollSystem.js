@@ -7,8 +7,8 @@ class VideoScrollSystem {
         this.videoElement = null;
         this.currentVideoIndex = -1;
         this.isTransitioning = false;
-        this.scrollThreshold = 0.3; // 30% de la sección debe estar visible
-        this.transitionDuration = 1000; // 1 segundo para transiciones
+        this.scrollThreshold = 0.3; // Reducido de 0.4 a 0.3 para mayor responsividad
+        this.transitionDuration = 600; // Reducido de 800ms a 600ms para mayor fluidez
         
         // Videos disponibles con rutas correctas (serán actualizadas por ContentManager)
         this.videos = [
@@ -25,7 +25,9 @@ class VideoScrollSystem {
         
         this.availableVideoIndexes = [];
         this.lastScrollTime = 0;
-        this.scrollThrottle = 100; // Throttle scroll events to 100ms
+        this.scrollThrottle = 100; // Reducido de 200ms a 100ms para mayor responsividad
+        this.lastSection = null; // Para evitar cambios innecesarios
+        this.isManualScroll = false; // Flag para detectar scroll manual
         
         // Configuración de videos por sección (será actualizada por ContentManager)
         this.sectionVideos = {

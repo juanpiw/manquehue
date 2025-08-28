@@ -989,6 +989,9 @@ class ImageFilterSystem {
         // Ocultar inmediatamente el fondo oscuro SIN TIMER
         this.hideSectionBackground();
         
+        // Agregar video de fondo por encima del fondo actual
+        this.addDetailsBackgroundVideo(apartment);
+        
         // Encontrar la tarjeta activa
         const apartmentList = document.getElementById('apartmentList');
         if (!apartmentList) return;
@@ -1001,6 +1004,9 @@ class ImageFilterSystem {
         
         // Transformar la tarjeta en modo detalles INMEDIATAMENTE
         this.transformCardToDetails(activeCard, apartment, superficie, precio);
+        
+        // Activar animaciones llamativas del botón volver
+        this.enhanceBackButtonVisibility();
     }
     
     hideSectionBackground() {
@@ -1048,6 +1054,90 @@ class ImageFilterSystem {
         apartmentsSection?.offsetHeight;
         
         console.log('✅ Fondo oscuro ocultado INMEDIATAMENTE');
+    }
+    
+    addDetailsBackgroundVideo(apartment) {
+        console.log('🎬 Agregando video de fondo para modo detalles...', { apartment });
+        
+        // Remover video anterior si existe
+        this.removeDetailsBackgroundVideo();
+        
+        // Crear el elemento de video
+        const detailsVideo = document.createElement('video');
+        detailsVideo.id = 'detailsBackgroundVideo';
+        detailsVideo.className = 'details-background-video';
+        detailsVideo.autoplay = true;
+        detailsVideo.muted = true;
+        detailsVideo.loop = true;
+        detailsVideo.playsInline = true;
+        
+        // Seleccionar video según el tipo de apartamento
+        let videoPath = 'video/casa/video-0.mp4'; // Video por defecto
+        
+        if (apartment) {
+            if (apartment.includes('1 Dormitorio')) {
+                videoPath = 'video/apartamento/video-0.mp4';
+            } else if (apartment.includes('2 Dormitorios')) {
+                videoPath = 'video/apartamento/video-1.mp4';
+            } else if (apartment.includes('3 Dormitorios')) {
+                videoPath = 'video/casa/video-1.mp4';
+            }
+        }
+        
+        // Agregar fuente de video
+        const videoSource = document.createElement('source');
+        videoSource.src = videoPath;
+        videoSource.type = 'video/mp4';
+        detailsVideo.appendChild(videoSource);
+        
+        // Agregar estilos CSS inline para posicionamiento
+        detailsVideo.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 1;
+            opacity: 0.8;
+            transition: opacity 0.5s ease;
+        `;
+        
+        // Insertar el video después del video principal
+        const mainVideo = document.getElementById('backgroundVideo');
+        if (mainVideo && mainVideo.parentNode) {
+            mainVideo.parentNode.insertBefore(detailsVideo, mainVideo.nextSibling);
+        } else {
+            // Si no hay video principal, insertar al inicio del body
+            document.body.insertBefore(detailsVideo, document.body.firstChild);
+        }
+        
+        // Reproducir el video
+        detailsVideo.play().catch(error => {
+            console.log('⚠️ Error al reproducir video de detalles:', error);
+            // Si falla, intentar con el video por defecto
+            if (videoPath !== 'video/casa/video-0.mp4') {
+                console.log('🔄 Intentando con video por defecto...');
+                videoSource.src = 'video/casa/video-0.mp4';
+                detailsVideo.load();
+                detailsVideo.play().catch(err => {
+                    console.log('❌ Error al reproducir video por defecto:', err);
+                });
+            }
+        });
+        
+        console.log('✅ Video de fondo para detalles agregado:', videoPath);
+    }
+    
+    removeDetailsBackgroundVideo() {
+        console.log('🎬 Removiendo video de fondo de detalles...');
+        
+        const detailsVideo = document.getElementById('detailsBackgroundVideo');
+        if (detailsVideo) {
+            detailsVideo.pause();
+            detailsVideo.remove();
+            console.log('✅ Video de fondo de detalles removido');
+        }
     }
     
     toggleCollapse() {
@@ -2120,6 +2210,12 @@ class ImageFilterSystem {
     exitDetailsMode() {
         console.log('🚪 Saliendo del modo detalles...');
         
+        // Remover el video de fondo de detalles
+        this.removeDetailsBackgroundVideo();
+        
+        // Remover efectos de atención del botón volver
+        this.removeBackButtonAttention();
+        
         // Encontrar la tarjeta en modo detalles
         const detailsCard = document.querySelector('.apartment-card.details-mode');
         if (!detailsCard) return;
@@ -2683,6 +2779,86 @@ class ImageFilterSystem {
     prevFeaturesImageModal() {
         const prevIndex = (this.currentFeaturesModalImageIndex - 1 + this.featuresImages.length) % this.featuresImages.length;
         this.openFeaturesImageModal(prevIndex);
+    }
+
+    // Método para agregar animaciones llamativas al botón volver
+    addBackButtonAttention() {
+        const backButton = document.querySelector('.btn-back');
+        if (backButton) {
+            // Agregar clase para animaciones adicionales
+            backButton.classList.add('attention-mode');
+            
+            // Crear efecto de partículas alrededor del botón
+            this.createButtonParticles(backButton);
+            
+            // Agregar efecto de vibración sutil
+            setTimeout(() => {
+                backButton.style.animation += ', attentionVibrate 0.5s ease-in-out infinite';
+            }, 1000);
+            
+            console.log('✨ Back button attention effects added');
+        }
+    }
+
+    // Método para crear partículas alrededor del botón
+    createButtonParticles(button) {
+        const particleContainer = document.createElement('div');
+        particleContainer.className = 'button-particles';
+        particleContainer.style.cssText = `
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        `;
+        
+        button.style.position = 'relative';
+        button.appendChild(particleContainer);
+        
+        // Crear partículas
+        for (let i = 0; i < 8; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'attention-particle';
+            particle.style.cssText = `
+                position: absolute;
+                width: 4px;
+                height: 4px;
+                background: linear-gradient(45deg, #007bff, #00d4ff);
+                border-radius: 50%;
+                animation: particleFloat 3s ease-out infinite;
+                animation-delay: ${i * 0.2}s;
+            `;
+            
+            particleContainer.appendChild(particle);
+        }
+    }
+
+    // Método para remover efectos de atención del botón volver
+    removeBackButtonAttention() {
+        const backButton = document.querySelector('.btn-back');
+        if (backButton) {
+            backButton.classList.remove('attention-mode');
+            
+            // Remover partículas
+            const particleContainer = backButton.querySelector('.button-particles');
+            if (particleContainer) {
+                particleContainer.remove();
+            }
+            
+            // Remover animación de vibración
+            backButton.style.animation = backButton.style.animation.replace(', attentionVibrate 0.5s ease-in-out infinite', '');
+            
+            console.log('✨ Back button attention effects removed');
+        }
+    }
+
+    // Método para hacer el botón volver más llamativo cuando se entra en modo detalles
+    enhanceBackButtonVisibility() {
+        setTimeout(() => {
+            this.addBackButtonAttention();
+        }, 500); // Pequeño delay para que aparezca después de la animación de entrada
     }
 }
 

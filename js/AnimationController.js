@@ -359,6 +359,18 @@ class AnimationController {
     animateScrollTo(element, offset = 0) {
         const targetPosition = element.offsetTop - offset;
         
+        // Usar el sistema de navegación si está disponible
+        if (window.navigationSystem && !window.navigationSystem.isNavigating) {
+            // Encontrar el índice de la sección
+            const sections = window.navigationSystem.sections;
+            const sectionIndex = sections.findIndex(id => element.id === id);
+            if (sectionIndex !== -1) {
+                window.navigationSystem.navigateToSection(sectionIndex);
+                return;
+            }
+        }
+        
+        // Fallback al scroll nativo suave
         window.scrollTo({
             top: targetPosition,
             behavior: 'smooth'

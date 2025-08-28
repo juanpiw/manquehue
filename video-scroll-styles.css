@@ -2453,3 +2453,223 @@ body {
         font-size: 0.8rem;
     }
 }
+
+/* ===========================================
+   VIDEO DE FONDO PARA MODO DETALLES
+   =========================================== */
+
+.details-background-video {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    z-index: 1 !important;
+    opacity: 0.8 !important;
+    transition: opacity 0.5s ease !important;
+    pointer-events: none !important;
+}
+
+.details-background-video:hover {
+    opacity: 0.9 !important;
+}
+
+/* Asegurar que el video de detalles esté por encima del fondo pero debajo del contenido */
+.apartments-section.details-mode-active {
+    position: relative;
+    z-index: 2;
+}
+
+.apartment-card.details-mode {
+    position: relative;
+    z-index: 3;
+    background: rgba(255, 255, 255, 0.95) !important;
+    backdrop-filter: blur(10px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* ===========================================
+   ANIMACIONES PARA EL BOTÓN VOLVER
+   =========================================== */
+
+/* Animación de parpadeo para el botón volver */
+@keyframes attentionPulse {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+    }
+    50% {
+        transform: scale(1.05);
+        box-shadow: 0 4px 16px rgba(0, 123, 255, 0.6);
+    }
+}
+
+/* Animación de onda para el botón volver */
+@keyframes attentionWave {
+    0% {
+        box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(0, 123, 255, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(0, 123, 255, 0);
+    }
+}
+
+/* Animación de brillo para el botón volver */
+@keyframes attentionShine {
+    0% {
+        background: linear-gradient(135deg, #007bff, #0056b3);
+    }
+    50% {
+        background: linear-gradient(135deg, #0056b3, #007bff);
+    }
+    100% {
+        background: linear-gradient(135deg, #007bff, #0056b3);
+    }
+}
+
+/* Animación de entrada para el botón volver */
+@keyframes btnBackEntrance {
+    0% {
+        opacity: 0;
+        transform: translateX(-20px) scale(0.8);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+}
+
+/* Animación de vibración para el botón volver */
+@keyframes attentionVibrate {
+    0%, 100% {
+        transform: translateX(0);
+    }
+    25% {
+        transform: translateX(-2px);
+    }
+    75% {
+        transform: translateX(2px);
+    }
+}
+
+/* Animación de partículas flotantes */
+@keyframes particleFloat {
+    0% {
+        opacity: 0;
+        transform: translateY(0) scale(0);
+    }
+    50% {
+        opacity: 1;
+        transform: translateY(-20px) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-40px) scale(0);
+    }
+}
+
+/* Estilos para el botón volver con animaciones */
+.btn-back {
+    position: relative;
+    animation: btnBackEntrance 0.5s ease-out, attentionPulse 2s ease-in-out infinite 0.5s, attentionWave 2s ease-in-out infinite 0.5s;
+    background: linear-gradient(135deg, #007bff, #0056b3) !important;
+    border: none !important;
+    color: white !important;
+    padding: 10px 16px !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3) !important;
+}
+
+.btn-back:hover {
+    transform: scale(1.05) !important;
+    box-shadow: 0 4px 16px rgba(0, 123, 255, 0.6) !important;
+    animation: attentionShine 1s ease-in-out infinite !important;
+}
+
+.btn-back:active {
+    transform: scale(0.95) !important;
+}
+
+/* Efecto de brillo adicional */
+.btn-back::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.5s;
+}
+
+.btn-back:hover::before {
+    left: 100%;
+}
+
+/* Estilos para el modo de atención del botón volver */
+.btn-back.attention-mode {
+    animation: btnBackEntrance 0.5s ease-out, attentionPulse 1.5s ease-in-out infinite 0.5s, attentionWave 1.5s ease-in-out infinite 0.5s, attentionVibrate 0.5s ease-in-out infinite 2s;
+    box-shadow: 0 4px 20px rgba(0, 123, 255, 0.8) !important;
+}
+
+/* Estilos para las partículas del botón */
+.button-particles {
+    overflow: hidden;
+    border-radius: 8px;
+}
+
+.attention-particle {
+    position: absolute;
+    pointer-events: none;
+}
+
+/* Responsive para el botón volver */
+@media (max-width: 768px) {
+    .btn-back {
+        padding: 8px 12px !important;
+        font-size: 14px !important;
+        animation: attentionPulse 1.5s ease-in-out infinite, attentionWave 1.5s ease-in-out infinite;
+    }
+    
+    .btn-back.attention-mode {
+        animation: attentionPulse 1.2s ease-in-out infinite, attentionWave 1.2s ease-in-out infinite, attentionVibrate 0.4s ease-in-out infinite 1s;
+    }
+}
+
+/* Animación de entrada para el video de detalles */
+@keyframes detailsVideoFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(1.1);
+    }
+    to {
+        opacity: 0.8;
+        transform: scale(1);
+    }
+}
+
+.details-background-video {
+    animation: detailsVideoFadeIn 0.8s ease-out;
+}
+
+/* Responsive para el video de detalles */
+@media (max-width: 768px) {
+    .details-background-video {
+        opacity: 0.7 !important;
+    }
+    
+    .apartment-card.details-mode {
+        background: rgba(255, 255, 255, 0.98) !important;
+    }
+}
