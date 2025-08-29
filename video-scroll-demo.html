@@ -327,6 +327,32 @@
                 font-size: 0.9rem;
             }
         }
+
+        /* Simple Apartment Type System */
+        .apartment-type-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #007bff;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+            z-index: 10;
+        }
+
+        .apartment-type-badge.type-a {
+            background: #dc3545;
+        }
+
+        .apartment-type-badge.type-b {
+            background: #28a745;
+        }
+
+        .apartment-type-badge.type-c {
+            background: #17a2b8;
+        }
     </style>
     
     <!-- Google Analytics -->
@@ -537,6 +563,8 @@
                     <button class="type-btn" data-type="3d">3 Dormitorios</button>
                 </div>
 
+
+
                 <!-- Filtros de apartamentos -->
                 <div class="apartment-filters">
                     <div class="filter-group">
@@ -573,6 +601,30 @@
                 <!-- Lista de apartamentos -->
                 <div class="apartment-list" id="apartmentList" style="display: none;">
                     <!-- Los apartamentos se cargarán dinámicamente -->
+                    
+                    <!-- Ejemplo de tarjeta con tipo asignado -->
+                    <div class="apartment-card" data-bedrooms="1" data-apartment-type="A-S-2" data-apartment-name="Tipo A2">
+                        <div class="apartment-type-badge type-a">Tipo A2</div>
+                        <div class="apartment-image">
+                            <img src="video/imagenes/1_dormitorio/superficie_40_60/precio_2000_3000/planta_1.png" alt="1 Dormitorio" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iUGxhbnRhIGRlICR7dGlwb1RleHR9PC90ZXh0Pjwvc3ZnPg=='">
+                        </div>
+                        <div class="apartment-info">
+                            <h3>1 Dormitorio</h3>
+                            <p><strong>Superficie:</strong> 40-60 m²</p>
+                            <p><strong>Precio:</strong> $2.000-3.000 UF</p>
+                            <div class="apartment-actions">
+                                <button class="btn-secondary watchVideoBtn" data-apartment="1 Dormitorio" data-superficie="40-60 m²" data-precio="$2.000-3.000 UF" data-apartment-type="A-S-2" data-apartment-name="Tipo A2">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M8 5v14l11-7z" fill="currentColor"></path>
+                                    </svg>
+                                    Recorrer
+                                </button>
+                                <button class="btn-primary contactModelBtn" data-apartment="1 Dormitorio" data-superficie="40-60 m²" data-precio="$2.000-3.000 UF" data-apartment-type="A-S-2" data-apartment-name="Tipo A2">
+                                    Solicitar Información
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
                 <!-- Mensaje inicial -->
@@ -816,6 +868,11 @@
     <script src="js/main.js"></script>
     <script src="js/ContentManager.js"></script>
     <script src="js/content-init.js"></script>
+    
+    <!-- IRIS Core System -->
+    <script src="iris-core/iris-loader.js"></script>
+    <script src="iris-core/utils/apartment-type-generator.js"></script>
+    <script src="iris-core/utils/auto-type-assigner.js"></script>
     
     <!-- Project Modal Functions -->
     <script>
@@ -1343,6 +1400,124 @@
 
         // Store chat instance globally
         window.irisChatInstance = irisChatInstance;
+
+        // ========== SIMPLE APARTMENT TYPE SYSTEM ==========
+
+        // Function to filter apartments by type
+        function filterByType(typeCode) {
+            console.log('🏠 Filtering by type:', typeCode);
+            
+            const apartmentCards = document.querySelectorAll('.apartment-card');
+            
+            apartmentCards.forEach(card => {
+                const cardType = card.getAttribute('data-apartment-type');
+                
+                if (typeCode === 'all' || (cardType && cardType.startsWith(typeCode))) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+            
+            // Track filter event
+            gtag('event', 'apartment_type_filtered', {
+                'event_category': 'Apartment Types',
+                'event_label': `Type: ${typeCode}`,
+                'value': 1
+            });
+        }
+
+        // Function to show example apartments
+        function showExampleApartments() {
+            const apartmentList = document.getElementById('apartmentList');
+            const initialMessage = document.getElementById('initialMessage');
+            
+            if (apartmentList && initialMessage) {
+                // Hide initial message
+                initialMessage.style.display = 'none';
+                
+                // Show apartment list
+                apartmentList.style.display = 'grid';
+                
+                // Add example apartments
+                const exampleApartments = [
+                    {
+                        bedrooms: 2,
+                        type: 'B-S-2',
+                        name: 'Tipo B1',
+                        superficie: '40-60 m²',
+                        precio: '$2.000-3.000 UF'
+                    },
+                    {
+                        bedrooms: 2,
+                        type: 'B-M-4',
+                        name: 'Tipo B2',
+                        superficie: '80-100 m²',
+                        precio: '$4.000-5.000 UF'
+                    },
+                    {
+                        bedrooms: 3,
+                        type: 'C-L-5',
+                        name: 'Tipo C1',
+                        superficie: '120-140 m²',
+                        precio: '$5.000-6.000 UF'
+                    }
+                ];
+                
+                exampleApartments.forEach(apt => {
+                    const apartmentCard = document.createElement('div');
+                    apartmentCard.className = 'apartment-card';
+                    apartmentCard.setAttribute('data-bedrooms', apt.bedrooms);
+                    apartmentCard.setAttribute('data-apartment-type', apt.type);
+                    apartmentCard.setAttribute('data-apartment-name', apt.name);
+                    
+                    const badgeClass = apt.bedrooms === 1 ? 'type-a' : apt.bedrooms === 2 ? 'type-b' : 'type-c';
+                    
+                    apartmentCard.innerHTML = `
+                        <div class="apartment-type-badge ${badgeClass}">${apt.name}</div>
+                        <div class="apartment-image">
+                            <img src="video/imagenes/${apt.bedrooms}_dormitorio/superficie_${apt.superficie.replace(' ', '_')}/precio_${apt.precio.replace(/[^0-9]/g, '_')}/planta_1.png" alt="${apt.bedrooms} Dormitorios" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iUGxhbnRhIGRlICR7dGlwb1RleHR9PC90ZXh0Pjwvc3ZnPg=='">
+                        </div>
+                        <div class="apartment-info">
+                            <h3>${apt.bedrooms} Dormitorios</h3>
+                            <p><strong>Superficie:</strong> ${apt.superficie}</p>
+                            <p><strong>Precio:</strong> ${apt.precio}</p>
+                            <div class="apartment-actions">
+                                <button class="btn-secondary watchVideoBtn" data-apartment="${apt.bedrooms} Dormitorios" data-superficie="${apt.superficie}" data-precio="${apt.precio}" data-apartment-type="${apt.type}" data-apartment-name="${apt.name}">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M8 5v14l11-7z" fill="currentColor"></path>
+                                    </svg>
+                                    Recorrer
+                                </button>
+                                <button class="btn-primary contactModelBtn" data-apartment="${apt.bedrooms} Dormitorios" data-superficie="${apt.superficie}" data-precio="${apt.precio}" data-apartment-type="${apt.type}" data-apartment-name="${apt.name}">
+                                    Solicitar Información
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    
+                    apartmentList.appendChild(apartmentCard);
+                });
+                
+                console.log('🏢 Example apartments loaded');
+            }
+        }
+
+        // Initialize apartment type system when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                if (window.autoTypeAssigner) {
+                    console.log('🏠 Initializing apartment type system...');
+                    window.autoTypeAssigner.assignTypesToExistingCards();
+                }
+            }, 1000);
+        });
+
+        // Global functions for IRIS
+        window.irisFilterByType = function(typeCode) {
+            filterByType(typeCode);
+            return true;
+        };
         
         // Listen for Iris messages to control videos
         function setupIrisVideoControlListener() {

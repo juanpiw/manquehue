@@ -47,30 +47,42 @@ class FilterHandler {
      * @returns {Promise} Filter result
      */
     async applyFilter(filters, context = {}) {
-        console.log('[IRIS-Handler] Applying filters:', filters);
+        console.log('🔧 [Handler] Iniciando applyFilter con filtros:', filters);
 
         try {
+            console.log('🔧 [Handler] Obteniendo VideoScrollApp...');
             const app = await this.getAppReady();
+            console.log('✅ [Handler] VideoScrollApp obtenido:', app);
             
             // Navigate to apartments section first
+            console.log('🔧 [Handler] Navegando a sección de apartamentos...');
             await this.navigateToApartments(app);
+            console.log('✅ [Handler] Navegación completada');
             
             // Apply filters using ComponentManager
             if (app.componentManager) {
+                console.log('🔧 [Handler] ComponentManager disponible, preparando datos de filtro...');
                 const filterData = {};
                 
                 if (filters.bedrooms) {
                     filterData.bedrooms = filters.bedrooms;
+                    console.log('🔧 [Handler] Filtro de dormitorios agregado:', filters.bedrooms);
                 }
                 if (filters.superficie) {
                     filterData.superficie = filters.superficie;
+                    console.log('🔧 [Handler] Filtro de superficie agregado:', filters.superficie);
                 }
                 if (filters.precio) {
                     filterData.precio = filters.precio;
+                    console.log('🔧 [Handler] Filtro de precio agregado:', filters.precio);
                 }
 
+                console.log('🔧 [Handler] Datos de filtro preparados:', filterData);
+
                 // Use the existing filter system
+                console.log('🔧 [Handler] Aplicando filtros al sistema...');
                 await this.applyFiltersToSystem(app, filterData);
+                console.log('✅ [Handler] Filtros aplicados al sistema');
                 
                 return {
                     success: true,
@@ -78,13 +90,14 @@ class FilterHandler {
                     filters: filters
                 };
             } else {
+                console.log('❌ [Handler] ComponentManager no disponible');
                 return {
                     success: false,
                     error: 'ComponentManager not available'
                 };
             }
         } catch (error) {
-            console.error('[IRIS-Handler] Apply filter error:', error);
+            console.error('❌ [Handler] Error en applyFilter:', error);
             return {
                 success: false,
                 error: error.message
@@ -182,22 +195,31 @@ class FilterHandler {
      * @returns {Promise} Apply result
      */
     async applyFiltersToSystem(app, filterData) {
-        console.log('[IRIS-Handler] Applying filters to system:', filterData);
+        console.log('🔧 [Handler] Iniciando applyFiltersToSystem con datos:', filterData);
 
         try {
             // Si hay filtro por dormitorios, activar el botón correspondiente
             if (filterData.bedrooms) {
+                console.log('🔧 [Handler] Activando filtro de dormitorios:', filterData.bedrooms);
                 await this.activateBedroomFilter(filterData.bedrooms);
             }
 
+            // Si hay filtro por precio, activar el botón correspondiente
+            if (filterData.precio) {
+                console.log('🔧 [Handler] Activando filtro de precio:', filterData.precio);
+                await this.activatePriceFilter(filterData.precio);
+            }
+
             // Apply additional filters if needed
-            if (filterData.superficie || filterData.precio) {
+            if (filterData.superficie) {
+                console.log('🔧 [Handler] Activando filtro de superficie:', filterData.superficie);
                 await this.applyAdvancedFilters(filterData);
             }
 
+            console.log('✅ [Handler] Todos los filtros aplicados exitosamente');
             return true;
         } catch (error) {
-            console.error('[IRIS-Handler] Apply to system error:', error);
+            console.error('❌ [Handler] Error en applyFiltersToSystem:', error);
             throw error;
         }
     }
@@ -255,6 +277,204 @@ class FilterHandler {
         } catch (error) {
             console.error('[IRIS-Handler] Error activating bedroom filter:', error);
             return { success: false, message: 'Error al activar filtro de dormitorios', error: error.message };
+        }
+    }
+
+    /**
+     * Activate price filter and click corresponding button
+     * @param {string} priceFilter - Price filter criteria
+     * @returns {Promise} Activation result
+     */
+    async activatePriceFilter(priceFilter) {
+        try {
+            console.log(`🔧 [Handler] Iniciando activatePriceFilter para: "${priceFilter}"`);
+            
+            // Inicializar el generador de tipos si no existe
+            if (!window.apartmentTypeGenerator) {
+                console.log('🔧 [Handler] Inicializando ApartmentTypeGenerator...');
+                window.apartmentTypeGenerator = new window.ApartmentTypeGenerator();
+                window.apartmentTypeGenerator.addTypesToCards();
+            }
+            
+            // Buscar tarjetas por tipo usando el sistema de tipos
+            console.log('🔍 [Handler] Buscando tarjetas por tipo...');
+            const matchingCards = this.findCardsByPriceFilter(priceFilter);
+            console.log(`🔍 [Handler] Encontradas ${matchingCards.length} tarjetas que coinciden`);
+            
+            if (matchingCards.length > 0) {
+                // Tomar la primera tarjeta que coincida
+                const targetCard = matchingCards[0];
+                const typeInfo = window.apartmentTypeGenerator.getTypeFromCard(targetCard);
+                
+                console.log(`✅ [Handler] Tarjeta encontrada: ${typeInfo.name} (${typeInfo.code})`);
+                
+                // Buscar el botón "Recorrer" en la tarjeta
+                const recorrerButton = targetCard.querySelector('.watchVideoBtn');
+                if (recorrerButton) {
+                    console.log('🔧 [Handler] Haciendo scroll a la tarjeta...');
+                    targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    
+                    // Esperar un poco para que el scroll termine
+                    console.log('⏳ [Handler] Esperando 500ms para que termine el scroll...');
+                    await this.wait(500);
+                    
+                    // Simular click en el botón
+                    console.log('🔧 [Handler] Simulando click en el botón...');
+                    recorrerButton.click();
+                    
+                    console.log('✅ [Handler] Click simulado exitosamente');
+                    return { 
+                        success: true, 
+                        message: `Filtro de precio activado: ${priceFilter}`,
+                        type: typeInfo.name,
+                        code: typeInfo.code
+                    };
+                } else {
+                    console.warn('❌ [Handler] No se encontró botón "Recorrer" en la tarjeta');
+                    return { success: false, message: 'No se encontró botón "Recorrer" en la tarjeta' };
+                }
+            } else {
+                console.warn(`❌ [Handler] No se encontró precio que coincida con: ${priceFilter}`);
+                return { success: false, message: `No se encontró precio que coincida con: ${priceFilter}` };
+            }
+            
+        } catch (error) {
+            console.error('❌ [Handler] Error en activatePriceFilter:', error);
+            return { success: false, message: 'Error al activar filtro de precio', error: error.message };
+        }
+    }
+
+    /**
+     * Find cards by price filter using type system
+     * @param {string} priceFilter - Price filter criteria
+     * @returns {Array} Matching cards
+     */
+    findCardsByPriceFilter(priceFilter) {
+        try {
+            console.log(`🔍 [Handler] Buscando tarjetas para filtro de precio: "${priceFilter}"`);
+            
+            // Normalizar el filtro de precio
+            const normalizedFilter = this.normalizePrice(priceFilter);
+            console.log(`🔍 [Handler] Precio normalizado: "${normalizedFilter}"`);
+            
+            const matchingCards = [];
+            const allCards = document.querySelectorAll('.apartment-card');
+            
+            for (const card of allCards) {
+                const typeInfo = window.apartmentTypeGenerator.getTypeFromCard(card);
+                if (typeInfo) {
+                    const cardPrice = typeInfo.criteria.precio;
+                    const normalizedCardPrice = this.normalizePrice(cardPrice);
+                    
+                    console.log(`🔍 [Handler] Comparando: "${normalizedFilter}" con "${normalizedCardPrice}"`);
+                    
+                    if (this.priceMatches(normalizedFilter, normalizedCardPrice)) {
+                        console.log(`✅ [Handler] Coincidencia encontrada: ${typeInfo.name}`);
+                        matchingCards.push(card);
+                    }
+                }
+            }
+            
+            return matchingCards;
+        } catch (error) {
+            console.error('❌ [Handler] Error en findCardsByPriceFilter:', error);
+            return [];
+        }
+    }
+
+    /**
+     * Normalize price string for comparison
+     * @param {string} price - Price string
+     * @returns {string} Normalized price
+     */
+    normalizePrice(price) {
+        return price.toLowerCase()
+            .replace(/[^\d.-]/g, '') // Solo números, puntos y guiones
+            .replace(/\./g, '') // Remover puntos (separadores de miles)
+            .trim();
+    }
+
+    /**
+     * Check if price filter matches button price
+     * @param {string} filterPrice - Price from filter
+     * @param {string} buttonPrice - Price from button data attribute
+     * @returns {boolean} True if matches
+     */
+    priceMatches(filterPrice, buttonPrice) {
+        try {
+            console.log(`🔍 [Handler] Iniciando priceMatches - Filter: "${filterPrice}", Button: "${buttonPrice}"`);
+            
+            // Normalizar precios para comparación
+            const normalizePrice = (price) => {
+                const normalized = price.toLowerCase()
+                    .replace(/[^\d.-]/g, '') // Solo números, puntos y guiones
+                    .replace(/\./g, '') // Remover puntos (separadores de miles)
+                    .trim();
+                console.log(`🔍 [Handler] Normalización: "${price}" -> "${normalized}"`);
+                return normalized;
+            };
+            
+            const normalizedFilter = normalizePrice(filterPrice);
+            const normalizedButton = normalizePrice(buttonPrice);
+            
+            console.log(`🔍 [Handler] Precios normalizados - Filter: "${normalizedFilter}", Button: "${normalizedButton}"`);
+            
+            // Si el filtro es un rango (contiene guión)
+            if (normalizedFilter.includes('-')) {
+                console.log('🔍 [Handler] Filtro es un rango');
+                const [minFilter, maxFilter] = normalizedFilter.split('-').map(p => parseInt(p));
+                console.log(`🔍 [Handler] Rango filtro: ${minFilter} - ${maxFilter}`);
+                
+                // Si el botón también es un rango
+                if (normalizedButton.includes('-')) {
+                    console.log('🔍 [Handler] Botón también es un rango');
+                    const [minButton, maxButton] = normalizedButton.split('-').map(p => parseInt(p));
+                    console.log(`🔍 [Handler] Rango botón: ${minButton} - ${maxButton}`);
+                    
+                    // Verificar si hay superposición de rangos
+                    const matches = (minFilter <= maxButton && maxFilter >= minButton);
+                    console.log(`🔍 [Handler] ¿Hay superposición? ${matches ? 'SÍ' : 'NO'}`);
+                    return matches;
+                } else {
+                    // Si el botón es un precio específico
+                    console.log('🔍 [Handler] Botón es precio específico');
+                    const buttonValue = parseInt(normalizedButton);
+                    console.log(`🔍 [Handler] Valor botón: ${buttonValue}`);
+                    
+                    const matches = (minFilter <= buttonValue && maxFilter >= buttonValue);
+                    console.log(`🔍 [Handler] ¿Está en rango? ${matches ? 'SÍ' : 'NO'}`);
+                    return matches;
+                }
+            } else {
+                // Si el filtro es un precio específico
+                console.log('🔍 [Handler] Filtro es precio específico');
+                const filterValue = parseInt(normalizedFilter);
+                console.log(`🔍 [Handler] Valor filtro: ${filterValue}`);
+                
+                // Si el botón es un rango
+                if (normalizedButton.includes('-')) {
+                    console.log('🔍 [Handler] Botón es un rango');
+                    const [minButton, maxButton] = normalizedButton.split('-').map(p => parseInt(p));
+                    console.log(`🔍 [Handler] Rango botón: ${minButton} - ${maxButton}`);
+                    
+                    const matches = (filterValue >= minButton && filterValue <= maxButton);
+                    console.log(`🔍 [Handler] ¿Está en rango? ${matches ? 'SÍ' : 'NO'}`);
+                    return matches;
+                } else {
+                    // Si ambos son precios específicos
+                    console.log('🔍 [Handler] Ambos son precios específicos');
+                    const buttonValue = parseInt(normalizedButton);
+                    console.log(`🔍 [Handler] Valor botón: ${buttonValue}`);
+                    
+                    const matches = filterValue === buttonValue;
+                    console.log(`🔍 [Handler] ¿Son iguales? ${matches ? 'SÍ' : 'NO'}`);
+                    return matches;
+                }
+            }
+            
+        } catch (error) {
+            console.error('❌ [Handler] Error en priceMatches:', error);
+            return false;
         }
     }
 

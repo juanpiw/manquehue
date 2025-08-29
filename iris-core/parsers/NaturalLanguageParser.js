@@ -120,6 +120,8 @@ class NaturalLanguageParser {
      * @returns {Object|null} Filter command or null
      */
     parseFilter(text) {
+        console.log(`🔍 [Parser] Iniciando parseFilter con texto: "${text}"`);
+        
         // Detectar comandos de filtro por dormitorios específicamente
         const bedroomPatterns = [
             { pattern: /(?:mostrar|filtrar|buscar|ver)\s+(?:un\s+)?(?:departamento|apartamento)\s+(?:de\s+)?(\d+)\s*(?:dormitorio|dormitorios|habitación|habitaciones)/, bedrooms: '$1' },
@@ -133,46 +135,74 @@ class NaturalLanguageParser {
             { pattern: /(?:superficie|área)\s+(?:de\s+)?(\d+)\s*-\s*(\d+)\s*m²/, superficie: '$1-$2 m²' }
         ];
 
-        // Detectar comandos de filtro por precio
+        // Detectar comandos de filtro por precio - MEJORADOS
         const pricePatterns = [
-            { pattern: /(\d+)\s*-\s*(\d+)\s*(?:mil\s+)?(?:uf|UF)/, precio: '$1-$2 UF' },
-            { pattern: /(?:precio|valor)\s+(?:de\s+)?(\d+)\s*-\s*(\d+)\s*(?:mil\s+)?(?:uf|UF)/, precio: '$1-$2 UF' },
-            { pattern: /(\d+)\s*-\s*(\d+)\s*(?:mil\s+)?(?:pesos|peso)/, precio: '$1-$2 pesos' }
+            { pattern: /(?:mostrar|filtrar|buscar|ver)\s+(?:un\s+)?(?:uno\s+)?(?:con\s+)?(?:precio|valor)\s+(?:entre\s+)?\$?([0-9.,]+)\s*-\s*\$?([0-9.,]+)\s*(?:mil\s+)?(?:uf|UF)/i, precio: '$1-$2 UF' },
+            { pattern: /(?:precio|valor)\s+(?:entre\s+)?\$?([0-9.,]+)\s*-\s*\$?([0-9.,]+)\s*(?:mil\s+)?(?:uf|UF)/i, precio: '$1-$2 UF' },
+            { pattern: /\$?([0-9.,]+)\s*-\s*\$?([0-9.,]+)\s*(?:mil\s+)?(?:uf|UF)/i, precio: '$1-$2 UF' },
+            { pattern: /(?:buscar|mostrar|filtrar)\s+(?:de\s+)?\$?([0-9.,]+)\s*(?:mil\s+)?(?:uf|UF)/i, precio: '$1 UF' },
+            { pattern: /(?:de\s+)?\$?([0-9.,]+)\s*(?:mil\s+)?(?:uf|UF)/i, precio: '$1 UF' },
+            { pattern: /(?:precio|valor)\s+(?:de\s+)?\$?([0-9.,]+)\s*(?:mil\s+)?(?:uf|UF)/i, precio: '$1 UF' },
+            { pattern: /\$?([0-9.,]+)\s*-\s*\$?([0-9.,]+)\s*(?:mil\s+)?(?:pesos|peso)/i, precio: '$1-$2 pesos' }
         ];
 
         const filters = {};
         let hasFilters = false;
 
+        console.log(`🔍 [Parser] Procesando patrones de dormitorios...`);
         // Procesar patrones de dormitorios
-        for (const pattern of bedroomPatterns) {
+        for (let i = 0; i < bedroomPatterns.length; i++) {
+            const pattern = bedroomPatterns[i];
             const match = text.match(pattern.pattern);
+            console.log(`🔍 [Parser] Patrón dormitorio ${i + 1}: ${pattern.pattern} - Match: ${match ? 'SÍ' : 'NO'}`);
             if (match) {
                 filters.bedrooms = parseInt(match[1]);
                 hasFilters = true;
+                console.log(`✅ [Parser] Dormitorios detectados: ${filters.bedrooms}`);
                 break; // Solo tomar el primer match de dormitorios
             }
         }
 
+        console.log(`🔍 [Parser] Procesando patrones de superficie...`);
         // Procesar patrones de superficie
-        for (const pattern of surfacePatterns) {
+        for (let i = 0; i < surfacePatterns.length; i++) {
+            const pattern = surfacePatterns[i];
             const match = text.match(pattern.pattern);
+            console.log(`🔍 [Parser] Patrón superficie ${i + 1}: ${pattern.pattern} - Match: ${match ? 'SÍ' : 'NO'}`);
             if (match) {
                 filters.superficie = `${match[1]}-${match[2]} m²`;
                 hasFilters = true;
+                console.log(`✅ [Parser] Superficie detectada: ${filters.superficie}`);
             }
         }
 
+        console.log(`🔍 [Parser] Procesando patrones de precio...`);
         // Procesar patrones de precio
-        for (const pattern of pricePatterns) {
+        for (let i = 0; i < pricePatterns.length; i++) {
+            const pattern = pricePatterns[i];
             const match = text.match(pattern.pattern);
+            console.log(`🔍 [Parser] Patrón precio ${i + 1}: ${pattern.pattern} - Match: ${match ? 'SÍ' : 'NO'}`);
             if (match) {
-                filters.precio = `${match[1]}-${match[2]} UF`;
+                console.log(`🔍 [Parser] Match encontrado: ${JSON.stringify(match)}`);
+                if (match.length >= 3) {
+                    // Es un rango de precios
+                    filters.precio = `${match[1]}-${match[2]} UF`;
+                    console.log(`✅ [Parser] Rango de precio detectado: ${filters.precio}`);
+                } else if (match.length >= 2) {
+                    // Es un precio específico
+                    filters.precio = `${match[1]} UF`;
+                    console.log(`✅ [Parser] Precio específico detectado: ${filters.precio}`);
+                }
                 hasFilters = true;
+                break; // Solo tomar el primer match de precio
             }
         }
+
+        console.log(`🔍 [Parser] Resumen de filtros encontrados:`, filters);
+        console.log(`🔍 [Parser] hasFilters: ${hasFilters}`);
 
         if (hasFilters) {
-            return {
+            const result = {
                 type: 'filter',
                 action: 'apply',
                 filters: filters,
@@ -180,8 +210,11 @@ class NaturalLanguageParser {
                 confidence: 0.9,
                 area: 'filter'
             };
+            console.log(`✅ [Parser] Comando de filtro generado:`, result);
+            return result;
         }
 
+        console.log(`❌ [Parser] No se encontraron filtros válidos`);
         return null;
     }
 
