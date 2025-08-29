@@ -237,3 +237,5 @@ window.addEventListener('scroll', () => {
 3. **Las funciones de navegación siguen funcionando** pero sin causar scroll automático
 4. **Se puede habilitar el scroll automático** si es necesario para casos específicos
 5. **Todas las correcciones son compatibles** con el sistema existente
+
+

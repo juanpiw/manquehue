@@ -48,10 +48,10 @@ class ImageFilterSystem {
     }
     
     init() {
-        console.log('🖼️ Initializing ImageFilterSystem...');
+
         this.setupEventListeners();
         this.setupBackButton();
-        console.log('✅ ImageFilterSystem initialized');
+
     }
     
     setupEventListeners() {
@@ -100,21 +100,20 @@ class ImageFilterSystem {
         
         // Event listeners para botones de apartamentos (delegación de eventos)
         document.addEventListener('click', (e) => {
-            console.log('🔍 Click detectado en:', e.target);
-            console.log('🔍 Clases del elemento:', e.target.classList);
+
             
             if (e.target.classList.contains('watchVideoBtn')) {
-                console.log('🎬 Botón Ver Video clickeado');
+
                 this.handleWatchVideo(e.target);
             } else if (e.target.classList.contains('contactModelBtn')) {
-                console.log('📞 Botón Solicitar Información clickeado');
+
                 this.handleContactModal(e.target);
             }
         });
     }
     
     updateTipoFilter(tipo) {
-        console.log(`🏠 Tipo de dormitorio cambiado a: ${tipo}`);
+        
         
         // Actualizar UI de botones
         const typeButtons = document.querySelectorAll('.type-btn');
@@ -126,7 +125,7 @@ class ImageFilterSystem {
         });
         
         this.currentFilters.tipo = tipo;
-        console.log('🔍 Filtros actuales:', this.currentFilters);
+
         this.updateImages();
     }
     
@@ -134,28 +133,28 @@ class ImageFilterSystem {
         const { tipo, superficie, precio } = this.currentFilters;
         const availableImages = [];
         
-        console.log('🔍 getAvailableImages - Filtros:', { tipo, superficie, precio });
+
         
         // Si no hay filtros específicos, mostrar todas las imágenes
         if (tipo === 'all' && !superficie && !precio) {
-            console.log('📊 Mostrando todas las imágenes');
+
             return this.getAllImages();
         }
         
         // Filtrar por tipo de dormitorio
         const tiposToCheck = tipo === 'all' ? Object.keys(this.imageStructure) : [tipo];
-        console.log('🔍 Tipos a verificar:', tiposToCheck);
+        
         
         tiposToCheck.forEach(tipoKey => {
-            console.log('🔍 Verificando tipo:', tipoKey);
+
             if (!this.imageStructure[tipoKey]) {
-                console.log('❌ Tipo no encontrado en imageStructure:', tipoKey);
+
                 return;
             }
             
             const superficies = this.imageStructure[tipoKey];
             const superficiesToCheck = superficie ? [this.mapSuperficieToKey(superficie)] : Object.keys(superficies);
-            console.log('🔍 Superficies a verificar:', superficiesToCheck);
+
             
             superficiesToCheck.forEach(superficieKey => {
                 if (!superficies[superficieKey]) return;
@@ -182,7 +181,7 @@ class ImageFilterSystem {
             });
         });
         
-        console.log('📊 Imágenes encontradas:', availableImages.length);
+
         return availableImages;
     }
     
@@ -240,10 +239,10 @@ class ImageFilterSystem {
     }
     
     updateImages() {
-        console.log('🔄 Actualizando imágenes con filtros:', this.currentFilters);
+
         
         const availableImages = this.getAvailableImages();
-        console.log(`📊 Imágenes disponibles: ${availableImages.length}`);
+
         
         // Actualizar la lista de apartamentos
         this.updateApartmentList(availableImages);
@@ -252,11 +251,11 @@ class ImageFilterSystem {
     updateApartmentList(images) {
         const apartmentList = document.getElementById('apartmentList');
         if (!apartmentList) {
-            console.log('❌ No se encontró el elemento apartmentList');
+    
             return;
         }
         
-        console.log('🔄 Actualizando lista de apartamentos con', images.length, 'imágenes');
+
         
         // Limpiar lista actual
         apartmentList.innerHTML = '';
@@ -276,20 +275,20 @@ class ImageFilterSystem {
         }
         
         // Crear tarjetas de apartamentos
-        console.log('🏗️ Creando', images.length, 'tarjetas de apartamentos...');
+
         images.forEach((image, index) => {
             const apartmentCard = this.createApartmentCard(image, index);
             apartmentList.appendChild(apartmentCard);
         });
-        console.log('✅ Tarjetas creadas y agregadas al DOM');
+
         
         // Mostrar lista
-        console.log('👁️ Mostrando lista de apartamentos...');
+
         apartmentList.style.display = 'grid';
         apartmentList.style.opacity = '1';
         apartmentList.style.transform = 'translateY(0)';
         apartmentList.style.animation = 'fadeInUp 0.5s ease';
-        console.log('✅ Lista de apartamentos visible');
+
         
         // Ocultar mensaje inicial
         const initialMessage = document.getElementById('initialMessage');
@@ -307,9 +306,7 @@ class ImageFilterSystem {
         const superficieText = this.getSuperficieText(image.superficie);
         const precioText = this.getPrecioText(image.precio);
         
-        console.log('🏗️ Creando tarjeta con imagen:', image.path);
-        console.log('🏗️ Tipo:', image.tipo, 'Superficie:', image.superficie, 'Precio:', image.precio);
-        console.log('🏗️ Ruta completa:', image.path);
+
         
         // Crear el HTML de manera más limpia para evitar problemas de concatenación
         const fallbackImage = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iUGxhbnRhIGRlICR7dGlwb1RleHR9PC90ZXh0Pjwvc3ZnPg==';
@@ -369,12 +366,12 @@ class ImageFilterSystem {
     }
     
     applyFilters() {
-        console.log('🔍 Aplicando filtros...');
+
         this.updateImages();
     }
     
     clearFilters() {
-        console.log('🧹 Limpiando filtros...');
+
         
         // Resetear filtros
         this.currentFilters = {
@@ -411,7 +408,7 @@ class ImageFilterSystem {
             initialMessage.style.display = 'block';
         }
         
-        console.log('✅ Filtros limpiados');
+
     }
     
     // Métodos públicos para control externo
@@ -429,26 +426,26 @@ class ImageFilterSystem {
     }
     
     handleWatchVideo(button) {
-        console.log('🎬 handleWatchVideo llamado con:', button);
+
         
         const apartment = button.getAttribute('data-apartment');
         const superficie = button.getAttribute('data-superficie');
         const precio = button.getAttribute('data-precio');
         
-        console.log('🎬 Activando modo recorrido para:', { apartment, superficie, precio });
+
         
         // Activar modo recorrido
         this.activateRecorridoMode(apartment, superficie, precio);
     }
     
     handleContactModal(button) {
-        console.log('📞 handleContactModal llamado con:', button);
+
         
         const apartment = button.getAttribute('data-apartment');
         const superficie = button.getAttribute('data-superficie');
         const precio = button.getAttribute('data-precio');
         
-        console.log('📞 Abriendo modal de contacto para:', { apartment, superficie, precio });
+
         
         // Crear modal de contacto
         this.createContactModal(apartment, superficie, precio);
@@ -497,7 +494,7 @@ class ImageFilterSystem {
     }
     
     createContactModal(apartment, superficie, precio) {
-        console.log('📞 createContactModal llamado con:', { apartment, superficie, precio });
+
         
         // Remover modal existente si hay uno
         const existingModal = document.getElementById('contactModal');
@@ -546,18 +543,18 @@ class ImageFilterSystem {
         `;
         
         document.body.insertAdjacentHTML('beforeend', modalHTML);
-        console.log('📞 Modal insertado en el DOM');
+
         
         // Agregar event listener para el formulario
         const form = document.getElementById('contactForm');
         if (form) {
-            console.log('📞 Formulario encontrado, agregando event listener');
+    
             form.addEventListener('submit', (e) => {
                 e.preventDefault();
                 this.handleContactFormSubmit(e.target, apartment, superficie, precio);
             });
         } else {
-            console.log('❌ Formulario no encontrado');
+    
         }
         
         // Agregar event listener para cerrar con Escape
@@ -581,7 +578,7 @@ class ImageFilterSystem {
             message: formData.get('message')
         };
         
-        console.log('📧 Enviando formulario de contacto:', data);
+
         
         // Aquí puedes agregar la lógica para enviar el formulario
         // Por ahora solo mostraremos un mensaje de éxito
@@ -617,11 +614,11 @@ class ImageFilterSystem {
     // ===== MODO RECORRIDO =====
     
     activateRecorridoMode(apartment, superficie, precio) {
-        console.log('🎬 Activando modo recorrido...');
+
         
         // Obtener el video correspondiente
         const videoPath = this.getRecorridoVideoPath(apartment, superficie, precio);
-        console.log('🎬 Video de recorrido:', videoPath);
+
         
         // Ocultar todas las tarjetas excepto la activa
         this.hideAllCardsExceptActive(apartment, superficie, precio);
@@ -645,13 +642,13 @@ class ImageFilterSystem {
         const superficieKey = this.getSuperficieKeyFromText(superficie);
         const precioKey = this.getPrecioKeyFromText(precio);
         
-        console.log('🔍 Mapeando datos:', { tipo, superficieKey, precioKey });
+
         
         // Construir el nombre del video
         const videoName = `recorrido_${tipo}_${superficieKey}_${precioKey}.mp4`;
         const videoPath = `video/recorridos/${videoName}`;
         
-        console.log('🎬 Video path:', videoPath);
+
         return videoPath;
     }
     
@@ -725,7 +722,7 @@ class ImageFilterSystem {
                 }
                 
                 activeCardFound = true;
-                console.log('🎯 Tarjeta activa encontrada y configurada');
+        
             } else {
                 // Ocultar todas las demás tarjetas
                 card.style.opacity = '0';
@@ -750,7 +747,7 @@ class ImageFilterSystem {
         apartmentList.style.alignItems = 'center';
         apartmentList.style.minHeight = '60vh';
         
-        console.log('✅ Modo recorrido activado - solo una tarjeta visible');
+
     }
     
     changeBackgroundVideo(videoPath) {
@@ -785,7 +782,7 @@ class ImageFilterSystem {
             backgroundVideo.style.opacity = '1';
         }, 100);
         
-        console.log('🎬 Video de fondo cambiado a:', videoPath);
+
     }
     
     showRecorridoControls(apartment, superficie, precio) {
@@ -903,7 +900,7 @@ class ImageFilterSystem {
     }
     
     exitRecorridoMode() {
-        console.log('🚪 Saliendo del modo recorrido...');
+
         
         // Desbloquear el scroll
         this.unlockScroll();
@@ -925,7 +922,7 @@ class ImageFilterSystem {
         // Restaurar video de fondo original
         this.restoreBackgroundVideo();
         
-        console.log('✅ Modo recorrido desactivado');
+
     }
     
     restoreAllCards() {
@@ -990,7 +987,7 @@ class ImageFilterSystem {
     }
     
     showApartmentDetails(apartment, superficie, precio) {
-        console.log('📋 Transformando tarjeta a modo detalles:', { apartment, superficie, precio });
+
         
         // Ocultar inmediatamente el fondo oscuro SIN TIMER
         this.hideSectionBackground();
@@ -1004,7 +1001,7 @@ class ImageFilterSystem {
         
         const activeCard = apartmentList.querySelector('.apartment-card.recorrido-active');
         if (!activeCard) {
-            console.log('❌ No se encontró tarjeta activa');
+    
             return;
         }
         
@@ -1019,7 +1016,7 @@ class ImageFilterSystem {
     }
     
     hideSectionBackground() {
-        console.log('🌫️ Ocultando fondo oscuro de la sección INMEDIATAMENTE...');
+
         
         // Agregar clase CSS para activar modo detalles inmediatamente
         const apartmentsSection = document.querySelector('.apartments-section');
@@ -1062,17 +1059,17 @@ class ImageFilterSystem {
         // Forzar repaint para asegurar que los cambios se apliquen inmediatamente
         apartmentsSection?.offsetHeight;
         
-        console.log('✅ Fondo oscuro ocultado INMEDIATAMENTE');
+
     }
     
     toggleCollapse() {
-        console.log('📦 Alternando estado de contracción...');
+
         
         const detailsCard = document.querySelector('.apartment-card.details-mode');
         const collapseBtn = document.querySelector('.btn-collapse');
         
         if (!detailsCard || !collapseBtn) {
-            console.log('❌ No se encontraron elementos necesarios');
+    
             return;
         }
         
@@ -1082,17 +1079,17 @@ class ImageFilterSystem {
             // Expandir
             detailsCard.classList.remove('collapsed');
             collapseBtn.classList.remove('collapsed');
-            console.log('📈 Tarjeta expandida');
+    
         } else {
             // Contraer
             detailsCard.classList.add('collapsed');
             collapseBtn.classList.add('collapsed');
-            console.log('📉 Tarjeta contraída');
+    
         }
     }
     
     showHeroVideo() {
-        console.log('🎬 Mostrando video del hero...');
+
         
         // Ocultar elementos del hero para mostrar el video
         this.hideHeroElements();
@@ -1107,7 +1104,6 @@ class ImageFilterSystem {
     }
     
     hideHeroElements() {
-        console.log('🌫️ Ocultando elementos del hero...');
         
         // Ocultar la sección de estadísticas
         const previewStats = document.querySelector('.preview-stats');
@@ -1153,11 +1149,11 @@ class ImageFilterSystem {
             }, 500);
         }
         
-        console.log('✅ Elementos del hero ocultados');
+
     }
     
     switchToHeroVideo() {
-        console.log('🎥 Cambiando a video del hero...');
+
         
         // Buscar el video de fondo
         const backgroundVideo = document.querySelector('.background-video');
@@ -1169,7 +1165,7 @@ class ImageFilterSystem {
             
             // Asegurar que el video esté reproduciéndose
             backgroundVideo.play().catch(e => {
-                console.log('⚠️ Error reproduciendo video:', e);
+    
             });
         }
         
@@ -1180,7 +1176,6 @@ class ImageFilterSystem {
     }
     
     restoreHeroElements() {
-        console.log('🔄 Restaurando elementos del hero...');
         
         // Remover clase del body
         document.body.classList.remove('hero-video-mode');
@@ -1221,11 +1216,11 @@ class ImageFilterSystem {
             heroTitle.style.transition = '';
         }
         
-        console.log('✅ Elementos del hero restaurados');
+
     }
     
     showVideoControls() {
-        console.log('🎮 Mostrando controles de video...');
+
         
         // Crear controles de video
         const videoControlsHTML = `
@@ -1257,11 +1252,11 @@ class ImageFilterSystem {
             }
         }, 100);
         
-        console.log('✅ Controles de video mostrados');
+
     }
     
     nextHeroVideo() {
-        console.log('⏭️ Cambiando al siguiente video...');
+
         
         // Array de videos disponibles
         const heroVideos = [
@@ -1286,18 +1281,18 @@ class ImageFilterSystem {
         // Cambiar al siguiente video
         backgroundVideo.src = heroVideos[nextIndex];
         backgroundVideo.play().catch(e => {
-            console.log('⚠️ Error reproduciendo video:', e);
+
         });
         
         // Mostrar indicador de cambio
         const videoName = heroVideos[nextIndex].split('/').pop().replace('.mp4', '');
         this.showVideoChangeIndicator(`Reproduciendo: ${videoName}`);
         
-        console.log('✅ Video cambiado a:', heroVideos[nextIndex]);
+
     }
     
     stopHeroVideo() {
-        console.log('⏹️ Deteniendo video y restaurando página...');
+
         
         // Ocultar controles de video
         const videoControls = document.querySelector('.video-controls');
@@ -1320,11 +1315,11 @@ class ImageFilterSystem {
             backgroundVideo.style.zIndex = '0';
         }
         
-        console.log('✅ Página restaurada a la normalidad');
+
     }
     
     showVideoChangeIndicator(message) {
-        console.log('📺 Mostrando indicador de cambio:', message);
+
         
         // Crear indicador temporal
         const indicatorHTML = `

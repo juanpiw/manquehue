@@ -1273,8 +1273,73 @@
                 if (chatWindow.style.display === 'none' || chatWindow.style.display === '') {
                     chatWindow.style.display = 'none';
                 }
+                
+                // Prevent scroll propagation from chat to main page
+                preventChatScrollPropagation(chatWindow);
             }
         }, 1000);
+        
+        // Function to prevent scroll propagation from chat to main page
+        function preventChatScrollPropagation(chatElement) {
+            // Add CSS to prevent scroll propagation
+            const style = document.createElement('style');
+            style.textContent = `
+                .chat-window-wrapper,
+                .chat-window,
+                [data-testid="chat-window"],
+                .chat-window *,
+                .chat-window-wrapper *,
+                [data-testid="chat-window"] * {
+                    overscroll-behavior: contain !important;
+                    scroll-behavior: auto !important;
+                }
+                
+                .chat-window-wrapper .chat-messages,
+                .chat-window .chat-messages,
+                [data-testid="chat-window"] .chat-messages {
+                    overscroll-behavior: contain !important;
+                    scroll-behavior: auto !important;
+                    -webkit-overflow-scrolling: touch !important;
+                }
+                
+                .chat-window-wrapper .chat-input,
+                .chat-window .chat-input,
+                [data-testid="chat-window"] .chat-input {
+                    overscroll-behavior: contain !important;
+                }
+            `;
+            document.head.appendChild(style);
+            
+            // Add event listeners to prevent scroll propagation
+            const scrollableElements = chatElement.querySelectorAll('.chat-messages, .chat-content, [data-testid="chat-messages"], .chat-window-content');
+            
+            scrollableElements.forEach(element => {
+                element.addEventListener('wheel', function(e) {
+                    e.stopPropagation();
+                }, { passive: false });
+                
+                element.addEventListener('touchmove', function(e) {
+                    e.stopPropagation();
+                }, { passive: false });
+                
+                element.addEventListener('scroll', function(e) {
+                    e.stopPropagation();
+                }, { passive: false });
+            });
+            
+            // Also prevent propagation on the main chat element
+            chatElement.addEventListener('wheel', function(e) {
+                e.stopPropagation();
+            }, { passive: false });
+            
+            chatElement.addEventListener('touchmove', function(e) {
+                e.stopPropagation();
+            }, { passive: false });
+            
+            chatElement.addEventListener('scroll', function(e) {
+                e.stopPropagation();
+            }, { passive: false });
+        }
 
         // Store chat instance globally
         window.irisChatInstance = irisChatInstance;
@@ -1295,6 +1360,12 @@
                                     // Check if message contains video commands
                                     irisDetectVideoCommands(messageText);
                                 });
+                                
+                                // Check if new chat elements were added and prevent scroll propagation
+                                const chatWindow = document.querySelector('.chat-window-wrapper, .chat-window, [data-testid="chat-window"]');
+                                if (chatWindow && (node.contains(chatWindow) || chatWindow.contains(node))) {
+                                    preventChatScrollPropagation(chatWindow);
+                                }
                             }
                         });
                     }

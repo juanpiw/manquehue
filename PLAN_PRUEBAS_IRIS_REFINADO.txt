@@ -1,0 +1,327 @@
+PLAN DE PRUEBAS REFINADO - INTEGRACIÓN IRIS DASHBOARD MANQUEHUE
+================================================================
+
+OBJETIVO GENERAL REFINADO
+=========================
+Implementar un sistema de control de UI mediante comandos de voz/texto con arquitectura modular y patrones de diseño que permitan:
+- REUTILIZACIÓN: Componentes intercambiables para diferentes proyectos
+- FLEXIBILIDAD: Fácil modificación de lógica de comandos sin afectar el core
+- MANTENIBILIDAD: Separación clara de responsabilidades y puntos de cambio
+- ESCALABILIDAD: Adición de nuevos comandos y funcionalidades sin refactorización
+
+ARQUITECTURA PROPUESTA
+======================
+
+PATRÓN COMMAND + STRATEGY + OBSERVER
+
+┌─────────────────────────────────────────────────────────────┐
+│                    IRIS CORE SYSTEM                        │
+├─────────────────────────────────────────────────────────────┤
+│  CommandParser    │  CommandExecutor    │  CommandRegistry  │
+│  (Strategy)       │  (Strategy)         │  (Registry)       │
+├─────────────────────────────────────────────────────────────┤
+│                    COMMAND HANDLERS                        │
+│  NavigationHandler│  VideoHandler       │  FilterHandler    │
+│  (Concrete)       │  (Concrete)         │  (Concrete)       │
+├─────────────────────────────────────────────────────────────┤
+│                    UI CONTROLLERS                          │
+│  ScrollController │  VideoController    │  FilterController │
+│  (Adapter)        │  (Adapter)          │  (Adapter)        │
+└─────────────────────────────────────────────────────────────┘
+
+ITERACIÓN 1: VALIDACIÓN DE ARQUITECTURA BASE
+============================================
+
+1.1 Verificar Separación de Responsabilidades
+- [ ] Verificar que CommandParser está separado de CommandExecutor
+- [ ] Confirmar que CommandRegistry permite registro dinámico
+- [ ] Validar que UI Controllers están desacoplados
+- [ ] Verificar que cada Handler tiene responsabilidad única
+
+1.2 Testing de Patrón Command
+- [ ] Probar que comandos son objetos inmutables
+- [ ] Verificar que comandos pueden ser serializados/deserializados
+- [ ] Confirmar que comandos mantienen estado de ejecución
+- [ ] Probar que comandos pueden ser encadenados
+
+1.3 Testing de Patrón Strategy
+- [ ] Verificar que diferentes parsers pueden ser intercambiados
+- [ ] Probar que diferentes executors pueden ser intercambiados
+- [ ] Confirmar que estrategias se pueden cambiar en runtime
+- [ ] Validar que no hay dependencias hardcoded
+
+CRITERIOS DE ÉXITO ITERACIÓN 1
+- ✅ Arquitectura modular implementada
+- ✅ Responsabilidades claramente separadas
+- ✅ Patrones Command y Strategy funcionando
+- ✅ Sistema permite intercambio de componentes
+
+ITERACIÓN 2: VALIDACIÓN DE PUNTOS DE CAMBIO
+===========================================
+
+2.1 Testing de CommandParser (PUNTO DE CAMBIO 1)
+- [ ] Verificar que parser actual entiende comandos naturales
+- [ ] Probar que se puede cambiar a parser de comandos estructurados
+- [ ] Confirmar que se puede agregar parser para otros idiomas
+- [ ] Validar que parser puede ser extendido sin modificar core
+
+2.2 Testing de CommandRegistry (PUNTO DE CAMBIO 2)
+- [ ] Probar registro dinámico de nuevos comandos
+- [ ] Verificar que comandos pueden ser desregistrados
+- [ ] Confirmar que comandos pueden ser sobrescritos
+- [ ] Validar que registry mantiene metadata de comandos
+
+2.3 Testing de UI Controllers (PUNTO DE CAMBIO 3)
+- [ ] Verificar que ScrollController puede ser reemplazado
+- [ ] Probar que VideoController puede ser reemplazado
+- [ ] Confirmar que FilterController puede ser reemplazado
+- [ ] Validar que nuevos controllers pueden ser agregados
+
+CRITERIOS DE ÉXITO ITERACIÓN 2
+- ✅ Puntos de cambio están claramente identificados
+- ✅ Componentes pueden ser intercambiados sin afectar core
+- ✅ Nuevos comandos pueden ser agregados dinámicamente
+- ✅ Sistema es extensible sin refactorización
+
+ITERACIÓN 3: VALIDACIÓN DE REUTILIZACIÓN
+========================================
+
+3.1 Testing de Componentes Reutilizables
+- [ ] Verificar que CommandParser puede usarse en otros proyectos
+- [ ] Probar que CommandExecutor es independiente del dominio
+- [ ] Confirmar que UI Controllers son genéricos
+- [ ] Validar que CommandRegistry es portable
+
+3.2 Testing de Configuración
+- [ ] Probar que comandos se pueden configurar via JSON
+- [ ] Verificar que handlers se pueden configurar dinámicamente
+- [ ] Confirmar que UI mappings son configurables
+- [ ] Validar que validaciones son configurables
+
+3.3 Testing de Plugins
+- [ ] Probar que nuevos parsers pueden ser agregados como plugins
+- [ ] Verificar que nuevos handlers pueden ser agregados como plugins
+- [ ] Confirmar que nuevos controllers pueden ser agregados como plugins
+- [ ] Validar que plugins pueden ser cargados dinámicamente
+
+CRITERIOS DE ÉXITO ITERACIÓN 3
+- ✅ Componentes son verdaderamente reutilizables
+- ✅ Sistema es configurable sin código
+- ✅ Arquitectura soporta plugins
+- ✅ Portabilidad entre proyectos
+
+ITERACIÓN 4: VALIDACIÓN DE MANTENIBILIDAD
+=========================================
+
+4.1 Testing de Separación de Concerns
+- [ ] Verificar que cambios en UI no afectan lógica de comandos
+- [ ] Probar que cambios en comandos no afectan UI
+- [ ] Confirmar que cambios en parsers no afectan executors
+- [ ] Validar que cambios en handlers no afectan registry
+
+4.2 Testing de Testing
+- [ ] Verificar que cada componente puede ser testeado aisladamente
+- [ ] Probar que mocks pueden ser inyectados fácilmente
+- [ ] Confirmar que tests de integración son independientes
+- [ ] Validar que tests de performance son específicos
+
+4.3 Testing de Debugging
+- [ ] Verificar que cada componente tiene logging apropiado
+- [ ] Probar que errores son rastreables a componentes específicos
+- [ ] Confirmar que estado puede ser inspeccionado
+- [ ] Validar que debugging no requiere conocimiento del sistema completo
+
+CRITERIOS DE ÉXITO ITERACIÓN 4
+- ✅ Cambios están aislados a componentes específicos
+- ✅ Testing es granular y específico
+- ✅ Debugging es eficiente y preciso
+- ✅ Mantenimiento es predecible
+
+ITERACIÓN 5: VALIDACIÓN DE ESCALABILIDAD
+========================================
+
+5.1 Testing de Nuevos Comandos
+- [ ] Agregar comando "mostrar estadísticas" sin modificar core
+- [ ] Agregar comando "exportar datos" sin modificar core
+- [ ] Agregar comando "modo presentación" sin modificar core
+- [ ] Verificar que nuevos comandos siguen patrones establecidos
+
+5.2 Testing de Nuevos Handlers
+- [ ] Agregar StatisticsHandler sin modificar core
+- [ ] Agregar ExportHandler sin modificar core
+- [ ] Agregar PresentationHandler sin modificar core
+- [ ] Verificar que nuevos handlers siguen interfaces establecidas
+
+5.3 Testing de Nuevos Controllers
+- [ ] Agregar StatisticsController sin modificar core
+- [ ] Agregar ExportController sin modificar core
+- [ ] Agregar PresentationController sin modificar core
+- [ ] Verificar que nuevos controllers siguen adapters establecidos
+
+CRITERIOS DE ÉXITO ITERACIÓN 5
+- ✅ Nuevas funcionalidades se agregan sin modificar core
+- ✅ Patrones se mantienen consistentes
+- ✅ Sistema escala sin degradación de performance
+- ✅ Arquitectura soporta crecimiento
+
+ITERACIÓN 6: VALIDACIÓN DE INTEGRACIÓN COMPLETA
+===============================================
+
+6.1 Testing de Flujo Completo con Arquitectura
+- [ ] Simular flujo completo usando todos los componentes
+- [ ] Probar que cada punto de cambio funciona correctamente
+- [ ] Verificar que componentes se comunican apropiadamente
+- [ ] Validar que arquitectura soporta casos de uso reales
+
+6.2 Testing de Migración
+- [ ] Probar migración de comandos existentes a nueva arquitectura
+- [ ] Verificar que funcionalidad existente se mantiene
+- [ ] Confirmar que performance no se degrada
+- [ ] Validar que experiencia de usuario mejora
+
+6.3 Testing de Documentación
+- [ ] Verificar que puntos de cambio están documentados
+- [ ] Probar que guías de extensión son claras
+- [ ] Confirmar que ejemplos de uso son completos
+- [ ] Validar que troubleshooting es efectivo
+
+CRITERIOS DE ÉXITO ITERACIÓN 6
+- ✅ Arquitectura soporta todos los casos de uso
+- ✅ Migración es suave y sin pérdida de funcionalidad
+- ✅ Documentación es completa y útil
+- ✅ Sistema está listo para producción
+
+PUNTOS DE CAMBIO IDENTIFICADOS
+==============================
+
+1. COMMAND PARSER (Estrategia de Parsing)
+```javascript
+// PUNTO DE CAMBIO: Cambiar lógica de parsing
+class NaturalLanguageParser extends CommandParser {
+  parse(text) { /* lógica actual */ }
+}
+
+class StructuredCommandParser extends CommandParser {
+  parse(text) { /* nueva lógica */ }
+}
+```
+
+2. COMMAND REGISTRY (Registro de Comandos)
+```javascript
+// PUNTO DE CAMBIO: Agregar/quitar comandos
+CommandRegistry.register('showStats', new ShowStatsCommand());
+CommandRegistry.register('exportData', new ExportDataCommand());
+```
+
+3. UI CONTROLLERS (Control de UI)
+```javascript
+// PUNTO DE CAMBIO: Cambiar controladores de UI
+class ScrollController extends UIController {
+  execute(command) { /* lógica actual */ }
+}
+
+class NewScrollController extends UIController {
+  execute(command) { /* nueva lógica */ }
+}
+```
+
+4. COMMAND HANDLERS (Lógica de Negocio)
+```javascript
+// PUNTO DE CAMBIO: Cambiar handlers específicos
+class NavigationHandler extends CommandHandler {
+  handle(command) { /* lógica actual */ }
+}
+
+class AdvancedNavigationHandler extends CommandHandler {
+  handle(command) { /* nueva lógica */ }
+}
+```
+
+CRITERIOS DE ACEPTACIÓN FINAL
+=============================
+
+ARQUITECTURA
+- [ ] Patrones de diseño implementados correctamente
+- [ ] Puntos de cambio claramente identificados
+- [ ] Componentes son intercambiables
+- [ ] Sistema es extensible sin refactorización
+
+REUTILIZACIÓN
+- [ ] Componentes pueden usarse en otros proyectos
+- [ ] Configuración es externa al código
+- [ ] Plugins son soportados
+- [ ] Portabilidad está garantizada
+
+MANTENIBILIDAD
+- [ ] Responsabilidades están separadas
+- [ ] Testing es granular
+- [ ] Debugging es eficiente
+- [ ] Documentación es completa
+
+ESCALABILIDAD
+- [ ] Nuevas funcionalidades se agregan fácilmente
+- [ ] Performance se mantiene
+- [ ] Patrones se mantienen consistentes
+- [ ] Arquitectura soporta crecimiento
+
+NOTAS DE IMPLEMENTACIÓN
+=======================
+
+ESTRUCTURA DE ARCHIVOS PROPUESTA
+```
+iris-core/
+├── core/
+│   ├── CommandParser.js
+│   ├── CommandExecutor.js
+│   ├── CommandRegistry.js
+│   └── UIController.js
+├── handlers/
+│   ├── NavigationHandler.js
+│   ├── VideoHandler.js
+│   └── FilterHandler.js
+├── controllers/
+│   ├── ScrollController.js
+│   ├── VideoController.js
+│   └── FilterController.js
+├── parsers/
+│   ├── NaturalLanguageParser.js
+│   └── StructuredCommandParser.js
+└── config/
+    ├── commands.json
+    └── ui-mappings.json
+```
+
+COMANDOS DE DEBUG
+```javascript
+// Verificar arquitectura
+console.log('CommandRegistry:', CommandRegistry.getCommands());
+console.log('ActiveParser:', CommandParser.getActiveParser());
+console.log('UIControllers:', UIController.getControllers());
+
+// Probar puntos de cambio
+CommandRegistry.register('test', new TestCommand());
+CommandParser.setParser(new StructuredCommandParser());
+UIController.setController('scroll', new NewScrollController());
+```
+
+MÉTRICAS DE ÉXITO
+- Tiempo de agregar nuevo comando < 30 minutos
+- Tiempo de cambiar parser < 15 minutos
+- Tiempo de agregar nuevo handler < 45 minutos
+- 0 dependencias hardcoded
+- 100% de componentes testeados aisladamente
+
+RESUMEN DE OBJETIVOS
+====================
+1. IMPLEMENTAR ARQUITECTURA MODULAR con patrones Command + Strategy + Observer
+2. IDENTIFICAR PUNTOS DE CAMBIO claros para facilitar modificaciones
+3. GARANTIZAR REUTILIZACIÓN de componentes entre proyectos
+4. ASEGURAR MANTENIBILIDAD con separación de responsabilidades
+5. PERMITIR ESCALABILIDAD sin refactorización del core
+6. VALIDAR CADA ITERACIÓN con criterios específicos y medibles
+
+ESTE PLAN GARANTIZA QUE EL SISTEMA IRIS SEA:
+- FÁCIL DE MODIFICAR: Puntos de cambio claros
+- FÁCIL DE REUTILIZAR: Componentes intercambiables
+- FÁCIL DE MANTENER: Responsabilidades separadas
+- FÁCIL DE ESCALAR: Arquitectura extensible

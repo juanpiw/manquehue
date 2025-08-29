@@ -18,8 +18,6 @@ class VideoScrollApp {
     }
 
     async init() {
-        console.log('🚀 Initializing Video Scroll Application...');
-        
         try {
             // Inicializar sistemas en orden
             await this.initializeVideoSystem();
@@ -37,36 +35,28 @@ class VideoScrollApp {
             this.setupGlobalEventListeners();
             
             this.isInitialized = true;
-            console.log('✅ Video Scroll Application initialized successfully');
             
             // Emitir evento de inicialización completa
             this.emitEvent('app:initialized');
             
         } catch (error) {
-            console.error('❌ Error initializing application:', error);
             this.handleInitializationError(error);
         }
     }
 
     async initializeVideoSystem() {
-        console.log('🎬 Initializing VideoScrollSystem...');
-        
         try {
             this.videoSystem = new VideoScrollSystem();
             await this.videoSystem.init();
             
-            console.log('✅ VideoScrollSystem initialized');
             this.emitEvent('system:video:initialized');
             
         } catch (error) {
-            console.error('❌ Error initializing VideoScrollSystem:', error);
             throw error;
         }
     }
 
     async initializeNavigationSystem() {
-        console.log('🧭 Initializing NavigationSystem...');
-        
         try {
             this.navigationSystem = new NavigationSystem();
             
@@ -75,93 +65,71 @@ class VideoScrollApp {
                 this.navigationSystem.debugSections();
             }, 1000);
             
-            console.log('✅ NavigationSystem initialized');
             this.emitEvent('system:navigation:initialized');
             
         } catch (error) {
-            console.error('❌ Error initializing NavigationSystem:', error);
             throw error;
         }
     }
 
     async initializeComponentManager() {
-        console.log('🎛️ Initializing ComponentManager...');
-        
         try {
             this.componentManager = new ComponentManager();
             
-            console.log('✅ ComponentManager initialized');
             this.emitEvent('system:components:initialized');
             
         } catch (error) {
-            console.error('❌ Error initializing ComponentManager:', error);
             throw error;
         }
     }
 
     async initializeAnimationController() {
-        console.log('🎬 Initializing AnimationController...');
-        
         try {
             this.animationController = new AnimationController();
             
             // Exponer globalmente para acceso directo
             window.animationController = this.animationController;
             
-            console.log('✅ AnimationController initialized and exposed globally');
             this.emitEvent('system:animations:initialized');
             
         } catch (error) {
-            console.error('❌ Error initializing AnimationController:', error);
             throw error;
         }
     }
 
     async initializeScrollCoordinator() {
-        console.log('🎯 Initializing ScrollCoordinator...');
-        
         try {
             this.scrollCoordinator = new ScrollCoordinator();
             
             // Exponer globalmente para acceso directo
             window.scrollCoordinator = this.scrollCoordinator;
             
-            console.log('✅ ScrollCoordinator initialized and exposed globally');
             this.emitEvent('system:scrollCoordinator:initialized');
             
         } catch (error) {
-            console.error('❌ Error initializing ScrollCoordinator:', error);
             throw error;
         }
     }
 
     async initializeImageFilterSystem() {
-        console.log('🖼️ Initializing ImageFilterSystem...');
-        
         try {
             // Verificar si ya existe una instancia global
             if (window.imageFilterSystem) {
                 this.imageFilterSystem = window.imageFilterSystem;
-                console.log('🖼️ Using existing ImageFilterSystem instance');
             } else {
                 this.imageFilterSystem = new ImageFilterSystem();
                 // Inicializar instancia global para acceso directo
                 window.imageFilterSystem = this.imageFilterSystem;
-                console.log('🖼️ Created new ImageFilterSystem instance');
             }
             
-            console.log('✅ ImageFilterSystem initialized');
             this.emitEvent('system:imageFilter:initialized');
             
         } catch (error) {
-            console.error('❌ Error initializing ImageFilterSystem:', error);
             throw error;
         }
     }
 
     async initializeContentManager() {
-        console.log('📋 Initializing ContentManager...');
-        
         try {
             // Solo crear ContentManager si no existe ya
             if (!window.contentManager) {
@@ -169,7 +137,6 @@ class VideoScrollApp {
                 window.contentManager = this.contentManager;
             } else {
                 this.contentManager = window.contentManager;
-                console.log('📋 Using existing ContentManager instance');
             }
             
             // Debug: mostrar información de contenido
@@ -177,23 +144,18 @@ class VideoScrollApp {
                 this.contentManager.debugInfo();
             }, 1000);
             
-            console.log('✅ ContentManager initialized');
             this.emitEvent('system:content:initialized');
             
         } catch (error) {
-            console.error('❌ Error initializing ContentManager:', error);
             throw error;
         }
     }
 
     setupSystemIntegration() {
-        console.log('🔗 Setting up system integration...');
-        
         // Integración entre VideoSystem y NavigationSystem
         if (this.videoSystem && this.navigationSystem) {
             // Cuando cambia la sección, actualizar el video
             this.navigationSystem.onSectionChange = (sectionId) => {
-                console.log(`🔄 Section changed to: ${sectionId}`);
                 this.emitEvent('section:changed', { sectionId });
             };
         }
@@ -202,15 +164,12 @@ class VideoScrollApp {
         if (this.componentManager && this.animationController) {
             // Animar componentes cuando se activan
             this.componentManager.onComponentActivate = (componentName) => {
-                console.log(`🎬 Component activated: ${componentName}`);
                 this.animationController.animateSection(componentName);
             };
         }
         
         // Integración entre todos los sistemas
         this.setupCrossSystemEvents();
-        
-        console.log('✅ System integration setup complete');
     }
 
     setupCrossSystemEvents() {
@@ -268,8 +227,6 @@ class VideoScrollApp {
     }
 
     setupGlobalEventListeners() {
-        console.log('🌐 Setting up global event listeners...');
-        
         // Manejo de visibilidad de página
         document.addEventListener('visibilitychange', () => {
             if (document.hidden) {
@@ -298,8 +255,6 @@ class VideoScrollApp {
             this.handleGlobalKeydown(event);
         });
         
-        console.log('✅ Global event listeners setup complete');
-        
         // Setup para animación de sección de apartamentos
         this.setupApartmentsSectionAnimation();
         
@@ -319,8 +274,6 @@ class VideoScrollApp {
                     
                     // Remover el observer después de activar la animación
                     apartmentsObserver.unobserve(entry.target);
-                    
-                    console.log('🎬 Apartments section entered viewport - triggering wow animation');
                 }
             });
         }, {
@@ -332,13 +285,10 @@ class VideoScrollApp {
         const apartmentsSection = document.getElementById('apartments');
         if (apartmentsSection) {
             apartmentsObserver.observe(apartmentsSection);
-            console.log('✅ Apartments section animation observer setup');
         }
     }
 
     setupPreviewHeroAnimation() {
-        console.log('🎬 Setting up preview hero animation observer...');
-        
         // Crear Intersection Observer específico para la sección hero
         const heroObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
@@ -350,8 +300,6 @@ class VideoScrollApp {
                     
                     // Remover el observer después de activar la animación
                     heroObserver.unobserve(entry.target);
-                    
-                    console.log('🎬 Preview hero section entered viewport - triggering wow animation');
                 }
             });
         }, {
@@ -370,15 +318,10 @@ class VideoScrollApp {
         
         if (previewHero) {
             heroObserver.observe(previewHero);
-            console.log('✅ Preview hero section animation observer setup');
-        } else {
-            console.log('⚠️ Preview hero section not found for animation observer');
         }
     }
 
     handlePageHidden() {
-        console.log('👁️ Page hidden');
-        
         // Pausar video
         if (this.videoSystem) {
             this.videoSystem.pause();
@@ -393,8 +336,6 @@ class VideoScrollApp {
     }
 
     handlePageVisible() {
-        console.log('👁️ Page visible');
-        
         // Reanudar video
         if (this.videoSystem) {
             this.videoSystem.play();
@@ -409,8 +350,6 @@ class VideoScrollApp {
     }
 
     handleResize() {
-        console.log('📏 Window resized');
-        
         // Actualizar navegación
         if (this.navigationSystem) {
             this.navigationSystem.updateNavigation();
@@ -425,8 +364,6 @@ class VideoScrollApp {
     }
 
     handleGlobalError(error) {
-        console.error('❌ Global error:', error);
-        
         // Intentar recuperar el sistema
         this.handleSystemRecovery();
         
@@ -452,8 +389,6 @@ class VideoScrollApp {
     }
 
     handleSystemRecovery() {
-        console.log('🔄 Attempting system recovery...');
-        
         try {
             // Reinicializar sistemas críticos
             if (this.videoSystem) {
@@ -464,10 +399,8 @@ class VideoScrollApp {
                 this.navigationSystem.updateNavigation();
             }
             
-            console.log('✅ System recovery completed');
-            
         } catch (error) {
-            console.error('❌ System recovery failed:', error);
+            // Error silencioso
         }
     }
 
@@ -484,8 +417,6 @@ class VideoScrollApp {
             animationController: this.animationController ? 'Active' : null
         };
         
-        console.log('🐛 Debug Info:', debugInfo);
-        
         // Mostrar en pantalla si está en modo debug
         if (this.debugMode) {
             this.showDebugOverlay(debugInfo);
@@ -494,7 +425,6 @@ class VideoScrollApp {
 
     toggleDebugMode() {
         this.debugMode = !this.debugMode;
-        console.log(`🐛 Debug mode: ${this.debugMode ? 'ON' : 'OFF'}`);
         
         if (this.debugMode) {
             this.enableDebugMode();
@@ -561,8 +491,6 @@ class VideoScrollApp {
     }
 
     refreshSystem() {
-        console.log('🔄 Refreshing system...');
-        
         // Reinicializar todos los sistemas
         this.init();
     }
@@ -589,7 +517,7 @@ class VideoScrollApp {
                 try {
                     callback(data);
                 } catch (error) {
-                    console.error(`Error in event handler for ${eventName}:`, error);
+                    // Error silencioso
                 }
             });
         }
@@ -644,8 +572,6 @@ class VideoScrollApp {
     }
 
     destroy() {
-        console.log('🗑️ Destroying Video Scroll Application...');
-        
         // Destruir sistemas
         if (this.animationController) {
             this.animationController.destroy();
@@ -656,15 +582,11 @@ class VideoScrollApp {
         
         // Limpiar debug
         this.disableDebugMode();
-        
-        console.log('✅ Video Scroll Application destroyed');
     }
 }
 
 // Inicialización automática cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('📄 DOM Content Loaded - Starting Video Scroll Application');
-    
     // Crear instancia global de la aplicación
     window.videoScrollApp = new VideoScrollApp();
     
@@ -674,7 +596,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Manejo de errores no capturados
 window.addEventListener('unhandledrejection', (event) => {
-    console.error('❌ Unhandled promise rejection:', event.reason);
+    // Error silencioso
 });
 
 // Export for global use

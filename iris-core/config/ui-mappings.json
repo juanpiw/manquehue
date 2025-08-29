@@ -1,0 +1,244 @@
+{
+  "uiMappings": {
+    "navigation": {
+      "apartments": {
+        "selector": "[data-section='apartments']",
+        "scrollTarget": "apartments",
+        "videoSection": "apartments",
+        "actions": ["scroll", "video", "filter"]
+      },
+      "houses": {
+        "selector": "[data-section='houses']",
+        "scrollTarget": "houses",
+        "videoSection": "houses",
+        "actions": ["scroll", "video"]
+      },
+      "equipment": {
+        "selector": "[data-section='equipment']",
+        "scrollTarget": "equipment",
+        "videoSection": "equipment",
+        "actions": ["scroll", "video"]
+      },
+      "features": {
+        "selector": "[data-section='features']",
+        "scrollTarget": "features",
+        "videoSection": "features",
+        "actions": ["scroll", "video"]
+      },
+      "home": {
+        "selector": "[data-section='home']",
+        "scrollTarget": "home",
+        "videoSection": "section-1",
+        "actions": ["scroll", "video"]
+      }
+    },
+    "video": {
+      "controls": {
+        "play": {
+          "selector": "#backgroundVideo",
+          "action": "play",
+          "method": "play"
+        },
+        "pause": {
+          "selector": "#backgroundVideo",
+          "action": "pause",
+          "method": "pause"
+        },
+        "stop": {
+          "selector": "#backgroundVideo",
+          "action": "stop",
+          "method": "pause"
+        },
+        "next": {
+          "selector": ".video-next",
+          "action": "click",
+          "method": "click"
+        },
+        "previous": {
+          "selector": ".video-previous",
+          "action": "click",
+          "method": "click"
+        }
+      },
+      "sections": {
+        "section-1": {
+          "videoPath": "video/apartamento/video-0.mp4",
+          "description": "Sección 1"
+        },
+        "apartments": {
+          "videoPath": "video/apartamento/video-1.mp4",
+          "description": "Apartamentos"
+        },
+        "features": {
+          "videoPath": "video/apartamento/video-0.mp4",
+          "description": "Características"
+        },
+        "equipment": {
+          "videoPath": "video/equipamiento/gym.mp4",
+          "description": "Equipamiento"
+        }
+      }
+    },
+    "filters": {
+      "apartmentFilters": {
+        "container": ".filter-buttons",
+        "buttons": {
+          "all": {
+            "selector": "[data-type='all']",
+            "text": "todos",
+            "action": "clear"
+          },
+          "1d": {
+            "selector": "[data-type='1d']",
+            "text": "1 dormitorio",
+            "action": "filter",
+            "criteria": { "bedrooms": 1 }
+          },
+          "2d": {
+            "selector": "[data-type='2d']",
+            "text": "2 dormitorios",
+            "action": "filter",
+            "criteria": { "bedrooms": 2 }
+          },
+          "3d": {
+            "selector": "[data-type='3d']",
+            "text": "3 dormitorios",
+            "action": "filter",
+            "criteria": { "bedrooms": 3 }
+          }
+        }
+      },
+      "searchInputs": {
+        "surface": {
+          "selector": "input[name='surface']",
+          "placeholder": "Superficie",
+          "type": "text"
+        },
+        "price": {
+          "selector": "input[name='price']",
+          "placeholder": "Precio",
+          "type": "text"
+        }
+      }
+    },
+    "apartments": {
+      "cards": {
+        "container": ".apartment-cards",
+        "cardSelector": ".apartment-card",
+        "dataAttributes": {
+          "apartment": "data-apartment",
+          "superficie": "data-superficie",
+          "precio": "data-precio"
+        },
+        "buttons": {
+          "recorrer": {
+            "selector": ".watchVideoBtn, .btn-secondary[data-apartment]",
+            "action": "showDetails"
+          }
+        }
+      }
+    },
+    "scroll": {
+      "targets": {
+        "top": {
+          "position": 0,
+          "behavior": "smooth"
+        },
+        "bottom": {
+          "position": "max",
+          "behavior": "smooth"
+        },
+        "apartments": {
+          "selector": "[data-section='apartments']",
+          "behavior": "smooth"
+        },
+        "houses": {
+          "selector": "[data-section='houses']",
+          "behavior": "smooth"
+        },
+        "equipment": {
+          "selector": "[data-section='equipment']",
+          "behavior": "smooth"
+        },
+        "features": {
+          "selector": "[data-section='features']",
+          "behavior": "smooth"
+        }
+      }
+    }
+  },
+  "selectors": {
+    "navigation": {
+      "navItems": ".nav-item",
+      "scrollDots": ".scroll-dot",
+      "sections": "[data-section]"
+    },
+    "video": {
+      "videoElement": "#backgroundVideo",
+      "videoContainer": ".video-container",
+      "videoControls": ".video-controls"
+    },
+    "filters": {
+      "filterContainer": ".filter-container",
+      "filterButtons": ".filter-buttons",
+      "searchForm": ".search-form"
+    },
+    "apartments": {
+      "cardsContainer": ".apartments-container",
+      "cardTemplate": ".apartment-card-template"
+    }
+  },
+  "events": {
+    "navigation": {
+      "sectionChange": "sectionChanged",
+      "scrollComplete": "scrollComplete"
+    },
+    "video": {
+      "play": "videoPlay",
+      "pause": "videoPause",
+      "ended": "videoEnded",
+      "timeupdate": "videoTimeUpdate"
+    },
+    "filters": {
+      "filterApplied": "filterApplied",
+      "filterCleared": "filterCleared"
+    },
+    "apartments": {
+      "cardClick": "cardClicked",
+      "detailsShown": "detailsShown"
+    }
+  },
+  "animations": {
+    "scroll": {
+      "duration": 1000,
+      "easing": "easeInOutCubic"
+    },
+    "fade": {
+      "duration": 300,
+      "easing": "easeInOut"
+    },
+    "slide": {
+      "duration": 500,
+      "easing": "easeOutQuart"
+    }
+  },
+  "responses": {
+    "success": {
+      "navigation": "Navegando a {section}",
+      "video": "Reproduciendo video",
+      "filter": "Filtro aplicado: {criteria}",
+      "scroll": "Desplazando a {position}"
+    },
+    "error": {
+      "navigation": "No se pudo navegar a {section}",
+      "video": "Error al reproducir video",
+      "filter": "No se pudo aplicar el filtro",
+      "scroll": "Error al desplazar"
+    },
+    "notFound": {
+      "section": "Sección '{section}' no encontrada",
+      "video": "Video no encontrado",
+      "filter": "No se encontraron resultados para el filtro"
+    }
+  }
+}

@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test IRIS Modular System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-section h2 {
+            color: #333;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .test-button.success {
+            background: #28a745;
+        }
+        .test-button.error {
+            background: #dc3545;
+        }
+        .status {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .input-group {
+            margin: 10px 0;
+        }
+        .input-group input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 300px;
+            margin-right: 10px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧠 Test IRIS Modular System v2.0.0</h1>
+    
+    <div class="test-section">
+        <h2>📋 Sistema de Carga</h2>
+        <button class="test-button" onclick="testLoader()">Test Cargador</button>
+        <button class="test-button" onclick="testInitialization()">Test Inicialización</button>
+        <div id="loader-status" class="status info">Estado del cargador...</div>
+    </div>
+
+    <div class="grid">
+        <div class="test-section">
+            <h2>🔧 Componentes Core</h2>
+            <button class="test-button" onclick="testCommandParser()">Test CommandParser</button>
+            <button class="test-button" onclick="testCommandRegistry()">Test CommandRegistry</button>
+            <button class="test-button" onclick="testCommandExecutor()">Test CommandExecutor</button>
+            <button class="test-button" onclick="testUIController()">Test UIController</button>
+            <div id="core-status" class="status info">Estado de componentes core...</div>
+        </div>
+
+        <div class="test-section">
+            <h2>📝 Parsers</h2>
+            <button class="test-button" onclick="testNaturalLanguageParser()">Test NaturalLanguageParser</button>
+            <button class="test-button" onclick="testStructuredCommandParser()">Test StructuredCommandParser</button>
+            <div id="parser-status" class="status info">Estado de parsers...</div>
+        </div>
+    </div>
+
+    <div class="grid">
+        <div class="test-section">
+            <h2>🎯 Handlers</h2>
+            <button class="test-button" onclick="testNavigationHandler()">Test NavigationHandler</button>
+            <button class="test-button" onclick="testVideoHandler()">Test VideoHandler</button>
+            <button class="test-button" onclick="testFilterHandler()">Test FilterHandler</button>
+            <div id="handler-status" class="status info">Estado de handlers...</div>
+        </div>
+
+        <div class="test-section">
+            <h2>🎮 Controllers</h2>
+            <button class="test-button" onclick="testScrollController()">Test ScrollController</button>
+            <button class="test-button" onclick="testVideoController()">Test VideoController</button>
+            <button class="test-button" onclick="testFilterController()">Test FilterController</button>
+            <div id="controller-status" class="status info">Estado de controllers...</div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>🚀 API Testing</h2>
+        <div class="input-group">
+            <input type="text" id="test-text" placeholder="Ingresa texto para procesar..." value="ir a apartamentos">
+            <button class="test-button" onclick="testProcessText()">Procesar Texto</button>
+        </div>
+        <div class="input-group">
+            <input type="text" id="test-command" placeholder="Comando JSON..." value='{"type":"navigation","action":"goto","key":"apartments"}'>
+            <button class="test-button" onclick="testExecuteCommand()">Ejecutar Comando</button>
+        </div>
+        <button class="test-button" onclick="testLegacyAPI()">Test API Legacy</button>
+        <button class="test-button" onclick="testNewAPI()">Test API Nueva</button>
+        <div id="api-status" class="status info">Estado de API...</div>
+    </div>
+
+    <div class="test-section">
+        <h2>🔍 Puntos de Cambio</h2>
+        <button class="test-button" onclick="testParserChange()">Cambiar Parser</button>
+        <button class="test-button" onclick="testCommandRegistration()">Registrar Comando</button>
+        <button class="test-button" onclick="testControllerChange()">Cambiar Controller</button>
+        <button class="test-button" onclick="testHandlerChange()">Cambiar Handler</button>
+        <div id="change-status" class="status info">Estado de puntos de cambio...</div>
+    </div>
+
+    <div class="test-section">
+        <h2>📊 Estado del Sistema</h2>
+        <button class="test-button" onclick="getSystemStatus()">Obtener Estado</button>
+        <button class="test-button" onclick="getSystemInfo()">Obtener Info</button>
+        <button class="test-button" onclick="getHistory()">Obtener Historial</button>
+        <div id="system-status" class="status info">Estado del sistema...</div>
+    </div>
+
+    <div class="test-section">
+        <h2>📝 Logs</h2>
+        <button class="test-button" onclick="clearLogs()">Limpiar Logs</button>
+        <div id="logs" class="log"></div>
+    </div>
+
+    <!-- Cargar el sistema modular -->
+    <script src="iris-core/iris-loader.js"></script>
+
+    <script>
+        // Función para logging
+        function log(message, type = 'info') {
+            const logsDiv = document.getElementById('logs');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.innerHTML = `[${timestamp}] ${message}`;
+            logEntry.style.color = type === 'error' ? '#dc3545' : type === 'success' ? '#28a745' : '#007bff';
+            logsDiv.appendChild(logEntry);
+            logsDiv.scrollTop = logsDiv.scrollHeight;
+        }
+
+        // Función para actualizar status
+        function updateStatus(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = `status ${type}`;
+        }
+
+        // Test del cargador
+        async function testLoader() {
+            try {
+                log('Testing loader...');
+                if (window.irisLoader) {
+                    const status = window.irisLoader.getStatus();
+                    updateStatus('loader-status', `Cargador: ${status.loadedComponents}/${status.totalComponents} componentes cargados`, 'success');
+                    log(`Loader status: ${JSON.stringify(status)}`, 'success');
+                } else {
+                    updateStatus('loader-status', 'Cargador no disponible', 'error');
+                    log('Loader not available', 'error');
+                }
+            } catch (error) {
+                updateStatus('loader-status', `Error: ${error.message}`, 'error');
+                log(`Loader error: ${error.message}`, 'error');
+            }
+        }
+
+        // Test de inicialización
+        async function testInitialization() {
+            try {
+                log('Testing initialization...');
+                if (window.IRIS) {
+                    const status = window.IRIS.getStatus();
+                    updateStatus('loader-status', `IRIS Core: ${status.isInitialized ? 'Inicializado' : 'No inicializado'}`, 'success');
+                    log(`IRIS Core status: ${JSON.stringify(status)}`, 'success');
+                } else {
+                    updateStatus('loader-status', 'IRIS Core no disponible', 'error');
+                    log('IRIS Core not available', 'error');
+                }
+            } catch (error) {
+                updateStatus('loader-status', `Error: ${error.message}`, 'error');
+                log(`Initialization error: ${error.message}`, 'error');
+            }
+        }
+
+        // Test de componentes core
+        async function testCommandParser() {
+            try {
+                log('Testing CommandParser...');
+                if (window.CommandParser) {
+                    const parser = new CommandParser();
+                    updateStatus('core-status', 'CommandParser: OK', 'success');
+                    log('CommandParser test passed', 'success');
+                } else {
+                    updateStatus('core-status', 'CommandParser: No disponible', 'error');
+                    log('CommandParser not available', 'error');
+                }
+            } catch (error) {
+                updateStatus('core-status', `CommandParser Error: ${error.message}`, 'error');
+                log(`CommandParser error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testCommandRegistry() {
+            try {
+                log('Testing CommandRegistry...');
+                if (window.CommandRegistry) {
+                    const registry = new CommandRegistry();
+                    registry.register('test', {}, { description: 'Test command' });
+                    updateStatus('core-status', 'CommandRegistry: OK', 'success');
+                    log('CommandRegistry test passed', 'success');
+                } else {
+                    updateStatus('core-status', 'CommandRegistry: No disponible', 'error');
+                    log('CommandRegistry not available', 'error');
+                }
+            } catch (error) {
+                updateStatus('core-status', `CommandRegistry Error: ${error.message}`, 'error');
+                log(`CommandRegistry error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testCommandExecutor() {
+            try {
+                log('Testing CommandExecutor...');
+                if (window.CommandExecutor) {
+                    const executor = new CommandExecutor();
+                    updateStatus('core-status', 'CommandExecutor: OK', 'success');
+                    log('CommandExecutor test passed', 'success');
+                } else {
+                    updateStatus('core-status', 'CommandExecutor: No disponible', 'error');
+                    log('CommandExecutor not available', 'error');
+                }
+            } catch (error) {
+                updateStatus('core-status', `CommandExecutor Error: ${error.message}`, 'error');
+                log(`CommandExecutor error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testUIController() {
+            try {
+                log('Testing UIController...');
+                if (window.UIController) {
+                    const controller = new UIController();
+                    updateStatus('core-status', 'UIController: OK', 'success');
+                    log('UIController test passed', 'success');
+                } else {
+                    updateStatus('core-status', 'UIController: No disponible', 'error');
+                    log('UIController not available', 'error');
+                }
+            } catch (error) {
+                updateStatus('core-status', `UIController Error: ${error.message}`, 'error');
+                log(`UIController error: ${error.message}`, 'error');
+            }
+        }
+
+        // Test de parsers
+        async function testNaturalLanguageParser() {
+            try {
+                log('Testing NaturalLanguageParser...');
+                if (window.NaturalLanguageParser) {
+                    const parser = new NaturalLanguageParser();
+                    const result = parser.parse('ir a apartamentos');
+                    updateStatus('parser-status', 'NaturalLanguageParser: OK', 'success');
+                    log(`NaturalLanguageParser result: ${JSON.stringify(result)}`, 'success');
+                } else {
+                    updateStatus('parser-status', 'NaturalLanguageParser: No disponible', 'error');
+                    log('NaturalLanguageParser not available', 'error');
+                }
+            } catch (error) {
+                updateStatus('parser-status', `NaturalLanguageParser Error: ${error.message}`, 'error');
+                log(`NaturalLanguageParser error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testStructuredCommandParser() {
+            try {
+                log('Testing StructuredCommandParser...');
+                if (window.StructuredCommandParser) {
+                    const parser = new StructuredCommandParser();
+                    const result = parser.parse('[[cmd action=goto key=apartments]]');
+                    updateStatus('parser-status', 'StructuredCommandParser: OK', 'success');
+                    log(`StructuredCommandParser result: ${JSON.stringify(result)}`, 'success');
+                } else {
+                    updateStatus('parser-status', 'StructuredCommandParser: No disponible', 'error');
+                    log('StructuredCommandParser not available', 'error');
+                }
+            } catch (error) {
+                updateStatus('parser-status', `StructuredCommandParser Error: ${error.message}`, 'error');
+                log(`StructuredCommandParser error: ${error.message}`, 'error');
+            }
+        }
+
+        // Test de handlers
+        async function testNavigationHandler() {
+            try {
+                log('Testing NavigationHandler...');
+                if (window.NavigationHandler) {
+                    const handler = new NavigationHandler();
+                    updateStatus('handler-status', 'NavigationHandler: OK', 'success');
+                    log('NavigationHandler test passed', 'success');
+                } else {
+                    updateStatus('handler-status', 'NavigationHandler: No disponible', 'error');
+                    log('NavigationHandler not available', 'error');
+                }
+            } catch (error) {
+                updateStatus('handler-status', `NavigationHandler Error: ${error.message}`, 'error');
+                log(`NavigationHandler error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testVideoHandler() {
+            try {
+                log('Testing VideoHandler...');
+                if (window.VideoHandler) {
+                    const handler = new VideoHandler();
+                    updateStatus('handler-status', 'VideoHandler: OK', 'success');
+                    log('VideoHandler test passed', 'success');
+                } else {
+                    updateStatus('handler-status', 'VideoHandler: No disponible', 'error');
+                    log('VideoHandler not available', 'error');
+                }
+            } catch (error) {
+                updateStatus('handler-status', `VideoHandler Error: ${error.message}`, 'error');
+                log(`VideoHandler error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testFilterHandler() {
+            try {
+                log('Testing FilterHandler...');
+                if (window.FilterHandler) {
+                    const handler = new FilterHandler();
+                    updateStatus('handler-status', 'FilterHandler: OK', 'success');
+                    log('FilterHandler test passed', 'success');
+                } else {
+                    updateStatus('handler-status', 'FilterHandler: No disponible', 'error');
+                    log('FilterHandler not available', 'error');
+                }
+            } catch (error) {
+                updateStatus('handler-status', `FilterHandler Error: ${error.message}`, 'error');
+                log(`FilterHandler error: ${error.message}`, 'error');
+            }
+        }
+
+        // Test de controllers
+        async function testScrollController() {
+            try {
+                log('Testing ScrollController...');
+                if (window.ScrollController) {
+                    const controller = new ScrollController();
+                    updateStatus('controller-status', 'ScrollController: OK', 'success');
+                    log('ScrollController test passed', 'success');
+                } else {
+                    updateStatus('controller-status', 'ScrollController: No disponible', 'error');
+                    log('ScrollController not available', 'error');
+                }
+            } catch (error) {
+                updateStatus('controller-status', `ScrollController Error: ${error.message}`, 'error');
+                log(`ScrollController error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testVideoController() {
+            try {
+                log('Testing VideoController...');
+                if (window.VideoController) {
+                    const controller = new VideoController();
+                    updateStatus('controller-status', 'VideoController: OK', 'success');
+                    log('VideoController test passed', 'success');
+                } else {
+                    updateStatus('controller-status', 'VideoController: No disponible', 'error');
+                    log('VideoController not available', 'error');
+                }
+            } catch (error) {
+                updateStatus('controller-status', `VideoController Error: ${error.message}`, 'error');
+                log(`VideoController error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testFilterController() {
+            try {
+                log('Testing FilterController...');
+                if (window.FilterController) {
+                    const controller = new FilterController();
+                    updateStatus('controller-status', 'FilterController: OK', 'success');
+                    log('FilterController test passed', 'success');
+                } else {
+                    updateStatus('controller-status', 'FilterController: No disponible', 'error');
+                    log('FilterController not available', 'error');
+                }
+            } catch (error) {
+                updateStatus('controller-status', `FilterController Error: ${error.message}`, 'error');
+                log(`FilterController error: ${error.message}`, 'error');
+            }
+        }
+
+        // Test de API
+        async function testProcessText() {
+            try {
+                const text = document.getElementById('test-text').value;
+                log(`Testing processText: "${text}"`);
+                
+                if (window.IRIS) {
+                    const result = await window.IRIS.processText(text);
+                    updateStatus('api-status', `processText: ${result.success ? 'OK' : 'Error'}`, result.success ? 'success' : 'error');
+                    log(`processText result: ${JSON.stringify(result)}`, result.success ? 'success' : 'error');
+                } else {
+                    updateStatus('api-status', 'IRIS Core no disponible', 'error');
+                    log('IRIS Core not available', 'error');
+                }
+            } catch (error) {
+                updateStatus('api-status', `processText Error: ${error.message}`, 'error');
+                log(`processText error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testExecuteCommand() {
+            try {
+                const commandText = document.getElementById('test-command').value;
+                const command = JSON.parse(commandText);
+                log(`Testing executeCommand: ${JSON.stringify(command)}`);
+                
+                if (window.IRIS) {
+                    const result = await window.IRIS.executeCommand(command);
+                    updateStatus('api-status', `executeCommand: ${result.success ? 'OK' : 'Error'}`, result.success ? 'success' : 'error');
+                    log(`executeCommand result: ${JSON.stringify(result)}`, result.success ? 'success' : 'error');
+                } else {
+                    updateStatus('api-status', 'IRIS Core no disponible', 'error');
+                    log('IRIS Core not available', 'error');
+                }
+            } catch (error) {
+                updateStatus('api-status', `executeCommand Error: ${error.message}`, 'error');
+                log(`executeCommand error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testLegacyAPI() {
+            try {
+                log('Testing Legacy API...');
+                if (window.IR) {
+                    const result = await window.IR.goto('apartments');
+                    updateStatus('api-status', 'Legacy API: OK', 'success');
+                    log(`Legacy API result: ${JSON.stringify(result)}`, 'success');
+                } else {
+                    updateStatus('api-status', 'Legacy API: No disponible', 'error');
+                    log('Legacy API not available', 'error');
+                }
+            } catch (error) {
+                updateStatus('api-status', `Legacy API Error: ${error.message}`, 'error');
+                log(`Legacy API error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testNewAPI() {
+            try {
+                log('Testing New API...');
+                if (window.IRIS) {
+                    const result = await window.IRIS.processText('ir a apartamentos');
+                    updateStatus('api-status', 'New API: OK', 'success');
+                    log(`New API result: ${JSON.stringify(result)}`, 'success');
+                } else {
+                    updateStatus('api-status', 'New API: No disponible', 'error');
+                    log('New API not available', 'error');
+                }
+            } catch (error) {
+                updateStatus('api-status', `New API Error: ${error.message}`, 'error');
+                log(`New API error: ${error.message}`, 'error');
+            }
+        }
+
+        // Test de puntos de cambio
+        async function testParserChange() {
+            try {
+                log('Testing Parser Change...');
+                if (window.IRIS && window.IRIS.commandParser) {
+                    window.IRIS.commandParser.setParser('StructuredCommandParser');
+                    const status = window.IRIS.commandParser.getStatus();
+                    updateStatus('change-status', `Parser changed to: ${status.activeParser}`, 'success');
+                    log(`Parser change result: ${JSON.stringify(status)}`, 'success');
+                } else {
+                    updateStatus('change-status', 'IRIS Core no disponible', 'error');
+                    log('IRIS Core not available', 'error');
+                }
+            } catch (error) {
+                updateStatus('change-status', `Parser Change Error: ${error.message}`, 'error');
+                log(`Parser change error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testCommandRegistration() {
+            try {
+                log('Testing Command Registration...');
+                if (window.IRIS && window.IRIS.commandRegistry) {
+                    window.IRIS.commandRegistry.register('testCommand', {}, { description: 'Test command' });
+                    const status = window.IRIS.commandRegistry.getStatus();
+                    updateStatus('change-status', `Command registered. Total: ${status.totalCommands}`, 'success');
+                    log(`Command registration result: ${JSON.stringify(status)}`, 'success');
+                } else {
+                    updateStatus('change-status', 'IRIS Core no disponible', 'error');
+                    log('IRIS Core not available', 'error');
+                }
+            } catch (error) {
+                updateStatus('change-status', `Command Registration Error: ${error.message}`, 'error');
+                log(`Command registration error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testControllerChange() {
+            try {
+                log('Testing Controller Change...');
+                if (window.IRIS && window.IRIS.uiController) {
+                    const status = window.IRIS.uiController.getStatus();
+                    updateStatus('change-status', `Controllers: ${status.totalControllers}`, 'success');
+                    log(`Controller status: ${JSON.stringify(status)}`, 'success');
+                } else {
+                    updateStatus('change-status', 'IRIS Core no disponible', 'error');
+                    log('IRIS Core not available', 'error');
+                }
+            } catch (error) {
+                updateStatus('change-status', `Controller Change Error: ${error.message}`, 'error');
+                log(`Controller change error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testHandlerChange() {
+            try {
+                log('Testing Handler Change...');
+                if (window.IRIS && window.IRIS.handlers) {
+                    const handlers = Array.from(window.IRIS.handlers.keys());
+                    updateStatus('change-status', `Handlers: ${handlers.join(', ')}`, 'success');
+                    log(`Handlers: ${JSON.stringify(handlers)}`, 'success');
+                } else {
+                    updateStatus('change-status', 'IRIS Core no disponible', 'error');
+                    log('IRIS Core not available', 'error');
+                }
+            } catch (error) {
+                updateStatus('change-status', `Handler Change Error: ${error.message}`, 'error');
+                log(`Handler change error: ${error.message}`, 'error');
+            }
+        }
+
+        // Test de estado del sistema
+        async function getSystemStatus() {
+            try {
+                log('Getting System Status...');
+                if (window.IRIS) {
+                    const status = window.IRIS.getStatus();
+                    updateStatus('system-status', `System: ${status.isInitialized ? 'Ready' : 'Not Ready'}`, 'success');
+                    log(`System status: ${JSON.stringify(status)}`, 'success');
+                } else {
+                    updateStatus('system-status', 'IRIS Core no disponible', 'error');
+                    log('IRIS Core not available', 'error');
+                }
+            } catch (error) {
+                updateStatus('system-status', `System Status Error: ${error.message}`, 'error');
+                log(`System status error: ${error.message}`, 'error');
+            }
+        }
+
+        async function getSystemInfo() {
+            try {
+                log('Getting System Info...');
+                if (window.IRIS) {
+                    const info = window.IRIS.getInfo();
+                    updateStatus('system-status', `Info: ${info.name} v${info.version}`, 'success');
+                    log(`System info: ${JSON.stringify(info)}`, 'success');
+                } else {
+                    updateStatus('system-status', 'IRIS Core no disponible', 'error');
+                    log('IRIS Core not available', 'error');
+                }
+            } catch (error) {
+                updateStatus('system-status', `System Info Error: ${error.message}`, 'error');
+                log(`System info error: ${error.message}`, 'error');
+            }
+        }
+
+        async function getHistory() {
+            try {
+                log('Getting History...');
+                if (window.IRIS) {
+                    const history = window.IRIS.getHistory(5);
+                    updateStatus('system-status', `History: ${history.length} entries`, 'success');
+                    log(`History: ${JSON.stringify(history)}`, 'success');
+                } else {
+                    updateStatus('system-status', 'IRIS Core no disponible', 'error');
+                    log('IRIS Core not available', 'error');
+                }
+            } catch (error) {
+                updateStatus('system-status', `History Error: ${error.message}`, 'error');
+                log(`History error: ${error.message}`, 'error');
+            }
+        }
+
+        // Limpiar logs
+        function clearLogs() {
+            document.getElementById('logs').innerHTML = '';
+            log('Logs cleared');
+        }
+
+        // Auto-test al cargar
+        window.addEventListener('load', async () => {
+            log('Page loaded, starting auto-tests...');
+            setTimeout(async () => {
+                await testLoader();
+                await testInitialization();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

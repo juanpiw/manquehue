@@ -162,15 +162,7 @@ ${videoList.map(video => `- \`${video.name}\` - ${video.tipo} | ${video.superfic
     
     fs.writeFileSync(path.join(baseDir, 'structure.json'), JSON.stringify(structureData, null, 2));
     
-    console.log('✅ Estructura de videos de recorrido creada');
-    console.log(`📁 Directorio: ${baseDir}`);
-    console.log(`📊 Total de videos requeridos: ${totalVideos}`);
-    console.log('📝 README.md creado con instrucciones');
-    console.log('📄 structure.json creado para el sistema');
-    console.log('\n🎬 Videos requeridos:');
-    videoList.forEach(video => {
-        console.log(`   - ${video.name}`);
-    });
+
 }
 
 // Ejecutar si se llama directamente

@@ -16,9 +16,9 @@ const createDirectories = () => {
     dirs.forEach(dir => {
         if (!fs.existsSync(dir)) {
             fs.mkdirSync(dir, { recursive: true });
-            console.log(`✅ Created directory: ${dir}`);
+    
         } else {
-            console.log(`📁 Directory already exists: ${dir}`);
+
         }
     });
 };
@@ -29,7 +29,7 @@ const copyVideos = () => {
            const targetDirs = ['video/apartamento', 'video/casa'];
     
     if (!fs.existsSync(sourceDir)) {
-        console.log(`❌ Source directory not found: ${sourceDir}`);
+
         return;
     }
     
@@ -38,7 +38,7 @@ const copyVideos = () => {
         file.endsWith('.mp4') || file.endsWith('.mov') || file.endsWith('.avi')
     );
     
-    console.log(`📹 Found ${videoFiles.length} video files in ${sourceDir}`);
+
     
     // Copiar cada video a ambas carpetas
     targetDirs.forEach(targetDir => {
@@ -48,7 +48,7 @@ const copyVideos = () => {
             
             try {
                 fs.copyFileSync(sourcePath, targetPath);
-                console.log(`✅ Copied ${videoFile} to ${targetDir}`);
+        
             } catch (error) {
                 console.error(`❌ Error copying ${videoFile} to ${targetDir}:`, error.message);
             }
@@ -93,22 +93,18 @@ Para personalizar los videos:
 `;
 
                fs.writeFileSync('video/README.md', readmeContent);
-               console.log('✅ Created README.md in video directory');
+           
 };
 
 // Función principal
 const main = () => {
-    console.log('🚀 Setting up video structure...');
+
     
     createDirectories();
     copyVideos();
     createReadme();
     
-    console.log('✅ Video structure setup completed!');
-    console.log('\n📋 Next steps:');
-               console.log('1. Replace videos in video/apartamento/ with apartment-specific content');
-           console.log('2. Replace videos in video/casa/ with house-specific content');
-    console.log('3. Update config/project-data.json if you change video names');
+    
 };
 
 // Ejecutar si se llama directamente

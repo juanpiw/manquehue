@@ -86,7 +86,7 @@ const basePath = path.join(__dirname, 'video', 'imagenes');
 function ensureDirectoryExists(dirPath) {
     if (!fs.existsSync(dirPath)) {
         fs.mkdirSync(dirPath, { recursive: true });
-        console.log(`📁 Creado directorio: ${dirPath}`);
+
     }
 }
 
@@ -108,7 +108,7 @@ function createImageFile(filePath, text) {
     </svg>`;
     
     fs.writeFileSync(filePath, svgContent);
-    console.log(`🖼️  Creada imagen: ${filePath}`);
+
 }
 
 // Función para crear README con información de la estructura
@@ -197,12 +197,12 @@ const imagePath = \`video/imagenes/\${tipoDormitorio}/\${superficie}/\${precio}/
 
     const readmePath = path.join(basePath, 'README.md');
     fs.writeFileSync(readmePath, readmeContent);
-    console.log(`📖 Creado README: ${readmePath}`);
+
 }
 
 // Función principal para crear toda la estructura
 function createImageStructure() {
-    console.log('🚀 Iniciando creación de estructura de imágenes...\n');
+
     
     // Crear directorio base
     ensureDirectoryExists(basePath);
@@ -211,13 +211,13 @@ function createImageStructure() {
     
     // Recorrer la estructura y crear carpetas e imágenes
     for (const [tipoDormitorio, superficies] of Object.entries(structure)) {
-        console.log(`\n🏠 Procesando: ${tipoDormitorio}`);
+
         
         for (const [superficie, precios] of Object.entries(superficies)) {
-            console.log(`  📏 Superficie: ${superficie}`);
+
             
             for (const [precio, cantidadImagenes] of Object.entries(precios)) {
-                console.log(`    💰 Precio: ${precio} (${cantidadImagenes} imágenes)`);
+
                 
                 // Crear ruta completa
                 const folderPath = path.join(basePath, tipoDormitorio, superficie, precio);
@@ -239,13 +239,7 @@ function createImageStructure() {
     // Crear README
     createReadme();
     
-    console.log(`\n✅ ¡Estructura creada exitosamente!`);
-    console.log(`📊 Total de imágenes creadas: ${totalImages}`);
-    console.log(`📁 Ubicación: ${basePath}`);
-    console.log(`\n🎯 Próximos pasos:`);
-    console.log(`   1. Reemplazar las imágenes placeholder con fotos reales`);
-    console.log(`   2. Actualizar el sistema de filtros para usar esta estructura`);
-    console.log(`   3. Probar la funcionalidad de filtrado`);
+    
 }
 
 // Ejecutar si el script se llama directamente

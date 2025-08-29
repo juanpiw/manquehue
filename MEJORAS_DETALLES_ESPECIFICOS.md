@@ -200,3 +200,5 @@ Sistema:
 - Se integra con el sistema `imageFilterSystem` existente
 - Incluye manejo de errores robusto
 - Proporciona feedback detallado en consola para debugging
+
+

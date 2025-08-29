@@ -6,13 +6,34 @@
 
   async function getAppReady() {
     let attempts = 0;
-    while (!window.videoScrollApp && attempts < 50) {
+    const maxAttempts = 100; // 10 seconds max wait
+    
+    while (!window.videoScrollApp && attempts < maxAttempts) {
       await wait(100);
       attempts++;
     }
+    
     if (!window.videoScrollApp) {
-      throw new Error('VideoScrollApp not available after 5 seconds');
+      console.error('[IR] VideoScrollApp not available after 10 seconds');
+      throw new Error('VideoScrollApp not available after 10 seconds');
     }
+    
+    // Verificar que la app esté inicializada
+    if (!window.videoScrollApp.isInitialized) {
+      console.log('[IR] Waiting for VideoScrollApp to initialize...');
+      let initAttempts = 0;
+      while (!window.videoScrollApp.isInitialized && initAttempts < 50) {
+        await wait(100);
+        initAttempts++;
+      }
+      
+      if (!window.videoScrollApp.isInitialized) {
+        console.error('[IR] VideoScrollApp not initialized after 5 seconds');
+        throw new Error('VideoScrollApp not initialized');
+      }
+    }
+    
+    console.log('[IR] VideoScrollApp ready');
     return window.videoScrollApp;
   }
 
@@ -186,12 +207,9 @@
         const sectionIndex = sectionIndexFromKey(sectionKey);
         
         if (sectionIndex === -1) {
-          console.warn(`[IR] Sección no válida: ${sectionKey}`);
           return false;
         }
 
-        console.log(`[IR] Navegando a sección ${sectionIndex}: ${sectionKey}`);
-        
         // Deshabilitar scroll automático temporalmente
         if (disableAutoScroll) {
           const originalScrollBehavior = document.documentElement.style.scrollBehavior;
@@ -209,7 +227,6 @@
         
         return true;
       } catch (error) {
-        console.error('[IR] Error en goto:', error);
         return false;
       }
     },
@@ -220,15 +237,12 @@
         const videoPath = videoPathFromKey(key);
         
         if (!videoPath) {
-          console.warn(`[IR] Video no válido: ${key}`);
           return false;
         }
 
-        console.log(`[IR] Cambiando video a: ${videoPath}`);
         await app.videoSystem.loadVideo(videoPath);
         return true;
       } catch (error) {
-        console.error('[IR] Error en video:', error);
         return false;
       }
     },
@@ -240,12 +254,10 @@
         
         if (video) {
           await video.play();
-          console.log('[IR] Video reproducido');
           return true;
         }
         return false;
       } catch (error) {
-        console.error('[IR] Error en play:', error);
         return false;
       }
     },
@@ -257,12 +269,10 @@
         
         if (video) {
           video.pause();
-          console.log('[IR] Video pausado');
           return true;
         }
         return false;
       } catch (error) {
-        console.error('[IR] Error en pause:', error);
         return false;
       }
     },
@@ -274,11 +284,9 @@
         const currentIndex = SECTIONS.indexOf(currentSection);
         const nextIndex = (currentIndex + 1) % SECTIONS.length;
         
-        console.log(`[IR] Siguiente sección: ${SECTIONS[nextIndex]}`);
         await app.navigationSystem.navigateToSection(nextIndex + 1);
         return true;
       } catch (error) {
-        console.error('[IR] Error en next:', error);
         return false;
       }
     },
@@ -290,11 +298,9 @@
         const currentIndex = SECTIONS.indexOf(currentSection);
         const prevIndex = currentIndex <= 0 ? SECTIONS.length - 1 : currentIndex - 1;
         
-        console.log(`[IR] Sección anterior: ${SECTIONS[prevIndex]}`);
         await app.navigationSystem.navigateToSection(prevIndex + 1);
         return true;
       } catch (error) {
-        console.error('[IR] Error en prev:', error);
         return false;
       }
     },
@@ -306,8 +312,6 @@
         const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
         const targetScroll = (clampedPercent / 100) * scrollHeight;
         
-        console.log(`[IR] Scroll a ${clampedPercent}% (${targetScroll}px)`);
-        
         // Solo hacer scroll si es explícitamente solicitado
         if (percent !== undefined && percent !== null) {
           window.scrollTo({
@@ -317,7 +321,6 @@
         }
         return true;
       } catch (error) {
-        console.error('[IR] Error en scrollTo:', error);
         return false;
       }
     },
@@ -325,7 +328,6 @@
     async reset() {
       try {
         const app = await getAppReady();
-        console.log('[IR] Reseteando a estado inicial');
         
         // Ir a la primera sección
         await app.navigationSystem.navigateToSection(1);
@@ -335,7 +337,7 @@
         if (video) {
           video.src = 'video/apartamento/video-0.mp4';
           video.load();
-          video.play().catch(e => console.log('Video autoplay prevented:', e));
+          video.play().catch(e => {});
         }
         
         // Solo hacer scroll al inicio si es explícitamente solicitado
@@ -343,7 +345,6 @@
         
         return true;
       } catch (error) {
-        console.error('[IR] Error en reset:', error);
         return false;
       }
     },
@@ -351,21 +352,17 @@
     async setSectionVideos(map) {
       try {
         const app = await getAppReady();
-        console.log('[IR] Actualizando mapeo de videos:', map);
         
         // Aquí podrías actualizar el mapeo de videos si es necesario
         // Por ahora solo registramos la acción
         return true;
       } catch (error) {
-        console.error('[IR] Error en setSectionVideos:', error);
         return false;
       }
     },
 
     async modal(action, key) {
       try {
-        console.log(`[IR] Control de modal: ${action} ${key}`);
-        
         switch (action) {
           case 'open':
             switch (key) {
@@ -376,7 +373,6 @@
                 openProjectModal();
                 return true;
               default:
-                console.warn(`[IR] Modal no reconocido: ${key}`);
                 return false;
             }
             
@@ -385,19 +381,15 @@
             return true;
             
           default:
-            console.warn(`[IR] Acción de modal no válida: ${action}`);
             return false;
         }
       } catch (error) {
-        console.error('[IR] Error en modal:', error);
         return false;
       }
     },
 
     async form(action, key, data) {
       try {
-        console.log(`[IR] Control de formulario: ${action} ${key}`);
-        
         switch (action) {
           case 'fill':
             return await fillForm(key, data);
@@ -406,28 +398,22 @@
           case 'clear':
             return await clearForm(key);
           default:
-            console.warn(`[IR] Acción de formulario no válida: ${action}`);
             return false;
         }
       } catch (error) {
-        console.error('[IR] Error en form:', error);
         return false;
       }
     },
 
     async track(event, data) {
       try {
-        console.log(`[IR] Tracking evento: ${event}`, data);
-        
         if (typeof gtag !== 'undefined') {
           gtag('event', event, data);
           return true;
         } else {
-          console.warn('[IR] Google Analytics no disponible');
           return false;
         }
       } catch (error) {
-        console.error('[IR] Error en track:', error);
         return false;
       }
     },
@@ -435,7 +421,6 @@
     // Control de scroll automático
     setAutoScroll(enabled) {
       disableAutoScroll = !enabled;
-      console.log(`[IR] Scroll automático ${enabled ? 'habilitado' : 'deshabilitado'}`);
       return true;
     },
 
@@ -460,7 +445,6 @@
         const surfaceMatch = lowerText.match(pattern);
         if (surfaceMatch) {
           criteria.superficie = `${surfaceMatch[1]}-${surfaceMatch[2]} m²`;
-          console.log(`[IR] ✅ Superficie detectada: ${criteria.superficie}`);
           break;
         }
       }
@@ -477,7 +461,6 @@
         const priceMatch = lowerText.match(pattern);
         if (priceMatch) {
           criteria.precio = `$${priceMatch[1]}-${priceMatch[2]} UF`;
-          console.log(`[IR] ✅ Precio detectado: ${criteria.precio}`);
           break;
         }
       }
@@ -495,36 +478,33 @@
         const bedroomMatch = lowerText.match(pattern);
         if (bedroomMatch) {
           criteria.dormitorios = bedroomMatch[1];
-          console.log(`[IR] ✅ Dormitorios detectados: ${criteria.dormitorios}`);
           break;
         }
       }
       
       // Si encontramos al menos superficie o precio o dormitorios, consideramos que hay criterios específicos
       if (criteria.superficie || criteria.precio || criteria.dormitorios) {
-        console.log(`[IR] ✅ Criterios extraídos:`, criteria);
         return criteria;
       }
       
-      console.log(`[IR] ❌ No se detectaron criterios específicos en: "${text}"`);
       return null;
     },
 
     async detectAndNavigate(text) {
       try {
-        console.log(`[IR] Analizando texto para detección automática: "${text}"`);
+        console.log(`[FILTRO] Analizando: "${text}"`);
         
         const lowerText = text.toLowerCase();
         
         // Detectar comandos específicos de control con criterios específicos
         if (lowerText.includes('detalles') || lowerText.includes('más información') || lowerText.includes('ver detalles')) {
-          console.log('[IR] Comando detectado: Mostrar detalles');
+          console.log('[FILTRO] Comando: Mostrar detalles');
           
           // Intentar extraer criterios específicos del apartamento
           const apartmentCriteria = this.extractApartmentCriteria(text);
           
           if (apartmentCriteria) {
-            console.log('[IR] Criterios específicos detectados:', apartmentCriteria);
+            console.log('[FILTRO] Criterios detectados:', apartmentCriteria);
             const result = await this.showApartmentDetails(apartmentCriteria);
             return {
               success: result,
@@ -543,7 +523,7 @@
         }
         
         if (lowerText.includes('siguiente') || lowerText.includes('próximo') || lowerText.includes('next')) {
-          console.log('[IR] Comando detectado: Siguiente apartamento');
+          console.log('[FILTRO] Comando: Siguiente apartamento');
           const result = await this.nextApartment();
           return {
             success: result,
@@ -553,7 +533,7 @@
         }
         
         if (lowerText.includes('anterior') || lowerText.includes('previo') || lowerText.includes('atrás')) {
-          console.log('[IR] Comando detectado: Apartamento anterior');
+          console.log('[FILTRO] Comando: Apartamento anterior');
           const result = await this.prevApartment();
           return {
             success: result,
@@ -563,7 +543,7 @@
         }
         
         if (lowerText.includes('salir') || lowerText.includes('volver') || lowerText.includes('exit')) {
-          console.log('[IR] Comando detectado: Salir del recorrido');
+          console.log('[FILTRO] Comando: Salir del recorrido');
           const result = await this.exitRecorridoMode();
           return {
             success: result,
@@ -573,7 +553,7 @@
         }
         
         if (lowerText.includes('pausar') || lowerText.includes('reproducir') || lowerText.includes('play') || lowerText.includes('pause')) {
-          console.log('[IR] Comando detectado: Alternar video');
+          console.log('[FILTRO] Comando: Alternar video');
           const result = await this.toggleVideoPlayback();
           return {
             success: result,
@@ -585,12 +565,11 @@
         const detectedAreas = detectAreasFromText(text);
         const detectedFilters = detectApartmentFilters(text);
         
-        console.log(`[IR] Áreas detectadas:`, detectedAreas);
-        console.log(`[IR] Filtros detectados:`, detectedFilters);
+        console.log(`[FILTRO] Filtros detectados:`, detectedFilters);
         
         // Si hay filtros de apartamento, aplicar filtrado
         if (Object.keys(detectedFilters).length > 0) {
-          console.log('[IR] Aplicando filtros de apartamento');
+          console.log('[FILTRO] Aplicando filtros de apartamento');
           const filterResult = await this.filterApartments(detectedFilters);
           return {
             success: filterResult.success,
@@ -601,7 +580,7 @@
         }
         
         if (detectedAreas.length === 0) {
-          console.log('[IR] No se detectaron áreas específicas');
+          console.log('[FILTRO] No se detectaron áreas específicas');
           return { success: false, areas: [] };
         }
         
@@ -614,7 +593,7 @@
         });
         
         const primaryArea = sortedAreas[0];
-        console.log(`[IR] Área principal seleccionada: ${primaryArea}`);
+        console.log(`[FILTRO] Área principal: ${primaryArea}`);
         
         // Navegar a la sección correspondiente
         let navigationSuccess = false;
@@ -648,18 +627,18 @@
         };
         
       } catch (error) {
-        console.error('[IR] Error en detectAndNavigate:', error);
+        console.error('[FILTRO] Error en detectAndNavigate:', error);
         return { success: false, error: error.message };
       }
     },
 
     async filterApartments(filters) {
       try {
-        console.log(`[IR] Aplicando filtros de apartamento:`, filters);
+        console.log(`[FILTRO] Aplicando filtros:`, filters);
         
         // Navegar a la sección de apartamentos primero
         const navigationSuccess = await this.goto('apartments');
-        console.log('[IR] Navegación a apartamentos:', navigationSuccess);
+        console.log('[FILTRO] Navegación a apartamentos:', navigationSuccess);
         
         // Esperar un momento para que la navegación se complete
         await new Promise(resolve => setTimeout(resolve, 1000));
@@ -667,11 +646,11 @@
         // Verificar que estamos en la sección correcta
         const apartmentsSection = document.getElementById('apartments');
         if (!apartmentsSection) {
-          console.warn('[IR] No se encontró la sección de apartamentos');
+          console.warn('[FILTRO] No se encontró la sección de apartamentos');
           return { success: false, error: 'Sección de apartamentos no encontrada' };
         }
         
-        console.log('[IR] Sección de apartamentos encontrada, activando filtros...');
+        console.log('[FILTRO] Sección de apartamentos encontrada, activando filtros...');
         
         // Activar los filtros existentes de la UI
         await this.activateExistingFilters(filters);
@@ -683,13 +662,13 @@
         if (apartmentList && initialMessage) {
           apartmentList.style.display = 'grid';
           initialMessage.style.display = 'none';
-          console.log('[IR] Lista de apartamentos mostrada');
+          console.log('[FILTRO] Lista de apartamentos mostrada');
         }
         
         // Ejecutar la búsqueda usando el botón existente
         const searchButton = document.getElementById('searchButton');
         if (searchButton) {
-          console.log('[IR] Ejecutando búsqueda con filtros existentes');
+          console.log('[FILTRO] Ejecutando búsqueda con filtros existentes');
           searchButton.click();
           
           // Esperar a que se muestren las tarjetas
@@ -701,16 +680,16 @@
             card.style.display !== 'none' && card.style.opacity !== '0'
           );
           
-          console.log(`[IR] Tarjetas encontradas: ${apartmentCards.length}, visibles: ${visibleCards.length}`);
+          console.log(`[FILTRO] Tarjetas encontradas: ${apartmentCards.length}, visibles: ${visibleCards.length}`);
           
           if (visibleCards.length > 0) {
-            console.log(`[IR] ${visibleCards.length} tarjetas visibles, activando modo recorrido`);
+            console.log(`[FILTRO] ${visibleCards.length} tarjetas visibles, activando modo recorrido`);
             await this.activateRecorridoMode(visibleCards[0], filters);
           } else {
-            console.warn('[IR] No hay tarjetas visibles después del filtro');
+            console.warn('[FILTRO] No hay tarjetas visibles después del filtro');
           }
         } else {
-          console.warn('[IR] No se encontró el botón de búsqueda');
+          console.warn('[FILTRO] No se encontró el botón de búsqueda');
         }
         
         return {
@@ -720,18 +699,18 @@
         };
         
       } catch (error) {
-        console.error('[IR] Error en filterApartments:', error);
+        console.error('[FILTRO] Error en filterApartments:', error);
         return { success: false, error: error.message };
       }
     },
 
     async activateExistingFilters(filters) {
       try {
-        console.log('[IR] Activando filtros existentes:', filters);
+        console.log('[FILTRO] Activando filtros existentes:', filters);
         
         // Verificar que el sistema imageFilterSystem esté disponible
         if (!window.imageFilterSystem) {
-          console.error('[IR] ❌ imageFilterSystem no disponible');
+          console.error('[FILTRO] ❌ imageFilterSystem no disponible');
           return false;
         }
         
@@ -743,20 +722,20 @@
           const bedroomButtons = document.querySelectorAll('.type-btn');
           let filterActivated = false;
           
-          console.log(`[IR] Buscando botón para ${filters.bedrooms} dormitorios en ${bedroomButtons.length} botones`);
+          console.log(`[FILTRO] Buscando botón para ${filters.bedrooms} dormitorios en ${bedroomButtons.length} botones`);
           
           bedroomButtons.forEach((btn, index) => {
             btn.classList.remove('active');
             const btnText = btn.textContent.toLowerCase();
             const dataType = btn.getAttribute('data-type');
             
-            console.log(`[IR] Botón ${index + 1}: "${btnText}" (data-type: "${dataType}")`);
+            console.log(`[FILTRO] Botón ${index + 1}: "${btnText}" (data-type: "${dataType}")`);
             
             // Buscar por texto del botón o por data-type
             if ((btnText.includes(filters.bedrooms.toString()) && btnText.includes('dormitorio')) ||
                 (dataType && dataType.includes(filters.bedrooms.toString()))) {
               btn.classList.add('active');
-              console.log(`[IR] ✅ Activado filtro de ${filters.bedrooms} dormitorios: "${btnText}"`);
+              console.log(`[FILTRO] ✅ Activado filtro de ${filters.bedrooms} dormitorios: "${btnText}"`);
               filterActivated = true;
               
               // Mapear al formato del sistema
@@ -765,12 +744,12 @@
           });
           
           if (!filterActivated) {
-            console.warn(`[IR] ❌ No se encontró botón para ${filters.bedrooms} dormitorios`);
+            console.warn(`[FILTRO] ❌ No se encontró botón para ${filters.bedrooms} dormitorios`);
             // Intentar activar el botón "Todos" como fallback
             const allButton = document.querySelector('.type-btn[data-type="all"]');
             if (allButton) {
               allButton.classList.add('active');
-              console.log('[IR] Activado botón "Todos" como fallback');
+              console.log('[FILTRO] Activado botón "Todos" como fallback');
               systemFilters.tipo = 'all';
             }
           }
@@ -790,11 +769,11 @@
             
             if (selectedRange) {
               surfaceFilter.value = selectedRange;
-              console.log(`[IR] ✅ Activado filtro de superficie: ${selectedRange} m²`);
+              console.log(`[FILTRO] ✅ Activado filtro de superficie: ${selectedRange} m²`);
               systemFilters.superficie = selectedRange;
             }
           } else {
-            console.warn('[IR] ❌ No se encontró el filtro de superficie');
+            console.warn('[FILTRO] ❌ No se encontró el filtro de superficie');
           }
         }
         
@@ -812,11 +791,11 @@
             
             if (selectedRange) {
               priceFilter.value = selectedRange;
-              console.log(`[IR] ✅ Activado filtro de precio: $${selectedRange} UF`);
+              console.log(`[FILTRO] ✅ Activado filtro de precio: $${selectedRange} UF`);
               systemFilters.precio = selectedRange;
             }
           } else {
-            console.warn('[IR] ❌ No se encontró el filtro de precio');
+            console.warn('[FILTRO] ❌ No se encontró el filtro de precio');
           }
         }
         
@@ -827,49 +806,44 @@
         if (apartmentList && initialMessage) {
           apartmentList.style.display = 'grid';
           initialMessage.style.display = 'none';
-          console.log('[IR] ✅ Lista de apartamentos mostrada');
+          console.log('[FILTRO] ✅ Lista de apartamentos mostrada');
         } else {
-          console.warn('[IR] ❌ No se encontraron elementos de lista de apartamentos');
+          console.warn('[FILTRO] ❌ No se encontraron elementos de lista de apartamentos');
         }
         
         // Aplicar filtros usando el sistema imageFilterSystem
-        console.log('[IR] ✅ Aplicando filtros al sistema:', systemFilters);
+        console.log('[FILTRO] ✅ Aplicando filtros al sistema:', systemFilters);
         try {
           // Usar el método setFilters del sistema
           if (window.imageFilterSystem.setFilters) {
             window.imageFilterSystem.setFilters(systemFilters);
-            console.log('[IR] ✅ Filtros aplicados usando setFilters');
+            console.log('[FILTRO] ✅ Filtros aplicados usando setFilters');
           } else if (window.imageFilterSystem.applyFilters) {
             // Si no hay setFilters, usar applyFilters
             window.imageFilterSystem.applyFilters();
-            console.log('[IR] ✅ Filtros aplicados usando applyFilters');
+            console.log('[FILTRO] ✅ Filtros aplicados usando applyFilters');
           } else {
-            console.warn('[IR] ❌ No se encontró método para aplicar filtros');
+            console.warn('[FILTRO] ❌ No se encontró método para aplicar filtros');
           }
         } catch (error) {
-          console.error('[IR] ❌ Error aplicando filtros:', error);
+          console.error('[FILTRO] ❌ Error aplicando filtros:', error);
         }
         
         return true;
         
       } catch (error) {
-        console.error('[IR] Error activando filtros existentes:', error);
+        console.error('[FILTRO] Error activando filtros existentes:', error);
         return false;
       }
     },
 
     async clearFilters() {
       try {
-        console.log('[IR] Limpiando filtros');
-        
         // Usar el botón "Limpiar Filtros" existente
         const clearFiltersButton = document.getElementById('clearFilters');
         if (clearFiltersButton) {
-          console.log('[IR] Usando botón "Limpiar Filtros" existente');
           clearFiltersButton.click();
         } else {
-          console.warn('[IR] No se encontró el botón "Limpiar Filtros"');
-          
           // Fallback: limpiar manualmente los filtros
           const surfaceFilter = document.getElementById('surfaceFilter');
           const priceFilter = document.getElementById('priceFilter');
@@ -890,12 +864,9 @@
           notification.remove();
         }
         
-        console.log('[IR] Filtros limpiados');
-        
         return true;
         
       } catch (error) {
-        console.error('[IR] Error en clearFilters:', error);
         return false;
       }
     },
@@ -917,21 +888,16 @@
           }
         };
       } catch (error) {
-        console.error('[IR] Error en state:', error);
         return { error: error.message };
       }
     },
 
     async activateRecorridoMode(card, filters) {
       try {
-        console.log('[IR] Activando modo recorrido para tarjeta:', card);
-        
         // Extraer información de la tarjeta antes del click
         const apartmentTitle = card.querySelector('h3')?.textContent || 'Apartamento';
         const superficieText = card.querySelector('p:nth-child(2)')?.textContent || '';
         const precioText = card.querySelector('p:nth-child(3)')?.textContent || '';
-        
-        console.log('[IR] Información de la tarjeta:', { apartmentTitle, superficieText, precioText });
         
         // Simular click en la tarjeta para activar modo recorrido
         card.click();
@@ -942,8 +908,6 @@
         // Verificar que los controles de recorrido estén visibles
         const recorridoControls = document.getElementById('recorridoControls');
         if (recorridoControls) {
-          console.log('[IR] Modo recorrido activado exitosamente');
-          
           // Actualizar los controles con la información correcta
           this.updateRecorridoControls(apartmentTitle, superficieText, precioText);
           
@@ -952,25 +916,20 @@
           
           return true;
         } else {
-          console.warn('[IR] No se encontraron los controles de recorrido, intentando método alternativo');
-          
           // Método alternativo: buscar si hay algún sistema de recorrido activo
           const isRecorridoActive = document.body.classList.contains('recorrido-mode') || 
                                    document.querySelector('.recorrido-controls') ||
                                    document.querySelector('.apartment-card.recorrido-active');
           
           if (isRecorridoActive) {
-            console.log('[IR] Modo recorrido detectado por método alternativo');
             card.classList.add('recorrido-active');
             return true;
           } else {
-            console.warn('[IR] No se pudo activar el modo recorrido');
             return false;
           }
         }
         
       } catch (error) {
-        console.error('[IR] Error activando modo recorrido:', error);
         return false;
       }
     },
@@ -984,25 +943,19 @@
           
           if (infoTitle) infoTitle.textContent = apartment;
           if (infoText) infoText.textContent = `${superficie} • ${precio}`;
-          
-          console.log('[IR] Controles de recorrido actualizados:', { apartment, superficie, precio });
         }
       } catch (error) {
-        console.error('[IR] Error actualizando controles de recorrido:', error);
+        // Error silencioso
       }
     },
 
     async showApartmentDetails(criteria = null) {
       try {
-        console.log('[IR] Mostrando detalles del apartamento', criteria ? `con criterios: ${JSON.stringify(criteria)}` : '');
-        
         // Si hay criterios específicos, buscar el apartamento que coincida
         if (criteria) {
-          console.log('[IR] Buscando apartamento específico con criterios:', criteria);
           const targetCard = this.findApartmentByCriteria(criteria);
           
           if (targetCard) {
-            console.log('[IR] ✅ Apartamento encontrado, activando modo recorrido');
             await this.activateRecorridoMode(targetCard, {});
             
             // Esperar un momento para que se active el modo recorrido
@@ -1011,7 +964,6 @@
             // Ahora mostrar detalles
             return await this.triggerDetailsButton();
           } else {
-            console.warn('[IR] ❌ No se encontró apartamento que coincida con los criterios');
             return false;
           }
         }
@@ -1021,12 +973,10 @@
         const isInRecorridoMode = recorridoControls && recorridoControls.style.display !== 'none';
         
         if (isInRecorridoMode) {
-          console.log('[IR] Estamos en modo recorrido, buscando botón de detalles...');
           return await this.triggerDetailsButton();
         }
         
         // Método 4: Si no estamos en modo recorrido, activar modo recorrido primero
-        console.log('[IR] No estamos en modo recorrido, activando modo recorrido...');
         
         // Buscar la primera tarjeta visible de apartamentos filtrados
         const apartmentCards = document.querySelectorAll('.apartment-card');
@@ -1037,11 +987,8 @@
         );
         
         if (visibleCards.length === 0) {
-          console.warn('[IR] ❌ No hay tarjetas de apartamentos visibles');
           return false;
         }
-        
-        console.log(`[IR] Encontradas ${visibleCards.length} tarjetas visibles, activando modo recorrido en la primera`);
         
         // Activar modo recorrido en la primera tarjeta visible
         const firstCard = visibleCards[0];
@@ -1054,7 +1001,6 @@
         return await this.triggerDetailsButton();
         
       } catch (error) {
-        console.error('[IR] Error mostrando detalles:', error);
         return false;
       }
     },
@@ -1062,8 +1008,6 @@
     // Función para encontrar un apartamento específico basado en criterios
     findApartmentByCriteria(criteria) {
       try {
-        console.log('[IR] Buscando apartamento con criterios:', criteria);
-        
         const apartmentCards = document.querySelectorAll('.apartment-card');
         const visibleCards = Array.from(apartmentCards).filter(card => 
           card.style.display !== 'none' && 
@@ -1071,24 +1015,18 @@
           card.offsetParent !== null
         );
         
-        console.log(`[IR] Analizando ${visibleCards.length} tarjetas visibles`);
-        
         for (const card of visibleCards) {
           const cardInfo = this.extractCardInfo(card);
-          console.log('[IR] Tarjeta:', cardInfo);
           
           // Verificar si la tarjeta coincide con los criterios
           if (this.matchesCriteria(cardInfo, criteria)) {
-            console.log('[IR] ✅ Tarjeta encontrada que coincide con criterios:', cardInfo);
             return card;
           }
         }
         
-        console.warn('[IR] ❌ No se encontró tarjeta que coincida con los criterios');
         return null;
         
       } catch (error) {
-        console.error('[IR] Error buscando apartamento por criterios:', error);
         return null;
       }
     },
@@ -1103,21 +1041,36 @@
         let precio = '';
         let dormitorios = '';
         
-        // Extraer información de los párrafos
-        for (const p of paragraphs) {
-          const text = p.textContent?.trim() || '';
+        // Primero intentar extraer información de los botones "Recorrer" con atributos data-
+        const recorrerButtons = card.querySelectorAll('.watchVideoBtn, .btn-secondary[data-apartment]');
+        
+        for (const button of recorrerButtons) {
+          const dataApartment = button.getAttribute('data-apartment') || '';
+          const dataSuperficie = button.getAttribute('data-superficie') || '';
+          const dataPrecio = button.getAttribute('data-precio') || '';
           
-          // Detectar superficie
-          if (text.includes('m²') || text.includes('metros')) {
-            superficie = text;
-          }
-          // Detectar precio
-          else if (text.includes('$') || text.includes('UF')) {
-            precio = text;
-          }
-          // Detectar dormitorios
-          else if (text.includes('dormitorio') || text.includes('habitación')) {
-            dormitorios = text;
+          if (dataSuperficie) superficie = dataSuperficie;
+          if (dataPrecio) precio = dataPrecio;
+          if (dataApartment) dormitorios = dataApartment;
+        }
+        
+        // Si no encontramos información en los botones, buscar en los párrafos
+        if (!superficie || !precio || !dormitorios) {
+          for (const p of paragraphs) {
+            const text = p.textContent?.trim() || '';
+            
+            // Detectar superficie
+            if (text.includes('m²') || text.includes('metros')) {
+              superficie = superficie || text;
+            }
+            // Detectar precio
+            else if (text.includes('$') || text.includes('UF')) {
+              precio = precio || text;
+            }
+            // Detectar dormitorios
+            else if (text.includes('dormitorio') || text.includes('habitación')) {
+              dormitorios = dormitorios || text;
+            }
           }
         }
         
@@ -1129,7 +1082,6 @@
         };
         
       } catch (error) {
-        console.error('[IR] Error extrayendo información de tarjeta:', error);
         return {};
       }
     },
@@ -1137,12 +1089,15 @@
     // Función para verificar si una tarjeta coincide con los criterios
     matchesCriteria(cardInfo, criteria) {
       try {
-        console.log('[IR] Comparando tarjeta:', cardInfo, 'con criterios:', criteria);
+        console.log('[FILTRO] Comparando criterios:', criteria);
+        console.log('[FILTRO] Con tarjeta:', cardInfo);
         
         // Verificar superficie
         if (criteria.superficie && cardInfo.superficie) {
           const cardSuperficie = cardInfo.superficie.toLowerCase();
           const criteriaSuperficie = criteria.superficie.toLowerCase();
+          
+          console.log('[FILTRO] Comparando superficie:', criteriaSuperficie, 'vs', cardSuperficie);
           
           // Extraer números de superficie para comparación más precisa
           const cardMatch = cardSuperficie.match(/(\d+)-(\d+)/);
@@ -1154,19 +1109,23 @@
             const criteriaMin = parseInt(criteriaMatch[1]);
             const criteriaMax = parseInt(criteriaMatch[2]);
             
+            console.log('[FILTRO] Rangos superficie:', `${cardMin}-${cardMax}`, 'vs', `${criteriaMin}-${criteriaMax}`);
+            
             // Verificar si hay superposición en los rangos
             if (cardMin <= criteriaMax && cardMax >= criteriaMin) {
-              console.log(`[IR] ✅ Superficie coincide: ${cardMin}-${cardMax} vs ${criteriaMin}-${criteriaMax}`);
+              console.log('[FILTRO] ✅ Superficie coincide');
             } else {
-              console.log(`[IR] ❌ No coincide superficie: ${cardMin}-${cardMax} vs ${criteriaMin}-${criteriaMax}`);
+              console.log('[FILTRO] ❌ Superficie no coincide');
               return false;
             }
           } else {
             // Fallback: comparación simple
-            if (!cardSuperficie.includes(criteriaSuperficie.replace(' m²', ''))) {
-              console.log('[IR] ❌ No coincide superficie (fallback):', cardSuperficie, 'vs', criteriaSuperficie);
+            const criteriaClean = criteriaSuperficie.replace(' m²', '').replace('m²', '').trim();
+            if (!cardSuperficie.includes(criteriaClean)) {
+              console.log('[FILTRO] ❌ Superficie no coincide (fallback)');
               return false;
             }
+            console.log('[FILTRO] ✅ Superficie coincide (fallback)');
           }
         }
         
@@ -1174,6 +1133,8 @@
         if (criteria.precio && cardInfo.precio) {
           const cardPrecio = cardInfo.precio.toLowerCase();
           const criteriaPrecio = criteria.precio.toLowerCase();
+          
+          console.log('[FILTRO] Comparando precio:', criteriaPrecio, 'vs', cardPrecio);
           
           // Extraer números de precio para comparación más precisa
           const cardMatch = cardPrecio.match(/(\d+(?:\.\d+)?)-(\d+(?:\.\d+)?)/);
@@ -1185,19 +1146,23 @@
             const criteriaMin = parseFloat(criteriaMatch[1]);
             const criteriaMax = parseFloat(criteriaMatch[2]);
             
+            console.log('[FILTRO] Rangos precio:', `${cardMin}-${cardMax}`, 'vs', `${criteriaMin}-${criteriaMax}`);
+            
             // Verificar si hay superposición en los rangos
             if (cardMin <= criteriaMax && cardMax >= criteriaMin) {
-              console.log(`[IR] ✅ Precio coincide: ${cardMin}-${cardMax} vs ${criteriaMin}-${criteriaMax}`);
+              console.log('[FILTRO] ✅ Precio coincide');
             } else {
-              console.log(`[IR] ❌ No coincide precio: ${cardMin}-${cardMax} vs ${criteriaMin}-${criteriaMax}`);
+              console.log('[FILTRO] ❌ Precio no coincide');
               return false;
             }
           } else {
             // Fallback: comparación simple
-            if (!cardPrecio.includes(criteriaPrecio.replace('$', '').replace(' uf', ''))) {
-              console.log('[IR] ❌ No coincide precio (fallback):', cardPrecio, 'vs', criteriaPrecio);
+            const criteriaClean = criteriaPrecio.replace('$', '').replace(' uf', '').replace('uf', '').trim();
+            if (!cardPrecio.includes(criteriaClean)) {
+              console.log('[FILTRO] ❌ Precio no coincide (fallback)');
               return false;
             }
+            console.log('[FILTRO] ✅ Precio coincide (fallback)');
           }
         }
         
@@ -1205,6 +1170,8 @@
         if (criteria.dormitorios && cardInfo.dormitorios) {
           const cardDormitorios = cardInfo.dormitorios.toLowerCase();
           const criteriaDormitorios = criteria.dormitorios;
+          
+          console.log('[FILTRO] Comparando dormitorios:', criteriaDormitorios, 'vs', cardDormitorios);
           
           // Extraer número de dormitorios
           const cardMatch = cardDormitorios.match(/(\d+)/);
@@ -1215,25 +1182,26 @@
             const criteriaNum = parseInt(criteriaMatch[1]);
             
             if (cardNum === criteriaNum) {
-              console.log(`[IR] ✅ Dormitorios coinciden: ${cardNum} vs ${criteriaNum}`);
+              console.log('[FILTRO] ✅ Dormitorios coinciden');
             } else {
-              console.log(`[IR] ❌ No coinciden dormitorios: ${cardNum} vs ${criteriaNum}`);
+              console.log('[FILTRO] ❌ Dormitorios no coinciden');
               return false;
             }
           } else {
             // Fallback: comparación simple
             if (!cardDormitorios.includes(criteriaDormitorios)) {
-              console.log('[IR] ❌ No coincide dormitorios (fallback):', cardDormitorios, 'vs', criteriaDormitorios);
+              console.log('[FILTRO] ❌ Dormitorios no coinciden (fallback)');
               return false;
             }
+            console.log('[FILTRO] ✅ Dormitorios coinciden (fallback)');
           }
         }
         
-        console.log('[IR] ✅ Tarjeta coincide con todos los criterios');
+        console.log('[FILTRO] ✅ Tarjeta coincide con criterios');
         return true;
         
       } catch (error) {
-        console.error('[IR] Error comparando criterios:', error);
+        console.error('[FILTRO] Error en matchesCriteria:', error);
         return false;
       }
     },
@@ -1245,7 +1213,6 @@
         const detailsButton = document.querySelector('#recorridoControls .btn-secondary[onclick*="showApartmentDetails"]');
         if (detailsButton) {
           detailsButton.click();
-          console.log('[IR] ✅ Botón de detalles clickeado (método 1)');
           return true;
         }
         
@@ -1258,7 +1225,6 @@
         
         if (detailsBtn) {
           detailsBtn.click();
-          console.log('[IR] ✅ Botón de detalles encontrado y clickeado (método 2)');
           return true;
         }
         
@@ -1266,42 +1232,34 @@
         const onclickButtons = document.querySelectorAll('button[onclick*="showApartmentDetails"]');
         if (onclickButtons.length > 0) {
           onclickButtons[0].click();
-          console.log('[IR] ✅ Botón de detalles encontrado por onclick (método 3)');
           return true;
         }
         
         // Método 4: Usar el sistema imageFilterSystem directamente
         if (window.imageFilterSystem && window.imageFilterSystem.showApartmentDetails) {
-          console.log('[IR] Usando imageFilterSystem.showApartmentDetails directamente');
           const currentCard = document.querySelector('.apartment-card.recorrido-active');
           if (currentCard) {
             const title = currentCard.querySelector('h3')?.textContent || 'Apartamento';
             const superficie = currentCard.querySelector('p:nth-child(2)')?.textContent || '';
             const precio = currentCard.querySelector('p:nth-child(3)')?.textContent || '';
             
-            console.log('[IR] Llamando showApartmentDetails con:', { title, superficie, precio });
             window.imageFilterSystem.showApartmentDetails(title, superficie, precio);
             return true;
           }
         }
         
-        console.warn('[IR] ❌ No se encontró ningún método para mostrar detalles');
         return false;
         
       } catch (error) {
-        console.error('[IR] Error activando botón de detalles:', error);
         return false;
       }
     },
 
     async nextApartment() {
       try {
-        console.log('[IR] Navegando al siguiente apartamento');
-        
         // Primero verificar si estamos en modo recorrido
         const recorridoControls = document.getElementById('recorridoControls');
         if (!recorridoControls) {
-          console.warn('[IR] No estamos en modo recorrido, activando filtros primero');
           // Si no estamos en modo recorrido, activar filtros básicos
           await this.filterApartments({ bedrooms: 2 });
           return true;
@@ -1315,10 +1273,7 @@
           card.offsetParent !== null // Verificar que esté realmente visible
         );
         
-        console.log(`[IR] Tarjetas visibles encontradas: ${visibleCards.length}`);
-        
         if (visibleCards.length === 0) {
-          console.warn('[IR] No hay tarjetas visibles');
           return false;
         }
         
@@ -1328,16 +1283,11 @@
         
         if (activeCard) {
           currentIndex = visibleCards.indexOf(activeCard);
-          console.log(`[IR] Tarjeta activa encontrada en índice: ${currentIndex}`);
-        } else {
-          console.log('[IR] No hay tarjeta activa, empezando desde la primera');
         }
         
         // Calcular el índice del siguiente apartamento
         const nextIndex = (currentIndex + 1) % visibleCards.length;
         const nextCard = visibleCards[nextIndex];
-        
-        console.log(`[IR] Navegando a tarjeta ${nextIndex + 1} de ${visibleCards.length}`);
         
         // Extraer información de la tarjeta para actualizar controles
         const apartmentTitle = nextCard.querySelector('h3')?.textContent || 'Apartamento';
@@ -1353,23 +1303,18 @@
         // Actualizar los controles con la nueva información
         this.updateRecorridoControls(apartmentTitle, superficieText, precioText);
         
-        console.log(`[IR] Navegado exitosamente al apartamento: ${apartmentTitle}`);
         return true;
         
       } catch (error) {
-        console.error('[IR] Error navegando al siguiente apartamento:', error);
         return false;
       }
     },
 
     async prevApartment() {
       try {
-        console.log('[IR] Navegando al apartamento anterior');
-        
         // Primero verificar si estamos en modo recorrido
         const recorridoControls = document.getElementById('recorridoControls');
         if (!recorridoControls) {
-          console.warn('[IR] No estamos en modo recorrido, activando filtros primero');
           // Si no estamos en modo recorrido, activar filtros básicos
           await this.filterApartments({ bedrooms: 2 });
           return true;
@@ -1383,10 +1328,7 @@
           card.offsetParent !== null // Verificar que esté realmente visible
         );
         
-        console.log(`[IR] Tarjetas visibles encontradas: ${visibleCards.length}`);
-        
         if (visibleCards.length === 0) {
-          console.warn('[IR] No hay tarjetas visibles');
           return false;
         }
         
@@ -1396,16 +1338,11 @@
         
         if (activeCard) {
           currentIndex = visibleCards.indexOf(activeCard);
-          console.log(`[IR] Tarjeta activa encontrada en índice: ${currentIndex}`);
-        } else {
-          console.log('[IR] No hay tarjeta activa, empezando desde la última');
         }
         
         // Calcular el índice del apartamento anterior
         const prevIndex = currentIndex <= 0 ? visibleCards.length - 1 : currentIndex - 1;
         const prevCard = visibleCards[prevIndex];
-        
-        console.log(`[IR] Navegando a tarjeta ${prevIndex + 1} de ${visibleCards.length}`);
         
         // Extraer información de la tarjeta para actualizar controles
         const apartmentTitle = prevCard.querySelector('h3')?.textContent || 'Apartamento';
@@ -1421,31 +1358,24 @@
         // Actualizar los controles con la nueva información
         this.updateRecorridoControls(apartmentTitle, superficieText, precioText);
         
-        console.log(`[IR] Navegado exitosamente al apartamento: ${apartmentTitle}`);
         return true;
         
       } catch (error) {
-        console.error('[IR] Error navegando al apartamento anterior:', error);
         return false;
       }
     },
 
     async exitRecorridoMode() {
       try {
-        console.log('[IR] Saliendo del modo recorrido');
-        
         // Buscar el botón "Salir del Recorrido"
         const exitButton = document.querySelector('#recorridoControls .btn-secondary[onclick*="exitRecorridoMode"]');
         if (exitButton) {
           exitButton.click();
-          console.log('[IR] Botón de salir clickeado');
           return true;
         } else {
-          console.warn('[IR] No se encontró el botón de salir');
           return false;
         }
       } catch (error) {
-        console.error('[IR] Error saliendo del modo recorrido:', error);
         return false;
       }
     },

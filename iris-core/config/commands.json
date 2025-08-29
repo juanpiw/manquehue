@@ -1,0 +1,193 @@
+{
+  "commands": {
+    "goto": {
+      "name": "goto",
+      "description": "Navigate to a specific section",
+      "category": "navigation",
+      "aliases": ["navegar", "ir", "mostrar", "ver"],
+      "parameters": [
+        {
+          "name": "key",
+          "type": "string",
+          "required": true,
+          "description": "Target section key",
+          "values": ["apartments", "houses", "equipment", "features", "home"]
+        }
+      ],
+      "examples": [
+        "goto apartments",
+        "navegar a apartamentos",
+        "mostrar equipamiento"
+      ]
+    },
+    "play": {
+      "name": "play",
+      "description": "Play video",
+      "category": "video",
+      "aliases": ["reproducir", "iniciar"],
+      "parameters": [],
+      "examples": [
+        "play video",
+        "reproducir video"
+      ]
+    },
+    "pause": {
+      "name": "pause",
+      "description": "Pause video",
+      "category": "video",
+      "aliases": ["pausar", "detener"],
+      "parameters": [],
+      "examples": [
+        "pause video",
+        "pausar video"
+      ]
+    },
+    "stop": {
+      "name": "stop",
+      "description": "Stop video",
+      "category": "video",
+      "aliases": ["detener", "parar"],
+      "parameters": [],
+      "examples": [
+        "stop video",
+        "detener video"
+      ]
+    },
+    "next": {
+      "name": "next",
+      "description": "Next video",
+      "category": "video",
+      "aliases": ["siguiente"],
+      "parameters": [],
+      "examples": [
+        "next video",
+        "siguiente video"
+      ]
+    },
+    "previous": {
+      "name": "previous",
+      "description": "Previous video",
+      "category": "video",
+      "aliases": ["anterior"],
+      "parameters": [],
+      "examples": [
+        "previous video",
+        "anterior video"
+      ]
+    },
+    "applyFilter": {
+      "name": "applyFilter",
+      "description": "Apply apartment filters",
+      "category": "filter",
+      "aliases": ["filtrar", "aplicar filtro", "buscar", "mostrar"],
+      "parameters": [
+        {
+          "name": "bedrooms",
+          "type": "number",
+          "required": false,
+          "description": "Number of bedrooms"
+        },
+        {
+          "name": "superficie",
+          "type": "string",
+          "required": false,
+          "description": "Surface area range (e.g., '40-60 m²')"
+        },
+        {
+          "name": "precio",
+          "type": "string",
+          "required": false,
+          "description": "Price range (e.g., '2000-3000 UF')"
+        }
+      ],
+      "examples": [
+        "mostrar departamento de 1 dormitorio",
+        "filtrar por 2 dormitorios",
+        "buscar apartamento de 3 dormitorios",
+        "ver departamento de 1 dormitorio",
+        "mostrar apartamento de 2 dormitorios",
+        "1 dormitorio",
+        "40-60 m²",
+        "2000-3000 UF"
+      ]
+    },
+    "clearFilter": {
+      "name": "clearFilter",
+      "description": "Clear all filters",
+      "category": "filter",
+      "aliases": ["limpiar filtros", "quitar filtros"],
+      "parameters": [],
+      "examples": [
+        "clear filters",
+        "limpiar filtros"
+      ]
+    },
+    "scrollTo": {
+      "name": "scrollTo",
+      "description": "Scroll to specific position",
+      "category": "scroll",
+      "aliases": ["scroll", "ir a"],
+      "parameters": [
+        {
+          "name": "position",
+          "type": "string",
+          "required": false,
+          "description": "Scroll position",
+          "values": ["top", "bottom", "up", "down"]
+        }
+      ],
+      "examples": [
+        "scroll to top",
+        "ir arriba",
+        "bajar"
+      ]
+    },
+    "showDetails": {
+      "name": "showDetails",
+      "description": "Show apartment details",
+      "category": "details",
+      "aliases": ["mostrar detalle", "ver detalle"],
+      "parameters": [
+        {
+          "name": "criteria",
+          "type": "object",
+          "required": false,
+          "description": "Apartment criteria"
+        }
+      ],
+      "examples": [
+        "mostrar detalle de 1 dormitorio",
+        "ver detalle de 40-60 m²"
+      ]
+    }
+  },
+  "categories": {
+    "navigation": {
+      "description": "Navigation commands",
+      "icon": "🧭"
+    },
+    "video": {
+      "description": "Video control commands",
+      "icon": "🎬"
+    },
+    "filter": {
+      "description": "Filter commands",
+      "icon": "🔍"
+    },
+    "scroll": {
+      "description": "Scroll commands",
+      "icon": "📜"
+    },
+    "details": {
+      "description": "Detail view commands",
+      "icon": "📋"
+    }
+  },
+  "settings": {
+    "defaultParser": "NaturalLanguageParser",
+    "confidenceThreshold": 0.7,
+    "maxHistorySize": 100,
+    "enableLogging": true,
+    "enableDebug": false
+  }
+}

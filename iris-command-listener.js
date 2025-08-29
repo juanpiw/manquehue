@@ -157,7 +157,7 @@ async function routeCommand(cmd) {
         
       case 'state':
         const state = await window.IR.state();
-        console.log('[iris-cmd] Current state:', state);
+    
         return true;
         
       case 'help':
@@ -198,7 +198,7 @@ async function routeCommand(cmd) {
             return false;
           }
           const result = await window.IR.detectAndNavigate(key);
-          console.log('[iris-cmd] Detection result:', result);
+      
           return result.success;
           
         case 'clear':
@@ -210,7 +210,7 @@ async function routeCommand(cmd) {
          
        case 'setSectionVideos':
         // This would need a proper payload structure
-        console.log('[iris-cmd] setSectionVideos not implemented yet');
+
         return false;
         
       default:
@@ -269,7 +269,7 @@ function showHelpMessage() {
 • \`[[cmd action=help]]\` - Mostrar esta ayuda
   `;
   
-  console.log('[iris-cmd] Help:', helpText);
+  
   
   // También mostrar en el chat si es posible
   const chatInput = document.querySelector('.chat-input');
@@ -298,20 +298,20 @@ function attachMessageObserver(targetNode) {
                  if (commands.length > 0) {
                    // Procesar comandos explícitos
                    commands.forEach(async (cmd) => {
-                     console.log('[iris-cmd] Processing explicit command:', cmd);
+                 
                      
                      // Show visual feedback
                      showCommandFeedback(cmd, 'processing');
                      
                      const success = await routeCommand(cmd);
-                     console.log(`[iris-cmd] Command ${success ? 'executed' : 'failed'}:`, cmd);
+                 
                      
                      // Show result feedback
                      showCommandFeedback(cmd, success ? 'success' : 'error');
                    });
                                     } else {
                      // Si no hay comandos explícitos, intentar detección automática
-                     console.log('[iris-cmd] No explicit commands found, trying auto-detection...');
+                 
                      
                      // Solo detectar si el mensaje parece ser del usuario (no del bot)
                      const isUserMessage = messageElement.closest('.chat-message-user') || 
@@ -321,11 +321,11 @@ function attachMessageObserver(targetNode) {
                        // Usar Promise para manejar async/await
                        window.IR.detectAndNavigate(messageText).then(detectionResult => {
                          if (detectionResult.success) {
-                           console.log('[iris-cmd] Auto-detection successful:', detectionResult);
+                       
                            showCommandFeedback({ action: 'detect', key: 'auto' }, 'success');
                          }
                        }).catch(error => {
-                         console.log('[iris-cmd] Auto-detection failed:', error);
+                     
                        });
                      }
                    }
@@ -342,7 +342,7 @@ function attachMessageObserver(targetNode) {
     subtree: true
   });
 
-  console.log('[iris-cmd] Message observer attached');
+  
 }
 
 // Initialization
@@ -353,27 +353,86 @@ function attachMessageObserver(targetNode) {
   link.href = 'https://cdn.jsdelivr.net/npm/@n8n/chat/dist/style.css';
   document.head.appendChild(link);
 
+  // Wait for IR API to be available before initializing chat
+  async function waitForIRAPI() {
+    let attempts = 0;
+    const maxAttempts = 50; // 5 seconds max wait
+    
+    while (!window.IR && attempts < maxAttempts) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+      attempts++;
+    }
+    
+    if (!window.IR) {
+      console.error('[iris-cmd] IR API not available after 5 seconds');
+      return false;
+    }
+    
+    console.log('[iris-cmd] IR API detected, initializing chat...');
+    return true;
+  }
+
+  // Wait for existing chat instance to be available
+  async function waitForExistingChat() {
+    let attempts = 0;
+    const maxAttempts = 100; // 10 seconds max wait
+    
+    while (!window.irisChatInstance && attempts < maxAttempts) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+      attempts++;
+    }
+    
+    if (!window.irisChatInstance) {
+      console.warn('[iris-cmd] No existing chat instance found, creating new one...');
+      return false;
+    }
+    
+    console.log('[iris-cmd] Existing chat instance detected');
+    return true;
+  }
+
   // Initialize chat and attach observer
-  loadChat().then(chatInstance => {
-    console.log('[iris-cmd] n8n chat widget initialized.', chatInstance);
+  waitForIRAPI().then(apiAvailable => {
+    if (!apiAvailable) {
+      console.error('[iris-cmd] Cannot initialize without IR API');
+      return;
+    }
     
-    // Wait for chat to be fully loaded
-    setTimeout(() => {
-      const chatContainer = document.querySelector('.chat-window-wrapper') || document.body;
-      attachMessageObserver(chatContainer);
-    }, 2000);
-    
-  }).catch(error => {
-    console.error('[iris-cmd] Failed to initialize n8n chat:', error);
+    // Check if there's already a chat instance
+    waitForExistingChat().then(hasExistingChat => {
+      if (hasExistingChat) {
+        // Use existing chat instance
+        console.log('[iris-cmd] Using existing chat instance');
+        setTimeout(() => {
+          const chatContainer = document.querySelector('.chat-window-wrapper') || document.body;
+          attachMessageObserver(chatContainer);
+        }, 2000);
+      } else {
+        // Create new chat instance only if none exists
+        loadChat().then(chatInstance => {
+          // Wait for chat to be fully loaded
+          setTimeout(() => {
+            const chatContainer = document.querySelector('.chat-window-wrapper') || document.body;
+            attachMessageObserver(chatContainer);
+          }, 2000);
+          
+        }).catch(error => {
+          console.error('[iris-cmd] Failed to initialize n8n chat:', error);
+        });
+      }
+    });
   });
 
   // Helper function for console testing
   window.irisTest = (cmdString) => {
+    if (!window.IR) {
+      console.error('[iris-cmd] IR API not available for testing');
+      return;
+    }
+    
     const commands = parseCmdTokens(cmdString);
     commands.forEach(async (cmd) => {
-      console.log('[iris-cmd] Testing command:', cmd);
       const success = await routeCommand(cmd);
-      console.log(`[iris-cmd] Test ${success ? 'passed' : 'failed'}:`, cmd);
     });
   };
 

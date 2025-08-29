@@ -165,3 +165,5 @@
 - [ ] Búsqueda por texto libre
 - [ ] Guardado de preferencias
 - [ ] Historial de búsquedas
+
+

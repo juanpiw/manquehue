@@ -142,3 +142,5 @@ await IR.detectAndNavigate("detalles");
 4. **Usar página de debug**: Si hay problemas, usar `test-filters-debug.html`
 
 **¡El sistema ahora debería funcionar correctamente!** 🎉
+
+

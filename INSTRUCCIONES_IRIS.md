@@ -170,3 +170,5 @@ console.log("Estado actual:", state);
 ---
 
 **Nota para Iris:** Usa siempre `await IR.detectAndNavigate(texto_del_usuario)` para procesar cualquier comando relacionado con apartamentos.
+
+

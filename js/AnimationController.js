@@ -13,16 +13,12 @@ class AnimationController {
     }
 
     init() {
-        console.log('🎬 Initializing AnimationController...');
-        
         this.injectKeyframes();
         this.setupIntersectionObserver();
         this.setupParallaxEffects();
         this.setupFloatingAnimations();
         this.setupHoverEffects();
         this.setupLoadingAnimations();
-        
-        console.log('✅ AnimationController initialized');
     }
 
     injectKeyframes() {
@@ -180,8 +176,6 @@ class AnimationController {
         const style = document.createElement('style');
         style.textContent = keyframes;
         document.head.appendChild(style);
-        
-        console.log('✅ Keyframes injected');
     }
 
     setupIntersectionObserver() {
@@ -201,8 +195,6 @@ class AnimationController {
         animatedElements.forEach(element => {
             this.intersectionObserver.observe(element);
         });
-        
-        console.log(`✅ IntersectionObserver setup for ${animatedElements.length} elements`);
     }
 
     setupParallaxEffects() {
@@ -212,7 +204,7 @@ class AnimationController {
             this.updateParallax();
         });
         
-        console.log(`✅ Parallax effects setup for ${this.parallaxElements.length} elements`);
+
     }
 
     setupFloatingAnimations() {
@@ -226,7 +218,7 @@ class AnimationController {
             element.style.animationDelay = delay;
         });
         
-        console.log(`✅ Floating animations setup for ${this.floatingElements.length} elements`);
+
     }
 
     setupHoverEffects() {
@@ -254,7 +246,7 @@ class AnimationController {
             });
         });
         
-        console.log(`✅ Hover effects setup for ${buttons.length} buttons and ${cards.length} cards`);
+
     }
 
     setupLoadingAnimations() {
@@ -269,7 +261,7 @@ class AnimationController {
             }
         });
         
-        console.log(`✅ Loading animations setup for ${images.length} images`);
+
     }
 
     animateElement(element) {
@@ -286,7 +278,7 @@ class AnimationController {
         // Remover del observer después de animar
         this.intersectionObserver.unobserve(element);
         
-        console.log(`🎬 Animated element with ${animationType}`);
+
     }
 
     updateParallax() {
@@ -448,12 +440,12 @@ class AnimationController {
         // Efecto de partículas o confeti (opcional)
         this.createParticleEffect(apartmentsSection);
 
-        console.log('🎬 Apartments section animation triggered');
+
     }
 
     // Animación especial para la sección hero
     animatePreviewHero() {
-        console.log('🎬 animatePreviewHero called');
+
         
         // Try multiple selectors to find the hero section
         let previewHero = document.querySelector('.preview-hero');
@@ -464,23 +456,23 @@ class AnimationController {
             previewHero = document.querySelector('section .preview-hero');
         }
         
-        console.log('🔍 Found preview hero element:', previewHero);
+
         
         if (!previewHero) {
-            console.log('❌ Preview hero section not found');
+    
             return;
         }
         
         // Primero agregar la clase para ocultar elementos
-        console.log('✨ Adding animate-ready class to preview hero');
+
         previewHero.classList.add('animate-ready');
         
         // Luego agregar la clase para activar la animación
         setTimeout(() => {
-            console.log('✨ Adding animate-in class to preview hero');
+    
             previewHero.classList.add('animate-in');
             this.createParticleEffect(previewHero); // Optional particle effect
-            console.log('🎬 Preview hero section animation triggered');
+    
         }, 100);
     }
 
@@ -552,7 +544,7 @@ class AnimationController {
         // Limpiar event listeners
         window.removeEventListener('scroll', this.updateParallax);
         
-        console.log('🗑️ AnimationController destroyed');
+
     }
 }
 
