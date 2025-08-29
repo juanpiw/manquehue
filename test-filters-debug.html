@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Filtros de Apartamentos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .debug-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .debug-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .debug-button:hover {
+            background: #0056b3;
+        }
+        .debug-button.success {
+            background: #28a745;
+        }
+        .debug-button.error {
+            background: #dc3545;
+        }
+        .log-area {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .status {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .status.warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        .filter-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 15px 0;
+        }
+        .filter-card {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .filter-card h4 {
+            margin: 0 0 10px 0;
+            color: #495057;
+        }
+    </style>
+</head>
+<body>
+    <div class="debug-section">
+        <h1>🔍 Debug Filtros de Apartamentos</h1>
+        <p>Página para verificar que los filtros funcionen correctamente</p>
+    </div>
+
+    <div class="debug-section">
+        <h2>🔧 Funciones de Debug</h2>
+        <button class="debug-button" onclick="checkElements()">Verificar Elementos DOM</button>
+        <button class="debug-button" onclick="testFilterActivation()">Probar Activación de Filtros</button>
+        <button class="debug-button" onclick="testFilterExecution()">Probar Ejecución de Filtros</button>
+        <button class="debug-button" onclick="testDetailsButton()">Probar Botón Detalles</button>
+        <button class="debug-button" onclick="clearLogs()">Limpiar Logs</button>
+    </div>
+
+    <div class="debug-section">
+        <h2>📊 Información de Filtros</h2>
+        <div class="filter-info">
+            <div class="filter-card">
+                <h4>Botones de Dormitorios</h4>
+                <div id="bedroomButtons"></div>
+            </div>
+            <div class="filter-card">
+                <h4>Filtros de Superficie</h4>
+                <div id="surfaceFilters"></div>
+            </div>
+            <div class="filter-card">
+                <h4>Filtros de Precio</h4>
+                <div id="priceFilters"></div>
+            </div>
+            <div class="filter-card">
+                <h4>Botones de Detalles</h4>
+                <div id="detailsButtons"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="debug-section">
+        <h2>📝 Logs de Debug</h2>
+        <div id="debugLogs" class="log-area"></div>
+    </div>
+
+    <script>
+        function addLog(message, type = 'info') {
+            const logsDiv = document.getElementById('debugLogs');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = `status ${type}`;
+            logEntry.textContent = `[${timestamp}] ${message}`;
+            logsDiv.appendChild(logEntry);
+            logsDiv.scrollTop = logsDiv.scrollHeight;
+        }
+
+        function clearLogs() {
+            document.getElementById('debugLogs').innerHTML = '';
+        }
+
+        function checkElements() {
+            addLog('🔍 Verificando elementos del DOM...', 'info');
+            
+            // Verificar botones de dormitorios
+            const bedroomButtons = document.querySelectorAll('.type-btn');
+            addLog(`📊 Encontrados ${bedroomButtons.length} botones de tipo`, 'info');
+            
+            bedroomButtons.forEach((btn, index) => {
+                const text = btn.textContent;
+                const dataType = btn.getAttribute('data-type');
+                const isActive = btn.classList.contains('active');
+                addLog(`  ${index + 1}. "${text}" (data-type: "${dataType}", active: ${isActive})`, 'info');
+            });
+            
+            // Verificar filtros de superficie
+            const surfaceFilter = document.getElementById('surfaceFilter');
+            if (surfaceFilter) {
+                addLog(`📏 Filtro de superficie encontrado: ${surfaceFilter.value}`, 'success');
+            } else {
+                addLog(`❌ Filtro de superficie no encontrado`, 'error');
+            }
+            
+            // Verificar filtros de precio
+            const priceFilter = document.getElementById('priceFilter');
+            if (priceFilter) {
+                addLog(`💰 Filtro de precio encontrado: ${priceFilter.value}`, 'success');
+            } else {
+                addLog(`❌ Filtro de precio no encontrado`, 'error');
+            }
+            
+            // Verificar botones de detalles
+            const detailsButtons = document.querySelectorAll('button');
+            const detailsBtns = Array.from(detailsButtons).filter(btn => 
+                btn.textContent.toLowerCase().includes('detalles') ||
+                btn.textContent.toLowerCase().includes('details') ||
+                btn.getAttribute('onclick')?.includes('showApartmentDetails')
+            );
+            addLog(`📋 Encontrados ${detailsBtns.length} botones de detalles`, 'info');
+            
+            detailsBtns.forEach((btn, index) => {
+                const text = btn.textContent;
+                const onclick = btn.getAttribute('onclick');
+                addLog(`  ${index + 1}. "${text}" (onclick: "${onclick}")`, 'info');
+            });
+            
+            // Verificar sistema imageFilterSystem
+            if (window.imageFilterSystem) {
+                addLog(`✅ imageFilterSystem disponible`, 'success');
+                if (window.imageFilterSystem.filterApartments) {
+                    addLog(`✅ filterApartments() disponible`, 'success');
+                }
+                if (window.imageFilterSystem.showApartmentDetails) {
+                    addLog(`✅ showApartmentDetails() disponible`, 'success');
+                }
+            } else {
+                addLog(`❌ imageFilterSystem no disponible`, 'error');
+            }
+            
+            // Verificar sistema IR
+            if (window.IR) {
+                addLog(`✅ IR API disponible`, 'success');
+            } else {
+                addLog(`❌ IR API no disponible`, 'error');
+            }
+        }
+
+        function testFilterActivation() {
+            addLog('🧪 Probando activación de filtros...', 'info');
+            
+            const bedroomButtons = document.querySelectorAll('.type-btn');
+            addLog(`📊 Activando filtro de 2 dormitorios...`, 'info');
+            
+            bedroomButtons.forEach(btn => {
+                btn.classList.remove('active');
+                const text = btn.textContent.toLowerCase();
+                const dataType = btn.getAttribute('data-type');
+                
+                if ((text.includes('2') && text.includes('dormitorio')) ||
+                    (dataType && dataType.includes('2'))) {
+                    btn.classList.add('active');
+                    addLog(`✅ Activado: "${btn.textContent}"`, 'success');
+                }
+            });
+            
+            // Verificar si se activó algún botón
+            const activeButtons = document.querySelectorAll('.type-btn.active');
+            addLog(`📊 Botones activos: ${activeButtons.length}`, 'info');
+            
+            activeButtons.forEach(btn => {
+                addLog(`  - "${btn.textContent}"`, 'info');
+            });
+        }
+
+        function testFilterExecution() {
+            addLog('🚀 Probando ejecución de filtros...', 'info');
+            
+            if (window.imageFilterSystem && window.imageFilterSystem.filterApartments) {
+                addLog('✅ Ejecutando imageFilterSystem.filterApartments()', 'info');
+                try {
+                    window.imageFilterSystem.filterApartments();
+                    addLog('✅ Filtro ejecutado exitosamente', 'success');
+                } catch (error) {
+                    addLog(`❌ Error ejecutando filtro: ${error.message}`, 'error');
+                }
+            } else {
+                addLog('❌ imageFilterSystem.filterApartments() no disponible', 'error');
+            }
+            
+            // Verificar tarjetas visibles después del filtro
+            setTimeout(() => {
+                const apartmentCards = document.querySelectorAll('.apartment-card');
+                const visibleCards = Array.from(apartmentCards).filter(card => 
+                    card.style.display !== 'none' && 
+                    card.style.opacity !== '0' &&
+                    card.offsetParent !== null
+                );
+                addLog(`📊 Tarjetas visibles después del filtro: ${visibleCards.length}/${apartmentCards.length}`, 'info');
+            }, 1000);
+        }
+
+        function testDetailsButton() {
+            addLog('🔍 Probando botón de detalles...', 'info');
+            
+            // Método 1: Buscar por onclick
+            const onclickButtons = document.querySelectorAll('button[onclick*="showApartmentDetails"]');
+            addLog(`📋 Botones con onclick showApartmentDetails: ${onclickButtons.length}`, 'info');
+            
+            // Método 2: Buscar por texto
+            const allButtons = document.querySelectorAll('button');
+            const detailsBtns = Array.from(allButtons).filter(btn => 
+                btn.textContent.toLowerCase().includes('detalles') ||
+                btn.textContent.toLowerCase().includes('details')
+            );
+            addLog(`📋 Botones con texto "detalles": ${detailsBtns.length}`, 'info');
+            
+            // Método 3: Usar imageFilterSystem directamente
+            if (window.imageFilterSystem && window.imageFilterSystem.showApartmentDetails) {
+                addLog('✅ imageFilterSystem.showApartmentDetails() disponible', 'success');
+                try {
+                    window.imageFilterSystem.showApartmentDetails('Test Apartamento', '80-100 m²', '$4.000-5.000 UF');
+                    addLog('✅ Detalles mostrados exitosamente', 'success');
+                } catch (error) {
+                    addLog(`❌ Error mostrando detalles: ${error.message}`, 'error');
+                }
+            } else {
+                addLog('❌ imageFilterSystem.showApartmentDetails() no disponible', 'error');
+            }
+        }
+
+        // Actualizar información de filtros
+        function updateFilterInfo() {
+            // Botones de dormitorios
+            const bedroomButtons = document.querySelectorAll('.type-btn');
+            const bedroomInfo = Array.from(bedroomButtons).map(btn => 
+                `${btn.textContent} (${btn.getAttribute('data-type')}) ${btn.classList.contains('active') ? '✅' : '❌'}`
+            ).join('<br>');
+            document.getElementById('bedroomButtons').innerHTML = bedroomInfo || 'No encontrados';
+            
+            // Filtros de superficie
+            const surfaceFilter = document.getElementById('surfaceFilter');
+            document.getElementById('surfaceFilters').innerHTML = 
+                surfaceFilter ? `Valor: ${surfaceFilter.value}` : 'No encontrado';
+            
+            // Filtros de precio
+            const priceFilter = document.getElementById('priceFilter');
+            document.getElementById('priceFilters').innerHTML = 
+                priceFilter ? `Valor: ${priceFilter.value}` : 'No encontrado';
+            
+            // Botones de detalles
+            const detailsButtons = document.querySelectorAll('button');
+            const detailsBtns = Array.from(detailsButtons).filter(btn => 
+                btn.textContent.toLowerCase().includes('detalles') ||
+                btn.textContent.toLowerCase().includes('details') ||
+                btn.getAttribute('onclick')?.includes('showApartmentDetails')
+            );
+            const detailsInfo = detailsBtns.map(btn => 
+                `${btn.textContent} (${btn.getAttribute('onclick') ? 'onclick' : 'texto'})`
+            ).join('<br>');
+            document.getElementById('detailsButtons').innerHTML = detailsInfo || 'No encontrados';
+        }
+
+        // Inicializar cuando la página cargue
+        document.addEventListener('DOMContentLoaded', function() {
+            addLog('🚀 Página de debug cargada', 'info');
+            updateFilterInfo();
+            
+            // Actualizar información cada 2 segundos
+            setInterval(updateFilterInfo, 2000);
+        });
+    </script>
+</body>
+</html>

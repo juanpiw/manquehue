@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - Detalles de Apartamento Específico</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .test-input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .apartment-card {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            background: white;
+        }
+        .apartment-card h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        .apartment-card p {
+            margin: 5px 0;
+            color: #666;
+        }
+        .recorrido-active {
+            border-color: #007bff;
+            background: #f0f8ff;
+        }
+        .recorrido-controls {
+            background: #e9ecef;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            display: none;
+        }
+        .btn-primary, .btn-secondary {
+            padding: 8px 16px;
+            margin: 5px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test - Detalles de Apartamento Específico</h1>
+        <p>Esta página prueba la funcionalidad mejorada de <code>showApartmentDetails</code> que puede identificar apartamentos específicos basados en criterios.</p>
+
+        <div class="test-section">
+            <h3>📋 Comandos de Prueba</h3>
+            <p>Prueba estos comandos específicos que deberían identificar y mostrar detalles de apartamentos específicos:</p>
+            
+            <button class="test-button" onclick="testSpecificApartment('quiero saber más detalles sobre este depto Superficie: 40-60 m² Precio: $2.000-3.000 UF')">
+                Test: "Superficie: 40-60 m², Precio: $2.000-3.000 UF"
+            </button>
+            
+            <button class="test-button" onclick="testSpecificApartment('muéstrame detalles del apartamento Superficie: 80-100 m² Precio: $4.000-5.000 UF')">
+                Test: "Superficie: 80-100 m², Precio: $4.000-5.000 UF"
+            </button>
+            
+            <button class="test-button" onclick="testSpecificApartment('detalles del depto Dormitorios: 2 Superficie: 60-80 m²')">
+                Test: "Dormitorios: 2, Superficie: 60-80 m²"
+            </button>
+            
+            <button class="test-button" onclick="testSpecificApartment('detalles')">
+                Test: Comando genérico "detalles"
+            </button>
+        </div>
+
+        <div class="test-section">
+            <h3>🔍 Comando Personalizado</h3>
+            <input type="text" id="customCommand" class="test-input" 
+                   placeholder="Escribe tu comando aquí, ej: 'detalles del apartamento Superficie: 40-60 m² Precio: $2.000-3.000 UF'">
+            <button class="test-button" onclick="testCustomCommand()">Ejecutar Comando</button>
+        </div>
+
+        <div class="test-section">
+            <h3>🏠 Apartamentos de Prueba</h3>
+            <div class="apartment-card" data-superficie="40-60 m²" data-precio="$2.000-3.000 UF">
+                <h3>1 Dormitorio</h3>
+                <p>40-60 m²</p>
+                <p>$2.000-3.000 UF</p>
+                <p>Vista al golf</p>
+            </div>
+            
+            <div class="apartment-card" data-superficie="60-80 m²" data-precio="$3.000-4.000 UF">
+                <h3>2 Dormitorios</h3>
+                <p>60-80 m²</p>
+                <p>$3.000-4.000 UF</p>
+                <p>Vista al mar</p>
+            </div>
+            
+            <div class="apartment-card" data-superficie="80-100 m²" data-precio="$4.000-5.000 UF">
+                <h3>3 Dormitorios</h3>
+                <p>80-100 m²</p>
+                <p>$4.000-5.000 UF</p>
+                <p>Vista panorámica</p>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>🎮 Controles de Recorrido</h3>
+            <div id="recorridoControls" class="recorrido-controls">
+                <div class="recorrido-info">
+                    <h3 id="recorridoTitle">Apartamento</h3>
+                    <p id="recorridoInfo">Información del apartamento</p>
+                </div>
+                <div class="recorrido-actions">
+                    <button class="btn-secondary" onclick="exitRecorridoMode()">
+                        Salir del Recorrido
+                    </button>
+                    <button class="btn-secondary" onclick="showApartmentDetails()">
+                        Detalles
+                    </button>
+                    <button class="btn-primary" onclick="toggleVideoPlayback()">
+                        Pausar
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>📊 Log de Actividad</h3>
+            <div id="log" class="log"></div>
+            <button class="test-button" onclick="clearLog()">Limpiar Log</button>
+        </div>
+    </div>
+
+    <script>
+        // Simular el sistema de filtros
+        window.imageFilterSystem = {
+            showApartmentDetails: function(title, superficie, precio) {
+                log(`🎯 imageFilterSystem.showApartmentDetails llamado con:`, { title, superficie, precio });
+                // Simular mostrar detalles
+                alert(`Detalles mostrados para: ${title}\nSuperficie: ${superficie}\nPrecio: ${precio}`);
+                return true;
+            },
+            exitRecorridoMode: function() {
+                log('🚪 Saliendo del modo recorrido');
+                document.getElementById('recorridoControls').style.display = 'none';
+                document.querySelectorAll('.apartment-card').forEach(card => {
+                    card.classList.remove('recorrido-active');
+                });
+            },
+            toggleVideoPlayback: function() {
+                log('🎬 Alternando reproducción de video');
+                const button = document.querySelector('#recorridoControls .btn-primary');
+                const text = button.textContent;
+                button.textContent = text === 'Pausar' ? 'Reproducir' : 'Pausar';
+            }
+        };
+
+        // Función para mostrar detalles (simulada)
+        function showApartmentDetails() {
+            log('🔍 Función showApartmentDetails llamada');
+            const activeCard = document.querySelector('.apartment-card.recorrido-active');
+            if (activeCard) {
+                const title = activeCard.querySelector('h3').textContent;
+                const superficie = activeCard.querySelector('p:nth-child(2)').textContent;
+                const precio = activeCard.querySelector('p:nth-child(3)').textContent;
+                window.imageFilterSystem.showApartmentDetails(title, superficie, precio);
+            }
+        }
+
+        function exitRecorridoMode() {
+            window.imageFilterSystem.exitRecorridoMode();
+        }
+
+        function toggleVideoPlayback() {
+            window.imageFilterSystem.toggleVideoPlayback();
+        }
+
+        // Función para activar modo recorrido en una tarjeta
+        function activateRecorridoMode(card) {
+            log(`🎯 Activando modo recorrido en tarjeta: ${card.querySelector('h3').textContent}`);
+            
+            // Remover clase activa de todas las tarjetas
+            document.querySelectorAll('.apartment-card').forEach(c => {
+                c.classList.remove('recorrido-active');
+            });
+            
+            // Agregar clase activa a la tarjeta seleccionada
+            card.classList.add('recorrido-active');
+            
+            // Mostrar controles de recorrido
+            const controls = document.getElementById('recorridoControls');
+            controls.style.display = 'block';
+            
+            // Actualizar información en los controles
+            const title = card.querySelector('h3').textContent;
+            const superficie = card.querySelector('p:nth-child(2)').textContent;
+            const precio = card.querySelector('p:nth-child(3)').textContent;
+            
+            document.getElementById('recorridoTitle').textContent = title;
+            document.getElementById('recorridoInfo').textContent = `${superficie} • ${precio}`;
+            
+            return true;
+        }
+
+        // Función para probar comandos específicos
+        function testSpecificApartment(command) {
+            log(`🎤 Comando: "${command}"`);
+            
+            // Simular el procesamiento de Iris
+            const result = processIrisCommand(command);
+            log(`📋 Resultado: ${JSON.stringify(result, null, 2)}`);
+        }
+
+        // Función para procesar comandos de Iris (simulada)
+        function processIrisCommand(text) {
+            const lowerText = text.toLowerCase();
+            
+            // Extraer criterios específicos
+            const criteria = extractApartmentCriteria(text);
+            
+            if (criteria) {
+                log(`🔍 Criterios detectados: ${JSON.stringify(criteria)}`);
+                
+                // Buscar apartamento que coincida
+                const targetCard = findApartmentByCriteria(criteria);
+                
+                if (targetCard) {
+                    log(`✅ Apartamento encontrado: ${targetCard.querySelector('h3').textContent}`);
+                    
+                    // Activar modo recorrido
+                    activateRecorridoMode(targetCard);
+                    
+                    return {
+                        success: true,
+                        command: 'showDetails',
+                        message: `Mostrando detalles del apartamento: ${criteria.superficie || ''} ${criteria.precio || ''}`,
+                        criteria: criteria
+                    };
+                } else {
+                    log(`❌ No se encontró apartamento que coincida con los criterios`);
+                    return {
+                        success: false,
+                        message: 'No se encontró apartamento que coincida con los criterios especificados'
+                    };
+                }
+            } else if (lowerText.includes('detalles')) {
+                log(`🔍 Comando genérico de detalles detectado`);
+                
+                // Activar en la primera tarjeta disponible
+                const firstCard = document.querySelector('.apartment-card');
+                if (firstCard) {
+                    activateRecorridoMode(firstCard);
+                    return {
+                        success: true,
+                        command: 'showDetails',
+                        message: 'Mostrando detalles del apartamento'
+                    };
+                }
+            }
+            
+            return {
+                success: false,
+                message: 'Comando no reconocido'
+            };
+        }
+
+        // Función para extraer criterios específicos
+        function extractApartmentCriteria(text) {
+            const criteria = {};
+            const lowerText = text.toLowerCase();
+            
+            // Detectar superficie específica
+            const surfaceMatch = lowerText.match(/(?:superficie|área|m²)\s*:\s*(\d+)-(\d+)\s*m²/i);
+            if (surfaceMatch) {
+                criteria.superficie = `${surfaceMatch[1]}-${surfaceMatch[2]} m²`;
+            }
+            
+            // Detectar precio específico
+            const priceMatch = lowerText.match(/(?:precio|valor)\s*:\s*\$(\d+\.?\d*)-(\d+\.?\d*)\s*uf/i);
+            if (priceMatch) {
+                criteria.precio = `$${priceMatch[1]}-${priceMatch[2]} UF`;
+            }
+            
+            // Detectar dormitorios específicos
+            const bedroomMatch = lowerText.match(/(?:dormitorios|habitaciones)\s*:\s*(\d+)/i);
+            if (bedroomMatch) {
+                criteria.dormitorios = bedroomMatch[1];
+            }
+            
+            if (criteria.superficie || criteria.precio || criteria.dormitorios) {
+                return criteria;
+            }
+            
+            return null;
+        }
+
+        // Función para encontrar apartamento por criterios
+        function findApartmentByCriteria(criteria) {
+            log(`🔍 Buscando apartamento con criterios: ${JSON.stringify(criteria)}`);
+            
+            const apartmentCards = document.querySelectorAll('.apartment-card');
+            
+            for (const card of apartmentCards) {
+                const cardInfo = extractCardInfo(card);
+                log(`📋 Analizando tarjeta: ${JSON.stringify(cardInfo)}`);
+                
+                if (matchesCriteria(cardInfo, criteria)) {
+                    log(`✅ Tarjeta encontrada que coincide: ${cardInfo.title}`);
+                    return card;
+                }
+            }
+            
+            log(`❌ No se encontró tarjeta que coincida con los criterios`);
+            return null;
+        }
+
+        // Función para extraer información de tarjeta
+        function extractCardInfo(card) {
+            const title = card.querySelector('h3')?.textContent?.trim() || '';
+            const paragraphs = card.querySelectorAll('p');
+            
+            let superficie = '';
+            let precio = '';
+            let dormitorios = '';
+            
+            for (const p of paragraphs) {
+                const text = p.textContent?.trim() || '';
+                
+                if (text.includes('m²') || text.includes('metros')) {
+                    superficie = text;
+                } else if (text.includes('$') || text.includes('UF')) {
+                    precio = text;
+                } else if (text.includes('dormitorio') || text.includes('habitación')) {
+                    dormitorios = text;
+                }
+            }
+            
+            return { title, superficie, precio, dormitorios };
+        }
+
+        // Función para verificar coincidencia de criterios
+        function matchesCriteria(cardInfo, criteria) {
+            log(`🔍 Comparando tarjeta: ${JSON.stringify(cardInfo)} con criterios: ${JSON.stringify(criteria)}`);
+            
+            // Verificar superficie
+            if (criteria.superficie && cardInfo.superficie) {
+                const cardSuperficie = cardInfo.superficie.toLowerCase();
+                const criteriaSuperficie = criteria.superficie.toLowerCase();
+                
+                if (!cardSuperficie.includes(criteriaSuperficie.replace(' m²', ''))) {
+                    log(`❌ No coincide superficie: ${cardSuperficie} vs ${criteriaSuperficie}`);
+                    return false;
+                }
+            }
+            
+            // Verificar precio
+            if (criteria.precio && cardInfo.precio) {
+                const cardPrecio = cardInfo.precio.toLowerCase();
+                const criteriaPrecio = criteria.precio.toLowerCase();
+                
+                if (!cardPrecio.includes(criteriaPrecio.replace('$', '').replace(' uf', ''))) {
+                    log(`❌ No coincide precio: ${cardPrecio} vs ${criteriaPrecio}`);
+                    return false;
+                }
+            }
+            
+            // Verificar dormitorios
+            if (criteria.dormitorios && cardInfo.dormitorios) {
+                const cardDormitorios = cardInfo.dormitorios.toLowerCase();
+                const criteriaDormitorios = criteria.dormitorios;
+                
+                if (!cardDormitorios.includes(criteriaDormitorios)) {
+                    log(`❌ No coincide dormitorios: ${cardDormitorios} vs ${criteriaDormitorios}`);
+                    return false;
+                }
+            }
+            
+            log(`✅ Tarjeta coincide con todos los criterios`);
+            return true;
+        }
+
+        // Función para probar comando personalizado
+        function testCustomCommand() {
+            const command = document.getElementById('customCommand').value.trim();
+            if (command) {
+                testSpecificApartment(command);
+            } else {
+                alert('Por favor ingresa un comando');
+            }
+        }
+
+        // Funciones de utilidad
+        function log(message, data = null) {
+            const logElement = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}`;
+            
+            if (data) {
+                logEntry += '\n' + JSON.stringify(data, null, 2);
+            }
+            
+            logElement.textContent += logEntry + '\n';
+            logElement.scrollTop = logElement.scrollHeight;
+            
+            console.log(logEntry, data);
+        }
+
+        function clearLog() {
+            document.getElementById('log').textContent = '';
+        }
+
+        // Inicialización
+        log('🚀 Página de prueba cargada');
+        log('📋 Funcionalidades disponibles:');
+        log('  - Detección de criterios específicos (superficie, precio, dormitorios)');
+        log('  - Búsqueda de apartamentos por criterios');
+        log('  - Activación de modo recorrido');
+        log('  - Simulación de showApartmentDetails');
+    </script>
+</body>
+</html>

@@ -2790,14 +2790,14 @@ class ImageFilterSystem {
             this.scrollPreventionHandler = null;
         }
         
-        // Restaurar posición del scroll si se guardó
-        if (this.savedScrollPosition !== undefined) {
-            window.scrollTo({
-                top: this.savedScrollPosition,
-                behavior: 'smooth'
-            });
-            this.savedScrollPosition = undefined;
-        }
+        // NO restaurar posición del scroll automáticamente para evitar scroll no deseado
+        // if (this.savedScrollPosition !== undefined) {
+        //     window.scrollTo({
+        //         top: this.savedScrollPosition,
+        //         behavior: 'smooth'
+        //     });
+        //     this.savedScrollPosition = undefined;
+        // }
         
         console.log('✅ Scroll desbloqueado');
     }

@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Details Flow</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            margin: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .test-button.success {
+            background: #28a745;
+        }
+        .test-button.error {
+            background: #dc3545;
+        }
+        .log-area {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .status {
+            padding: 8px 12px;
+            margin: 4px 0;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .status.warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        .flow-step {
+            background: #e9ecef;
+            border: 1px solid #ced4da;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 4px solid #007bff;
+        }
+        .flow-step.completed {
+            border-left-color: #28a745;
+            background: #d4edda;
+        }
+        .flow-step.error {
+            border-left-color: #dc3545;
+            background: #f8d7da;
+        }
+        .apartment-card {
+            background: white;
+            border: 1px solid #dee2e6;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .apartment-card:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            transform: translateY(-2px);
+        }
+        .apartment-card.recorrido-active {
+            border-color: #007bff;
+            background: #f8f9ff;
+        }
+        .recorrido-controls {
+            background: white;
+            border: 1px solid #dee2e6;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .btn-primary, .btn-secondary {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            margin: 4px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .btn-secondary {
+            background: #6c757d;
+        }
+        .btn-primary:hover, .btn-secondary:hover {
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-section">
+        <h1>🧪 Test Details Flow</h1>
+        <p>Página para probar el flujo completo: Filtrado → Modo Recorrido → Detalles</p>
+    </div>
+
+    <div class="test-section">
+        <h2>🔄 Flujo de Prueba</h2>
+        <div class="flow-step" id="step1">
+            <h4>Paso 1: Verificar Sistema</h4>
+            <p>Verificar que imageFilterSystem y IR estén disponibles</p>
+            <button class="test-button" onclick="checkSystem()">Verificar Sistema</button>
+        </div>
+        
+        <div class="flow-step" id="step2">
+            <h4>Paso 2: Aplicar Filtro de 2 Dormitorios</h4>
+            <p>Simular el comando "muéstrame apartamentos de 2 dormitorios"</p>
+            <button class="test-button" onclick="applyFilter()">Aplicar Filtro</button>
+        </div>
+        
+        <div class="flow-step" id="step3">
+            <h4>Paso 3: Activar Modo Recorrido</h4>
+            <p>Activar el modo recorrido en la primera tarjeta filtrada</p>
+            <button class="test-button" onclick="activateRecorrido()">Activar Recorrido</button>
+        </div>
+        
+        <div class="flow-step" id="step4">
+            <h4>Paso 4: Mostrar Detalles</h4>
+            <p>Simular el comando "quiero saber detalles"</p>
+            <button class="test-button" onclick="showDetails()">Mostrar Detalles</button>
+        </div>
+        
+        <div class="flow-step" id="step5">
+            <h4>Paso 5: Flujo Completo Automático</h4>
+            <p>Ejecutar todo el flujo de una vez</p>
+            <button class="test-button success" onclick="runCompleteFlow()">Ejecutar Flujo Completo</button>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>📊 Estado Actual</h2>
+        <div id="currentState">
+            <p>Estado: Esperando verificación del sistema...</p>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>🏠 Apartamentos Filtrados</h2>
+        <div id="apartmentsList">
+            <p>Los apartamentos aparecerán aquí después del filtrado</p>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>🎮 Controles de Recorrido</h2>
+        <div id="recorridoControls" style="display: none;">
+            <div class="recorrido-controls">
+                <div class="recorrido-info">
+                    <h3 id="recorridoTitle">Apartamento</h3>
+                    <p id="recorridoInfo">Información del apartamento</p>
+                </div>
+                <div class="recorrido-actions">
+                    <button class="btn-secondary" onclick="exitRecorrido()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                        </svg>
+                        Salir del Recorrido
+                    </button>
+                    <button class="btn-secondary" onclick="showApartmentDetails()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                        </svg>
+                        Detalles
+                    </button>
+                    <button class="btn-primary" onclick="toggleVideo()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M8 5v14l11-7z" fill="currentColor"></path>
+                        </svg>
+                        <span id="playPauseText">Pausar</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>📝 Logs de Prueba</h2>
+        <div id="testLogs" class="log-area"></div>
+    </div>
+
+    <script>
+        function addLog(message, type = 'info') {
+            const logsDiv = document.getElementById('testLogs');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = `status ${type}`;
+            logEntry.textContent = `[${timestamp}] ${message}`;
+            logsDiv.appendChild(logEntry);
+            logsDiv.scrollTop = logsDiv.scrollHeight;
+        }
+
+        function updateStep(stepId, status) {
+            const step = document.getElementById(stepId);
+            step.className = `flow-step ${status}`;
+        }
+
+        function updateState(message) {
+            document.getElementById('currentState').innerHTML = `<p>Estado: ${message}</p>`;
+        }
+
+        async function checkSystem() {
+            addLog('🔍 Verificando sistema...', 'info');
+            
+            if (window.imageFilterSystem) {
+                addLog('✅ imageFilterSystem disponible', 'success');
+            } else {
+                addLog('❌ imageFilterSystem no disponible', 'error');
+                return false;
+            }
+            
+            if (window.IR) {
+                addLog('✅ IR (iris-bridge) disponible', 'success');
+            } else {
+                addLog('❌ IR (iris-bridge) no disponible', 'error');
+                return false;
+            }
+            
+            updateStep('step1', 'completed');
+            updateState('Sistema verificado correctamente');
+            return true;
+        }
+
+        async function applyFilter() {
+            addLog('🔍 Aplicando filtro de 2 dormitorios...', 'info');
+            
+            if (!window.IR) {
+                addLog('❌ IR no disponible', 'error');
+                return false;
+            }
+            
+            try {
+                const result = await window.IR.filterApartments({ bedrooms: 2 });
+                
+                if (result.success) {
+                    addLog('✅ Filtro aplicado correctamente', 'success');
+                    updateStep('step2', 'completed');
+                    updateState('Filtro de 2 dormitorios aplicado');
+                    
+                    // Mostrar apartamentos filtrados
+                    showFilteredApartments();
+                    return true;
+                } else {
+                    addLog(`❌ Error aplicando filtro: ${result.error}`, 'error');
+                    updateStep('step2', 'error');
+                    return false;
+                }
+            } catch (error) {
+                addLog(`❌ Error: ${error.message}`, 'error');
+                updateStep('step2', 'error');
+                return false;
+            }
+        }
+
+        function showFilteredApartments() {
+            const apartmentsList = document.getElementById('apartmentsList');
+            
+            // Simular apartamentos filtrados
+            const apartments = [
+                { title: '2 Dormitorios', superficie: '80-100 m²', precio: '$4.000-5.000 UF' },
+                { title: '2 Dormitorios', superficie: '60-80 m²', precio: '$3.000-4.000 UF' },
+                { title: '2 Dormitorios', superficie: '100-120 m²', precio: '$5.000-6.000 UF' }
+            ];
+            
+            let html = '<h3>🏠 Apartamentos Filtrados:</h3>';
+            apartments.forEach((apt, index) => {
+                html += `
+                    <div class="apartment-card" data-index="${index}" onclick="selectApartment(this, ${index})">
+                        <h4>${apt.title}</h4>
+                        <p>Superficie: ${apt.superficie}</p>
+                        <p>Precio: ${apt.precio}</p>
+                    </div>
+                `;
+            });
+            
+            apartmentsList.innerHTML = html;
+        }
+
+        function selectApartment(card, index) {
+            // Remover selección anterior
+            document.querySelectorAll('.apartment-card').forEach(c => c.classList.remove('recorrido-active'));
+            
+            // Seleccionar nueva tarjeta
+            card.classList.add('recorrido-active');
+            
+            addLog(`✅ Apartamento ${index + 1} seleccionado`, 'success');
+        }
+
+        async function activateRecorrido() {
+            addLog('🎮 Activando modo recorrido...', 'info');
+            
+            const activeCard = document.querySelector('.apartment-card.recorrido-active');
+            if (!activeCard) {
+                addLog('❌ No hay apartamento seleccionado', 'error');
+                return false;
+            }
+            
+            try {
+                const result = await window.IR.activateRecorridoMode(activeCard, {});
+                
+                if (result) {
+                    addLog('✅ Modo recorrido activado', 'success');
+                    updateStep('step3', 'completed');
+                    updateState('Modo recorrido activado');
+                    
+                    // Mostrar controles de recorrido
+                    showRecorridoControls(activeCard);
+                    return true;
+                } else {
+                    addLog('❌ Error activando modo recorrido', 'error');
+                    updateStep('step3', 'error');
+                    return false;
+                }
+            } catch (error) {
+                addLog(`❌ Error: ${error.message}`, 'error');
+                updateStep('step3', 'error');
+                return false;
+            }
+        }
+
+        function showRecorridoControls(card) {
+            const controls = document.getElementById('recorridoControls');
+            const title = card.querySelector('h4').textContent;
+            const superficie = card.querySelector('p:nth-child(2)').textContent;
+            const precio = card.querySelector('p:nth-child(3)').textContent;
+            
+            document.getElementById('recorridoTitle').textContent = title;
+            document.getElementById('recorridoInfo').textContent = `${superficie} • ${precio}`;
+            
+            controls.style.display = 'block';
+            addLog('🎮 Controles de recorrido mostrados', 'success');
+        }
+
+        async function showDetails() {
+            addLog('📋 Mostrando detalles del apartamento...', 'info');
+            
+            try {
+                const result = await window.IR.showApartmentDetails();
+                
+                if (result) {
+                    addLog('✅ Detalles mostrados correctamente', 'success');
+                    updateStep('step4', 'completed');
+                    updateState('Detalles del apartamento mostrados');
+                    return true;
+                } else {
+                    addLog('❌ Error mostrando detalles', 'error');
+                    updateStep('step4', 'error');
+                    return false;
+                }
+            } catch (error) {
+                addLog(`❌ Error: ${error.message}`, 'error');
+                updateStep('step4', 'error');
+                return false;
+            }
+        }
+
+        async function runCompleteFlow() {
+            addLog('🚀 Ejecutando flujo completo...', 'info');
+            
+            // Resetear pasos
+            document.querySelectorAll('.flow-step').forEach(step => {
+                step.className = 'flow-step';
+            });
+            
+            // Paso 1: Verificar sistema
+            if (!await checkSystem()) {
+                addLog('❌ Flujo detenido: Sistema no disponible', 'error');
+                return;
+            }
+            
+            // Paso 2: Aplicar filtro
+            if (!await applyFilter()) {
+                addLog('❌ Flujo detenido: Error aplicando filtro', 'error');
+                return;
+            }
+            
+            // Paso 3: Activar recorrido
+            if (!await activateRecorrido()) {
+                addLog('❌ Flujo detenido: Error activando recorrido', 'error');
+                return;
+            }
+            
+            // Paso 4: Mostrar detalles
+            if (!await showDetails()) {
+                addLog('❌ Flujo detenido: Error mostrando detalles', 'error');
+                return;
+            }
+            
+            addLog('🎉 ¡Flujo completo ejecutado exitosamente!', 'success');
+            updateState('Flujo completo completado');
+        }
+
+        function exitRecorrido() {
+            document.getElementById('recorridoControls').style.display = 'none';
+            document.querySelectorAll('.apartment-card').forEach(c => c.classList.remove('recorrido-active'));
+            addLog('🚪 Modo recorrido cerrado', 'info');
+            updateState('Modo recorrido cerrado');
+        }
+
+        function showApartmentDetails() {
+            addLog('📋 Función showApartmentDetails llamada', 'info');
+            
+            // Simular la función del ImageFilterSystem
+            if (window.imageFilterSystem && window.imageFilterSystem.showApartmentDetails) {
+                const activeCard = document.querySelector('.apartment-card.recorrido-active');
+                if (activeCard) {
+                    const title = activeCard.querySelector('h4').textContent;
+                    const superficie = activeCard.querySelector('p:nth-child(2)').textContent;
+                    const precio = activeCard.querySelector('p:nth-child(3)').textContent;
+                    
+                    window.imageFilterSystem.showApartmentDetails(title, superficie, precio);
+                    addLog('✅ Detalles mostrados usando imageFilterSystem', 'success');
+                }
+            } else {
+                addLog('❌ imageFilterSystem.showApartmentDetails no disponible', 'error');
+            }
+        }
+
+        function toggleVideo() {
+            const playPauseText = document.getElementById('playPauseText');
+            const currentText = playPauseText.textContent;
+            
+            if (currentText === 'Pausar') {
+                playPauseText.textContent = 'Reproducir';
+                addLog('⏸️ Video pausado', 'info');
+            } else {
+                playPauseText.textContent = 'Pausar';
+                addLog('▶️ Video reproducido', 'info');
+            }
+        }
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', function() {
+            addLog('🚀 Página de prueba cargada', 'info');
+            addLog('📋 Esperando que los sistemas estén disponibles...', 'info');
+            
+            // Verificar cada segundo si los sistemas están disponibles
+            const checkInterval = setInterval(() => {
+                if (window.imageFilterSystem && window.IR) {
+                    addLog('✅ Sistemas detectados - Listo para pruebas', 'success');
+                    clearInterval(checkInterval);
+                    checkSystem();
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
