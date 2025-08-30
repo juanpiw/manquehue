@@ -372,29 +372,123 @@ class IrisChatBridge {
         }
 
         try {
-            // PREVENIR SCROLL AUTOMÁTICO: Guardar posición actual
+            // SCROLL INTELIGENTE: Detectar si necesitamos hacer scroll
             const currentScrollPosition = window.scrollY;
-            console.log('📍 [Bridge] Guardando posición de scroll actual:', currentScrollPosition);
+            const apartmentsSection = this.findApartmentsSection();
+            
+            console.log('📍 [Bridge] Posición actual:', currentScrollPosition);
+            console.log('📍 [Bridge] Sección apartamentos:', apartmentsSection);
             
             // Usar la arquitectura modular para procesar el comando
             const result = await this.irisCore.processText(command);
             
             console.log('✅ Comando procesado exitosamente:', result);
             
-            // RESTAURAR POSICIÓN DE SCROLL: Volver a la posición original
-            setTimeout(() => {
-                console.log('📍 [Bridge] Restaurando posición de scroll a:', currentScrollPosition);
-                window.scrollTo({
-                    top: currentScrollPosition,
-                    behavior: 'instant' // Sin animación para evitar saltos
-                });
-            }, 100);
+            // DECIDIR SI HACER SCROLL basado en la posición actual
+            if (apartmentsSection && this.shouldScrollToApartments(currentScrollPosition, apartmentsSection)) {
+                console.log('🎯 [Bridge] Haciendo scroll inteligente a sección de apartamentos...');
+                
+                setTimeout(() => {
+                    window.scrollTo({
+                        top: apartmentsSection.top - 100, // 100px de margen
+                        behavior: 'smooth' // Scroll suave
+                    });
+                }, 200);
+            } else {
+                console.log('📍 [Bridge] Manteniendo posición actual - ya estamos cerca de apartamentos');
+            }
             
             return { success: true, result: result };
             
         } catch (error) {
             console.error('❌ Error procesando comando:', error);
             return { success: false, error: error.message };
+        }
+    }
+
+    /**
+     * Encontrar la sección de apartamentos
+     * @returns {Object|null} Información de la sección de apartamentos
+     */
+    findApartmentsSection() {
+        try {
+            // Buscar la sección de apartamentos por diferentes selectores
+            const selectors = [
+                '#apartments',
+                '.apartments',
+                '[data-section="apartments"]',
+                'section:nth-child(2)', // Segunda sección (común)
+                '.apartment-section'
+            ];
+            
+            for (const selector of selectors) {
+                const section = document.querySelector(selector);
+                if (section) {
+                    const rect = section.getBoundingClientRect();
+                    const top = rect.top + window.scrollY;
+                    const bottom = rect.bottom + window.scrollY;
+                    
+                    console.log(`📍 [Bridge] Sección apartamentos encontrada con selector: ${selector}`);
+                    console.log(`📍 [Bridge] Top: ${top}, Bottom: ${bottom}`);
+                    
+                    return {
+                        element: section,
+                        top: top,
+                        bottom: bottom,
+                        height: rect.height
+                    };
+                }
+            }
+            
+            console.log('⚠️ [Bridge] No se encontró sección de apartamentos');
+            return null;
+            
+        } catch (error) {
+            console.error('❌ [Bridge] Error encontrando sección de apartamentos:', error);
+            return null;
+        }
+    }
+    
+    /**
+     * Decidir si debemos hacer scroll a la sección de apartamentos
+     * @param {number} currentPosition - Posición actual del scroll
+     * @param {Object} apartmentsSection - Información de la sección de apartamentos
+     * @returns {boolean} True si debemos hacer scroll
+     */
+    shouldScrollToApartments(currentPosition, apartmentsSection) {
+        try {
+            const viewportHeight = window.innerHeight;
+            const sectionTop = apartmentsSection.top;
+            const sectionBottom = apartmentsSection.bottom;
+            
+            // Calcular si la sección está visible en el viewport
+            const isSectionVisible = (
+                currentPosition + viewportHeight > sectionTop &&
+                currentPosition < sectionBottom
+            );
+            
+            // Calcular qué tan lejos estamos de la sección
+            const distanceToSection = Math.abs(currentPosition - sectionTop);
+            const isFarFromSection = distanceToSection > viewportHeight * 0.5; // Más de media pantalla
+            
+            console.log(`📍 [Bridge] Análisis de scroll:`);
+            console.log(`📍 [Bridge] - Posición actual: ${currentPosition}`);
+            console.log(`📍 [Bridge] - Top de sección: ${sectionTop}`);
+            console.log(`📍 [Bridge] - Distancia a sección: ${distanceToSection}`);
+            console.log(`📍 [Bridge] - ¿Sección visible? ${isSectionVisible}`);
+            console.log(`📍 [Bridge] - ¿Lejos de sección? ${isFarFromSection}`);
+            
+            // Hacer scroll si:
+            // 1. La sección NO está visible en el viewport, O
+            // 2. Estamos muy lejos de la sección
+            const shouldScroll = !isSectionVisible || isFarFromSection;
+            
+            console.log(`📍 [Bridge] ¿Hacer scroll? ${shouldScroll}`);
+            return shouldScroll;
+            
+        } catch (error) {
+            console.error('❌ [Bridge] Error analizando si hacer scroll:', error);
+            return false; // Por defecto, no hacer scroll si hay error
         }
     }
 
