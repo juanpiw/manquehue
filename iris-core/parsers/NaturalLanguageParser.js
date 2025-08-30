@@ -122,11 +122,26 @@ class NaturalLanguageParser {
     parseFilter(text) {
         console.log(`🔍 [Parser] Iniciando parseFilter con texto: "${text}"`);
         
-        // Detectar comandos de filtro por dormitorios específicamente
+        // Detectar comandos de filtro por dormitorios específicamente - MEJORADOS
         const bedroomPatterns = [
-            { pattern: /(?:mostrar|filtrar|buscar|ver)\s+(?:un\s+)?(?:departamento|apartamento)\s+(?:de\s+)?(\d+)\s*(?:dormitorio|dormitorios|habitación|habitaciones)/, bedrooms: '$1' },
+            { pattern: /(?:mostrar|filtrar|buscar|ver|puedes\s+mostrar)\s+(?:un\s+)?(?:departamento|apartamento)\s+(?:de\s+)?(\d+)\s*(?:dormitorio|dormitorios|habitación|habitaciones)/, bedrooms: '$1' },
+            { pattern: /(?:me\s+)?(?:puedes\s+)?(?:mostrar|filtrar|buscar|ver)\s+(?:un\s+)?(?:departamento|apartamento)\s+(?:de\s+)?(\d+)\s*(?:dormitorio|dormitorios|habitación|habitaciones)/, bedrooms: '$1' },
+            { pattern: /(?:departamento|apartamento)\s+(?:de\s+)?(\d+)\s*(?:dormitorio|dormitorios|habitación|habitaciones)/, bedrooms: '$1' },
             { pattern: /(\d+)\s*(?:dormitorio|dormitorios|habitación|habitaciones)/, bedrooms: '$1' },
-            { pattern: /(?:apartamento|departamento)\s+(?:de\s+)?(\d+)\s*(?:dormitorio|dormitorios)/, bedrooms: '$1' }
+            { pattern: /(?:apartamento|departamento)\s+(?:de\s+)?(\d+)\s*(?:dormitorio|dormitorios)/, bedrooms: '$1' },
+            // NUEVOS PATRONES PARA NÚMEROS ESCRITOS CON LETRAS
+            { pattern: /(?:mostrar|filtrar|buscar|ver|puedes\s+mostrar)\s+(?:un\s+)?(?:departamento|apartamento)\s+(?:de\s+)?(uno|dos|tres)\s*(?:dormitorio|dormitorios|habitación|habitaciones)/, bedrooms: (match) => {
+                const numMap = { 'uno': 1, 'dos': 2, 'tres': 3 };
+                return numMap[match[1]] || 1;
+            }},
+            { pattern: /(?:me\s+)?(?:puedes\s+)?(?:mostrar|filtrar|buscar|ver)\s+(?:un\s+)?(?:departamento|apartamento)\s+(?:de\s+)?(uno|dos|tres)\s*(?:dormitorio|dormitorios|habitación|habitaciones)/, bedrooms: (match) => {
+                const numMap = { 'uno': 1, 'dos': 2, 'tres': 3 };
+                return numMap[match[1]] || 1;
+            }},
+            { pattern: /(?:departamento|apartamento)\s+(?:de\s+)?(uno|dos|tres)\s*(?:dormitorio|dormitorios|habitación|habitaciones)/, bedrooms: (match) => {
+                const numMap = { 'uno': 1, 'dos': 2, 'tres': 3 };
+                return numMap[match[1]] || 1;
+            }}
         ];
 
         // Detectar comandos de filtro por superficie
@@ -146,6 +161,14 @@ class NaturalLanguageParser {
             { pattern: /\$?([0-9.,]+)\s*-\s*\$?([0-9.,]+)\s*(?:mil\s+)?(?:pesos|peso)/i, precio: '$1-$2 pesos' }
         ];
 
+        // Detectar comandos de filtro por tipo de departamento
+        const tipoDepartamentoPatterns = [
+            { pattern: /(?:mostrar|filtrar|buscar|ver|activar)\s+(?:el\s+)?(?:departamento|apartamento)\s+(?:tipo\s+)?([A-Z]-[A-Z]-[0-9]+)/i, tipoDepartamento: 'Tipo $1' },
+            { pattern: /(?:tipo\s+de\s+departamento|tipo\s+departamento):\s*([A-Z]-[A-Z]-[0-9]+)/i, tipoDepartamento: 'Tipo $1' },
+            { pattern: /(?:tipo\s+)?([A-Z]-[A-Z]-[0-9]+)/i, tipoDepartamento: 'Tipo $1' },
+            { pattern: /(?:mostrar|filtrar|buscar|ver)\s+(?:el\s+)?(?:tipo\s+)?([A-Z]-[A-Z]-[0-9]+)/i, tipoDepartamento: 'Tipo $1' }
+        ];
+
         const filters = {};
         let hasFilters = false;
 
@@ -156,7 +179,12 @@ class NaturalLanguageParser {
             const match = text.match(pattern.pattern);
             console.log(`🔍 [Parser] Patrón dormitorio ${i + 1}: ${pattern.pattern} - Match: ${match ? 'SÍ' : 'NO'}`);
             if (match) {
-                filters.bedrooms = parseInt(match[1]);
+                // Manejar tanto strings como funciones de mapeo
+                if (typeof pattern.bedrooms === 'function') {
+                    filters.bedrooms = pattern.bedrooms(match);
+                } else {
+                    filters.bedrooms = parseInt(match[1]);
+                }
                 hasFilters = true;
                 console.log(`✅ [Parser] Dormitorios detectados: ${filters.bedrooms}`);
                 break; // Solo tomar el primer match de dormitorios
@@ -198,8 +226,63 @@ class NaturalLanguageParser {
             }
         }
 
+        console.log(`🔍 [Parser] Procesando patrones de tipo de departamento...`);
+        // Procesar patrones de tipo de departamento
+        for (let i = 0; i < tipoDepartamentoPatterns.length; i++) {
+            const pattern = tipoDepartamentoPatterns[i];
+            const match = text.match(pattern.pattern);
+            console.log(`🔍 [Parser] Patrón tipo departamento ${i + 1}: ${pattern.pattern} - Match: ${match ? 'SÍ' : 'NO'}`);
+            if (match) {
+                console.log(`🔍 [Parser] Match encontrado: ${JSON.stringify(match)}`);
+                                 if (match.length >= 2) {
+                     // Extraer el código del tipo de departamento
+                     const tipoCode = match[1];
+                     // Mantener el formato original (mayúsculas) para que coincida con las tarjetas
+                     filters.tipoDepartamento = `Tipo ${tipoCode.toUpperCase()}`;
+                     console.log(`✅ [Parser] Tipo de departamento detectado: ${filters.tipoDepartamento}`);
+                 }
+                hasFilters = true;
+                break; // Solo tomar el primer match de tipo de departamento
+            }
+        }
+
         console.log(`🔍 [Parser] Resumen de filtros encontrados:`, filters);
         console.log(`🔍 [Parser] hasFilters: ${hasFilters}`);
+
+        // Verificar comandos especiales de filtros
+        const specialFilterPatterns = [
+            {
+                pattern: /(buscar|mostrar|ver|filtrar)\s+(?:todos\s+)?(?:los\s+)?(?:departamentos|apartamentos)/i,
+                action: 'show_all',
+                confidence: 0.8
+            },
+            {
+                pattern: /(limpiar|borrar|resetear|quitar)\s+(?:todos\s+)?(?:los\s+)?(?:filtros|filtro)/i,
+                action: 'clear',
+                confidence: 0.8
+            },
+            {
+                pattern: /(buscar|mostrar|ver)\s+(?:departamentos|apartamentos)/i,
+                action: 'show_all',
+                confidence: 0.7
+            }
+        ];
+
+        for (const specialPattern of specialFilterPatterns) {
+            const match = text.match(specialPattern.pattern);
+            if (match) {
+                const result = {
+                    type: 'filter',
+                    action: specialPattern.action,
+                    filters: {},
+                    originalText: text,
+                    confidence: specialPattern.confidence,
+                    area: 'filter'
+                };
+                console.log(`✅ [Parser] Comando especial de filtro detectado:`, result);
+                return result;
+            }
+        }
 
         if (hasFilters) {
             const result = {

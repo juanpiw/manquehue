@@ -565,6 +565,10 @@
 
 
 
+
+
+
+
                 <!-- Filtros de apartamentos -->
                 <div class="apartment-filters">
                     <div class="filter-group">
@@ -603,8 +607,8 @@
                     <!-- Los apartamentos se cargarán dinámicamente -->
                     
                     <!-- Ejemplo de tarjeta con tipo asignado -->
-                    <div class="apartment-card" data-bedrooms="1" data-apartment-type="A-S-2" data-apartment-name="Tipo A2">
-                        <div class="apartment-type-badge type-a">Tipo A2</div>
+                    <div class="apartment-card" data-bedrooms="1" data-apartment-type="A-S-2" data-apartment-name="Tipo A">
+                        <div class="apartment-type-badge type-a">Tipo A</div>
                         <div class="apartment-image">
                             <img src="video/imagenes/1_dormitorio/superficie_40_60/precio_2000_3000/planta_1.png" alt="1 Dormitorio" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iUGxhbnRhIGRlICR7dGlwb1RleHR9PC90ZXh0Pjwvc3ZnPg=='">
                         </div>
@@ -612,14 +616,15 @@
                             <h3>1 Dormitorio</h3>
                             <p><strong>Superficie:</strong> 40-60 m²</p>
                             <p><strong>Precio:</strong> $2.000-3.000 UF</p>
+                            <p class="apartment-type-info"><strong>Tipo:</strong> <span style="color: #dc3545; font-weight: bold;">Tipo A</span></p>
                             <div class="apartment-actions">
-                                <button class="btn-secondary watchVideoBtn" data-apartment="1 Dormitorio" data-superficie="40-60 m²" data-precio="$2.000-3.000 UF" data-apartment-type="A-S-2" data-apartment-name="Tipo A2">
+                                <button class="btn-secondary watchVideoBtn" data-apartment="1 Dormitorio" data-superficie="40-60 m²" data-precio="$2.000-3.000 UF" data-apartment-type="A-S-2" data-apartment-name="Tipo A">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                         <path d="M8 5v14l11-7z" fill="currentColor"></path>
                                     </svg>
                                     Recorrer
                                 </button>
-                                <button class="btn-primary contactModelBtn" data-apartment="1 Dormitorio" data-superficie="40-60 m²" data-precio="$2.000-3.000 UF" data-apartment-type="A-S-2" data-apartment-name="Tipo A2">
+                                <button class="btn-primary contactModelBtn" data-apartment="1 Dormitorio" data-superficie="40-60 m²" data-precio="$2.000-3.000 UF" data-apartment-type="A-S-2" data-apartment-name="Tipo A">
                                     Solicitar Información
                                 </button>
                             </div>
@@ -873,6 +878,9 @@
     <script src="iris-core/iris-loader.js"></script>
     <script src="iris-core/utils/apartment-type-generator.js"></script>
     <script src="iris-core/utils/auto-type-assigner.js"></script>
+    
+    <!-- IRIS Chat Bridge -->
+    <script src="iris-chat-bridge.js"></script>
     
     <!-- Project Modal Functions -->
     <script>
@@ -1138,6 +1146,30 @@
 
         // Function to detect video change commands from Iris
         function irisDetectVideoCommands(message) {
+            console.log('🎧 [Chat] Mensaje recibido:', message);
+            
+            // PRIMERO: Intentar procesar con el bridge de filtros
+            if (window.irisChatBridge && window.irisChatBridge.isInitialized) {
+                console.log('🔗 [Chat] Procesando con bridge de filtros...');
+                
+                // Procesar comando con el bridge
+                window.irisChatBridge.processChatCommand(message)
+                    .then(result => {
+                        if (result.success) {
+                            console.log('✅ [Chat] Comando procesado por bridge:', result);
+                            return true; // Comando procesado exitosamente
+                        } else {
+                            console.log('⚠️ [Chat] Bridge no pudo procesar, intentando comandos de video...');
+                            // Si el bridge no pudo procesar, continuar con comandos de video
+                        }
+                    })
+                    .catch(error => {
+                        console.error('❌ [Chat] Error en bridge:', error);
+                        // Continuar con comandos de video en caso de error
+                    });
+            }
+            
+            // SEGUNDO: Procesar comandos de video (funcionalidad existente)
             const videoCommands = {
                 'apartamento': 'apartamento',
                 'departamento': 'apartamento',
@@ -1157,11 +1189,13 @@
             
             for (const [keyword, videoKey] of Object.entries(videoCommands)) {
                 if (lowerMessage.includes(keyword)) {
+                    console.log('🎬 [Chat] Comando de video detectado:', keyword, '→', videoKey);
                     irisChangeVideo(videoKey);
                     return true;
                 }
             }
             
+            console.log('❌ [Chat] No se detectó ningún comando válido');
             return false;
         }
 
@@ -1401,7 +1435,118 @@
         // Store chat instance globally
         window.irisChatInstance = irisChatInstance;
 
-        // ========== SIMPLE APARTMENT TYPE SYSTEM ==========
+        // ========== ENHANCED APARTMENT TYPE SYSTEM ==========
+
+        // Function to generate unique apartment ID
+        function generateApartmentId(bedrooms, superficie, precio) {
+            const bedCode = bedrooms === 1 ? 'A' : bedrooms === 2 ? 'B' : 'C';
+            const surfaceCode = superficie.includes('40-60') ? 'S' : superficie.includes('80-100') ? 'M' : 'L';
+            const priceCode = precio.includes('2000-3000') ? '2' : precio.includes('4000-5000') ? '4' : '5';
+            return `${bedCode}-${surfaceCode}-${priceCode}`;
+        }
+
+        // Function to get apartment type name
+        function getApartmentTypeName(bedrooms, superficie, precio) {
+            const bedCode = bedrooms === 1 ? 'A' : bedrooms === 2 ? 'B' : 'C';
+            const surfaceCode = superficie.includes('40-60') ? 'S' : superficie.includes('80-100') ? 'M' : 'L';
+            const priceCode = precio.includes('2000-3000') ? '2' : precio.includes('4000-5000') ? '4' : '5';
+            return `Tipo ${bedCode}${surfaceCode}${priceCode}`;
+        }
+
+        // Function to get apartment type display name
+        function getApartmentTypeDisplay(bedrooms, superficie, precio) {
+            const bedCode = bedrooms === 1 ? 'A' : bedrooms === 2 ? 'B' : 'C';
+            const surfaceCode = superficie.includes('40-60') ? 'S' : superficie.includes('80-100') ? 'M' : 'L';
+            const priceCode = precio.includes('2000-3000') ? '2' : precio.includes('4000-5000') ? '4' : '5';
+            return `Tipo ${bedCode}`;
+        }
+
+        // Function to add type information to existing apartment cards
+        function addTypeInfoToExistingCards() {
+            console.log('🏠 Adding type information to existing apartment cards...');
+            
+            const apartmentCards = document.querySelectorAll('.apartment-card');
+            let processedCount = 0;
+            
+            apartmentCards.forEach((card, index) => {
+                // Extract information from the card
+                const title = card.querySelector('h3');
+                const superficieElement = card.querySelector('p:contains("Superficie")') || card.querySelector('p');
+                const precioElement = card.querySelector('p:contains("Precio")') || card.querySelectorAll('p')[1];
+                
+                if (title && superficieElement && precioElement) {
+                    const titleText = title.textContent;
+                    const superficieText = superficieElement.textContent.replace('Superficie:', '').trim();
+                    const precioText = precioElement.textContent.replace('Precio:', '').trim();
+                    
+                    // Extract bedrooms from title
+                    const bedroomMatch = titleText.match(/(\d+)/);
+                    if (bedroomMatch) {
+                        const bedrooms = parseInt(bedroomMatch[1]);
+                        
+                        // Generate unique ID and type
+                        const apartmentId = generateApartmentId(bedrooms, superficieText, precioText);
+                        const apartmentType = getApartmentTypeName(bedrooms, superficieText, precioText);
+                        const apartmentTypeDisplay = getApartmentTypeDisplay(bedrooms, superficieText, precioText);
+                        const badgeClass = bedrooms === 1 ? 'type-a' : bedrooms === 2 ? 'type-b' : 'type-c';
+                        
+                        // Add attributes to card
+                        card.setAttribute('data-apartment-id', apartmentId);
+                        card.setAttribute('data-apartment-type', apartmentType);
+                        card.setAttribute('data-bedrooms', bedrooms);
+                        card.setAttribute('data-superficie', superficieText);
+                        card.setAttribute('data-precio', precioText);
+                        
+                        // Add type badge if not exists
+                        if (!card.querySelector('.apartment-type-badge')) {
+                            const badge = document.createElement('div');
+                            badge.className = `apartment-type-badge ${badgeClass}`;
+                            badge.textContent = apartmentTypeDisplay;
+                            card.insertBefore(badge, card.firstChild);
+                        }
+                        
+                        // Add type information to apartment-info section
+                        const apartmentInfo = card.querySelector('.apartment-info');
+                        if (apartmentInfo) {
+                            // Remove existing type info if any
+                            const existingTypeInfo = apartmentInfo.querySelector('.apartment-type-info');
+                            if (existingTypeInfo) {
+                                existingTypeInfo.remove();
+                            }
+                            
+                            // Add new type info
+                            const typeInfo = document.createElement('p');
+                            typeInfo.className = 'apartment-type-info';
+                            typeInfo.innerHTML = `<strong>Tipo:</strong> <span style="color: ${bedrooms === 1 ? '#dc3545' : bedrooms === 2 ? '#28a745' : '#17a2b8'}; font-weight: bold;">${apartmentTypeDisplay}</span>`;
+                            
+                            // Insert after precio
+                            const precioP = apartmentInfo.querySelector('p:contains("Precio")') || apartmentInfo.querySelectorAll('p')[1];
+                            if (precioP) {
+                                precioP.parentNode.insertBefore(typeInfo, precioP.nextSibling);
+                            } else {
+                                apartmentInfo.appendChild(typeInfo);
+                            }
+                        }
+                        
+                        // Update buttons with type information
+                        const buttons = card.querySelectorAll('.watchVideoBtn, .contactModelBtn');
+                        buttons.forEach(button => {
+                            button.setAttribute('data-apartment-id', apartmentId);
+                            button.setAttribute('data-apartment-type', apartmentType);
+                            button.setAttribute('data-bedrooms', bedrooms);
+                            button.setAttribute('data-superficie', superficieText);
+                            button.setAttribute('data-precio', precioText);
+                        });
+                        
+                        processedCount++;
+                        console.log(`🏠 Card ${index + 1}: ${apartmentTypeDisplay} (ID: ${apartmentId})`);
+                    }
+                }
+            });
+            
+            console.log(`🏠 Processed ${processedCount} apartment cards with type information`);
+            return processedCount;
+        }
 
         // Function to filter apartments by type
         function filterByType(typeCode) {
@@ -1425,6 +1570,24 @@
                 'event_label': `Type: ${typeCode}`,
                 'value': 1
             });
+        }
+
+        // Function to find apartment by ID
+        function findApartmentById(apartmentId) {
+            const card = document.querySelector(`[data-apartment-id="${apartmentId}"]`);
+            if (card) {
+                card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                card.style.border = '3px solid #28a745';
+                card.style.boxShadow = '0 0 20px rgba(40, 167, 69, 0.3)';
+                
+                setTimeout(() => {
+                    card.style.border = '';
+                    card.style.boxShadow = '';
+                }, 3000);
+                
+                return true;
+            }
+            return false;
         }
 
         // Function to show example apartments
@@ -1499,24 +1662,77 @@
                     apartmentList.appendChild(apartmentCard);
                 });
                 
+                // Apply type information to new cards
+                addTypeInfoToExistingCards();
+                
                 console.log('🏢 Example apartments loaded');
             }
         }
 
         // Initialize apartment type system when page loads
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('🏠 Initializing enhanced apartment type system...');
+            
+            // Apply types immediately
+            addTypeInfoToExistingCards();
+            
+            // Also apply when apartment list becomes visible
+            const apartmentList = document.getElementById('apartmentList');
+            if (apartmentList) {
+                const observer = new MutationObserver(function(mutations) {
+                    mutations.forEach(function(mutation) {
+                        if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+                            const display = apartmentList.style.display;
+                            if (display === 'grid' || display === 'block') {
+                                setTimeout(() => {
+                                    addTypeInfoToExistingCards();
+                                }, 500);
+                            }
+                        }
+                    });
+                });
+                
+                observer.observe(apartmentList, {
+                    attributes: true,
+                    attributeFilter: ['style']
+                });
+            }
+            
+            // Force apply types after a delay to ensure all cards are loaded
             setTimeout(() => {
-                if (window.autoTypeAssigner) {
-                    console.log('🏠 Initializing apartment type system...');
-                    window.autoTypeAssigner.assignTypesToExistingCards();
-                }
-            }, 1000);
+                addTypeInfoToExistingCards();
+            }, 2000);
+            
+            // Also apply when window loads completely
+            window.addEventListener('load', function() {
+                setTimeout(() => {
+                    addTypeInfoToExistingCards();
+                }, 1000);
+            });
         });
 
         // Global functions for IRIS
         window.irisFilterByType = function(typeCode) {
             filterByType(typeCode);
             return true;
+        };
+
+        window.irisFindApartment = function(apartmentId) {
+            return findApartmentById(apartmentId);
+        };
+
+        window.irisGetApartmentInfo = function(apartmentId) {
+            const card = document.querySelector(`[data-apartment-id="${apartmentId}"]`);
+            if (card) {
+                return {
+                    id: apartmentId,
+                    type: card.getAttribute('data-apartment-type'),
+                    bedrooms: card.getAttribute('data-bedrooms'),
+                    superficie: card.getAttribute('data-superficie'),
+                    precio: card.getAttribute('data-precio')
+                };
+            }
+            return null;
         };
         
         // Listen for Iris messages to control videos
@@ -1569,10 +1785,57 @@
         };
     </script>
 
-    <!-- Iris Bridge API (Tarea 1) -->
-    <script src="iris-bridge.js"></script>
-    
-    <!-- Iris Command Listener (Tarea 2) -->
-    <script src="iris-command-listener.js"></script>
+    <!-- IRIS Modular System Initialization -->
+    <script>
+        // Initialize IRIS Modular System
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('🚀 Inicializando sistema IRIS modular...');
+            
+            try {
+                // Wait for IRIS Core to be available
+                let attempts = 0;
+                const maxAttempts = 50;
+                
+                while (!window.IRIS && attempts < maxAttempts) {
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    attempts++;
+                }
+                
+                if (!window.IRIS) {
+                    console.error('❌ IRIS Core no disponible después de 5 segundos');
+                    return;
+                }
+                
+                console.log('✅ IRIS Core detectado, inicializando...');
+                
+                // Initialize IRIS Core
+                const initResult = await window.IRIS.initialize();
+                
+                if (initResult.success) {
+                    console.log('✅ Sistema IRIS modular inicializado correctamente');
+                    
+                    // Test the filter functionality
+                    console.log('🧪 Probando funcionalidad de filtros...');
+                    
+                    // Test command processing
+                    const testResult = await window.IRIS.processText('mostrar departamento tipo A-S-2');
+                    console.log('🧪 Resultado de prueba:', testResult);
+                    
+                    // Make IRIS available globally for testing
+                    window.irisTest = async function(command) {
+                        return await window.IRIS.processText(command);
+                    };
+                    
+                    console.log('🎯 Sistema IRIS listo para usar. Prueba con: window.irisTest("mostrar departamento tipo A-S-2")');
+                    
+                } else {
+                    console.error('❌ Error al inicializar IRIS Core:', initResult.error);
+                }
+                
+            } catch (error) {
+                console.error('❌ Error durante la inicialización de IRIS:', error);
+            }
+        });
+    </script>
 </body>
 </html>

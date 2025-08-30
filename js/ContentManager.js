@@ -271,6 +271,7 @@ class ContentManager {
                     <h3>${apartment.type || 'Apartamento'}</h3>
                     <p><strong>Superficie:</strong> ${apartment.surface || 'No especificada'}</p>
                     <p><strong>Precio:</strong> ${apartment.price || 'Consultar'}</p>
+                    <p><strong>Tipo de Departamento:</strong> ${this.getTipoDepartamentoFromApartmentData(apartment)}</p>
                     <button class="btn-primary contactModelBtn">Solicitar Información</button>
                 </div>
             `;
@@ -337,6 +338,51 @@ class ContentManager {
     getVideoPaths(section) {
         const data = this.getCurrentData();
         return data && data.videos ? data.videos[section] : [];
+    }
+    
+    getTipoDepartamentoFromApartmentData(apartment) {
+        // Generar tipo de departamento basado en los datos del apartamento
+        let tipoCode = 'X';
+        let superficieCode = 'X';
+        let precioCode = 'X';
+        
+        // Mapear tipo (dormitorios)
+        if (apartment.type) {
+            const dormitoriosMatch = apartment.type.match(/(\d+)/);
+            if (dormitoriosMatch) {
+                const dormitorios = parseInt(dormitoriosMatch[1]);
+                if (dormitorios === 1) tipoCode = 'A';
+                else if (dormitorios === 2) tipoCode = 'B';
+                else if (dormitorios === 3) tipoCode = 'C';
+            }
+        }
+        
+        // Mapear superficie
+        if (apartment.surface) {
+            const superficieMatch = apartment.surface.match(/(\d+)-(\d+)/);
+            if (superficieMatch) {
+                const min = parseInt(superficieMatch[1]);
+                const max = parseInt(superficieMatch[2]);
+                if (min >= 40 && max <= 60) superficieCode = 'S';
+                else if (min >= 60 && max <= 80) superficieCode = 'M';
+                else if (min >= 80 && max <= 100) superficieCode = 'L';
+                else if (min >= 100) superficieCode = 'XL';
+            }
+        }
+        
+        // Mapear precio
+        if (apartment.price) {
+            const precioMatch = apartment.price.match(/\$(\d+\.\d+)-(\d+\.\d+)/);
+            if (precioMatch) {
+                const min = parseInt(precioMatch[1]);
+                if (min >= 2000 && min < 3000) precioCode = '2';
+                else if (min >= 3000 && min < 4000) precioCode = '3';
+                else if (min >= 4000 && min < 5000) precioCode = '4';
+                else if (min >= 5000) precioCode = '5';
+            }
+        }
+        
+        return `Tipo ${tipoCode}-${superficieCode}-${precioCode}`;
     }
 
     // Sistema de eventos

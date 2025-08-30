@@ -1,0 +1,372 @@
+================================================================================
+                    VARIANTES DE COMANDOS PARA IRIS
+================================================================================
+
+BASADO EN LOS FILTROS DISPONIBLES EN LA UI:
+
+1. **FILTROS DE DORMITORIOS:**
+   - "Todos" (data-type="all")
+   - "1 Dormitorio" (data-type="1d")
+   - "2 Dormitorios" (data-type="2d")
+   - "3 Dormitorios" (data-type="3d")
+
+2. **FILTROS DE SUPERFICIE:**
+   - "Todas" (value="")
+   - "40-60 m²" (value="40-60")
+   - "80-100 m²" (value="80-100")
+
+3. **FILTROS DE PRECIO:**
+   - "Todos" (value="")
+   - "$2.000-3.000 UF" (value="2000-3000")
+   - "$4.000-5.000 UF" (value="4000-5000")
+
+4. **ACCIONES:**
+   - "Buscar" (id="searchButton")
+   - "Limpiar Filtros" (id="clearFilters")
+
+================================================================================
+                    COMANDOS SIMPLES POR CATEGORÍA
+================================================================================
+
+🎯 **FILTROS POR DORMITORIOS:**
+
+**Comandos Directos:**
+- "1 dormitorio"
+- "2 dormitorios"
+- "3 dormitorios"
+- "un dormitorio"
+- "dos dormitorios"
+- "tres dormitorios"
+
+**Comandos con Verbo:**
+- "muéstrame departamentos de 1 dormitorio"
+- "quiero ver apartamentos de 2 dormitorios"
+- "filtrar por 3 dormitorios"
+- "mostrar departamentos de un dormitorio"
+- "buscar apartamentos de dos dormitorios"
+- "ver casas de tres dormitorios"
+
+**Comandos con Sinónimos:**
+- "departamentos de 1 dormitorio"
+- "apartamentos de 2 dormitorios"
+- "casas de 3 dormitorios"
+- "propiedades de 1 dormitorio"
+- "viviendas de 2 dormitorios"
+
+**Comandos con Modificadores:**
+- "solo departamentos de 1 dormitorio"
+- "únicamente apartamentos de 2 dormitorios"
+- "exclusivamente casas de 3 dormitorios"
+
+🎯 **FILTROS POR SUPERFICIE:**
+
+**Comandos Directos:**
+- "40-60 metros"
+- "80-100 metros"
+- "40 a 60 metros"
+- "80 a 100 metros"
+
+**Comandos con Unidades:**
+- "40-60 metros cuadrados"
+- "80-100 metros cuadrados"
+- "40 a 60 m²"
+- "80 a 100 m²"
+
+**Comandos con Verbo:**
+- "departamentos de 40 a 60 metros"
+- "apartamentos entre 40 y 60 metros"
+- "casas de 80 a 100 metros cuadrados"
+- "propiedades entre 80 y 100 metros"
+
+**Comandos Descriptivos:**
+- "departamentos pequeños" (40-60)
+- "departamentos grandes" (80-100)
+- "apartamentos compactos" (40-60)
+- "casas espaciosas" (80-100)
+
+**Comandos con Rango:**
+- "superficie de 40 a 60 metros"
+- "superficie entre 40 y 60 metros"
+- "metros de 40 a 60"
+- "metros entre 40 y 60"
+
+🎯 **FILTROS POR PRECIO:**
+
+**Comandos Directos:**
+- "2000-3000 UF"
+- "4000-5000 UF"
+- "2000 a 3000 UF"
+- "4000 a 5000 UF"
+
+**Comandos con Símbolo:**
+- "$2000-3000 UF"
+- "$4000-5000 UF"
+- "$2000 a $3000 UF"
+- "$4000 a $5000 UF"
+
+**Comandos con Verbo:**
+- "departamentos entre 2000 y 3000 UF"
+- "apartamentos de 4000 a 5000 UF"
+- "casas entre 2000 y 3000 UF"
+- "propiedades de 4000 a 5000 UF"
+
+**Comandos Descriptivos:**
+- "departamentos económicos" (2000-3000)
+- "departamentos premium" (4000-5000)
+- "apartamentos accesibles" (2000-3000)
+- "casas de lujo" (4000-5000)
+
+**Comandos con Precio:**
+- "precio entre 2000 y 3000 UF"
+- "precio de 4000 a 5000 UF"
+- "valor entre 2000 y 3000 UF"
+- "valor de 4000 a 5000 UF"
+
+🎯 **COMANDOS DE ACCIÓN:**
+
+**Buscar:**
+- "buscar departamentos"
+- "buscar apartamentos"
+- "aplicar filtros"
+- "ejecutar búsqueda"
+- "realizar búsqueda"
+- "buscar"
+- "encontrar"
+
+**Limpiar:**
+- "limpiar filtros"
+- "resetear filtros"
+- "borrar filtros"
+- "quitar filtros"
+- "limpiar búsqueda"
+- "mostrar todos"
+- "ver todos"
+
+**Mostrar Todos:**
+- "mostrar todos los departamentos"
+- "ver todos los apartamentos"
+- "mostrar todo"
+- "ver todo"
+- "todos los departamentos"
+- "todos los apartamentos"
+
+================================================================================
+                    COMANDOS COMPUESTOS
+================================================================================
+
+🎯 **COMBINACIONES DE 2 FILTROS:**
+
+**Dormitorios + Precio:**
+- "departamentos de 2 dormitorios entre 2000 y 3000 UF"
+- "apartamentos de 1 dormitorio de 4000 a 5000 UF"
+- "casas de 3 dormitorios económicas"
+- "propiedades de 2 dormitorios premium"
+- "departamentos de 1 dormitorio entre 2000 y 3000 UF"
+- "apartamentos de 3 dormitorios de 4000 a 5000 UF"
+
+**Dormitorios + Superficie:**
+- "apartamentos de 1 dormitorio de 40 a 60 metros"
+- "departamentos de 2 dormitorios de 80 a 100 metros"
+- "casas de 3 dormitorios pequeñas"
+- "propiedades de 1 dormitorio grandes"
+- "departamentos de 2 dormitorios compactos"
+- "apartamentos de 3 dormitorios espaciosos"
+
+**Superficie + Precio:**
+- "departamentos de 40 a 60 metros entre 2000 y 3000 UF"
+- "apartamentos de 80 a 100 metros de 4000 a 5000 UF"
+- "casas pequeñas económicas"
+- "propiedades grandes premium"
+- "departamentos compactos entre 2000 y 3000 UF"
+- "apartamentos espaciosos de 4000 a 5000 UF"
+
+🎯 **COMBINACIONES DE 3 FILTROS:**
+
+**Dormitorios + Superficie + Precio:**
+- "departamentos de 2 dormitorios de 40 a 60 metros entre 2000 y 3000 UF"
+- "apartamentos de 1 dormitorio de 80 a 100 metros de 4000 a 5000 UF"
+- "casas de 3 dormitorios pequeñas económicas"
+- "propiedades de 2 dormitorios grandes premium"
+- "departamentos de 1 dormitorio compactos entre 2000 y 3000 UF"
+- "apartamentos de 3 dormitorios espaciosos de 4000 a 5000 UF"
+
+**Comandos Complejos:**
+- "muéstrame departamentos de 2 dormitorios pequeños económicos"
+- "buscar apartamentos de 1 dormitorio grandes premium"
+- "filtrar por casas de 3 dormitorios compactas entre 2000 y 3000 UF"
+- "encontrar propiedades de 2 dormitorios espaciosas de 4000 a 5000 UF"
+
+================================================================================
+                    COMANDOS ESPECÍFICOS DE TIPO
+================================================================================
+
+🎯 **COMANDOS DE TIPO DE DEPARTAMENTO:**
+
+**Comandos Directos:**
+- "tipo A-S-2"
+- "tipo B-S-2"
+- "tipo C-L-4"
+- "tipo A-S-2"
+- "tipo B-S-2"
+- "tipo C-L-4"
+
+**Comandos con Verbo:**
+- "mostrar departamento tipo A-S-2"
+- "activar departamento tipo B-S-2"
+- "buscar departamento tipo C-L-4"
+- "ver departamento tipo A-S-2"
+- "encontrar departamento tipo B-S-2"
+
+**Comandos con Etiqueta:**
+- "tipo de departamento: A-S-2"
+- "tipo de departamento: B-S-2"
+- "tipo de departamento: C-L-4"
+- "departamento tipo: A-S-2"
+- "apartamento tipo: B-S-2"
+
+**Comandos Descriptivos:**
+- "departamento tipo A-S-2"
+- "apartamento tipo B-S-2"
+- "casa tipo C-L-4"
+- "propiedad tipo A-S-2"
+
+================================================================================
+                    COMANDOS DE NAVEGACIÓN
+================================================================================
+
+🎯 **NAVEGACIÓN A SECCIÓN:**
+
+**Comandos Directos:**
+- "ir a apartamentos"
+- "mostrar apartamentos"
+- "ver departamentos"
+- "navegar a departamentos"
+- "sección de apartamentos"
+- "sección departamentos"
+
+**Comandos con Verbo:**
+- "muéstrame los apartamentos"
+- "quiero ver los departamentos"
+- "llevame a la sección de apartamentos"
+- "navega a departamentos"
+- "ve a apartamentos"
+
+**Comandos Descriptivos:**
+- "ir a la sección de apartamentos"
+- "mostrar la sección de departamentos"
+- "ver la sección de apartamentos"
+- "navegar a la sección de departamentos"
+
+================================================================================
+                    COMANDOS CON MODIFICADORES
+================================================================================
+
+🎯 **MODIFICADORES DE CANTIDAD:**
+
+**Solo/Únicamente:**
+- "solo departamentos de 1 dormitorio"
+- "únicamente apartamentos de 2 dormitorios"
+- "exclusivamente casas de 3 dormitorios"
+- "solo propiedades económicas"
+- "únicamente departamentos premium"
+
+**Específicamente:**
+- "específicamente departamentos de 1 dormitorio"
+- "específicamente apartamentos de 2 dormitorios"
+- "específicamente casas de 3 dormitorios"
+
+**Preferentemente:**
+- "preferentemente departamentos de 1 dormitorio"
+- "preferentemente apartamentos de 2 dormitorios"
+- "preferentemente casas de 3 dormitorios"
+
+🎯 **MODIFICADORES DE PRIORIDAD:**
+
+**Prioridad:**
+- "prioritariamente departamentos de 1 dormitorio"
+- "con prioridad apartamentos de 2 dormitorios"
+- "principalmente casas de 3 dormitorios"
+
+**Opciones:**
+- "opciones de departamentos de 1 dormitorio"
+- "alternativas de apartamentos de 2 dormitorios"
+- "posibilidades de casas de 3 dormitorios"
+
+================================================================================
+                    COMANDOS DE CONSULTA
+================================================================================
+
+🎯 **PREGUNTAS:**
+
+**Qué hay disponible:**
+- "¿qué departamentos hay disponibles?"
+- "¿qué apartamentos tienes?"
+- "¿qué opciones hay?"
+- "¿qué hay disponible?"
+
+**Cuántos hay:**
+- "¿cuántos departamentos de 1 dormitorio hay?"
+- "¿cuántos apartamentos de 2 dormitorios hay?"
+- "¿cuántas opciones hay?"
+
+**Rangos:**
+- "¿qué rangos de precios hay?"
+- "¿qué tamaños de departamentos hay?"
+- "¿qué tipos de dormitorios hay?"
+
+================================================================================
+                    COMANDOS DE RESULTADO ESPERADO
+================================================================================
+
+🎯 **EJEMPLOS DE FLUJO COMPLETO:**
+
+**Comando:** "muéstrame departamentos de 2 dormitorios entre 2000 y 3000 UF"
+**Acciones de Iris:**
+1. Seleccionar "2 Dormitorios" en el selector
+2. Seleccionar "$2.000-3.000 UF" en el filtro de precio
+3. Hacer click en "Buscar"
+4. Mostrar resultados filtrados
+
+**Comando:** "apartamentos de 1 dormitorio de 40 a 60 metros"
+**Acciones de Iris:**
+1. Seleccionar "1 Dormitorio" en el selector
+2. Seleccionar "40-60 m²" en el filtro de superficie
+3. Hacer click en "Buscar"
+4. Mostrar resultados filtrados
+
+**Comando:** "mostrar departamento tipo A-S-2"
+**Acciones de Iris:**
+1. Buscar tarjeta con "Tipo A-S-2"
+2. Hacer scroll a la tarjeta
+3. Activar botón "Recorrer"
+4. Activar modo de recorrido
+
+**Comando:** "limpiar filtros"
+**Acciones de Iris:**
+1. Hacer click en "Limpiar Filtros"
+2. Resetear todos los filtros
+3. Mostrar todos los departamentos
+
+================================================================================
+                    TOTAL DE VARIANTES IDENTIFICADAS
+================================================================================
+
+📊 **RESUMEN DE VARIANTES:**
+
+**Comandos Simples:** ~80 variantes
+**Comandos Compuestos:** ~40 variantes
+**Comandos Específicos:** ~20 variantes
+**Comandos de Navegación:** ~15 variantes
+**Comandos con Modificadores:** ~25 variantes
+**Comandos de Consulta:** ~15 variantes
+
+**TOTAL APROXIMADO:** ~195 variantes de comandos diferentes
+
+================================================================================
+                    FIN DEL ANÁLISIS DE VARIANTES
+================================================================================
+
+NOTA: Este análisis cubre todas las posibles variantes de comandos que se pueden 
+enviar a Iris basándose en los filtros disponibles en la UI. El sistema debe ser 
+capaz de procesar y entender todas estas variantes para activar los filtros 
+correspondientes correctamente.

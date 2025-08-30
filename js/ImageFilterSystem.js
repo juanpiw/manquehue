@@ -113,7 +113,7 @@ class ImageFilterSystem {
     }
     
     updateTipoFilter(tipo) {
-        
+        console.log('🎯 Actualizando filtro de tipo:', tipo);
         
         // Actualizar UI de botones
         const typeButtons = document.querySelectorAll('.type-btn');
@@ -125,6 +125,7 @@ class ImageFilterSystem {
         });
         
         this.currentFilters.tipo = tipo;
+        console.log('🔍 Filtros actuales:', this.currentFilters);
 
         this.updateImages();
     }
@@ -133,11 +134,11 @@ class ImageFilterSystem {
         const { tipo, superficie, precio } = this.currentFilters;
         const availableImages = [];
         
-
+        console.log('🔍 Buscando imágenes disponibles con filtros:', { tipo, superficie, precio });
         
         // Si no hay filtros específicos, mostrar todas las imágenes
         if (tipo === 'all' && !superficie && !precio) {
-
+            console.log('📋 Mostrando todas las imágenes (sin filtros)');
             return this.getAllImages();
         }
         
@@ -181,7 +182,7 @@ class ImageFilterSystem {
             });
         });
         
-
+        console.log(`✅ Encontradas ${availableImages.length} imágenes disponibles`);
         return availableImages;
     }
     
@@ -239,10 +240,10 @@ class ImageFilterSystem {
     }
     
     updateImages() {
-
+        console.log('🔄 Actualizando imágenes...');
         
         const availableImages = this.getAvailableImages();
-
+        console.log(`📊 Imágenes disponibles: ${availableImages.length}`);
         
         // Actualizar la lista de apartamentos
         this.updateApartmentList(availableImages);
@@ -305,8 +306,10 @@ class ImageFilterSystem {
         const tipoText = this.getTipoText(image.tipo);
         const superficieText = this.getSuperficieText(image.superficie);
         const precioText = this.getPrecioText(image.precio);
+        const tipoDepartamento = this.getTipoDepartamento(image.tipo, image.superficie, image.precio);
         
-
+        // Crear identificador único para el botón
+        const buttonId = `recorrer-${image.tipo}-${image.superficie}-${image.precio}-${index}`;
         
         // Crear el HTML de manera más limpia para evitar problemas de concatenación
         const fallbackImage = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iUGxhbnRhIGRlICR7dGlwb1RleHR9PC90ZXh0Pjwvc3ZnPg==';
@@ -319,8 +322,17 @@ class ImageFilterSystem {
                 <h3>${tipoText}</h3>
                 <p><strong>Superficie:</strong> ${superficieText}</p>
                 <p><strong>Precio:</strong> ${precioText}</p>
+                <p><strong>Tipo de Departamento:</strong> ${tipoDepartamento}</p>
                 <div class="apartment-actions">
-                    <button class="btn-secondary watchVideoBtn" data-apartment="${tipoText}" data-superficie="${superficieText}" data-precio="${precioText}">
+                    <button id="${buttonId}" class="btn-secondary watchVideoBtn" 
+                            data-apartment="${tipoText}" 
+                            data-superficie="${superficieText}" 
+                            data-precio="${precioText}"
+                            data-tipo-departamento="${tipoDepartamento}"
+                            data-tipo="${image.tipo}"
+                            data-superficie-code="${image.superficie}"
+                            data-precio-code="${image.precio}"
+                            data-index="${index}">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M8 5v14l11-7z" fill="currentColor"/>
                         </svg>
@@ -365,13 +377,82 @@ class ImageFilterSystem {
         return mapping[precio] || precio;
     }
     
+    getTipoDepartamento(tipo, superficie, precio) {
+        // Generar tipo de departamento basado en las características
+        const tipoMapping = {
+            '1d': 'A',
+            '2d': 'B', 
+            '3d': 'C'
+        };
+        
+        const superficieMapping = {
+            'superficie_40_60': 'S',
+            'superficie_60_80': 'M',
+            'superficie_80_100': 'L',
+            'superficie_100_plus': 'XL'
+        };
+        
+        const precioMapping = {
+            'precio_2000_3000': '2',
+            'precio_3000_4000': '3',
+            'precio_4000_5000': '4',
+            'precio_5000_plus': '5'
+        };
+        
+        const tipoCode = tipoMapping[tipo] || 'X';
+        const superficieCode = superficieMapping[superficie] || 'X';
+        const precioCode = precioMapping[precio] || 'X';
+        
+        return `Tipo ${tipoCode}-${superficieCode}-${precioCode}`;
+    }
+    
+    getTipoDepartamentoFromText(apartment, superficie, precio) {
+        // Extraer información del texto ya formateado
+        const dormitoriosMatch = apartment.match(/(\d+)/);
+        const superficieMatch = superficie.match(/(\d+)-(\d+)/);
+        const precioMatch = precio.match(/\$(\d+\.\d+)-(\d+\.\d+)/);
+        
+        let tipoCode = 'X';
+        let superficieCode = 'X';
+        let precioCode = 'X';
+        
+        // Mapear dormitorios
+        if (dormitoriosMatch) {
+            const dormitorios = parseInt(dormitoriosMatch[1]);
+            if (dormitorios === 1) tipoCode = 'A';
+            else if (dormitorios === 2) tipoCode = 'B';
+            else if (dormitorios === 3) tipoCode = 'C';
+        }
+        
+        // Mapear superficie
+        if (superficieMatch) {
+            const min = parseInt(superficieMatch[1]);
+            const max = parseInt(superficieMatch[2]);
+            if (min >= 40 && max <= 60) superficieCode = 'S';
+            else if (min >= 60 && max <= 80) superficieCode = 'M';
+            else if (min >= 80 && max <= 100) superficieCode = 'L';
+            else if (min >= 100) superficieCode = 'XL';
+        }
+        
+        // Mapear precio
+        if (precioMatch) {
+            const min = parseInt(precioMatch[1]);
+            if (min >= 2000 && min < 3000) precioCode = '2';
+            else if (min >= 3000 && min < 4000) precioCode = '3';
+            else if (min >= 4000 && min < 5000) precioCode = '4';
+            else if (min >= 5000) precioCode = '5';
+        }
+        
+        return `Tipo ${tipoCode}-${superficieCode}-${precioCode}`;
+    }
+    
     applyFilters() {
-
+        console.log('🔍 Aplicando filtros:', this.currentFilters);
         this.updateImages();
     }
     
     clearFilters() {
-
+        console.log('🧹 Limpiando filtros');
         
         // Resetear filtros
         this.currentFilters = {
@@ -408,7 +489,7 @@ class ImageFilterSystem {
             initialMessage.style.display = 'block';
         }
         
-
+        console.log('✅ Filtros limpiados');
     }
     
     // Métodos públicos para control externo
@@ -2233,6 +2314,7 @@ class ImageFilterSystem {
                 <h3>${apartment}</h3>
                 <p><strong>Superficie:</strong> ${superficie}</p>
                 <p><strong>Precio:</strong> ${precio}</p>
+                <p><strong>Tipo de Departamento:</strong> ${this.getTipoDepartamentoFromText(apartment, superficie, precio)}</p>
                 <div class="apartment-actions">
                     <button class="btn-secondary watchVideoBtn" data-apartment="${apartment}" data-superficie="${superficie}" data-precio="${precio}">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">

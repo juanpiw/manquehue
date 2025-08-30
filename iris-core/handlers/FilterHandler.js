@@ -23,6 +23,8 @@ class FilterHandler {
                     return await this.applyFilter(command.filters, context);
                 case 'clear':
                     return await this.clearFilter(context);
+                case 'show_all':
+                    return await this.showAllApartments(context);
                 case 'toggle':
                     return await this.toggleFilter(command.filters, context);
                 default:
@@ -50,6 +52,12 @@ class FilterHandler {
         console.log('🔧 [Handler] Iniciando applyFilter con filtros:', filters);
 
         try {
+            // Si hay un filtro por tipo de departamento específico, buscar y activar directamente
+            if (filters.tipoDepartamento) {
+                console.log('🔧 [Handler] Buscando por tipo de departamento:', filters.tipoDepartamento);
+                return await this.activateByTipoDepartamento(filters.tipoDepartamento);
+            }
+
             console.log('🔧 [Handler] Obteniendo VideoScrollApp...');
             const app = await this.getAppReady();
             console.log('✅ [Handler] VideoScrollApp obtenido:', app);
@@ -132,6 +140,45 @@ class FilterHandler {
             }
         } catch (error) {
             console.error('[IRIS-Handler] Clear filter error:', error);
+            return {
+                success: false,
+                error: error.message
+            };
+        }
+    }
+
+    /**
+     * Show all apartments (clear filters and show all)
+     * @param {Object} context - Execution context
+     * @returns {Promise} Show all result
+     */
+    async showAllApartments(context = {}) {
+        console.log('[IRIS-Handler] Showing all apartments');
+
+        try {
+            const app = await this.getAppReady();
+            
+            // Navigate to apartments section first
+            console.log('🔧 [Handler] Navegando a sección de apartamentos...');
+            await this.navigateToApartments(app);
+            console.log('✅ [Handler] Navegación completada');
+            
+            if (app.componentManager) {
+                // Clear filters to show all apartments
+                await this.clearFiltersFromSystem(app);
+                
+                return {
+                    success: true,
+                    message: 'Mostrando todos los departamentos'
+                };
+            } else {
+                return {
+                    success: false,
+                    error: 'ComponentManager not available'
+                };
+            }
+        } catch (error) {
+            console.error('[IRIS-Handler] Show all apartments error:', error);
             return {
                 success: false,
                 error: error.message
@@ -232,6 +279,33 @@ class FilterHandler {
     async activateBedroomFilter(bedrooms) {
         try {
             console.log(`[IRIS-Handler] Activating bedroom filter for ${bedrooms} bedrooms`);
+            
+            // Primero intentar usar ImageFilterSystem si está disponible
+            if (window.imageFilterSystem) {
+                console.log('[IRIS-Handler] Usando ImageFilterSystem para aplicar filtro');
+                
+                // Mapear número de dormitorios a tipo
+                const bedroomMapping = {
+                    1: '1d',
+                    2: '2d', 
+                    3: '3d'
+                };
+                
+                const targetType = bedroomMapping[bedrooms];
+                if (!targetType) {
+                    console.warn(`[IRIS-Handler] Invalid bedroom count: ${bedrooms}`);
+                    return { success: false, message: `Número de dormitorios no válido: ${bedrooms}` };
+                }
+                
+                // Usar el método del ImageFilterSystem
+                window.imageFilterSystem.updateTipoFilter(targetType);
+                
+                console.log(`[IRIS-Handler] Filter applied via ImageFilterSystem for ${bedrooms} bedrooms`);
+                return { success: true, message: `Filtro de ${bedrooms} dormitorios activado via ImageFilterSystem` };
+            }
+            
+            // Fallback: usar el método manual con botones
+            console.log('[IRIS-Handler] ImageFilterSystem no disponible, usando método manual');
             
             // Buscar el selector de tipo de apartamento
             const typeSelector = document.querySelector('.apartment-type-selector');
@@ -692,6 +766,217 @@ class FilterHandler {
 
         console.log('[IRIS-Handler] VideoScrollApp ready');
         return window.videoScrollApp;
+    }
+
+    /**
+     * Activate apartment by tipo de departamento code
+     * @param {string} tipoDepartamento - Tipo de departamento code (e.g., "Tipo A-S-2")
+     * @returns {Promise} Activation result
+     */
+    async activateByTipoDepartamento(tipoDepartamento) {
+        try {
+            console.log(`🔧 [Handler] Buscando tarjeta con tipo de departamento: "${tipoDepartamento}"`);
+            
+            // DEBUG: Mostrar todos los tipos de departamento disponibles
+            const allCards = document.querySelectorAll('.apartment-card');
+            console.log(`🔍 [Handler] Total de tarjetas encontradas: ${allCards.length}`);
+            
+            allCards.forEach((card, index) => {
+                const paragraphs = card.querySelectorAll('p');
+                paragraphs.forEach(p => {
+                    const text = p.textContent || p.innerText;
+                    if (text.includes('Tipo de Departamento:')) {
+                        console.log(`🔍 [Handler] Tarjeta ${index + 1} - Tipo: "${text}"`);
+                    }
+                });
+            });
+            
+            // DEBUG: Mostrar también los botones "Recorrer" disponibles
+            const recorrerButtons = document.querySelectorAll('.watchVideoBtn');
+            console.log(`🔍 [Handler] Total de botones "Recorrer" encontrados: ${recorrerButtons.length}`);
+            
+            recorrerButtons.forEach((button, index) => {
+                const dataAttributes = {
+                    'data-tipo-departamento': button.getAttribute('data-tipo-departamento'),
+                    'data-apartment': button.getAttribute('data-apartment'),
+                    'data-superficie': button.getAttribute('data-superficie'),
+                    'data-precio': button.getAttribute('data-precio')
+                };
+                console.log(`🔍 [Handler] Botón ${index + 1} - Atributos:`, dataAttributes);
+            });
+            
+            // Método 1: Buscar por botón con data-tipo-departamento
+            console.log('🔍 [Handler] Método 1: Buscando botón por data-tipo-departamento...');
+            const targetButton = document.querySelector(`button[data-tipo-departamento="${tipoDepartamento}"]`);
+            
+            if (targetButton) {
+                console.log(`✅ [Handler] Botón encontrado directamente: ${targetButton.id}`);
+                const targetCard = targetButton.closest('.apartment-card');
+                
+                if (targetCard) {
+                    console.log('🔧 [Handler] Haciendo scroll a la tarjeta...');
+                    targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    
+                    // Esperar un poco para que el scroll termine
+                    console.log('⏳ [Handler] Esperando 500ms para que termine el scroll...');
+                    await this.wait(500);
+                    
+                    // Activar el modo de recorrido para esta tarjeta
+                    console.log('🔧 [Handler] Activando modo de recorrido...');
+                    await this.activateRecorridoMode(targetCard, targetButton);
+                    
+                    console.log('✅ [Handler] Modo de recorrido activado exitosamente');
+                    return { 
+                        success: true, 
+                        message: `Tarjeta activada y recorrido iniciado: ${tipoDepartamento}`,
+                        tipo: tipoDepartamento,
+                        buttonId: targetButton.id
+                    };
+                }
+            }
+            
+            // Método 2: Buscar por texto en las tarjetas (fallback)
+            console.log('🔍 [Handler] Método 2: Buscando por texto en tarjetas...');
+            const apartmentCards = document.querySelectorAll('.apartment-card');
+            console.log(`🔍 [Handler] Encontradas ${apartmentCards.length} tarjetas de apartamentos`);
+            
+            let targetCard = null;
+            
+            // Buscar la tarjeta que contenga el tipo de departamento especificado
+            for (const card of apartmentCards) {
+                // Buscar en el texto del párrafo que contenga "Tipo de Departamento"
+                const paragraphs = card.querySelectorAll('p');
+                let found = false;
+                
+                                 for (const p of paragraphs) {
+                     const text = p.textContent || p.innerText;
+                     console.log(`🔍 [Handler] Revisando párrafo: "${text}"`);
+                     
+                     // Comparación case-insensitive
+                     const normalizedText = text.toLowerCase();
+                     const normalizedTipo = tipoDepartamento.toLowerCase();
+                     
+                     if (normalizedText.includes('tipo de departamento:') && normalizedText.includes(normalizedTipo)) {
+                         targetCard = card;
+                         console.log(`✅ [Handler] Tarjeta encontrada con tipo: ${tipoDepartamento}`);
+                         found = true;
+                         break;
+                     }
+                 }
+                
+                if (found) break;
+            }
+            
+            if (targetCard) {
+                console.log('🔧 [Handler] Tarjeta encontrada, activando modo de recorrido...');
+                
+                // NO hacer scroll automático - mantener posición actual
+                console.log('📍 [Handler] Manteniendo posición de scroll actual');
+                
+                // Activar el modo de recorrido para esta tarjeta
+                console.log('🔧 [Handler] Activando modo de recorrido...');
+                await this.activateRecorridoMode(targetCard);
+                
+                console.log('✅ [Handler] Modo de recorrido activado exitosamente');
+                return { 
+                    success: true, 
+                    message: `Tarjeta activada y recorrido iniciado: ${tipoDepartamento}`,
+                    tipo: tipoDepartamento
+                };
+            } else {
+                console.warn(`❌ [Handler] No se encontró tarjeta con tipo de departamento: ${tipoDepartamento}`);
+                return { success: false, message: `No se encontró tarjeta con tipo de departamento: ${tipoDepartamento}` };
+            }
+            
+        } catch (error) {
+            console.error('❌ [Handler] Error en activateByTipoDepartamento:', error);
+            return { success: false, message: 'Error al activar por tipo de departamento', error: error.message };
+        }
+    }
+
+    /**
+     * Activate recorrido mode for a specific card
+     * @param {HTMLElement} targetCard - The card to activate
+     * @param {HTMLElement} targetButton - The specific button to activate (optional)
+     * @returns {Promise} Activation result
+     */
+    async activateRecorridoMode(targetCard, targetButton = null) {
+        try {
+            console.log('🔧 [Handler] Iniciando activación de modo recorrido...');
+            
+            // Ocultar todas las tarjetas excepto la objetivo
+            const allCards = document.querySelectorAll('.apartment-card');
+            allCards.forEach(card => {
+                if (card === targetCard) {
+                    // Mostrar la tarjeta objetivo con efectos de recorrido
+                    card.style.display = 'block';
+                    card.style.opacity = '1';
+                    card.style.transform = 'scale(1.1)';
+                    card.classList.add('recorrido-active');
+                    console.log('✅ [Handler] Tarjeta objetivo activada');
+                } else {
+                    // Ocultar las demás tarjetas
+                    card.style.display = 'none';
+                    card.style.opacity = '0';
+                    card.style.transform = 'scale(0.8)';
+                    card.classList.remove('recorrido-active');
+                }
+            });
+            
+            // Cambiar el layout del contenedor para centrar la tarjeta activa
+            const apartmentList = document.querySelector('#apartmentList');
+            if (apartmentList) {
+                apartmentList.style.display = 'flex';
+                apartmentList.style.justifyContent = 'center';
+                apartmentList.style.alignItems = 'center';
+                apartmentList.style.minHeight = '60vh';
+                console.log('✅ [Handler] Layout del contenedor ajustado');
+            }
+            
+            // Ocultar los botones de acción en la tarjeta activa (modo recorrido)
+            const apartmentActions = targetCard.querySelector('.apartment-actions');
+            if (apartmentActions) {
+                apartmentActions.style.display = 'none';
+                console.log('✅ [Handler] Botones de acción ocultados (modo recorrido)');
+            }
+            
+            // Activar el botón específico o buscar el botón "Recorrer" en la tarjeta
+            let recorrerButton = targetButton;
+            if (!recorrerButton) {
+                recorrerButton = targetCard.querySelector('.watchVideoBtn');
+            }
+            
+            if (recorrerButton) {
+                console.log(`🔧 [Handler] Simulando click en el botón "Recorrer" (ID: ${recorrerButton.id})...`);
+                
+                // Agregar un efecto visual al botón antes del click
+                recorrerButton.style.transform = 'scale(1.1)';
+                recorrerButton.style.boxShadow = '0 0 20px rgba(0,123,255,0.5)';
+                
+                // Esperar un poco para que se vea el efecto
+                await this.wait(200);
+                
+                // Simular el click SIN hacer scroll
+                recorrerButton.click();
+                
+                // Restaurar el estilo del botón
+                setTimeout(() => {
+                    recorrerButton.style.transform = '';
+                    recorrerButton.style.boxShadow = '';
+                }, 500);
+                
+                console.log('✅ [Handler] Click en botón "Recorrer" simulado exitosamente (sin scroll)');
+            } else {
+                console.log('⚠️ [Handler] No se encontró botón "Recorrer" en la tarjeta');
+            }
+            
+            console.log('✅ [Handler] Modo de recorrido activado completamente');
+            return true;
+            
+        } catch (error) {
+            console.error('❌ [Handler] Error al activar modo de recorrido:', error);
+            throw error;
+        }
     }
 
     /**

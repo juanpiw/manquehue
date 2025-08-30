@@ -1,0 +1,306 @@
+================================================================================
+                    PLAN DE ABORDAJE: INTEGRACIÓN IRIS
+================================================================================
+
+🎯 **PROBLEMA PRINCIPAL:**
+Iris no activa filtros porque falta integración entre el sistema de chat (texto y voz) y la arquitectura modular IRISCore.
+
+🎯 **OBJETIVO:**
+Crear un bridge que conecte el sistema de chat de Iris (texto escrito y comandos de voz) con la arquitectura modular IRISCore para que los comandos se procesen correctamente usando el sistema ya implementado.
+
+================================================================================
+                    ETAPA 1: DIAGNÓSTICO Y PREPARACIÓN
+================================================================================
+
+📋 **TAREA 1.1: Verificar Estado Actual**
+- [ ] Abrir video-scroll-demo.html en el navegador
+- [ ] Verificar que el sistema IRIS se carga correctamente (console.log)
+- [ ] Verificar que iris-bridge.js está presente o no
+- [ ] Documentar qué archivos están cargados actualmente
+
+📋 **TAREA 1.2: Identificar Sistema de Chat**
+- [ ] Buscar en el código dónde está el sistema de chat de Iris
+- [ ] Identificar cómo se capturan los comandos (texto y voz)
+- [ ] Encontrar dónde se procesan los mensajes del chat
+- [ ] Documentar el flujo actual de comandos del chat
+
+📋 **TAREA 1.3: Crear Archivo de Estado**
+- [ ] Crear archivo: ESTADO_ACTUAL_IRIS.txt
+- [ ] Documentar qué funciona y qué no funciona
+- [ ] Listar todos los archivos involucrados
+- [ ] Identificar puntos de integración
+
+⏱️ **TIEMPO ESTIMADO:** 30 minutos
+🎯 **RESULTADO:** Entender exactamente qué tenemos y qué falta
+
+================================================================================
+                    ETAPA 2: CREAR BRIDGE BÁSICO
+================================================================================
+
+📋 **TAREA 2.1: Crear Archivo Bridge**
+- [ ] Crear archivo: iris-chat-bridge.js
+- [ ] Implementar clase básica IrisChatBridge
+- [ ] Agregar constructor y métodos básicos
+- [ ] Conectar con window.IRIS (arquitectura modular)
+
+📋 **TAREA 2.2: Implementar Listener Básico**
+- [ ] Crear método setupChatListeners()
+- [ ] Implementar listener para mensajes del chat existente (texto y voz)
+- [ ] Agregar console.log para debug
+- [ ] Probar que detecta mensajes del chat
+
+📋 **TAREA 2.3: Conectar con Arquitectura Modular**
+- [ ] Implementar método processChatCommand()
+- [ ] Conectar con window.IRIS.processText() (sistema modular)
+- [ ] Agregar manejo de errores básico
+- [ ] Probar con comando simple usando arquitectura existente
+
+⏱️ **TIEMPO ESTIMADO:** 45 minutos
+🎯 **RESULTADO:** Bridge básico funcionando
+
+================================================================================
+                    ETAPA 3: INTEGRAR CON SISTEMA EXISTENTE
+================================================================================
+
+📋 **TAREA 3.1: Conectar Chat con Bridge**
+- [ ] Verificar que el chat de Iris está funcionando
+- [ ] Identificar el punto de integración en setupIrisVideoControlListener()
+- [ ] Documentar el flujo actual del chat
+- [ ] Preparar para integración con bridge
+
+📋 **TAREA 3.2: Integrar Bridge con Chat**
+- [ ] Modificar irisDetectVideoCommands() para usar el nuevo bridge
+- [ ] Conectar eventos del chat (texto y voz) con iris-chat-bridge.js
+- [ ] Mantener funcionalidad existente de videos
+- [ ] Agregar console.log para debug
+
+📋 **TAREA 3.3: Actualizar video-scroll-demo.html**
+- [ ] Agregar script del nuevo bridge (iris-chat-bridge.js)
+- [ ] Verificar orden de carga de scripts
+- [ ] Probar que chat y arquitectura modular funcionan juntos
+- [ ] Documentar cambios
+
+⏱️ **TIEMPO ESTIMADO:** 60 minutos
+🎯 **RESULTADO:** Sistema de voz conectado con IRISCore
+
+================================================================================
+                    ETAPA 4: PROBAR COMANDOS BÁSICOS
+================================================================================
+
+📋 **TAREA 4.1: Probar Comando Simple**
+- [ ] Escribir en chat: "1 dormitorio"
+- [ ] Verificar que se activa filtro de dormitorios
+- [ ] Verificar que se hace click en "1 Dormitorio"
+- [ ] Documentar resultado
+
+📋 **TAREA 4.2: Probar Comando de Acción**
+- [ ] Escribir en chat: "buscar departamentos"
+- [ ] Verificar que se hace click en "Buscar"
+- [ ] Verificar que se muestran resultados
+- [ ] Documentar resultado
+
+📋 **TAREA 4.3: Probar Comando de Limpieza**
+- [ ] Escribir en chat: "limpiar filtros"
+- [ ] Verificar que se hace click en "Limpiar Filtros"
+- [ ] Verificar que se resetean filtros
+- [ ] Documentar resultado
+
+⏱️ **TIEMPO ESTIMADO:** 30 minutos
+🎯 **RESULTADO:** Comandos básicos funcionando
+
+================================================================================
+                    ETAPA 5: PROBAR COMANDOS COMPUESTOS
+================================================================================
+
+📋 **TAREA 5.1: Probar Combinación 2 Filtros**
+- [ ] Escribir en chat: "departamentos de 2 dormitorios entre 2000 y 3000 UF"
+- [ ] Verificar que se selecciona "2 Dormitorios"
+- [ ] Verificar que se selecciona "$2.000-3.000 UF"
+- [ ] Verificar que se hace click en "Buscar"
+- [ ] Documentar resultado
+
+📋 **TAREA 5.2: Probar Combinación 3 Filtros**
+- [ ] Escribir en chat: "departamentos de 1 dormitorio de 40 a 60 metros entre 2000 y 3000 UF"
+- [ ] Verificar que se seleccionan los 3 filtros
+- [ ] Verificar que se hace click en "Buscar"
+- [ ] Verificar que se muestran resultados correctos
+- [ ] Documentar resultado
+
+📋 **TAREA 5.3: Probar Comandos Descriptivos**
+- [ ] Escribir en chat: "departamentos pequeños económicos"
+- [ ] Verificar que se mapea a filtros correctos
+- [ ] Verificar que se aplican filtros
+- [ ] Documentar resultado
+
+⏱️ **TIEMPO ESTIMADO:** 45 minutos
+🎯 **RESULTADO:** Comandos compuestos funcionando
+
+================================================================================
+                    ETAPA 6: PROBAR COMANDOS ESPECÍFICOS
+================================================================================
+
+📋 **TAREA 6.1: Probar Tipo de Departamento**
+- [ ] Escribir en chat: "mostrar departamento tipo A-S-2"
+- [ ] Verificar que se encuentra la tarjeta correcta
+- [ ] Verificar que se hace scroll a la tarjeta
+- [ ] Verificar que se activa el botón "Recorrer"
+- [ ] Verificar que se activa modo de recorrido
+- [ ] Documentar resultado
+
+📋 **TAREA 6.2: Probar Variantes de Tipo**
+- [ ] Escribir en chat: "tipo A-S-2"
+- [ ] Escribir en chat: "tipo de departamento: B-S-2"
+- [ ] Escribir en chat: "departamento tipo C-L-4"
+- [ ] Verificar que todas funcionan
+- [ ] Documentar resultado
+
+📋 **TAREA 6.3: Probar Navegación**
+- [ ] Escribir en chat: "ir a apartamentos"
+- [ ] Verificar que se navega a la sección
+- [ ] Escribir en chat: "mostrar apartamentos"
+- [ ] Verificar que se muestra la sección
+- [ ] Documentar resultado
+
+⏱️ **TIEMPO ESTIMADO:** 45 minutos
+🎯 **RESULTADO:** Comandos específicos funcionando
+
+================================================================================
+                    ETAPA 7: OPTIMIZACIÓN Y PULIDO
+================================================================================
+
+📋 **TAREA 7.1: Mejorar Manejo de Errores**
+- [ ] Agregar try-catch en bridge
+- [ ] Agregar mensajes de error amigables
+- [ ] Agregar fallbacks para comandos no reconocidos
+- [ ] Probar con comandos inválidos
+
+📋 **TAREA 7.2: Optimizar Performance**
+- [ ] Verificar que no hay memory leaks
+- [ ] Optimizar listeners de eventos
+- [ ] Agregar debounce si es necesario
+- [ ] Probar con múltiples comandos rápidos
+
+📋 **TAREA 7.3: Mejorar UX**
+- [ ] Agregar feedback visual cuando se procesa comando
+- [ ] Agregar confirmación de comando recibido
+- [ ] Agregar indicador de procesamiento
+- [ ] Probar experiencia de usuario
+
+⏱️ **TIEMPO ESTIMADO:** 60 minutos
+🎯 **RESULTADO:** Sistema pulido y robusto
+
+================================================================================
+                    ETAPA 8: PRUEBAS FINALES
+================================================================================
+
+📋 **TAREA 8.1: Prueba de Estrés**
+- [ ] Probar 10 comandos diferentes seguidos
+- [ ] Probar comandos rápidos uno tras otro
+- [ ] Probar comandos con errores
+- [ ] Verificar que el sistema no se rompe
+
+📋 **TAREA 8.2: Prueba de Variantes**
+- [ ] Probar al menos 20 variantes diferentes
+- [ ] Probar sinónimos y modificadores
+- [ ] Probar preguntas y consultas
+- [ ] Documentar tasa de éxito
+
+📋 **TAREA 8.3: Documentación Final**
+- [ ] Crear archivo: MANUAL_USUARIO_IRIS.txt
+- [ ] Documentar todos los comandos que funcionan
+- [ ] Crear guía de troubleshooting
+- [ ] Documentar limitaciones conocidas
+
+⏱️ **TIEMPO ESTIMADO:** 45 minutos
+🎯 **RESULTADO:** Sistema completamente funcional
+
+================================================================================
+                    CRONOGRAMA TOTAL
+================================================================================
+
+📅 **TIEMPO TOTAL ESTIMADO:** 6 horas
+
+**Día 1 (3 horas):**
+- Etapa 1: Diagnóstico (30 min)
+- Etapa 2: Bridge básico (45 min)
+- Etapa 3: Integración (60 min)
+- Etapa 4: Comandos básicos (30 min)
+- Etapa 5: Comandos compuestos (45 min)
+
+**Día 2 (3 horas):**
+- Etapa 6: Comandos específicos (45 min)
+- Etapa 7: Optimización (60 min)
+- Etapa 8: Pruebas finales (45 min)
+- Documentación y pulido (30 min)
+
+================================================================================
+                    CRITERIOS DE ÉXITO
+================================================================================
+
+✅ **ÉXITO MÍNIMO:**
+- Comandos básicos funcionan (1 dormitorio, buscar, limpiar)
+- Comandos de tipo específico funcionan (tipo A-S-2)
+- Sistema no se rompe con comandos inválidos
+
+✅ **ÉXITO COMPLETO:**
+- Todas las 195 variantes de comandos funcionan
+- Sistema es robusto y maneja errores
+- UX es fluida y responsiva
+- Documentación completa
+
+✅ **INDICADORES DE PROGRESO:**
+- Console.log muestra procesamiento correcto
+- Filtros se activan visualmente
+- Botones se hacen click automáticamente
+- Modo de recorrido se activa correctamente
+
+================================================================================
+                    ARCHIVOS A CREAR/MODIFICAR
+================================================================================
+
+📁 **ARCHIVOS NUEVOS:**
+- iris-chat-bridge.js (bridge entre chat y arquitectura modular)
+- ESTADO_ACTUAL_IRIS.txt (diagnóstico)
+- MANUAL_USUARIO_IRIS.txt (documentación)
+
+📁 **ARCHIVOS A MODIFICAR:**
+- video-scroll-demo.html (agregar bridge y conectar chat)
+- irisDetectVideoCommands() (integrar con arquitectura modular)
+
+📁 **ARCHIVOS DE PRUEBA:**
+- test-bridge-basic.html
+- test-bridge-commands.html
+- test-bridge-integration.html
+
+================================================================================
+                    NOTAS IMPORTANTES
+================================================================================
+
+⚠️ **PUNTOS CRÍTICOS:**
+- No romper funcionalidad existente
+- Mantener compatibilidad con sistema actual
+- Hacer cambios incrementales
+- Probar cada etapa antes de continuar
+
+⚠️ **RIESGOS:**
+- Sistema de chat puede no estar disponible
+- iris-bridge.js puede no existir
+- Conflictos entre sistemas antiguo y nuevo
+- Performance con múltiples listeners
+
+⚠️ **CONTINGENCIAS:**
+- Si iris-bridge.js no existe, crear uno básico
+- Si sistema de chat no funciona, usar input de texto directo
+- Si hay conflictos, aislar sistemas
+- Si performance es mala, optimizar listeners
+
+================================================================================
+                    FIN DEL PLAN
+================================================================================
+
+Este plan aborda el problema paso a paso, con tareas manejables y resultados 
+medibles. Cada etapa se puede completar en una sesión de trabajo y proporciona 
+valor incremental.
+
+La clave es ir paso a paso, probando cada etapa antes de continuar, y mantener 
+la funcionalidad existente mientras se agrega la nueva integración.
