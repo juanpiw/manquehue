@@ -1,0 +1,163 @@
+TIPOS DE DEPARTAMENTOS - PROYECTO MANQUEHUE
+=============================================
+
+LISTA COMPLETA DE TIPOS DISPONIBLES (basados en imágenes reales):
+
+1 DORMITORIO:
+- Tipo A-S-2 (1 dormitorio, 40-60 m², $2.000-3.000 UF) - Imagen: D1 40-60 m2_AS-2.jpg
+- Tipo A-S-3 (1 dormitorio, 40-60 m², $3.000-4.000 UF) - Imagen: D1 40-60 m2_AS-3.jpg
+- Tipo A-S-4 (1 dormitorio, 40-60 m², $4.000-5.000 UF) - Imagen: D1 40-60 m2_AS-2.jpg
+- Tipo A-S-5 (1 dormitorio, 40-60 m², $5.000+ UF) - Imagen: D1 40-60 m2_AS-3.jpg
+- Tipo A-L-4 (1 dormitorio, 80-100 m², $3.000-4.000 UF) - Imagen: D1 80-100 m2_AS_4.png
+- Tipo A-L-5 (1 dormitorio, 80-100 m², $4.000-5.000 UF) - Imagen: D1 80-100 m2_AS_5.png
+
+2 DORMITORIOS:
+- Tipo B-S-2 (2 dormitorios, 40-60 m², $2.000-3.000 UF) - Imagen: 40_60 m2 BS_2.jpg
+- Tipo B-S-3 (2 dormitorios, 40-60 m², $3.000-4.000 UF) - Imagen: 40_60 m2 BS_3.jpg
+- Tipo B-S-4 (2 dormitorios, 40-60 m², $4.000-5.000 UF) - Imagen: 40_60 m2 BS_2.jpg
+- Tipo B-S-5 (2 dormitorios, 40-60 m², $5.000+ UF) - Imagen: 40_60 m2 BS_3.jpg
+- Tipo B-M-2 (2 dormitorios, 60-80 m², $2.000-3.000 UF) - Imagen: planta_1.png
+- Tipo B-M-3 (2 dormitorios, 60-80 m², $3.000-4.000 UF) - Imagen: planta_1.png
+- Tipo B-M-4 (2 dormitorios, 60-80 m², $4.000-5.000 UF) - Imagen: planta_1.png
+- Tipo B-M-5 (2 dormitorios, 60-80 m², $5.000+ UF) - Imagen: planta_1.png
+- Tipo B-L-4 (2 dormitorios, 80-100 m², $4.000-5.000 UF) - Imagen: 80-100 m2_Bs-4.jpg
+- Tipo B-L-5 (2 dormitorios, 80-100 m², $5.000+ UF) - Imagen: 80-100 m2_BS_5.jpg
+
+3 DORMITORIOS:
+- Tipo C-S-2 (3 dormitorios, 40-60 m², $2.000-3.000 UF)
+- Tipo C-S-3 (3 dormitorios, 40-60 m², $3.000-4.000 UF)
+- Tipo C-S-4 (3 dormitorios, 40-60 m², $4.000-5.000 UF)
+- Tipo C-S-5 (3 dormitorios, 40-60 m², $5.000+ UF)
+- Tipo C-M-2 (3 dormitorios, 60-80 m², $2.000-3.000 UF)
+- Tipo C-M-3 (3 dormitorios, 60-80 m², $3.000-4.000 UF)
+- Tipo C-M-4 (3 dormitorios, 60-80 m², $4.000-5.000 UF)
+- Tipo C-M-5 (3 dormitorios, 60-80 m², $5.000+ UF)
+- Tipo C-L-2 (3 dormitorios, 80-100 m², $2.000-3.000 UF)
+- Tipo C-L-3 (3 dormitorios, 80-100 m², $3.000-4.000 UF)
+- Tipo C-L-4 (3 dormitorios, 80-100 m², $4.000-5.000 UF)
+- Tipo C-L-5 (3 dormitorios, 80-100 m², $5.000+ UF)
+
+DETALLES POR TIPO (ejemplos principales):
+==================
+
+1. Tipo A-S-2
+   - 1 Dormitorio
+   - Superficie: 40-60 m²
+   - Precio: $2.000-3.000 UF
+   - Imagen: D1 40-60 m2_AS-2.jpg
+
+2. Tipo A-S-4
+   - 1 Dormitorio
+   - Superficie: 40-60 m²
+   - Precio: $4.000-5.000 UF
+   - Imagen: D1 40-60 m2_AS-2.jpg (usa AS-2 porque AS-4 no existe)
+
+3. Tipo A-L-4
+   - 1 Dormitorio
+   - Superficie: 80-100 m²
+   - Precio: $3.000-4.000 UF
+   - Imagen: D1 80-100 m2_AS_4.png
+
+4. Tipo B-S-2
+   - 2 Dormitorios
+   - Superficie: 40-60 m²
+   - Precio: $2.000-3.000 UF
+   - Imagen: 40_60 m2 BS_2.jpg
+
+5. Tipo C-L-4
+   - 3 Dormitorios
+   - Superficie: 80-100 m²
+   - Precio: $4.000-5.000 UF
+   - Imagen: planta_1.png
+
+COMANDOS DE VOZ DISPONIBLES:
+============================
+
+mostrar departamento tipo A-S-2
+activar departamento tipo B-S-2
+buscar departamento tipo C-L-4
+ver departamento tipo A-M-3
+tipo B-M-3
+departamento tipo C-S-2
+
+FORMATO DE NOMENCLATURA:
+========================
+
+Tipo [Letra]-[Letra]-[Número]
+
+Primera letra (A/B/C):
+- A = 1 dormitorio
+- B = 2 dormitorios
+- C = 3 dormitorios
+
+Segunda letra (S/M/L):
+- S = Small (40-60 m²)
+- M = Medium (60-80 m²)
+- L = Large (80-100 m²)
+
+Número (2/3/4/5):
+- 2 = $2.000-3.000 UF
+- 3 = $3.000-4.000 UF
+- 4 = $4.000-5.000 UF
+- 5 = $5.000+ UF
+
+ESTRUCTURA DE CARPETAS REAL:
+============================
+
+video/imagenes/
+├── 1_dormitorio/
+│   ├── superficie_40_60/
+│   │   ├── precio_2000_3000/ (D1 40-60 m2_AS-2.jpg, D1 40-60 m2_AS-3.jpg)
+│   │   ├── precio_3000_4000/ (D1 40-60 m2_AS-2.jpg, D1 40-60 m2_AS-3.jpg)
+│   │   ├── precio_4000_5000/ (D1 40-60 m2_AS-2.jpg, D1 40-60 m2_AS-3.jpg)
+│   │   └── precio_5000_plus/ (D1 40-60 m2_AS-2.jpg, D1 40-60 m2_AS-3.jpg)
+│   └── superficie_80_100/
+│       ├── precio_3000_4000/ (D1 80-100 m2_AS_4.png, D1 80-100 m2_AS_5.png)
+│       ├── precio_4000_5000/ (D1 80-100 m2_AS_4.png, D1 80-100 m2_AS_5.png)
+│       └── precio_5000_plus/ (D1 80-100 m2_AS_4.png, D1 80-100 m2_AS_5.png)
+├── 2_dormitorio/ (archivos reales)
+│   ├── 40_60 m2 BS_2.jpg
+│   ├── 40_60 m2 BS_3.jpg
+│   ├── 80-100 m2_Bs-4.jpg
+│   └── 80-100 m2_BS_5.jpg
+├── 2_dormitorios/ (estructura de carpetas)
+│   ├── superficie_40_60/
+│   │   ├── precio_2000_3000/ (planta_1.png)
+│   │   ├── precio_3000_4000/ (planta_1.png)
+│   │   ├── precio_4000_5000/ (planta_1.png)
+│   │   └── precio_5000_plus/ (planta_1.png)
+│   ├── superficie_60_80/
+│   │   ├── precio_2000_3000/ (planta_1.png)
+│   │   ├── precio_3000_4000/ (planta_1.png)
+│   │   ├── precio_4000_5000/ (planta_1.png)
+│   │   └── precio_5000_plus/ (planta_1.png)
+│   ├── superficie_80_100/
+│   │   ├── precio_2000_3000/ (planta_1.png)
+│   │   ├── precio_3000_4000/ (planta_1.png)
+│   │   ├── precio_4000_5000/ (planta_1.png)
+│   │   └── precio_5000_plus/ (planta_1.png)
+│   └── superficie_100_plus/
+│       ├── precio_2000_3000/ (planta_1.png)
+│       ├── precio_3000_4000/ (planta_1.png)
+│       ├── precio_4000_5000/ (planta_1.png)
+│       └── precio_5000_plus/ (planta_1.png)
+└── 3_dormitorios/
+    ├── superficie_40_60/
+    │   ├── precio_3000_4000/ (planta_1.png)
+    │   ├── precio_4000_5000/ (planta_1.png)
+    │   └── precio_5000_plus/ (planta_1.png)
+    ├── superficie_60_80/
+    │   ├── precio_2000_3000/ (planta_1.png)
+    │   ├── precio_3000_4000/ (planta_1.png)
+    │   ├── precio_4000_5000/ (planta_1.png)
+    │   └── precio_5000_plus/ (planta_1.png)
+    ├── superficie_80_100/
+    │   ├── precio_2000_3000/ (planta_1.png)
+    │   ├── precio_3000_4000/ (planta_1.png)
+    │   ├── precio_4000_5000/ (planta_1.png)
+    │   └── precio_5000_plus/ (planta_1.png)
+    └── superficie_100_plus/
+        ├── precio_2000_3000/ (planta_1.png)
+        ├── precio_3000_4000/ (planta_1.png)
+        ├── precio_4000_5000/ (planta_1.png)
+        └── precio_5000_plus/ (planta_1.png)

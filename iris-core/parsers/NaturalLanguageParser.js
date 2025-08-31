@@ -33,6 +33,12 @@ class NaturalLanguageParser {
             return videoCommand;
         }
 
+        // Recorrido commands (check before filter commands)
+        const recorridoCommand = this.parseRecorrido(normalizedText);
+        if (recorridoCommand) {
+            return recorridoCommand;
+        }
+
         // Filter commands
         const filterCommand = this.parseFilter(normalizedText);
         if (filterCommand) {
@@ -115,6 +121,46 @@ class NaturalLanguageParser {
     }
 
     /**
+     * Parse recorrido commands
+     * @param {string} text - Normalized text
+     * @returns {Object|null} Recorrido command or null
+     */
+    parseRecorrido(text) {
+        console.log(`🔍 [Parser] Iniciando parseRecorrido con texto: "${text}"`);
+        
+        // Procesar patrones de salir del recorrido
+        const exitRecorridoPatterns = [
+            { pattern: /(?:salir|salir\s+de)\s+(?:el\s+)?(?:recorrido|modo\s+recorrido)/, action: 'exit_recorrido' },
+            { pattern: /(?:terminar|finalizar|acabar)\s+(?:el\s+)?(?:recorrido)/, action: 'exit_recorrido' },
+            { pattern: /(?:volver|regresar)\s+(?:a\s+)?(?:la\s+)?(?:vista\s+normal|lista\s+normal)/, action: 'exit_recorrido' },
+            { pattern: /(?:salir|salir\s+de)\s+(?:modo\s+recorrido)/, action: 'exit_recorrido' },
+            { pattern: /(?:exit|salir)\s+(?:recorrido)/, action: 'exit_recorrido' }
+        ];
+
+        for (let i = 0; i < exitRecorridoPatterns.length; i++) {
+            const pattern = exitRecorridoPatterns[i];
+            const match = text.match(pattern.pattern);
+            console.log(`🔍 [Parser] Patrón salir recorrido ${i + 1}: ${pattern.pattern} - Match: ${match ? 'SÍ' : 'NO'}`);
+            if (match) {
+                console.log(`✅ [Parser] Comando de salir recorrido detectado: ${pattern.action}`);
+                // Retornar comando de salir recorrido inmediatamente
+                const result = {
+                    type: 'recorrido',
+                    action: 'exit_recorrido',
+                    originalText: text,
+                    confidence: 0.9,
+                    area: 'recorrido'
+                };
+                console.log(`✅ [Parser] Comando de salir recorrido generado:`, result);
+                return result;
+            }
+        }
+
+        console.log(`❌ [Parser] No se encontraron comandos de recorrido válidos`);
+        return null;
+    }
+
+    /**
      * Parse filter commands
      * @param {string} text - Normalized text
      * @returns {Object|null} Filter command or null
@@ -167,6 +213,47 @@ class NaturalLanguageParser {
             { pattern: /(?:tipo\s+de\s+departamento|tipo\s+departamento):\s*([A-Z]-[A-Z]-[0-9]+)/i, tipoDepartamento: 'Tipo $1' },
             { pattern: /(?:tipo\s+)?([A-Z]-[A-Z]-[0-9]+)/i, tipoDepartamento: 'Tipo $1' },
             { pattern: /(?:mostrar|filtrar|buscar|ver)\s+(?:el\s+)?(?:tipo\s+)?([A-Z]-[A-Z]-[0-9]+)/i, tipoDepartamento: 'Tipo $1' }
+        ];
+
+        // Detectar comandos para mostrar detalles del departamento
+        const detailsPatterns = [
+            { pattern: /(?:me\s+)?(?:das|dame|muestra|muéstrame|quiero|necesito)\s+(?:más\s+)?(?:detalles?|información|datos)/, action: 'show_details' },
+            { pattern: /(?:hablemos?|hablar)\s+(?:de|sobre)\s+(?:este\s+)?(?:departamento|apartamento)/, action: 'show_details' },
+            { pattern: /(?:cuéntame|dime)\s+(?:más\s+)?(?:sobre|de)\s+(?:este\s+)?(?:departamento|apartamento)/, action: 'show_details' },
+            { pattern: /(?:quiero|necesito)\s+(?:saber|ver|conocer)\s+(?:más\s+)?(?:sobre|de)\s+(?:este\s+)?(?:departamento|apartamento)/, action: 'show_details' },
+            { pattern: /(?:muestra|muéstrame|dame)\s+(?:más\s+)?(?:información|detalles?|datos)/, action: 'show_details' },
+            { pattern: /(?:detalles?|información|datos)\s+(?:del\s+)?(?:departamento|apartamento)/, action: 'show_details' }
+        ];
+
+        // Detectar comandos para enviar PDF
+        const pdfPatterns = [
+            { pattern: /(?:envía|enviar|mandar|manda)\s+(?:el\s+)?(?:pdf|documento)/, action: 'send_pdf' },
+            { pattern: /(?:quiero|necesito)\s+(?:el\s+)?(?:pdf|documento)/, action: 'send_pdf' },
+            { pattern: /(?:dame|muéstrame)\s+(?:el\s+)?(?:pdf|documento)/, action: 'send_pdf' },
+            { pattern: /(?:pdf|documento)\s+(?:por\s+)?(?:email|correo)/, action: 'send_pdf' },
+            { pattern: /(?:enviar|mandar)\s+(?:por\s+)?(?:email|correo)/, action: 'send_pdf' }
+        ];
+
+        // Detectar comandos para cotizar
+        const quotePatterns = [
+            { pattern: /(?:cotiza|cotizar|cotización|precio)\s+(?:el\s+)?(?:departamento|apartamento|modelo)/, action: 'quote_model' },
+            { pattern: /(?:quiero|necesito)\s+(?:una\s+)?(?:cotización|cotiza|precio)/, action: 'quote_model' },
+            { pattern: /(?:cuánto\s+)?(?:cuesta|vale|precio)\s+(?:el\s+)?(?:departamento|apartamento)/, action: 'quote_model' },
+            { pattern: /(?:dame|muéstrame)\s+(?:el\s+)?(?:precio|cotización)/, action: 'quote_model' },
+            { pattern: /(?:cotización|precio)\s+(?:del\s+)?(?:modelo|departamento)/, action: 'quote_model' }
+        ];
+
+        // Detectar comandos para cerrar modales
+        const closeModalPatterns = [
+            { pattern: /(?:cerrar|cierra|cerra)\s+(?:el\s+)?(?:modal|ventana|popup)/, action: 'close_modal' },
+            { pattern: /(?:cerrar|cierra|cerra)\s+(?:detalles|información)/, action: 'close_modal' },
+            { pattern: /(?:volver|regresar|retroceder)\s+(?:a\s+)?(?:la\s+)?(?:lista|vista\s+anterior)/, action: 'close_modal' },
+            { pattern: /(?:salir|salir\s+de)\s+(?:detalles|información)/, action: 'close_modal' },
+            { pattern: /(?:quitar|quita)\s+(?:el\s+)?(?:modal|ventana|popup)/, action: 'close_modal' },
+            { pattern: /(?:ocultar|oculta)\s+(?:detalles|información)/, action: 'close_modal' },
+            { pattern: /(?:cancelar|cancela)\s+(?:detalles|información)/, action: 'close_modal' },
+            { pattern: /(?:no\s+quiero|no\s+necesito)\s+(?:ver\s+)?(?:detalles|información)/, action: 'close_modal' },
+            { pattern: /(?:volver|regresar)\s+(?:a\s+)?(?:los\s+)?(?:departamentos|apartamentos)/, action: 'close_modal' }
         ];
 
         const filters = {};
@@ -243,6 +330,87 @@ class NaturalLanguageParser {
                  }
                 hasFilters = true;
                 break; // Solo tomar el primer match de tipo de departamento
+            }
+        }
+
+        console.log(`🔍 [Parser] Procesando patrones de detalles...`);
+        // Procesar patrones de detalles
+        for (let i = 0; i < detailsPatterns.length; i++) {
+            const pattern = detailsPatterns[i];
+            const match = text.match(pattern.pattern);
+            console.log(`🔍 [Parser] Patrón detalles ${i + 1}: ${pattern.pattern} - Match: ${match ? 'SÍ' : 'NO'}`);
+            if (match) {
+                console.log(`✅ [Parser] Comando de detalles detectado: ${pattern.action}`);
+                // Retornar comando de detalles inmediatamente
+                const result = {
+                    type: 'details',
+                    action: 'show_details',
+                    originalText: text,
+                    confidence: 0.9,
+                    area: 'details'
+                };
+                console.log(`✅ [Parser] Comando de detalles generado:`, result);
+                return result;
+            }
+        }
+
+        // Procesar patrones de PDF
+        for (let i = 0; i < pdfPatterns.length; i++) {
+            const pattern = pdfPatterns[i];
+            const match = text.match(pattern.pattern);
+            console.log(`🔍 [Parser] Patrón PDF ${i + 1}: ${pattern.pattern} - Match: ${match ? 'SÍ' : 'NO'}`);
+            if (match) {
+                console.log(`✅ [Parser] Comando de PDF detectado: ${pattern.action}`);
+                // Retornar comando de PDF inmediatamente
+                const result = {
+                    type: 'pdf',
+                    action: 'send_pdf',
+                    originalText: text,
+                    confidence: 0.9,
+                    area: 'pdf'
+                };
+                console.log(`✅ [Parser] Comando de PDF generado:`, result);
+                return result;
+            }
+        }
+
+        // Procesar patrones de cotización
+        for (let i = 0; i < quotePatterns.length; i++) {
+            const pattern = quotePatterns[i];
+            const match = text.match(pattern.pattern);
+            console.log(`🔍 [Parser] Patrón cotización ${i + 1}: ${pattern.pattern} - Match: ${match ? 'SÍ' : 'NO'}`);
+            if (match) {
+                console.log(`✅ [Parser] Comando de cotización detectado: ${pattern.action}`);
+                // Retornar comando de cotización inmediatamente
+                const result = {
+                    type: 'quote',
+                    action: 'quote_model',
+                    originalText: text,
+                    confidence: 0.9,
+                    area: 'quote'
+                };
+                console.log(`✅ [Parser] Comando de cotización generado:`, result);
+                return result;
+            }
+        }
+
+        // Procesar patrones de cerrar modales
+        for (let i = 0; i < closeModalPatterns.length; i++) {
+            const pattern = closeModalPatterns[i];
+            const match = text.match(pattern.pattern);
+            console.log(`🔍 [Parser] Patrón cerrar modal ${i + 1}: ${pattern.pattern} - Match: ${match ? 'SÍ' : 'NO'}`);
+            if (match) {
+                console.log(`✅ [Parser] Comando de cerrar modal detectado: ${pattern.action}`);
+                // Retornar comando de cerrar modal inmediatamente
+                const result = {
+                    type: 'modal',
+                    action: 'close_modal',
+                    originalText: text,
+                    confidence: 0.9,
+                    area: 'modal'
+                };
+                console.log(`✅ [Parser] Comando de cerrar modal generado:`, result);
+                return result;
             }
         }
 

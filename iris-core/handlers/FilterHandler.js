@@ -18,21 +18,31 @@ class FilterHandler {
         console.log(`[IRIS-Handler] Filter: ${command.action}`, command.filters);
 
         try {
-            switch (command.action) {
-                case 'apply':
-                    return await this.applyFilter(command.filters, context);
-                case 'clear':
-                    return await this.clearFilter(context);
-                case 'show_all':
-                    return await this.showAllApartments(context);
-                case 'toggle':
-                    return await this.toggleFilter(command.filters, context);
-                default:
-                    return {
-                        success: false,
-                        error: `Unsupported filter action: ${command.action}`
-                    };
-            }
+                    switch (command.action) {
+            case 'apply':
+                return await this.applyFilter(command.filters, context);
+            case 'clear':
+                return await this.clearFilter(context);
+            case 'show_all':
+                return await this.showAllApartments(context);
+            case 'toggle':
+                return await this.toggleFilter(command.filters, context);
+            case 'show_details':
+                return await this.showApartmentDetails(context);
+            case 'send_pdf':
+                return await this.sendPDF(context);
+            case 'quote_model':
+                return await this.quoteModel(context);
+            case 'close_modal':
+                return await this.closeModal(context);
+            case 'exit_recorrido':
+                return await this.exitRecorridoMode(context);
+            default:
+                return {
+                    success: false,
+                    error: `Unsupported filter action: ${command.action}`
+                };
+        }
         } catch (error) {
             console.error('[IRIS-Handler] Filter error:', error);
             return {
@@ -976,6 +986,470 @@ class FilterHandler {
         } catch (error) {
             console.error('❌ [Handler] Error al activar modo de recorrido:', error);
             throw error;
+        }
+    }
+
+    /**
+     * Show apartment details
+     * @param {Object} context - Context information
+     * @returns {Promise<Object>} Result of showing details
+     */
+    async showApartmentDetails(context = {}) {
+        console.log('[IRIS-Handler] Showing apartment details');
+        
+        try {
+            // Buscar el botón "Detalles" en los controles de recorrido
+            const detailsButton = document.querySelector('#recorridoControls .btn-secondary[onclick*="showApartmentDetails"]');
+            
+            if (detailsButton) {
+                console.log('🔧 [Handler] Botón "Detalles" encontrado, activándolo...');
+                
+                // Agregar efecto visual al botón
+                detailsButton.style.transform = 'scale(1.1)';
+                detailsButton.style.boxShadow = '0 0 20px rgba(0,123,255,0.5)';
+                
+                // Esperar un poco para que se vea el efecto
+                await this.wait(200);
+                
+                // Simular click en el botón
+                detailsButton.click();
+                
+                // Restaurar el estilo del botón
+                setTimeout(() => {
+                    detailsButton.style.transform = '';
+                    detailsButton.style.boxShadow = '';
+                }, 500);
+                
+                console.log('✅ [Handler] Botón "Detalles" activado exitosamente');
+                
+                return {
+                    success: true,
+                    message: 'Detalles del departamento mostrados'
+                };
+            } else {
+                console.log('⚠️ [Handler] No se encontró el botón "Detalles"');
+                
+                                 // Intentar método alternativo: buscar cualquier botón con "Detalles"
+                 const allButtons = document.querySelectorAll('button, .btn-secondary');
+                 let alternativeButton = null;
+                 
+                 for (const button of allButtons) {
+                     const buttonText = button.textContent || button.innerText;
+                     if (buttonText.toLowerCase().includes('detalles')) {
+                         alternativeButton = button;
+                         break;
+                     }
+                 }
+                 
+                 if (alternativeButton) {
+                     console.log('🔧 [Handler] Botón "Detalles" alternativo encontrado');
+                     alternativeButton.click();
+                     
+                     return {
+                         success: true,
+                         message: 'Detalles del departamento mostrados (método alternativo)'
+                     };
+                 }
+                
+                return {
+                    success: false,
+                    error: 'No se encontró el botón de detalles'
+                };
+            }
+        } catch (error) {
+            console.error('[IRIS-Handler] Show details error:', error);
+            return {
+                success: false,
+                error: error.message
+            };
+        }
+    }
+
+    /**
+     * Send PDF
+     * @param {Object} context - Context information
+     * @returns {Promise<Object>} Result of sending PDF
+     */
+    async sendPDF(context = {}) {
+        console.log('[IRIS-Handler] Sending PDF');
+        
+        try {
+            // Buscar el botón "Enviar PDF" en los controles de detalles
+            const pdfButton = document.querySelector('.btn-secondary[onclick*="sendPDF"]');
+            
+            if (pdfButton) {
+                console.log('🔧 [Handler] Botón "Enviar PDF" encontrado, activándolo...');
+                
+                // Agregar efecto visual al botón
+                pdfButton.style.transform = 'scale(1.1)';
+                pdfButton.style.boxShadow = '0 0 20px rgba(0,123,255,0.5)';
+                
+                // Esperar un poco para que se vea el efecto
+                await this.wait(200);
+                
+                // Simular click en el botón
+                pdfButton.click();
+                
+                // Restaurar el estilo del botón
+                setTimeout(() => {
+                    pdfButton.style.transform = '';
+                    pdfButton.style.boxShadow = '';
+                }, 500);
+                
+                console.log('✅ [Handler] Botón "Enviar PDF" activado exitosamente');
+                
+                return {
+                    success: true,
+                    message: 'PDF enviado por email'
+                };
+            } else {
+                console.log('⚠️ [Handler] No se encontró el botón "Enviar PDF"');
+                
+                // Intentar método alternativo: buscar cualquier botón con "PDF"
+                const allButtons = document.querySelectorAll('button, .btn-secondary');
+                let alternativeButton = null;
+                
+                for (const button of allButtons) {
+                    const buttonText = button.textContent || button.innerText;
+                    if (buttonText.toLowerCase().includes('pdf')) {
+                        alternativeButton = button;
+                        break;
+                    }
+                }
+                
+                if (alternativeButton) {
+                    console.log('🔧 [Handler] Botón "PDF" alternativo encontrado');
+                    alternativeButton.click();
+                    
+                    return {
+                        success: true,
+                        message: 'PDF enviado por email (método alternativo)'
+                    };
+                }
+                
+                return {
+                    success: false,
+                    error: 'No se encontró el botón de enviar PDF'
+                };
+            }
+        } catch (error) {
+            console.error('[IRIS-Handler] Send PDF error:', error);
+            return {
+                success: false,
+                error: error.message
+            };
+        }
+    }
+
+    /**
+     * Quote model
+     * @param {Object} context - Context information
+     * @returns {Promise<Object>} Result of quoting model
+     */
+    async quoteModel(context = {}) {
+        console.log('[IRIS-Handler] Quoting model');
+        
+        try {
+            // Buscar el botón "Cotizar Modelo" en los controles de detalles
+            const quoteButton = document.querySelector('.btn-primary.quote-btn[onclick*="quoteModel"]');
+            
+            if (quoteButton) {
+                console.log('🔧 [Handler] Botón "Cotizar Modelo" encontrado, activándolo...');
+                
+                // Agregar efecto visual al botón
+                quoteButton.style.transform = 'scale(1.1)';
+                quoteButton.style.boxShadow = '0 0 20px rgba(0,123,255,0.5)';
+                
+                // Esperar un poco para que se vea el efecto
+                await this.wait(200);
+                
+                // Simular click en el botón
+                quoteButton.click();
+                
+                // Restaurar el estilo del botón
+                setTimeout(() => {
+                    quoteButton.style.transform = '';
+                    quoteButton.style.boxShadow = '';
+                }, 500);
+                
+                console.log('✅ [Handler] Botón "Cotizar Modelo" activado exitosamente');
+                
+                return {
+                    success: true,
+                    message: 'Cotización enviada'
+                };
+            } else {
+                console.log('⚠️ [Handler] No se encontró el botón "Cotizar Modelo"');
+                
+                // Intentar método alternativo: buscar cualquier botón con "Cotizar"
+                const allButtons = document.querySelectorAll('button, .btn-primary');
+                let alternativeButton = null;
+                
+                for (const button of allButtons) {
+                    const buttonText = button.textContent || button.innerText;
+                    if (buttonText.toLowerCase().includes('cotizar')) {
+                        alternativeButton = button;
+                        break;
+                    }
+                }
+                
+                if (alternativeButton) {
+                    console.log('🔧 [Handler] Botón "Cotizar" alternativo encontrado');
+                    alternativeButton.click();
+                    
+                    return {
+                        success: true,
+                        message: 'Cotización enviada (método alternativo)'
+                    };
+                }
+                
+                return {
+                    success: false,
+                    error: 'No se encontró el botón de cotizar'
+                };
+            }
+        } catch (error) {
+            console.error('[IRIS-Handler] Quote model error:', error);
+            return {
+                success: false,
+                error: error.message
+            };
+        }
+    }
+
+    /**
+     * Close modal or details view
+     * @param {Object} context - Context information
+     * @returns {Promise<Object>} Result of closing modal
+     */
+    async closeModal(context = {}) {
+        console.log('[IRIS-Handler] Closing modal');
+        
+        try {
+            // 1. Buscar y cerrar cualquier modal overlay activo
+            const modalOverlays = document.querySelectorAll('.modal-overlay');
+            if (modalOverlays.length > 0) {
+                console.log(`🔧 [Handler] Encontrados ${modalOverlays.length} modales overlay, cerrando...`);
+                
+                modalOverlays.forEach((modal, index) => {
+                    console.log(`🔧 [Handler] Cerrando modal ${index + 1}: ${modal.id || 'sin ID'}`);
+                    
+                    // Agregar efecto visual al modal
+                    modal.style.transform = 'scale(0.95)';
+                    modal.style.opacity = '0';
+                    
+                    // Remover el modal después de un breve delay
+                    setTimeout(() => {
+                        modal.remove();
+                        console.log(`✅ [Handler] Modal ${index + 1} removido`);
+                    }, 200);
+                });
+                
+                return {
+                    success: true,
+                    message: `${modalOverlays.length} modales cerrados`
+                };
+            }
+            
+            // 2. Buscar botones de cerrar específicos
+            const closeButtons = document.querySelectorAll('.modal-close, button[onclick*="closest(\'.modal-overlay\').remove()"]');
+            if (closeButtons.length > 0) {
+                console.log(`🔧 [Handler] Encontrados ${closeButtons.length} botones de cerrar, activando...`);
+                
+                closeButtons.forEach((button, index) => {
+                    console.log(`🔧 [Handler] Activando botón de cerrar ${index + 1}`);
+                    
+                    // Agregar efecto visual al botón
+                    button.style.transform = 'scale(1.1)';
+                    button.style.boxShadow = '0 0 20px rgba(255,255,255,0.5)';
+                    
+                    // Simular click
+                    setTimeout(() => {
+                        button.click();
+                        
+                        // Restaurar estilo
+                        setTimeout(() => {
+                            button.style.transform = '';
+                            button.style.boxShadow = '';
+                        }, 300);
+                    }, index * 100); // Stagger the clicks
+                });
+                
+                return {
+                    success: true,
+                    message: 'Botones de cerrar activados'
+                };
+            }
+            
+            // 3. Buscar el botón "Volver" en los controles de recorrido
+            const backButton = document.querySelector('.btn-secondary[onclick*="backToRecorrido"]');
+            
+            if (backButton) {
+                console.log('🔧 [Handler] Botón "Volver" encontrado, activándolo...');
+                
+                // Agregar efecto visual al botón
+                backButton.style.transform = 'scale(1.1)';
+                backButton.style.boxShadow = '0 0 20px rgba(108,117,125,0.5)';
+                
+                // Esperar un poco para que se vea el efecto
+                await this.wait(200);
+                
+                // Simular click en el botón
+                backButton.click();
+                
+                // Restaurar el estilo del botón
+                setTimeout(() => {
+                    backButton.style.transform = '';
+                    backButton.style.boxShadow = '';
+                }, 500);
+                
+                console.log('✅ [Handler] Botón "Volver" activado exitosamente');
+                
+                return {
+                    success: true,
+                    message: 'Modal cerrado'
+                };
+            } else {
+                console.log('⚠️ [Handler] No se encontró el botón "Volver"');
+                
+                // 4. Intentar método alternativo: buscar cualquier botón con "Volver"
+                const allButtons = document.querySelectorAll('button, .btn-secondary');
+                let alternativeButton = null;
+                
+                for (const button of allButtons) {
+                    const buttonText = button.textContent || button.innerText;
+                    if (buttonText.toLowerCase().includes('volver')) {
+                        alternativeButton = button;
+                        break;
+                    }
+                }
+                
+                if (alternativeButton) {
+                    console.log('🔧 [Handler] Botón "Volver" alternativo encontrado');
+                    alternativeButton.click();
+                    
+                    return {
+                        success: true,
+                        message: 'Modal cerrado (método alternativo)'
+                    };
+                }
+                
+                // 5. Intentar cerrar cualquier modal activo
+                const activeModals = document.querySelectorAll('.modal.show, .details-mode, .modal-overlay');
+                if (activeModals.length > 0) {
+                    console.log('🔧 [Handler] Cerrando modales activos');
+                    activeModals.forEach(modal => {
+                        modal.style.display = 'none';
+                        modal.classList.remove('show', 'details-mode');
+                        if (modal.classList.contains('modal-overlay')) {
+                            modal.remove();
+                        }
+                    });
+                    
+                    return {
+                        success: true,
+                        message: 'Modales cerrados'
+                    };
+                }
+                
+                return {
+                    success: false,
+                    error: 'No se encontró ningún modal para cerrar'
+                };
+            }
+        } catch (error) {
+            console.error('[IRIS-Handler] Close modal error:', error);
+            return {
+                success: false,
+                error: error.message
+            };
+        }
+    }
+
+    /**
+     * Exit recorrido mode
+     * @param {Object} context - Context information
+     * @returns {Promise<Object>} Result of exiting recorrido mode
+     */
+    async exitRecorridoMode(context = {}) {
+        console.log('[IRIS-Handler] Exiting recorrido mode');
+        
+        try {
+            // Buscar el botón "Salir del Recorrido" en los controles de recorrido
+            const exitButton = document.querySelector('#recorridoControls .btn-secondary[onclick*="exitRecorridoMode"]');
+            
+            if (exitButton) {
+                console.log('🔧 [Handler] Botón "Salir del Recorrido" encontrado, activándolo...');
+                
+                // Agregar efecto visual al botón
+                exitButton.style.transform = 'scale(1.1)';
+                exitButton.style.boxShadow = '0 0 20px rgba(0,123,255,0.5)';
+                
+                // Esperar un poco para que se vea el efecto
+                await this.wait(200);
+                
+                // Simular click en el botón
+                exitButton.click();
+                
+                // Restaurar el estilo del botón
+                setTimeout(() => {
+                    exitButton.style.transform = '';
+                    exitButton.style.boxShadow = '';
+                }, 500);
+                
+                console.log('✅ [Handler] Botón "Salir del Recorrido" activado exitosamente');
+                
+                return {
+                    success: true,
+                    message: 'Modo recorrido desactivado'
+                };
+            } else {
+                console.log('⚠️ [Handler] No se encontró el botón "Salir del Recorrido"');
+                
+                // Intentar método alternativo: buscar cualquier botón con "Salir"
+                const allButtons = document.querySelectorAll('button, .btn-secondary');
+                let alternativeButton = null;
+                
+                for (const button of allButtons) {
+                    const buttonText = button.textContent || button.innerText;
+                    if (buttonText.toLowerCase().includes('salir') && buttonText.toLowerCase().includes('recorrido')) {
+                        alternativeButton = button;
+                        break;
+                    }
+                }
+                
+                if (alternativeButton) {
+                    console.log('🔧 [Handler] Botón "Salir del Recorrido" alternativo encontrado');
+                    alternativeButton.click();
+                    
+                    return {
+                        success: true,
+                        message: 'Modo recorrido desactivado (método alternativo)'
+                    };
+                }
+                
+                // Método alternativo: llamar directamente a la función si está disponible
+                if (window.imageFilterSystem && typeof window.imageFilterSystem.exitRecorridoMode === 'function') {
+                    console.log('🔧 [Handler] Llamando directamente a exitRecorridoMode()');
+                    window.imageFilterSystem.exitRecorridoMode();
+                    
+                    return {
+                        success: true,
+                        message: 'Modo recorrido desactivado (llamada directa)'
+                    };
+                }
+                
+                return {
+                    success: false,
+                    error: 'No se encontró el botón de salir del recorrido'
+                };
+            }
+        } catch (error) {
+            console.error('[IRIS-Handler] Exit recorrido mode error:', error);
+            return {
+                success: false,
+                error: error.message
+            };
         }
     }
 

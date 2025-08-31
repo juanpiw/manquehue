@@ -270,6 +270,21 @@ class IRISCore {
                 case 'filter':
                     return await this.handlers.get('filter').handle(command, context);
                     
+                case 'details':
+                    return await this.handlers.get('filter').handle(command, context);
+                    
+                case 'pdf':
+                    return await this.handlers.get('filter').handle(command, context);
+                    
+                case 'quote':
+                    return await this.handlers.get('filter').handle(command, context);
+                    
+                case 'modal':
+                    return await this.handlers.get('filter').handle(command, context);
+                    
+                case 'recorrido':
+                    return await this.handlers.get('filter').handle(command, context);
+                    
                 case 'scroll':
                     return await this.uiController.execute(command, context);
                     

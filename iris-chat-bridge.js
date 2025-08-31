@@ -283,35 +283,141 @@ class IrisChatBridge {
         testButton.onclick = async () => {
             console.log('🧪 Botón de prueba clickeado');
             
-            // Probar múltiples comandos
+            // FLUJO COMPLETO: Buscar → Filtrar → Activar → Detalles → PDF → Cotizar → Cerrar → Salir Recorrido
             const testCommands = [
-                '1 dormitorio',
-                'buscar departamentos',
-                'limpiar filtros',
-                'mostrar departamento tipo A-S-2'
+                'buscar departamentos',                    // 1. Mostrar todos los departamentos
+                '1 dormitorio',                           // 2. Filtrar por dormitorios
+                'mostrar departamento tipo A-S-2',        // 3. Activar tarjeta específica
+                'me das más detalles',                    // 4. Activar botón "Detalles"
+                'envía el pdf',                           // 5. Enviar PDF por email
+                'cotiza el departamento',                 // 6. Cotizar modelo (abre contactModal)
+                'cerrar modal',                           // 7. Cerrar contactModal
+                'salir del recorrido'                     // 8. Salir del modo recorrido
             ];
             
-            for (const command of testCommands) {
-                console.log(`🧪 Probando comando: "${command}"`);
+            console.log('🔄 [Bridge] Iniciando flujo completo de prueba:');
+            console.log('🔄 [Bridge] 1. Buscar departamentos');
+            console.log('🔄 [Bridge] 2. Filtrar por dormitorios');
+            console.log('🔄 [Bridge] 3. Activar tarjeta específica');
+            console.log('🔄 [Bridge] 4. Activar botón "Detalles"');
+            console.log('🔄 [Bridge] 5. Enviar PDF por email');
+            console.log('🔄 [Bridge] 6. Cotizar modelo (abre contactModal)');
+            console.log('🔄 [Bridge] 7. Cerrar contactModal');
+            console.log('🔄 [Bridge] 8. Salir del recorrido');
+            
+            for (let i = 0; i < testCommands.length; i++) {
+                const command = testCommands[i];
+                const step = i + 1;
+                
+                console.log(`\n🧪 [Bridge] PASO ${step}: "${command}"`);
+                console.log(`🧪 [Bridge] Procesando comando...`);
+                
                 const result = await this.processChatCommand(command);
-                console.log(`🧪 Resultado de "${command}":`, result);
+                
+                console.log(`✅ [Bridge] PASO ${step} completado:`);
+                console.log(`   - Comando: "${command}"`);
+                console.log(`   - Éxito: ${result.success}`);
+                if (result.error) console.log(`   - Error: ${result.error}`);
+                if (result.result) console.log(`   - Resultado: ${JSON.stringify(result.result, null, 2)}`);
                 
                 // Mostrar resultado en pantalla
-                this.showTestResult(result);
+                this.showTestResult(result, step);
                 
-                // Esperar 2 segundos entre comandos
-                await new Promise(resolve => setTimeout(resolve, 2000));
+                // Esperar 4 segundos entre comandos para ver los efectos
+                console.log(`⏳ [Bridge] Esperando 4 segundos antes del siguiente paso...`);
+                await new Promise(resolve => setTimeout(resolve, 4000));
             }
+            
+            console.log('\n🎉 [Bridge] ¡Flujo de prueba completado!');
         };
         
         document.body.appendChild(testButton);
         console.log('🧪 Botón de prueba agregado');
+        
+        // Agregar botón adicional para probar contactModal específicamente
+        const contactTestButton = document.createElement('button');
+        contactTestButton.textContent = '📞 Probar ContactModal';
+        contactTestButton.style.cssText = `
+            position: fixed;
+            top: 60px;
+            right: 20px;
+            z-index: 10000;
+            padding: 10px 15px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+        `;
+        
+        contactTestButton.onclick = async () => {
+            console.log('📞 Botón de prueba contactModal clickeado');
+            
+            // Crear el contactModal que el usuario describió
+            const contactModalHTML = `
+                <div class="modal-overlay" id="contactModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); display: flex; align-items: center; justify-content: center; z-index: 10000;">
+                    <div class="modal" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 15px; max-width: 600px; width: 90%; max-height: 90vh; overflow: hidden;">
+                        <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; border-bottom: 1px solid rgba(255, 255, 255, 0.2);">
+                            <h3 style="margin: 0; color: white; font-size: 1.5rem; font-weight: 600;">Solicitar Información - 1 Dormitorio</h3>
+                            <button class="modal-close" onclick="this.closest('.modal-overlay').remove()" style="background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; padding: 0.5rem;">×</button>
+                        </div>
+                        <div class="modal-body" style="padding: 1.5rem; overflow-y: auto; max-height: 70vh;">
+                            <div style="background: rgba(255, 255, 255, 0.05); padding: 1rem; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.2); margin-bottom: 1.5rem;">
+                                <h4 style="margin: 0 0 0.5rem 0; color: white; font-size: 1.2rem;">1 Dormitorio</h4>
+                                <p style="margin: 0.25rem 0; color: #cccccc;"><strong>Superficie:</strong> 40-60 m²</p>
+                                <p style="margin: 0.25rem 0; color: #cccccc;"><strong>Precio:</strong> $2.000-3.000 UF</p>
+                            </div>
+                            <form id="contactForm" style="display: flex; flex-direction: column; gap: 1rem;">
+                                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                                    <label style="color: white; font-weight: 600; font-size: 0.9rem;">Nombre completo *</label>
+                                    <input type="text" name="name" required style="padding: 0.75rem; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; background: rgba(255, 255, 255, 0.05); color: white; font-size: 1rem;">
+                                </div>
+                                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                                    <label style="color: white; font-weight: 600; font-size: 0.9rem;">Email *</label>
+                                    <input type="email" name="email" required style="padding: 0.75rem; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; background: rgba(255, 255, 255, 0.05); color: white; font-size: 1rem;">
+                                </div>
+                                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                                    <label style="color: white; font-weight: 600; font-size: 0.9rem;">Teléfono</label>
+                                    <input type="tel" name="phone" style="padding: 0.75rem; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; background: rgba(255, 255, 255, 0.05); color: white; font-size: 1rem;">
+                                </div>
+                                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                                    <label style="color: white; font-weight: 600; font-size: 0.9rem;">Mensaje</label>
+                                    <textarea name="message" rows="4" placeholder="Cuéntanos más sobre tu interés en este apartamento..." style="padding: 0.75rem; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; background: rgba(255, 255, 255, 0.05); color: white; font-size: 1rem; resize: vertical; min-height: 100px;"></textarea>
+                                </div>
+                                <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                                    <button type="submit" style="flex: 1; padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 600; font-size: 1rem; background: #007bff; color: white; border: none; cursor: pointer;">Enviar Solicitud</button>
+                                    <button type="button" onclick="this.closest('.modal-overlay').remove()" style="flex: 1; padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 600; font-size: 1rem; background: rgba(255, 255, 255, 0.1); color: white; border: 1px solid rgba(255, 255, 255, 0.2); cursor: pointer;">Cancelar</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Insertar el modal en el DOM
+            document.body.insertAdjacentHTML('beforeend', contactModalHTML);
+            console.log('📞 ContactModal creado y mostrado');
+            
+            // Esperar 3 segundos y luego probar cerrarlo
+            setTimeout(async () => {
+                console.log('📞 Probando cerrar contactModal...');
+                const result = await this.processChatCommand('cerrar modal');
+                console.log('📞 Resultado de cerrar contactModal:', result);
+                
+                // Mostrar resultado
+                this.showTestResult(result, 'ContactModal Test');
+            }, 3000);
+        };
+        
+        document.body.appendChild(contactTestButton);
+        console.log('📞 Botón de prueba contactModal agregado');
     }
 
     /**
      * Mostrar resultado de prueba en pantalla
      */
-    showTestResult(result) {
+    showTestResult(result, step = null) {
         // Remover resultado anterior si existe
         const existingResult = document.getElementById('test-result');
         if (existingResult) {
@@ -330,27 +436,32 @@ class IrisChatBridge {
             color: white;
             border-radius: 5px;
             font-size: 12px;
-            max-width: 300px;
+            max-width: 350px;
             word-wrap: break-word;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
         `;
         
+        const stepInfo = step ? `<strong>PASO ${step}/8:</strong><br>` : '';
+        const statusIcon = result.success ? '✅' : '❌';
+        
         resultDiv.innerHTML = `
-            <strong>🧪 Resultado de Prueba:</strong><br>
-            <strong>Éxito:</strong> ${result.success}<br>
+            <strong>🧪 Flujo de Prueba IRIS</strong><br>
+            ${stepInfo}
+            <strong>Estado:</strong> ${statusIcon} ${result.success ? 'Éxito' : 'Error'}<br>
             ${result.error ? `<strong>Error:</strong> ${result.error}<br>` : ''}
-            ${result.result ? `<strong>Resultado:</strong> ${JSON.stringify(result.result, null, 2)}<br>` : ''}
+            ${result.result && result.result.message ? `<strong>Mensaje:</strong> ${result.result.message}<br>` : ''}
             <small>Click para cerrar</small>
         `;
         
         resultDiv.onclick = () => resultDiv.remove();
         document.body.appendChild(resultDiv);
         
-        // Auto-remover después de 5 segundos
+        // Auto-remover después de 6 segundos
         setTimeout(() => {
             if (resultDiv.parentNode) {
                 resultDiv.remove();
             }
-        }, 5000);
+        }, 6000);
     }
 
     /**
@@ -359,15 +470,17 @@ class IrisChatBridge {
      * @returns {Promise<Object>} - Resultado del procesamiento
      */
     async processChatCommand(command) {
-        console.log('🔄 Procesando comando del chat:', command);
+        console.log('\n🔄 [Bridge] ==========================================');
+        console.log(`🔄 [Bridge] PROCESANDO COMANDO: "${command}"`);
+        console.log('🔄 [Bridge] ==========================================');
         
         if (!this.isInitialized) {
-            console.error('❌ IrisChatBridge no está inicializado');
+            console.error('❌ [Bridge] IrisChatBridge no está inicializado');
             return { success: false, error: 'Bridge no inicializado' };
         }
 
         if (!command || typeof command !== 'string') {
-            console.error('❌ Comando inválido:', command);
+            console.error('❌ [Bridge] Comando inválido:', command);
             return { success: false, error: 'Comando inválido' };
         }
 
@@ -376,13 +489,15 @@ class IrisChatBridge {
             const currentScrollPosition = window.scrollY;
             const apartmentsSection = this.findApartmentsSection();
             
-            console.log('📍 [Bridge] Posición actual:', currentScrollPosition);
-            console.log('📍 [Bridge] Sección apartamentos:', apartmentsSection);
+            console.log('📍 [Bridge] Posición actual del scroll:', currentScrollPosition);
+            console.log('📍 [Bridge] Sección apartamentos encontrada:', apartmentsSection ? 'SÍ' : 'NO');
             
             // Usar la arquitectura modular para procesar el comando
+            console.log('🔧 [Bridge] Enviando comando a IRIS Core...');
             const result = await this.irisCore.processText(command);
             
-            console.log('✅ Comando procesado exitosamente:', result);
+            console.log('✅ [Bridge] Comando procesado exitosamente:');
+            console.log('   - Resultado:', result);
             
             // DECIDIR SI HACER SCROLL basado en la posición actual
             if (apartmentsSection && this.shouldScrollToApartments(currentScrollPosition, apartmentsSection)) {
@@ -398,10 +513,15 @@ class IrisChatBridge {
                 console.log('📍 [Bridge] Manteniendo posición actual - ya estamos cerca de apartamentos');
             }
             
+            console.log('✅ [Bridge] ==========================================');
+            console.log(`✅ [Bridge] COMANDO COMPLETADO: "${command}"`);
+            console.log('✅ [Bridge] ==========================================\n');
+            
             return { success: true, result: result };
             
         } catch (error) {
-            console.error('❌ Error procesando comando:', error);
+            console.error('❌ [Bridge] Error procesando comando:', error);
+            console.log('❌ [Bridge] ==========================================\n');
             return { success: false, error: error.message };
         }
     }

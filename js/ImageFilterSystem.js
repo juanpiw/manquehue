@@ -11,35 +11,72 @@ class ImageFilterSystem {
             precio: ''
         };
         
+        // Estado del tipo de proyecto (apartamento/casa)
+        this.currentProjectType = 'apartamento'; // Por defecto apartamento
+        
         this.imageStructure = {
             '1d': {
                 'superficie_40_60': {
-                    'precio_2000_3000': 2,
-                    'precio_4000_5000': 2
+                    'precio_2000_3000': 1,
+                    'precio_3000_4000': 1,
+                    'precio_4000_5000': 1,
+                    'precio_5000_plus': 1
                 },
                 'superficie_80_100': {
-                    'precio_2000_3000': 2,
-                    'precio_4000_5000': 2
+                    'precio_3000_4000': 1,
+                    'precio_4000_5000': 1,
+                    'precio_5000_plus': 1
                 }
             },
             '2d': {
                 'superficie_40_60': {
-                    'precio_2000_3000': 2,
-                    'precio_4000_5000': 2
+                    'precio_2000_3000': 1,
+                    'precio_3000_4000': 1,
+                    'precio_4000_5000': 1,
+                    'precio_5000_plus': 1
+                },
+                'superficie_60_80': {
+                    'precio_2000_3000': 1,
+                    'precio_3000_4000': 1,
+                    'precio_4000_5000': 1,
+                    'precio_5000_plus': 1
                 },
                 'superficie_80_100': {
-                    'precio_2000_3000': 2,
-                    'precio_4000_5000': 2
+                    'precio_2000_3000': 1,
+                    'precio_3000_4000': 1,
+                    'precio_4000_5000': 1,
+                    'precio_5000_plus': 1
+                },
+                'superficie_100_plus': {
+                    'precio_2000_3000': 1,
+                    'precio_3000_4000': 1,
+                    'precio_4000_5000': 1,
+                    'precio_5000_plus': 1
                 }
             },
             '3d': {
                 'superficie_40_60': {
-                    'precio_2000_3000': 2,
-                    'precio_4000_5000': 2
+                    'precio_3000_4000': 1,
+                    'precio_4000_5000': 1,
+                    'precio_5000_plus': 1
+                },
+                'superficie_60_80': {
+                    'precio_2000_3000': 1,
+                    'precio_3000_4000': 1,
+                    'precio_4000_5000': 1,
+                    'precio_5000_plus': 1
                 },
                 'superficie_80_100': {
-                    'precio_2000_3000': 2,
-                    'precio_4000_5000': 2
+                    'precio_2000_3000': 1,
+                    'precio_3000_4000': 1,
+                    'precio_4000_5000': 1,
+                    'precio_5000_plus': 1
+                },
+                'superficie_100_plus': {
+                    'precio_2000_3000': 1,
+                    'precio_3000_4000': 1,
+                    'precio_4000_5000': 1,
+                    'precio_5000_plus': 1
                 }
             }
         };
@@ -63,6 +100,9 @@ class ImageFilterSystem {
                 this.updateTipoFilter(tipo);
             });
         });
+        
+        // Event listener para el selector de proyecto (Apartamento/Casa)
+        this.setupProjectTypeSelector();
         
         // Event listeners para filtros de superficie y precio
         const surfaceFilter = document.getElementById('surfaceFilter');
@@ -170,8 +210,10 @@ class ImageFilterSystem {
                     for (let i = 1; i <= cantidadImagenes; i++) {
                         // Mapear las claves a los nombres de directorio correctos
                         const tipoDir = this.mapTipoToDirectory(tipoKey);
+                        // Obtener la ruta correcta de la imagen basada en los archivos reales
+                        const imagePath = this.getImagePath(tipoDir, superficieKey, precioKey, i);
                         availableImages.push({
-                            path: `video/imagenes/${tipoDir}/${superficieKey}/${precioKey}/planta_${i}.png`,
+                            path: imagePath,
                             tipo: tipoKey,
                             superficie: superficieKey,
                             precio: precioKey,
@@ -195,8 +237,10 @@ class ImageFilterSystem {
                     for (let i = 1; i <= cantidad; i++) {
                         // Mapear las claves a los nombres de directorio correctos
                         const tipoDir = this.mapTipoToDirectory(tipo);
+                        // Obtener la ruta correcta de la imagen basada en los archivos reales
+                        const imagePath = this.getImagePath(tipoDir, superficie, precio, i);
                         allImages.push({
-                            path: `video/imagenes/${tipoDir}/${superficie}/${precio}/planta_${i}.png`,
+                            path: imagePath,
                             tipo,
                             superficie,
                             precio,
@@ -238,6 +282,93 @@ class ImageFilterSystem {
         };
         return mapping[tipo] || tipo;
     }
+
+    /**
+     * Obtiene la ruta correcta de la imagen basada en los archivos reales disponibles
+     * @param {string} tipoDir - Directorio del tipo (1_dormitorio, 2_dormitorios, etc.)
+     * @param {string} superficie - Clave de superficie (superficie_40_60, etc.)
+     * @param {string} precio - Clave de precio (precio_2000_3000, etc.)
+     * @param {number} index - Índice de la imagen
+     * @returns {string} Ruta de la imagen
+     */
+    getImagePath(tipoDir, superficie, precio, index) {
+        // Mapear las claves a los nombres de archivo reales
+        const superficieMapping = {
+            'superficie_40_60': '40-60 m2',
+            'superficie_60_80': '60-80 m2',
+            'superficie_80_100': '80-100 m2',
+            'superficie_100_plus': '100+ m2'
+        };
+
+        const precioMapping = {
+            'precio_2000_3000': 'AS-2',
+            'precio_3000_4000': 'AS-3',
+            'precio_4000_5000': 'AS-4',
+            'precio_5000_plus': 'AS-5'
+        };
+
+        const tipoMapping = {
+            '1_dormitorio': 'D1',
+            '2_dormitorios': 'D2',
+            '3_dormitorios': 'D3'
+        };
+
+        const superficieText = superficieMapping[superficie] || superficie;
+        const precioText = precioMapping[precio] || precio;
+        const tipoText = tipoMapping[tipoDir] || tipoDir;
+
+        // Construir el nombre del archivo basado en los archivos reales encontrados
+        let fileName = '';
+        
+        if (tipoDir === '1_dormitorio') {
+            if (superficie === 'superficie_40_60') {
+                // Para 1 dormitorio, superficie 40-60, usar AS-2 como imagen principal
+                fileName = `D1 ${superficieText}_AS-2.jpg`;
+            } else if (superficie === 'superficie_80_100') {
+                // Para 1 dormitorio, superficie 80-100, usar AS_4 como imagen principal
+                fileName = `D1 ${superficieText}_AS_4.png`;
+            } else {
+                // Para otras superficies de 1 dormitorio, usar el patrón estándar
+                fileName = `planta_1.png`;
+            }
+        } else if (tipoDir === '2_dormitorios') {
+            // Para 2 dormitorios, usar los archivos reales de 2_dormitorio
+            if (superficie === 'superficie_40_60') {
+                // Para 2 dormitorios, superficie 40-60, usar BS_2 como imagen principal
+                fileName = `40_60 m2 BS_2.jpg`;
+            } else if (superficie === 'superficie_80_100') {
+                // Para 2 dormitorios, superficie 80-100, usar Bs-4 como imagen principal
+                fileName = `80-100 m2_Bs-4.jpg`;
+            } else {
+                // Para otras superficies de 2 dormitorios, usar el patrón estándar
+                fileName = `planta_1.png`;
+            }
+        } else if (tipoDir === '3_dormitorios') {
+            // Para 3 dormitorios, usar planta_1.png
+            fileName = `planta_1.png`;
+        }
+
+        // Si no se pudo construir un nombre específico, usar un fallback
+        if (!fileName) {
+            fileName = `planta_${index}.png`;
+        }
+
+        // Construir la ruta de la imagen
+        let imagePath;
+        
+        if (tipoDir === '2_dormitorios') {
+            // Para 2 dormitorios, los archivos están en 2_dormitorio (sin 's')
+            imagePath = `video/imagenes/2_dormitorio/${fileName}`;
+        } else {
+            // Para otros tipos, usar la estructura de carpetas normal
+            imagePath = `video/imagenes/${tipoDir}/${superficie}/${precio}/${fileName}`;
+        }
+        
+        // Para debugging, loggear la ruta generada
+        console.log(`🔍 [ImageFilterSystem] Generando ruta: ${imagePath}`);
+        
+        return imagePath;
+    }
     
     updateImages() {
         console.log('🔄 Actualizando imágenes...');
@@ -278,7 +409,7 @@ class ImageFilterSystem {
         // Crear tarjetas de apartamentos
 
         images.forEach((image, index) => {
-            const apartmentCard = this.createApartmentCard(image, index);
+            const apartmentCard = this.createApartmentCard(image, image.index, index);
             apartmentList.appendChild(apartmentCard);
         });
 
@@ -298,10 +429,10 @@ class ImageFilterSystem {
         }
     }
     
-    createApartmentCard(image, index) {
+    createApartmentCard(image, imageIndex, animationIndex) {
         const card = document.createElement('div');
         card.className = 'apartment-card';
-        card.style.animation = `fadeInUp 0.5s ease ${index * 0.1}s`;
+        card.style.animation = `fadeInUp 0.5s ease ${animationIndex * 0.1}s`;
         
         const tipoText = this.getTipoText(image.tipo);
         const superficieText = this.getSuperficieText(image.superficie);
@@ -309,7 +440,7 @@ class ImageFilterSystem {
         const tipoDepartamento = this.getTipoDepartamento(image.tipo, image.superficie, image.precio);
         
         // Crear identificador único para el botón
-        const buttonId = `recorrer-${image.tipo}-${image.superficie}-${image.precio}-${index}`;
+        const buttonId = `recorrer-${image.tipo}-${image.superficie}-${image.precio}-${imageIndex}`;
         
         // Crear el HTML de manera más limpia para evitar problemas de concatenación
         const fallbackImage = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iUGxhbnRhIGRlICR7dGlwb1RleHR9PC90ZXh0Pjwvc3ZnPg==';
@@ -332,7 +463,7 @@ class ImageFilterSystem {
                             data-tipo="${image.tipo}"
                             data-superficie-code="${image.superficie}"
                             data-precio-code="${image.precio}"
-                            data-index="${index}">
+                            data-index="${imageIndex}">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M8 5v14l11-7z" fill="currentColor"/>
                         </svg>
@@ -1185,6 +1316,27 @@ class ImageFilterSystem {
     }
     
     hideHeroElements() {
+        // Ocultar todo el contenido del hero
+        const heroContent = document.querySelector('.hero-content');
+        if (heroContent) {
+            heroContent.style.opacity = '0';
+            heroContent.style.transform = 'translateY(-20px)';
+            heroContent.style.transition = 'all 0.5s ease';
+            setTimeout(() => {
+                heroContent.style.display = 'none';
+            }, 500);
+        }
+        
+        // Ocultar el selector de proyecto
+        const previewSelector = document.querySelector('.preview-selector');
+        if (previewSelector) {
+            previewSelector.style.opacity = '0';
+            previewSelector.style.transform = 'translateY(-20px)';
+            previewSelector.style.transition = 'all 0.5s ease';
+            setTimeout(() => {
+                previewSelector.style.display = 'none';
+            }, 500);
+        }
         
         // Ocultar la sección de estadísticas
         const previewStats = document.querySelector('.preview-stats');
@@ -1230,23 +1382,148 @@ class ImageFilterSystem {
             }, 500);
         }
         
-
+        // Eliminar el fondo empapelado que hace el video borroso
+        this.removeBlurOverlay();
+    }
+    
+    removeBlurOverlay() {
+        // Buscar y eliminar cualquier overlay que esté causando el efecto borroso
+        const overlays = document.querySelectorAll('.preview-hero::before, .preview-hero::after, .hero-overlay, .blur-overlay, .video-overlay');
+        
+        // También buscar elementos con backdrop-filter o filter que puedan estar causando el efecto
+        const blurElements = document.querySelectorAll('[style*="backdrop-filter"], [style*="filter"], [class*="blur"], [class*="overlay"]');
+        
+        blurElements.forEach(element => {
+            // Remover efectos de blur y overlay
+            element.style.backdropFilter = 'none';
+            element.style.filter = 'none';
+            element.style.backgroundColor = 'transparent';
+            element.style.opacity = '0';
+        });
+        
+        // Agregar CSS específico para eliminar el fondo empapelado
+        const style = document.createElement('style');
+        style.id = 'hero-video-mode-styles';
+        style.textContent = `
+            .hero-video-mode .preview-hero::before,
+            .hero-video-mode .preview-hero::after {
+                display: none !important;
+            }
+            
+            .hero-video-mode .preview-hero {
+                background: transparent !important;
+                backdrop-filter: none !important;
+                filter: none !important;
+            }
+            
+            .hero-video-mode .background-video {
+                opacity: 1 !important;
+                z-index: 1 !important;
+                filter: none !important;
+            }
+            
+            /* Asegurar que el selector se mantenga centrado al restaurar */
+            .preview-selector {
+                display: flex !important;
+                justify-content: center !important;
+                align-items: center !important;
+                text-align: center !important;
+            }
+            
+            .preview-selector .selector-container {
+                display: flex !important;
+                justify-content: center !important;
+                align-items: center !important;
+            }
+            
+            .preview-selector .radio-group {
+                display: flex !important;
+                justify-content: center !important;
+                align-items: center !important;
+                gap: 1rem !important;
+            }
+        `;
+        
+        // Remover estilos previos si existen
+        const existingStyle = document.getElementById('hero-video-mode-styles');
+        if (existingStyle) {
+            existingStyle.remove();
+        }
+        
+        document.head.appendChild(style);
+        
+        console.log('✅ Blur overlay removed for video mode');
+    }
+    
+    removeVideoModeStyles() {
+        // Remover los estilos específicos del modo video
+        const videoModeStyles = document.getElementById('hero-video-mode-styles');
+        if (videoModeStyles) {
+            videoModeStyles.remove();
+        }
+        
+        // Restaurar estilos originales de elementos que pudieron haber sido modificados
+        const blurElements = document.querySelectorAll('[style*="backdrop-filter"], [style*="filter"]');
+        blurElements.forEach(element => {
+            // Restaurar estilos originales si es necesario
+            element.style.removeProperty('backdrop-filter');
+            element.style.removeProperty('filter');
+            element.style.removeProperty('background-color');
+            element.style.removeProperty('opacity');
+        });
+        
+        // Asegurar que el selector mantenga su centrado original
+        const previewSelector = document.querySelector('.preview-selector');
+        if (previewSelector) {
+            // Restaurar estilos de centrado originales
+            previewSelector.style.display = 'block';
+            previewSelector.style.textAlign = 'center';
+            previewSelector.style.justifyContent = 'center';
+            previewSelector.style.alignItems = 'center';
+            
+            // Asegurar que el contenedor interno también esté centrado
+            const selectorContainer = previewSelector.querySelector('.selector-container');
+            if (selectorContainer) {
+                selectorContainer.style.display = 'flex';
+                selectorContainer.style.justifyContent = 'center';
+                selectorContainer.style.alignItems = 'center';
+            }
+            
+            // Asegurar que el grupo de radio buttons esté centrado
+            const radioGroup = previewSelector.querySelector('.radio-group');
+            if (radioGroup) {
+                radioGroup.style.display = 'flex';
+                radioGroup.style.justifyContent = 'center';
+                radioGroup.style.alignItems = 'center';
+                radioGroup.style.gap = '1rem';
+            }
+        }
+        
+        console.log('✅ Video mode styles removed and selector centering restored');
     }
     
     switchToHeroVideo() {
-
-        
         // Buscar el video de fondo
         const backgroundVideo = document.querySelector('.background-video');
         if (backgroundVideo) {
-            // Cambiar a un video específico del hero (puedes ajustar la ruta)
-            backgroundVideo.src = 'video/apartamento/video-1.mp4';
+            // Determinar qué video usar según el tipo de proyecto
+            let videoPath;
+            if (this.currentProjectType === 'casa') {
+                videoPath = 'video/casa/video-0.mp4';
+                console.log('🏡 Using Casa video:', videoPath);
+            } else {
+                videoPath = 'video/apartamento/video-1.mp4';
+                console.log('🏢 Using Apartamento video:', videoPath);
+            }
+            
+            // Cambiar al video correspondiente
+            backgroundVideo.src = videoPath;
             backgroundVideo.style.opacity = '1';
             backgroundVideo.style.zIndex = '1';
             
             // Asegurar que el video esté reproduciéndose
             backgroundVideo.play().catch(e => {
-    
+                console.log('⚠️ Error playing video:', e);
             });
         }
         
@@ -1257,45 +1534,78 @@ class ImageFilterSystem {
     }
     
     restoreHeroElements() {
-        
         // Remover clase del body
         document.body.classList.remove('hero-video-mode');
+        
+        // Remover estilos específicos del modo video
+        this.removeVideoModeStyles();
+        
+        // Restaurar todo el contenido del hero
+        const heroContent = document.querySelector('.hero-content');
+        if (heroContent) {
+            heroContent.style.display = 'block';
+            setTimeout(() => {
+                heroContent.style.opacity = '1';
+                heroContent.style.transform = 'translateY(0)';
+            }, 100);
+        }
+        
+        // Restaurar el selector de proyecto
+        const previewSelector = document.querySelector('.preview-selector');
+        if (previewSelector) {
+            previewSelector.style.display = 'block';
+            // Asegurar que el centrado se mantenga
+            previewSelector.style.textAlign = 'center';
+            previewSelector.style.justifyContent = 'center';
+            previewSelector.style.alignItems = 'center';
+            
+            setTimeout(() => {
+                previewSelector.style.opacity = '1';
+                previewSelector.style.transform = 'translateY(0)';
+            }, 200);
+        }
         
         // Restaurar la sección de estadísticas
         const previewStats = document.querySelector('.preview-stats');
         if (previewStats) {
-            previewStats.style.display = '';
-            previewStats.style.opacity = '';
-            previewStats.style.transform = '';
-            previewStats.style.transition = '';
+            previewStats.style.display = 'block';
+            setTimeout(() => {
+                previewStats.style.opacity = '1';
+                previewStats.style.transform = 'translateY(0)';
+            }, 300);
         }
         
         // Restaurar el botón de recorrer
         const heroRecorrerBtn = document.querySelector('.hero-recorrer-button');
         if (heroRecorrerBtn) {
-            heroRecorrerBtn.style.display = '';
-            heroRecorrerBtn.style.opacity = '';
-            heroRecorrerBtn.style.transform = '';
-            heroRecorrerBtn.style.transition = '';
+            heroRecorrerBtn.style.display = 'block';
+            setTimeout(() => {
+                heroRecorrerBtn.style.opacity = '1';
+                heroRecorrerBtn.style.transform = 'translateY(0)';
+            }, 400);
         }
         
         // Restaurar el location tag
         const locationTag = document.querySelector('.location-tag-container');
         if (locationTag) {
-            locationTag.style.display = '';
-            locationTag.style.opacity = '';
-            locationTag.style.transform = '';
-            locationTag.style.transition = '';
+            locationTag.style.display = 'block';
+            setTimeout(() => {
+                locationTag.style.opacity = '1';
+                locationTag.style.transform = 'translateY(0)';
+            }, 500);
         }
         
         // Restaurar el título del hero si existe
         const heroTitle = document.querySelector('.preview-hero .hero-title');
         if (heroTitle) {
-            heroTitle.style.display = '';
-            heroTitle.style.opacity = '';
-            heroTitle.style.transform = '';
-            heroTitle.style.transition = '';
+            heroTitle.style.display = 'block';
+            setTimeout(() => {
+                heroTitle.style.opacity = '1';
+                heroTitle.style.transform = 'translateY(0)';
+            }, 600);
         }
+        
+        console.log('✅ Hero elements restored');
         
 
     }
@@ -1337,18 +1647,28 @@ class ImageFilterSystem {
     }
     
     nextHeroVideo() {
-
+        // Array de videos disponibles según el tipo de proyecto
+        let heroVideos;
         
-        // Array de videos disponibles
-        const heroVideos = [
-            'video/apartamento/video-0.mp4'  // Video principal - ya existe
-            // 'video/apartamento/video-1.mp4',  // Descomenta cuando lo cargues
-            // 'video/casa/video-0.mp4',         // Descomenta cuando lo cargues
-            // 'video/casa/video-1.mp4',         // Descomenta cuando lo cargues
-            // 'video/equipamiento/gym.mp4',     // Descomenta cuando lo cargues
-            // 'video/equipamiento/kincho.mp4',  // Descomenta cuando lo cargues
-            // 'video/equipamiento/picisna.mp4'  // Descomenta cuando lo cargues
-        ];
+        if (this.currentProjectType === 'casa') {
+            // Videos de casa
+            heroVideos = [
+                'video/casa/video-0.mp4',
+                'video/casa/video-1.mp4',
+                'video/casa/living.mp4',
+                'video/casa/dormitorio.mp4',
+                'video/casa/cocina.mp4',
+                'video/casa/cosina.mp4',
+                'video/casa/baño1.mp4',
+                'video/casa/baño2.mp4'
+            ];
+        } else {
+            // Videos de apartamento
+            heroVideos = [
+                'video/apartamento/video-0.mp4',
+                'video/apartamento/video-1.mp4'
+            ];
+        }
         
         // Obtener video actual
         const backgroundVideo = document.querySelector('.background-video');
@@ -1388,10 +1708,14 @@ class ImageFilterSystem {
         // Restaurar elementos del hero
         this.restoreHeroElements();
         
-        // Restaurar video original
+        // Restaurar video original según el tipo de proyecto
         const backgroundVideo = document.querySelector('.background-video');
         if (backgroundVideo) {
-            backgroundVideo.src = 'video/apartamento/video-0.mp4';
+            if (this.currentProjectType === 'casa') {
+                backgroundVideo.src = 'video/casa/video-0.mp4';
+            } else {
+                backgroundVideo.src = 'video/apartamento/video-0.mp4';
+            }
             backgroundVideo.style.opacity = '0.3';
             backgroundVideo.style.zIndex = '0';
         }
@@ -2646,6 +2970,442 @@ class ImageFilterSystem {
             
             console.log('✅ Botón Volver configurado');
         }
+    }
+    
+    setupProjectTypeSelector() {
+        // Detectar cambios en el selector de proyecto (Apartamento/Casa)
+        const radioOptions = document.querySelectorAll('.radio-option');
+        
+        radioOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                // Remover selección previa
+                radioOptions.forEach(o => o.classList.remove('selected'));
+                // Agregar selección actual
+                option.classList.add('selected');
+                
+                // Determinar el tipo seleccionado
+                const label = option.querySelector('.radio-label');
+                if (label) {
+                    const projectType = label.textContent.toLowerCase().trim();
+                    this.updateProjectType(projectType);
+                }
+            });
+        });
+        
+        // Detectar el tipo inicial seleccionado
+        this.detectInitialProjectType();
+        
+        console.log('✅ Project type selector setup complete');
+    }
+    
+    detectInitialProjectType() {
+        // Buscar la opción seleccionada inicialmente
+        const selectedOption = document.querySelector('.radio-option.selected');
+        if (selectedOption) {
+            const label = selectedOption.querySelector('.radio-label');
+            if (label) {
+                const projectType = label.textContent.toLowerCase().trim();
+                this.updateProjectType(projectType);
+                console.log(`🏠 Initial project type detected: ${projectType}`);
+            }
+        }
+    }
+    
+    updateProjectType(type) {
+        console.log(`🏠 Project type changed to: ${type}`);
+        this.currentProjectType = type;
+        
+        // Actualizar el sistema según el tipo de proyecto
+        if (type === 'casa') {
+            console.log('🏡 Switching to Casa mode');
+            this.showHouseCard();
+        } else {
+            console.log('🏢 Switching to Apartamento mode');
+            this.showApartmentFilters();
+        }
+    }
+    
+    showHouseCard() {
+        const apartmentsContent = document.querySelector('.apartments-content');
+        if (!apartmentsContent) return;
+        
+        const apartmentList = document.getElementById('apartmentList');
+        const initialMessage = document.getElementById('initialMessage');
+        const apartmentTypeSelector = document.querySelector('.apartment-type-selector');
+        const apartmentFilters = document.querySelector('.apartment-filters');
+        
+        // Ocultar elementos de apartamentos
+        if (apartmentList) apartmentList.style.display = 'none';
+        if (initialMessage) initialMessage.style.display = 'none';
+        if (apartmentTypeSelector) apartmentTypeSelector.style.display = 'none';
+        if (apartmentFilters) apartmentFilters.style.display = 'none';
+        
+        // Cambiar título y subtítulo
+        const sectionTitle = apartmentsContent.querySelector('.section-title');
+        const sectionSubtitle = apartmentsContent.querySelector('.section-subtitle');
+        
+        if (sectionTitle) sectionTitle.textContent = 'Descubre nuestras exclusivas casas';
+        if (sectionSubtitle) sectionSubtitle.textContent = 'Con las mejores vistas y acabados de lujo';
+        
+        // Verificar si ya existe una card de casa
+        const existingHouseCard = document.querySelector('.house-card');
+        if (!existingHouseCard) {
+            // Crear y mostrar la card de casa solo si no existe
+            this.createHouseCard();
+        } else {
+            // Si ya existe, asegurar que esté visible
+            existingHouseCard.style.display = 'block';
+        }
+    }
+    
+    showApartmentFilters() {
+        const apartmentsContent = document.querySelector('.apartments-content');
+        if (!apartmentsContent) return;
+        
+        const apartmentList = document.getElementById('apartmentList');
+        const initialMessage = document.getElementById('initialMessage');
+        const apartmentTypeSelector = document.querySelector('.apartment-type-selector');
+        const apartmentFilters = document.querySelector('.apartment-filters');
+        
+        // Mostrar elementos de apartamentos
+        if (apartmentList) apartmentList.style.display = 'none';
+        if (initialMessage) initialMessage.style.display = 'block';
+        if (apartmentTypeSelector) apartmentTypeSelector.style.display = 'flex';
+        if (apartmentFilters) apartmentFilters.style.display = 'flex';
+        
+        // Restaurar título y subtítulo originales
+        const sectionTitle = apartmentsContent.querySelector('.section-title');
+        const sectionSubtitle = apartmentsContent.querySelector('.section-subtitle');
+        
+        if (sectionTitle) sectionTitle.textContent = 'Descubre nuestros exclusivos apartamentos';
+        if (sectionSubtitle) sectionSubtitle.textContent = 'Con las mejores vistas y acabados de lujo';
+        
+        // Remover card de casa si existe
+        const existingHouseCard = document.querySelector('.house-card');
+        if (existingHouseCard) {
+            existingHouseCard.remove();
+        }
+    }
+    
+    createHouseCard() {
+        const apartmentsContent = document.querySelector('.apartments-content');
+        
+        // Remover card de casa existente si hay una
+        const existingHouseCard = document.querySelector('.house-card');
+        if (existingHouseCard) {
+            existingHouseCard.remove();
+        }
+        
+        // Crear la card de casa
+        const houseCard = document.createElement('div');
+        houseCard.className = 'house-card apartment-card';
+        houseCard.style.cssText = `
+            animation: 0.5s ease 0s 1 normal none running fadeInUp;
+            display: block;
+            max-width: 400px;
+            margin: 2rem auto;
+        `;
+        
+        houseCard.innerHTML = `
+            <div class="apartment-image">
+                <img src="video/imagenes/casa/casa-preview.svg" alt="Casa" 
+                     onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iQ2FzYSBQcmV2aWV3PC90ZXh0Pjwvc3ZnPg=='">
+            </div>
+            <div class="apartment-info">
+                <h3>Casa</h3>
+                <p><strong>Superficie:</strong> Variable</p>
+                <p><strong>Precio:</strong> Consultar</p>
+                <p><strong>Tipo:</strong> Casa Independiente</p>
+                <div class="apartment-actions">
+                    <button class="btn-secondary watchVideoBtn" data-apartment="Casa" data-superficie="Variable" data-precio="Consultar" data-tipo-departamento="Casa Independiente" data-tipo="casa" data-superficie-code="casa" data-precio-code="casa" data-index="1">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M8 5v14l11-7z" fill="currentColor"></path>
+                        </svg>
+                        Recorrer
+                    </button>
+                    <button class="btn-primary contactModelBtn" data-apartment="Casa" data-superficie="Variable" data-precio="Consultar">
+                        Solicitar Información
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        // Insertar después del subtítulo
+        const sectionSubtitle = apartmentsContent.querySelector('.section-subtitle');
+        if (sectionSubtitle) {
+            sectionSubtitle.insertAdjacentElement('afterend', houseCard);
+        } else {
+            apartmentsContent.appendChild(houseCard);
+        }
+        
+        // Agregar event listeners a los botones de la casa
+        this.addHouseCardEventListeners(houseCard);
+    }
+    
+    addHouseCardEventListeners(houseCard) {
+        const watchVideoBtn = houseCard.querySelector('.watchVideoBtn');
+        const contactBtn = houseCard.querySelector('.contactModelBtn');
+        
+        if (watchVideoBtn) {
+            watchVideoBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                console.log('🎬 Iniciando recorrido de casa');
+                // Iniciar el recorrido de casa
+                this.startHouseTour();
+            });
+        }
+        
+        if (contactBtn) {
+            contactBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                console.log('📞 Mostrando detalles de casa');
+                // Mostrar detalles de casa
+                this.showHouseDetails();
+            });
+        }
+    }
+    
+    showHouseDetails() {
+        const apartmentsContent = document.querySelector('.apartments-content');
+        if (!apartmentsContent) return;
+        
+        // Ocultar la card de casa
+        const houseCard = document.querySelector('.house-card');
+        if (houseCard) {
+            houseCard.style.display = 'none';
+        }
+        
+        // Mostrar la sección de detalles
+        const apartmentList = document.getElementById('apartmentList');
+        if (apartmentList) {
+            apartmentList.style.display = 'flex';
+            apartmentList.style.opacity = '1';
+            apartmentList.style.transform = 'translateY(0px)';
+            apartmentList.style.animation = '0.5s ease 0s 1 normal none running fadeInUp';
+            apartmentList.style.justifyContent = 'center';
+            apartmentList.style.alignItems = 'center';
+            apartmentList.style.minHeight = '60vh';
+        }
+        
+        // Crear y mostrar la card de detalles de casa
+        this.createHouseDetailsCard();
+    }
+    
+    createHouseDetailsCard() {
+        const apartmentList = document.getElementById('apartmentList');
+        if (!apartmentList) return;
+        
+        // Limpiar contenido existente
+        apartmentList.innerHTML = '';
+        
+        // Crear la card de detalles de casa
+        const houseDetailsCard = document.createElement('div');
+        houseDetailsCard.className = 'apartment-card details-mode';
+        houseDetailsCard.style.cssText = `
+            animation: 0.5s ease 0s 1 normal none running fadeInUp;
+            display: block;
+            opacity: 1;
+            transform: scale(1);
+            transition: 0.3s;
+        `;
+        
+        houseDetailsCard.innerHTML = `
+            <div class="apartment-details-mode">
+                <div class="details-header">
+                    <button class="btn-back attention-mode" onclick="window.imageFilterSystem.exitHouseDetailsMode()" style="position: relative;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                        </svg>
+                        Volver
+                        <div class="button-particles" style="position: absolute; top: 0px; left: 0px; width: 100%; height: 100%; pointer-events: none; z-index: 1;">
+                            <div class="attention-particle" style="position: absolute; width: 4px; height: 4px; background: linear-gradient(45deg, rgb(0, 123, 255), rgb(0, 212, 255)); border-radius: 50%; animation: 3s ease-out 0s infinite normal none running particleFloat;"></div>
+                            <div class="attention-particle" style="position: absolute; width: 4px; height: 4px; background: linear-gradient(45deg, rgb(0, 123, 255), rgb(0, 212, 255)); border-radius: 50%; animation: 3s ease-out 0.2s infinite normal none running particleFloat;"></div>
+                            <div class="attention-particle" style="position: absolute; width: 4px; height: 4px; background: linear-gradient(45deg, rgb(0, 123, 255), rgb(0, 212, 255)); border-radius: 50%; animation: 3s ease-out 0.4s infinite normal none running particleFloat;"></div>
+                            <div class="attention-particle" style="position: absolute; width: 4px; height: 4px; background: linear-gradient(45deg, rgb(0, 123, 255), rgb(0, 212, 255)); border-radius: 50%; animation: 3s ease-out 0.6s infinite normal none running particleFloat;"></div>
+                            <div class="attention-particle" style="position: absolute; width: 4px; height: 4px; background: linear-gradient(45deg, rgb(0, 123, 255), rgb(0, 212, 255)); border-radius: 50%; animation: 3s ease-out 0.8s infinite normal none running particleFloat;"></div>
+                            <div class="attention-particle" style="position: absolute; width: 4px; height: 4px; background: linear-gradient(45deg, rgb(0, 123, 255), rgb(0, 212, 255)); border-radius: 50%; animation: 3s ease-out 1s infinite normal none running particleFloat;"></div>
+                            <div class="attention-particle" style="position: absolute; width: 4px; height: 4px; background: linear-gradient(45deg, rgb(0, 123, 255), rgb(0, 212, 255)); border-radius: 50%; animation: 3s ease-out 1.2s infinite normal none running particleFloat;"></div>
+                            <div class="attention-particle" style="position: absolute; width: 4px; height: 4px; background: linear-gradient(45deg, rgb(0, 123, 255), rgb(0, 212, 255)); border-radius: 50%; animation: 3s ease-out 1.4s infinite normal none running particleFloat;"></div>
+                        </div>
+                    </button>
+                    <h3 class="details-title">Casa</h3>
+                    <button class="btn-collapse" onclick="window.imageFilterSystem.toggleCollapse()" title="Contraer/Expandir">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                        </svg>
+                    </button>
+                </div>
+                
+                <div class="details-content">
+                    <div class="details-left-panel">
+                        <div class="apartment-specs">
+                            <div class="spec-item">
+                                <label>Habitaciones:</label>
+                                <span>Variable</span>
+                            </div>
+                            <div class="spec-item">
+                                <label>Área:</label>
+                                <span>Variable</span>
+                            </div>
+                            <div class="spec-item">
+                                <label>Jardín:</label>
+                                <span>Sí</span>
+                            </div>
+                            <div class="spec-item">
+                                <label>Estacionamiento:</label>
+                                <span>2+</span>
+                            </div>
+                        </div>
+                        
+                        <div class="orientation-section">
+                            <label>Orientación:</label>
+                            <span>Norte/Sur</span>
+                        </div>
+                        
+                        <div class="floor-type-section">
+                            <label>Tipo de Casa:</label>
+                            <div class="floor-type-options">
+                                <button class="floor-type-btn active">Casa A</button>
+                                <button class="floor-type-btn">Casa B</button>
+                                <button class="floor-type-btn">Casa C</button>
+                            </div>
+                        </div>
+                        
+                        <div class="floor-plan">
+                            <h4>Plano de la Casa</h4>
+                            <div class="floor-plan-image">
+                                <img src="video/imagenes/casa/casa-preview.svg" alt="Plano 3D Casa" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iUGxhbm8gM0QgQ2FzYTwvdGV4dD48L3N2Zz4='">
+                            </div>
+                        </div>
+                        
+                        <div class="action-buttons">
+                            <button class="btn-secondary" onclick="window.imageFilterSystem.sendPDF('Casa')">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                                    <polyline points="14,2 14,8 20,8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></polyline>
+                                    <line x1="16" y1="13" x2="8" y2="13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></line>
+                                    <line x1="16" y1="17" x2="8" y2="17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></line>
+                                    <polyline points="10,9 9,9 8,9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></polyline>
+                                </svg>
+                                Enviar PDF
+                            </button>
+                            <button class="btn-primary quote-btn" onclick="window.imageFilterSystem.quoteModel('Casa')">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="currentColor"></path>
+                                </svg>
+                                Cotizar Modelo
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="details-right-panel">
+                        <div class="image-gallery">
+                            <button class="gallery-nav prev" onclick="window.imageFilterSystem.prevImage()">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                                </svg>
+                            </button>
+                            
+                            <div class="thumbnail-container">
+                                <div class="thumbnail active" data-index="0" onclick="window.imageFilterSystem.openImageModal(0)">
+                                    <img src="video/imagenes/carrousel/car_01.png" alt="Imagen 1" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iSW1hZ2VuIDE8L3RleHQ+PC9zdmc+'" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iSW1hZ2VuIDE8L3RleHQ+PC9zdmc+'">
+                                </div>
+                                <div class="thumbnail" data-index="1" onclick="window.imageFilterSystem.openImageModal(1)">
+                                    <img src="video/imagenes/carrousel/car_02.png" alt="Imagen 2" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iSW1hZ2VuIDI8L3RleHQ+PC9zdmc+'" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iSW1hZ2VuIDI8L3RleHQ+PC9zdmc+'">
+                                </div>
+                                <div class="thumbnail" data-index="2" onclick="window.imageFilterSystem.openImageModal(2)">
+                                    <img src="video/imagenes/carrousel/car_03.png" alt="Imagen 3" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iSW1hZ2VuIDM8L3RleHQ+PC9zdmc+'" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iSW1hZ2VuIDM8L3RleHQ+PC9zdmc+'">
+                                </div>
+                                <div class="thumbnail" data-index="3">
+                                    <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iSmFyZMOtbjwvdGV4dD48L3N2Zz4=" alt="Jardín" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iSmFyZMOtbjwvdGV4dD48L3N2Zz4=">
+                                </div>
+                            </div>
+                            
+                            <button class="gallery-nav next" onclick="window.imageFilterSystem.nextImage()">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        apartmentList.appendChild(houseDetailsCard);
+        
+        // Agregar event listeners a los botones de la card de detalles
+        this.addHouseDetailsEventListeners(houseDetailsCard);
+    }
+    
+    addHouseDetailsEventListeners(houseDetailsCard) {
+        // Event listeners para los botones de tipo de casa
+        const floorTypeBtns = houseDetailsCard.querySelectorAll('.floor-type-btn');
+        floorTypeBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                floorTypeBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            });
+        });
+        
+        // Event listeners para la galería de imágenes
+        const thumbnails = houseDetailsCard.querySelectorAll('.thumbnail');
+        thumbnails.forEach((thumb, index) => {
+            thumb.addEventListener('click', () => {
+                thumbnails.forEach(t => t.classList.remove('active'));
+                thumb.classList.add('active');
+                // Aquí puedes agregar lógica para cambiar la imagen principal
+            });
+        });
+    }
+    
+    exitHouseDetailsMode() {
+        const apartmentsContent = document.querySelector('.apartments-content');
+        if (!apartmentsContent) return;
+        
+        // Ocultar la sección de detalles
+        const apartmentList = document.getElementById('apartmentList');
+        if (apartmentList) {
+            apartmentList.style.display = 'none';
+            apartmentList.innerHTML = '';
+        }
+        
+        // Mostrar nuevamente la card de casa
+        const houseCard = document.querySelector('.house-card');
+        if (houseCard) {
+            houseCard.style.display = 'block';
+        }
+    }
+    
+    startHouseTour() {
+        // Lógica específica para iniciar el tour de casa
+        console.log('🏠 Iniciando tour de casa...');
+        
+        // Verificar si estamos en modo detalles
+        const isInDetailsMode = document.querySelector('.apartment-card.details-mode') !== null;
+        
+        if (isInDetailsMode) {
+            // Si estamos en modo detalles, cerrar y volver a la card de casa
+            this.exitHouseDetailsMode();
+        }
+        
+        // Aquí puedes implementar la lógica específica para el recorrido de casa
+        // Por ejemplo, iniciar el video tour o mostrar el recorrido virtual
+        
+        // Simular el fin del recorrido después de un tiempo
+        setTimeout(() => {
+            console.log('🏠 Tour de casa completado');
+            // Asegurar que volvemos al estado correcto
+            if (this.currentProjectType === 'casa') {
+                this.showHouseCard();
+            }
+        }, 5000); // 5 segundos de simulación
+    }
+    
+    contactHouse() {
+        // Lógica específica para contacto de casa
+        console.log('📞 Contactando sobre casa...');
+        // Aquí puedes implementar la lógica específica para casas
     }
     
     // Variables para el carrusel de features

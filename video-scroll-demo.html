@@ -1471,8 +1471,29 @@
             apartmentCards.forEach((card, index) => {
                 // Extract information from the card
                 const title = card.querySelector('h3');
-                const superficieElement = card.querySelector('p:contains("Superficie")') || card.querySelector('p');
-                const precioElement = card.querySelector('p:contains("Precio")') || card.querySelectorAll('p')[1];
+                // Buscar el párrafo que contenga "Superficie"
+                const paragraphs = card.querySelectorAll('p');
+                let superficieElement = null;
+                for (const p of paragraphs) {
+                    if (p.textContent.includes('Superficie')) {
+                        superficieElement = p;
+                        break;
+                    }
+                }
+                if (!superficieElement) {
+                    superficieElement = card.querySelector('p');
+                }
+                // Buscar el párrafo que contenga "Precio"
+                let precioElement = null;
+                for (const p of paragraphs) {
+                    if (p.textContent.includes('Precio')) {
+                        precioElement = p;
+                        break;
+                    }
+                }
+                if (!precioElement) {
+                    precioElement = card.querySelectorAll('p')[1];
+                }
                 
                 if (title && superficieElement && precioElement) {
                     const titleText = title.textContent;

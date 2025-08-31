@@ -497,7 +497,15 @@ class ComponentManager {
             
             // Filtrar por superficie
             if (surfaceValue) {
-                const surfaceText = card.querySelector('p:contains("Superficie")')?.textContent || '';
+                // Buscar el párrafo que contenga "Superficie"
+                const paragraphs = card.querySelectorAll('p');
+                let surfaceText = '';
+                for (const p of paragraphs) {
+                    if (p.textContent.includes('Superficie')) {
+                        surfaceText = p.textContent;
+                        break;
+                    }
+                }
                 if (!this.matchesSurfaceFilter(surfaceText, surfaceValue)) {
                     showCard = false;
                 }
