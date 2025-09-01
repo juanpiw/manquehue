@@ -251,7 +251,14 @@ class ContentManager {
         const apartmentList = document.getElementById('apartmentList');
         if (!apartmentList) return;
 
+        // Limpiar la lista de apartamentos
         apartmentList.innerHTML = '';
+        
+        // Si el tipo de proyecto es "casa", no generar tarjetas automáticamente
+        if (this.currentType === 'casa') {
+            console.log('🏠 Proyecto tipo "casa" seleccionado - no se generarán tarjetas automáticamente');
+            return;
+        }
         
         // Verificar que apartments existe y es un array
         if (!apartments || !Array.isArray(apartments)) {
