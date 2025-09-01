@@ -1717,7 +1717,10 @@ class ImageFilterSystem {
             // Videos de apartamento
             heroVideos = [
                 'video/apartamento/video-0.mp4',
-                'video/apartamento/video-1.mp4'
+                'video/apartamento/video-1.mp4',
+                'video/apartamento/livin_depa.mp4',
+                'video/apartamento/cocina_depa.mp4',
+                'video/apartamento/baño_depa.mp4'
             ];
         }
         
@@ -1852,6 +1855,7 @@ class ImageFilterSystem {
                             <span>Norte</span>
                         </div>
                         
+                        ${apartment !== 'Casa' ? `
                         <div class="floor-type-section">
                             <label>Tipo de piso:</label>
                             <div class="floor-type-options">
@@ -1860,6 +1864,7 @@ class ImageFilterSystem {
                                 <button class="floor-type-btn">Tipo C</button>
                             </div>
                         </div>
+                        ` : ''}
                         
                         <div class="floor-plan">
                             <h4>Plano del Apartamento</h4>
@@ -3303,7 +3308,7 @@ class ImageFilterSystem {
         
         houseCard.innerHTML = `
             <div class="apartment-image">
-                <img src="video/imagenes/casa/casa-preview.svg" alt="Casa" 
+                <img src="video/imagenes/casa/casa1.jpeg" alt="Casa" 
                      onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iQ2FzYSBQcmV2aWV3PC90ZXh0Pjwvc3ZnPg=='">
             </div>
             <div class="apartment-info">
@@ -3474,7 +3479,7 @@ class ImageFilterSystem {
                         <div class="floor-plan">
                             <h4>Plano de la Casa</h4>
                             <div class="floor-plan-image">
-                                <img src="video/imagenes/casa/casa-preview.svg" alt="Plano 3D Casa" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iUGxhbm8gM0QgQ2FzYTwvdGV4dD48L3N2Zz4='">
+                                <img src="video/imagenes/casa/casa2.png" alt="Plano 3D Casa" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iUGxhbm8gM0QgQ2FzYTwvdGV4dD48L3N2Zz4='">
                             </div>
                         </div>
                         
