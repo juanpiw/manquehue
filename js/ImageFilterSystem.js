@@ -1004,6 +1004,11 @@ class ImageFilterSystem {
             existingControls.remove();
         }
         
+        // Determinar qué función de detalles usar según el tipo de proyecto
+        const detailsFunction = this.currentProjectType === 'casa' ? 
+            `window.imageFilterSystem.showHouseDetails()` : 
+            `window.imageFilterSystem.showApartmentDetails('${apartment}', '${superficie}', '${precio}')`;
+        
         const controlsHTML = `
             <div id="recorridoControls" class="recorrido-controls">
                 <div class="recorrido-info">
@@ -1017,7 +1022,7 @@ class ImageFilterSystem {
                         </svg>
                         Salir del Recorrido
                     </button>
-                    <button class="btn-secondary" onclick="window.imageFilterSystem.showApartmentDetails('${apartment}', '${superficie}', '${precio}')">
+                    <button class="btn-secondary" onclick="${detailsFunction}">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                         </svg>
@@ -1034,6 +1039,12 @@ class ImageFilterSystem {
         `;
         
         document.body.insertAdjacentHTML('beforeend', controlsHTML);
+        
+        // Ocultar el botón hero-recorrer cuando se muestran los controles
+        const heroButton = document.querySelector('.hero-recorrer-button');
+        if (heroButton) {
+            heroButton.style.display = 'none';
+        }
         
         // Agregar estilos específicos para los controles
         this.addRecorridoStyles();
@@ -1128,6 +1139,12 @@ class ImageFilterSystem {
         const styles = document.getElementById('recorridoStyles');
         if (styles) styles.remove();
         
+        // Mostrar de nuevo el botón hero-recorrer
+        const heroButton = document.querySelector('.hero-recorrer-button');
+        if (heroButton) {
+            heroButton.style.display = 'block';
+        }
+        
         // Restaurar todas las tarjetas
         this.restoreAllCards();
         
@@ -1138,18 +1155,34 @@ class ImageFilterSystem {
     }
     
     restoreAllCards() {
+        // Restaurar tarjetas de apartamentos
         const apartmentList = document.getElementById('apartmentList');
-        if (!apartmentList) return;
+        if (apartmentList) {
+            // Restaurar layout original
+            apartmentList.style.display = 'grid';
+            apartmentList.style.justifyContent = 'center';
+            apartmentList.style.alignItems = 'start';
+            apartmentList.style.minHeight = 'auto';
+            
+            const cards = apartmentList.querySelectorAll('.apartment-card');
+            
+            cards.forEach(card => {
+                card.style.display = 'block';
+                card.style.opacity = '1';
+                card.style.transform = 'scale(1)';
+                card.classList.remove('recorrido-active');
+                
+                // Restaurar visibilidad de los botones de acción
+                const actionButtons = card.querySelector('.apartment-actions');
+                if (actionButtons) {
+                    actionButtons.style.display = 'flex';
+                }
+            });
+        }
         
-        // Restaurar layout original
-        apartmentList.style.display = 'grid';
-        apartmentList.style.justifyContent = 'center';
-        apartmentList.style.alignItems = 'start';
-        apartmentList.style.minHeight = 'auto';
-        
-        const cards = apartmentList.querySelectorAll('.apartment-card');
-        
-        cards.forEach(card => {
+        // Restaurar tarjetas de casa
+        const houseCards = document.querySelectorAll('.house-card');
+        houseCards.forEach(card => {
             card.style.display = 'block';
             card.style.opacity = '1';
             card.style.transform = 'scale(1)';
@@ -1162,23 +1195,41 @@ class ImageFilterSystem {
             }
         });
         
-        // Restaurar visibilidad de los filtros
-        const filtersSection = document.querySelector('.apartment-filters');
-        if (filtersSection) {
-            filtersSection.style.display = 'flex';
-        }
-        
-        const typeSelector = document.querySelector('.apartment-type-selector');
-        if (typeSelector) {
-            typeSelector.style.display = 'flex';
+        // Restaurar visibilidad de los filtros según el tipo de proyecto actual
+        if (this.currentProjectType === 'casa') {
+            // Para casa, ocultar filtros de apartamentos
+            const filtersSection = document.querySelector('.apartment-filters');
+            if (filtersSection) {
+                filtersSection.style.display = 'none';
+            }
+            
+            const typeSelector = document.querySelector('.apartment-type-selector');
+            if (typeSelector) {
+                typeSelector.style.display = 'none';
+            }
+        } else {
+            // Para apartamentos, mostrar filtros
+            const filtersSection = document.querySelector('.apartment-filters');
+            if (filtersSection) {
+                filtersSection.style.display = 'flex';
+            }
+            
+            const typeSelector = document.querySelector('.apartment-type-selector');
+            if (typeSelector) {
+                typeSelector.style.display = 'flex';
+            }
         }
     }
     
     restoreBackgroundVideo() {
-        // Restaurar el video de fondo original (puedes ajustar esto según tu configuración)
+        // Restaurar el video de fondo original según el tipo de proyecto actual
         const backgroundVideo = document.querySelector('.background-video');
         if (backgroundVideo) {
-            backgroundVideo.src = 'video/apartamento/video-0.mp4'; // Video por defecto
+            if (this.currentProjectType === 'casa') {
+                backgroundVideo.src = 'video/casa/video-0.mp4';
+            } else {
+                backgroundVideo.src = 'video/apartamento/video-0.mp4';
+            }
             backgroundVideo.style.opacity = '1';
         }
     }
@@ -1890,6 +1941,150 @@ class ImageFilterSystem {
         this.initializeImageCarousel();
         
         console.log('✅ Tarjeta transformada a modo detalles');
+    }
+    
+    transformCardToHouseDetails(card, apartment, superficie, precio) {
+        // Crear el nuevo contenido con carrusel - EXACTAMENTE igual que transformCardToDetails
+        const detailsHTML = `
+            <div class="apartment-details-mode">
+                <div class="details-header">
+                    <button class="btn-back attention-mode" onclick="window.imageFilterSystem.exitHouseDetailsMode()" style="position: relative;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                        </svg>
+                        Volver
+                        <div class="button-particles" style="position: absolute; top: 0px; left: 0px; width: 100%; height: 100%; pointer-events: none; z-index: 1;">
+                            <div class="attention-particle" style="position: absolute; width: 4px; height: 4px; background: linear-gradient(45deg, rgb(0, 123, 255), rgb(0, 212, 255)); border-radius: 50%; animation: 3s ease-out 0s infinite normal none running particleFloat;"></div>
+                            <div class="attention-particle" style="position: absolute; width: 4px; height: 4px; background: linear-gradient(45deg, rgb(0, 123, 255), rgb(0, 212, 255)); border-radius: 50%; animation: 3s ease-out 0.2s infinite normal none running particleFloat;"></div>
+                            <div class="attention-particle" style="position: absolute; width: 4px; height: 4px; background: linear-gradient(45deg, rgb(0, 123, 255), rgb(0, 212, 255)); border-radius: 50%; animation: 3s ease-out 0.4s infinite normal none running particleFloat;"></div>
+                            <div class="attention-particle" style="position: absolute; width: 4px; height: 4px; background: linear-gradient(45deg, rgb(0, 123, 255), rgb(0, 212, 255)); border-radius: 50%; animation: 3s ease-out 0.6s infinite normal none running particleFloat;"></div>
+                            <div class="attention-particle" style="position: absolute; width: 4px; height: 4px; background: linear-gradient(45deg, rgb(0, 123, 255), rgb(0, 212, 255)); border-radius: 50%; animation: 3s ease-out 0.8s infinite normal none running particleFloat;"></div>
+                            <div class="attention-particle" style="position: absolute; width: 4px; height: 4px; background: linear-gradient(45deg, rgb(0, 123, 255), rgb(0, 212, 255)); border-radius: 50%; animation: 3s ease-out 1s infinite normal none running particleFloat;"></div>
+                            <div class="attention-particle" style="position: absolute; width: 4px; height: 4px; background: linear-gradient(45deg, rgb(0, 123, 255), rgb(0, 212, 255)); border-radius: 50%; animation: 3s ease-out 1.2s infinite normal none running particleFloat;"></div>
+                            <div class="attention-particle" style="position: absolute; width: 4px; height: 4px; background: linear-gradient(45deg, rgb(0, 123, 255), rgb(0, 212, 255)); border-radius: 50%; animation: 3s ease-out 1.4s infinite normal none running particleFloat;"></div>
+                        </div>
+                    </button>
+                    <h3 class="details-title">${apartment}</h3>
+                    <button class="btn-collapse" onclick="window.imageFilterSystem.toggleCollapse()" title="Contraer/Expandir">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                        </svg>
+                    </button>
+                </div>
+                
+                <div class="details-content">
+                    <div class="details-left-panel">
+                        <div class="apartment-specs">
+                            <div class="spec-item">
+                                <label>Habitación:</label>
+                                <span>2</span>
+                            </div>
+                            <div class="spec-item">
+                                <label>Área:</label>
+                                <span>55,43 M²</span>
+                            </div>
+                            <div class="spec-item">
+                                <label>Balcón:</label>
+                                <span>12m²</span>
+                            </div>
+                            <div class="spec-item">
+                                <label>Área:</label>
+                                <span>4</span>
+                            </div>
+                        </div>
+                        
+                        <div class="orientation-section">
+                            <label>Orientación:</label>
+                            <span>Norte</span>
+                        </div>
+                        
+                        <div class="floor-type-section">
+                            <label>Tipo de piso:</label>
+                            <div class="floor-type-options">
+                                <button class="floor-type-btn active">Tipo A</button>
+                                <button class="floor-type-btn">Tipo B</button>
+                                <button class="floor-type-btn">Tipo C</button>
+                            </div>
+                        </div>
+                        
+                        <div class="floor-plan">
+                            <h4>Plano del Apartamento</h4>
+                            <div class="floor-plan-image">
+                                <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPlBsYW5vIDNEIEFwYXJ0YW1lbnRvPC90ZXh0Pjwvc3ZnPg==" plano="" 3d"="" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPlBsYW5vIDNEIEFwYXJ0YW1lbnRvPC90ZXh0Pjwvc3ZnPg=='">
+                            </div>
+                        </div>
+                        
+                        <div class="action-buttons">
+                            <button class="btn-secondary" onclick="window.imageFilterSystem.sendPDF('${apartment}')">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                                    <polyline points="14,2 14,8 20,8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></polyline>
+                                    <line x1="16" y1="13" x2="8" y2="13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></line>
+                                    <line x1="16" y1="17" x2="8" y2="17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></line>
+                                    <polyline points="10,9 9,9 8,9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></polyline>
+                                </svg>
+                                Enviar PDF
+                            </button>
+                            <button class="btn-primary quote-btn" onclick="window.imageFilterSystem.quoteModel('${apartment}')">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="currentColor"></path>
+                                </svg>
+                                Cotizar Modelo
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="details-right-panel">
+                        <div class="image-gallery">
+                            <button class="gallery-nav prev" onclick="window.imageFilterSystem.prevImage()">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                                </svg>
+                            </button>
+                            
+                            <div class="thumbnail-container">
+                                <div class="thumbnail active" data-index="0" onclick="window.imageFilterSystem.openImageModal(0)">
+                                    <img src="video/imagenes/carrousel/car_01.png" alt="Imagen 1" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iSW1hZ2VuIDE8L3RleHQ+PC9zdmc+'">
+                                </div>
+                                <div class="thumbnail" data-index="1" onclick="window.imageFilterSystem.openImageModal(1)">
+                                    <img src="video/imagenes/carrousel/car_02.png" alt="Imagen 2" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iSW1hZ2VuIDI8L3RleHQ+PC9zdmc+'">
+                                </div>
+                                <div class="thumbnail" data-index="2" onclick="window.imageFilterSystem.openImageModal(2)">
+                                    <img src="video/imagenes/carrousel/car_03.png" alt="Imagen 3" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMVAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iSW1hZ2VuIDM8L3RleHQ+PC9zdmc+'">
+                                </div>
+                                <div class="thumbnail" data-index="3">
+                                    <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkJhw7FvPC90ZXh0Pjwvc3ZnPg==" alt="Baño" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkJhw7FvPC90ZXh0Pjwvc3ZnPg==">
+                                </div>
+                            </div>
+                            
+                            <button class="gallery-nav next" onclick="window.imageFilterSystem.nextImage()">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Reemplazar el contenido de la tarjeta
+        card.innerHTML = detailsHTML;
+        card.classList.add('details-mode');
+        card.classList.remove('recorrido-active');
+        
+        // Animación de expansión INMEDIATA
+        card.style.transform = 'scale(1)';
+        card.style.opacity = '1';
+        card.style.transition = 'all 0.3s ease';
+        
+        // Agregar estilos específicos para el modo detalles
+        this.addDetailsModeStyles();
+        
+        // Inicializar el carrusel
+        this.initializeImageCarousel();
+        
+        console.log('✅ Tarjeta de casa transformada a modo detalles');
     }
     
     addDetailsModeStyles() {
@@ -3166,29 +3361,34 @@ class ImageFilterSystem {
     }
     
     showHouseDetails() {
-        const apartmentsContent = document.querySelector('.apartments-content');
-        if (!apartmentsContent) return;
+        // Ocultar inmediatamente el fondo oscuro SIN TIMER
+        this.hideSectionBackground();
         
-        // Ocultar la card de casa
-        const houseCard = document.querySelector('.house-card');
-        if (houseCard) {
-            houseCard.style.display = 'none';
+        // Agregar video de fondo por encima del fondo actual
+        this.addDetailsBackgroundVideo('Casa');
+        
+        // Encontrar la tarjeta activa de casa (buscar en toda la página, no solo en apartmentList)
+        const activeCard = document.querySelector('.house-card.recorrido-active, .apartment-card.recorrido-active');
+        if (!activeCard) {
+            // Si no hay tarjeta activa, buscar la tarjeta de casa
+            const houseCard = document.querySelector('.house-card');
+            if (houseCard) {
+                // Transformar la tarjeta de casa en modo detalles INMEDIATAMENTE usando la misma función que apartamentos
+                this.transformCardToDetails(houseCard, 'Casa', 'Variable', 'Consultar');
+            } else {
+                console.warn('No se encontró tarjeta de casa para mostrar detalles');
+                return;
+            }
+        } else {
+            // Transformar la tarjeta activa en modo detalles INMEDIATAMENTE usando la misma función que apartamentos
+            this.transformCardToDetails(activeCard, 'Casa', 'Variable', 'Consultar');
         }
         
-        // Mostrar la sección de detalles
-        const apartmentList = document.getElementById('apartmentList');
-        if (apartmentList) {
-            apartmentList.style.display = 'flex';
-            apartmentList.style.opacity = '1';
-            apartmentList.style.transform = 'translateY(0px)';
-            apartmentList.style.animation = '0.5s ease 0s 1 normal none running fadeInUp';
-            apartmentList.style.justifyContent = 'center';
-            apartmentList.style.alignItems = 'center';
-            apartmentList.style.minHeight = '60vh';
-        }
+        // Activar animaciones llamativas del botón volver
+        this.enhanceBackButtonVisibility();
         
-        // Crear y mostrar la card de detalles de casa
-        this.createHouseDetailsCard();
+        // Bloquear el scroll para mantener la sección visible
+        this.lockScrollToCurrentSection();
     }
     
     createHouseDetailsCard() {
@@ -3378,28 +3578,99 @@ class ImageFilterSystem {
     }
     
     startHouseTour() {
-        // Lógica específica para iniciar el tour de casa
         console.log('🏠 Iniciando tour de casa...');
         
-        // Verificar si estamos en modo detalles
-        const isInDetailsMode = document.querySelector('.apartment-card.details-mode') !== null;
-        
-        if (isInDetailsMode) {
-            // Si estamos en modo detalles, cerrar y volver a la card de casa
-            this.exitHouseDetailsMode();
+        // Encontrar la tarjeta de casa
+        const houseCard = document.querySelector('.house-card');
+        if (!houseCard) {
+            console.warn('No se encontró tarjeta de casa para iniciar tour');
+            return;
         }
         
-        // Aquí puedes implementar la lógica específica para el recorrido de casa
-        // Por ejemplo, iniciar el video tour o mostrar el recorrido virtual
+        // Ocultar todas las tarjetas excepto la de casa
+        this.hideAllCardsExcept(houseCard);
         
-        // Simular el fin del recorrido después de un tiempo
-        setTimeout(() => {
-            console.log('🏠 Tour de casa completado');
-            // Asegurar que volvemos al estado correcto
-            if (this.currentProjectType === 'casa') {
-                this.showHouseCard();
+        // Agregar clase activa a la tarjeta de casa
+        houseCard.classList.add('recorrido-active');
+        
+        // Mostrar controles de recorrido para casa
+        this.showRecorridoControls('Casa', 'Variable', 'Consultar');
+        
+        // Cargar video de casa
+        this.loadHouseVideo();
+        
+        console.log('🏠 Tour de casa iniciado correctamente');
+    }
+    
+    loadHouseVideo() {
+        const backgroundVideo = document.getElementById('backgroundVideo');
+        if (backgroundVideo) {
+            backgroundVideo.src = 'video/casa/video-0.mp4';
+            backgroundVideo.load();
+            backgroundVideo.play().catch(e => {
+                console.warn('Error reproduciendo video de casa:', e);
+            });
+        }
+    }
+    
+    hideAllCardsExcept(targetCard) {
+        // Ocultar todas las tarjetas de apartamentos
+        const apartmentList = document.getElementById('apartmentList');
+        if (apartmentList) {
+            const apartmentCards = apartmentList.querySelectorAll('.apartment-card');
+            apartmentCards.forEach(card => {
+                card.style.opacity = '0';
+                card.style.transform = 'scale(0.8)';
+                card.classList.remove('recorrido-active');
+                setTimeout(() => {
+                    card.style.display = 'none';
+                }, 500);
+            });
+        }
+        
+        // Ocultar la tarjeta de casa si no es la targetCard
+        const houseCards = document.querySelectorAll('.house-card');
+        houseCards.forEach(card => {
+            if (card !== targetCard) {
+                card.style.opacity = '0';
+                card.style.transform = 'scale(0.8)';
+                card.classList.remove('recorrido-active');
+                setTimeout(() => {
+                    card.style.display = 'none';
+                }, 500);
             }
-        }, 5000); // 5 segundos de simulación
+        });
+        
+        // Ocultar secciones de filtros y selectores
+        const filtersSection = document.querySelector('.apartment-filters');
+        if (filtersSection) {
+            filtersSection.style.display = 'none';
+        }
+        
+        const typeSelector = document.querySelector('.apartment-type-selector');
+        if (typeSelector) {
+            typeSelector.style.display = 'none';
+        }
+        
+        const initialMessage = document.getElementById('initialMessage');
+        if (initialMessage) {
+            initialMessage.style.display = 'none';
+        }
+        
+        // Asegurar que la targetCard esté visible y activa
+        if (targetCard) {
+            targetCard.style.display = 'block';
+            targetCard.style.opacity = '1';
+            targetCard.style.transform = 'scale(1.1)';
+            targetCard.style.transition = 'all 0.5s ease';
+            targetCard.classList.add('recorrido-active');
+            
+            // Ocultar los botones de acción para evitar confusión
+            const actionButtons = targetCard.querySelector('.apartment-actions');
+            if (actionButtons) {
+                actionButtons.style.display = 'none';
+            }
+        }
     }
     
     contactHouse() {
