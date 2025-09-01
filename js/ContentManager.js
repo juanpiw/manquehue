@@ -254,10 +254,29 @@ class ContentManager {
         // Limpiar la lista de apartamentos
         apartmentList.innerHTML = '';
         
-        // Si el tipo de proyecto es "casa", no generar tarjetas automáticamente
+        // Si el tipo de proyecto es "casa", crear la tarjeta de casa
         if (this.currentType === 'casa') {
-            console.log('🏠 Proyecto tipo "casa" seleccionado - no se generarán tarjetas automáticamente');
+            console.log('🏠 Proyecto tipo "casa" seleccionado - creando tarjeta de casa');
+            
+            // Remover tarjeta de casa existente si hay una
+            const existingHouseCard = document.querySelector('.house-card');
+            if (existingHouseCard) {
+                existingHouseCard.remove();
+            }
+            
+            // Crear la tarjeta de casa usando el ImageFilterSystem
+            if (window.imageFilterSystem && typeof window.imageFilterSystem.createHouseCard === 'function') {
+                window.imageFilterSystem.createHouseCard();
+            } else {
+                console.warn('⚠️ ImageFilterSystem no disponible o createHouseCard no encontrada');
+            }
             return;
+        }
+        
+        // Si no es "casa", remover tarjeta de casa si existe
+        const existingHouseCard = document.querySelector('.house-card');
+        if (existingHouseCard) {
+            existingHouseCard.remove();
         }
         
         // Verificar que apartments existe y es un array

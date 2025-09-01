@@ -1123,7 +1123,15 @@ class ImageFilterSystem {
     }
     
     exitRecorridoMode() {
-
+        console.log('🚪 Saliendo del modo recorrido...');
+        
+        // Verificar si hay una tarjeta en modo detalles
+        const detailsCard = document.querySelector('.apartment-card.details-mode, .house-card.details-mode');
+        if (detailsCard) {
+            console.log('🔄 Tarjeta en modo detalles detectada, saliendo también del modo detalles...');
+            this.exitDetailsMode();
+            return; // exitDetailsMode ya maneja la salida completa
+        }
         
         // Desbloquear el scroll
         this.unlockScroll();
@@ -1151,7 +1159,7 @@ class ImageFilterSystem {
         // Restaurar video de fondo original
         this.restoreBackgroundVideo();
         
-
+        console.log('✅ Modo recorrido desactivado');
     }
     
     restoreAllCards() {
@@ -1187,6 +1195,12 @@ class ImageFilterSystem {
             card.style.opacity = '1';
             card.style.transform = 'scale(1)';
             card.classList.remove('recorrido-active');
+            
+            // Si la tarjeta está en modo detalles, restaurarla a su estado original
+            if (card.classList.contains('details-mode')) {
+                console.log('🔄 Restaurando tarjeta de casa desde modo detalles...');
+                this.restoreOriginalCard(card);
+            }
             
             // Restaurar visibilidad de los botones de acción
             const actionButtons = card.querySelector('.apartment-actions');
@@ -1867,9 +1881,9 @@ class ImageFilterSystem {
                         ` : ''}
                         
                         <div class="floor-plan">
-                            <h4>Plano del Apartamento</h4>
+                            <h4>${apartment === 'Casa' ? 'Plano de la Casa' : 'Plano del Apartamento'}</h4>
                             <div class="floor-plan-image">
-                                <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPlBsYW5vIDNEIEFwYXJ0YW1lbnRvPC90ZXh0Pjwvc3ZnPg== alt="Plano 3D" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPlBsYW5vIDNEIEFwYXJ0YW1lbnRvPC90ZXh0Pjwvc3ZnPg=='">
+                                <img src="${apartment === 'Casa' ? 'video/imagenes/casa/planta-casa.png' : 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPlBsYW5vIDNEIEFwYXJ0YW1lbnRvPC90ZXh0Pjwvc3ZnPg=='}" alt="${apartment === 'Casa' ? 'Plano de la Casa' : 'Plano 3D'}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPlBsYW5vIDNEIEFwYXJ0YW1lbnRvPC90ZXh0Pjwvc3ZnPg=='">
                             </div>
                         </div>
                         
@@ -2781,6 +2795,10 @@ class ImageFilterSystem {
         const detailsCard = document.querySelector('.apartment-card.details-mode');
         if (!detailsCard) return;
         
+        // Verificar si estamos en modo de recorrido
+        const isInRecorridoMode = document.body.classList.contains('recorrido-mode') || 
+                                 document.querySelector('#recorridoControls') !== null;
+        
         // Restaurar la tarjeta original
         this.restoreOriginalCard(detailsCard);
         
@@ -2788,14 +2806,24 @@ class ImageFilterSystem {
         const styles = document.getElementById('detailsModeStyles');
         if (styles) styles.remove();
         
+        // Si estábamos en modo de recorrido, salir también del recorrido
+        if (isInRecorridoMode) {
+            console.log('🔄 También saliendo del modo recorrido...');
+            this.exitRecorridoMode();
+        }
+        
         console.log('✅ Modo detalles desactivado');
     }
     
     restoreOriginalCard(card) {
+        // Verificar si es una tarjeta de casa
+        const isHouseCard = card.classList.contains('house-card');
+        
         // Restaurar el contenido original de la tarjeta
-        const apartment = card.querySelector('.details-title')?.textContent || '1 Dormitorio';
-        const superficie = '40-60 m²';
-        const precio = '$2.000-3.000 UF';
+        const apartment = card.querySelector('.details-title')?.textContent || (isHouseCard ? 'Casa' : '1 Dormitorio');
+        const superficie = isHouseCard ? 'Variable' : '40-60 m²';
+        const precio = isHouseCard ? 'Consultar' : '$2.000-3.000 UF';
+        const tipo = isHouseCard ? 'Casa Independiente' : this.getTipoDepartamentoFromText(apartment, superficie, precio);
         
         // Restaurar el fondo de la sección
         const apartmentsSection = document.querySelector('.apartments-section');
@@ -2830,28 +2858,55 @@ class ImageFilterSystem {
             collapseBtn.classList.remove('collapsed');
         }
         
-        const originalHTML = `
-            <div class="apartment-image">
-                <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlbiAxPC90ZXh0Pjwvc3ZnPg==" alt="${apartment}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlbiAxPC90ZXh0Pjwvc3ZnPg=='">
-            </div>
-            <div class="apartment-info">
-                <h3>${apartment}</h3>
-                <p><strong>Superficie:</strong> ${superficie}</p>
-                <p><strong>Precio:</strong> ${precio}</p>
-                <p><strong>Tipo de Departamento:</strong> ${this.getTipoDepartamentoFromText(apartment, superficie, precio)}</p>
-                <div class="apartment-actions">
-                    <button class="btn-secondary watchVideoBtn" data-apartment="${apartment}" data-superficie="${superficie}" data-precio="${precio}">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M8 5v14l11-7z" fill="currentColor"></path>
-                        </svg>
-                        Recorrer
-                    </button>
-                    <button class="btn-primary contactModelBtn" data-apartment="${apartment}" data-superficie="${superficie}" data-precio="${precio}">
-                        Solicitar Información
-                    </button>
+        // Generar HTML original según el tipo de tarjeta
+        let originalHTML;
+        if (isHouseCard) {
+            originalHTML = `
+                <div class="apartment-image">
+                    <img src="video/imagenes/casa/casa1.jpeg" alt="Casa" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iQ2FzYSBQcmV2aWV3PC90ZXh0Pjwvc3ZnPg=='">
                 </div>
-            </div>
-        `;
+                <div class="apartment-info">
+                    <h3>${apartment}</h3>
+                    <p><strong>Superficie:</strong> ${superficie}</p>
+                    <p><strong>Precio:</strong> ${precio}</p>
+                    <p><strong>Tipo:</strong> ${tipo}</p>
+                    <div class="apartment-actions">
+                        <button class="btn-secondary watchVideoBtn" data-apartment="${apartment}" data-superficie="${superficie}" data-precio="${precio}" data-tipo-departamento="${tipo}" data-tipo="casa" data-superficie-code="casa" data-precio-code="casa" data-index="1">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M8 5v14l11-7z" fill="currentColor"></path>
+                            </svg>
+                            Recorrer
+                        </button>
+                        <button class="btn-primary contactModelBtn" data-apartment="${apartment}" data-superficie="${superficie}" data-precio="${precio}">
+                            Solicitar Información
+                        </button>
+                    </div>
+                </div>
+            `;
+        } else {
+            originalHTML = `
+                <div class="apartment-image">
+                    <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlbiAxPC90ZXh0Pjwvc3ZnPg==" alt="${apartment}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlbiAxPC90ZXh0Pjwvc3ZnPg=='">
+                </div>
+                <div class="apartment-info">
+                    <h3>${apartment}</h3>
+                    <p><strong>Superficie:</strong> ${superficie}</p>
+                    <p><strong>Precio:</strong> ${precio}</p>
+                    <p><strong>Tipo de Departamento:</strong> ${tipo}</p>
+                    <div class="apartment-actions">
+                        <button class="btn-secondary watchVideoBtn" data-apartment="${apartment}" data-superficie="${superficie}" data-precio="${precio}">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M8 5v14l11-7z" fill="currentColor"></path>
+                            </svg>
+                            Recorrer
+                        </button>
+                        <button class="btn-primary contactModelBtn" data-apartment="${apartment}" data-superficie="${superficie}" data-precio="${precio}">
+                            Solicitar Información
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
         
         card.innerHTML = originalHTML;
         card.classList.remove('details-mode');
@@ -2867,7 +2922,7 @@ class ImageFilterSystem {
         card.style.borderRadius = '';
         card.style.overflow = '';
         
-        console.log('✅ Tarjeta original restaurada');
+        console.log('✅ Tarjeta original restaurada', isHouseCard ? '(Casa)' : '(Apartamento)');
     }
     
     sendPDF(apartment) {
