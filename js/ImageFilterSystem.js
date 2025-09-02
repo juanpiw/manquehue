@@ -407,8 +407,50 @@ class ImageFilterSystem {
         }
         
         // Crear tarjetas de apartamentos
+        // Reducir: para 1 dormitorio, mostrar solo 1 por superficie (40-60 y 80-100) y solo precio 5000+
+        let listImages = images;
+        try {
+            const typeFilter = this.currentFilters ? this.currentFilters.tipo : 'all';
+            const desiredSurfaces = new Set(['superficie_40_60', 'superficie_80_100']);
 
-        images.forEach((image, index) => {
+            if (typeFilter === '1d' || typeFilter === '2d' || typeFilter === '3d') {
+                // Single type: keep only one per desired surface at 5000+
+                const seenSurfaces = new Set();
+                const filtered = [];
+                for (const img of images) {
+                    if (img.tipo !== typeFilter) continue;
+                    if (img.precio !== 'precio_5000_plus') continue;
+                    if (!desiredSurfaces.has(img.superficie)) continue;
+                    if (seenSurfaces.has(img.superficie)) continue;
+                    filtered.push(img);
+                    seenSurfaces.add(img.superficie);
+                }
+                if (filtered.length > 0) listImages = filtered;
+            } else if (typeFilter === 'all') {
+                // All types: take up to 2 per type (one per desired surface) at 5000+
+                const types = ['1d', '2d', '3d'];
+                const seenByType = {
+                    '1d': new Set(),
+                    '2d': new Set(),
+                    '3d': new Set()
+                };
+                const filtered = [];
+                for (const img of images) {
+                    if (!types.includes(img.tipo)) continue;
+                    if (img.precio !== 'precio_5000_plus') continue;
+                    if (!desiredSurfaces.has(img.superficie)) continue;
+                    const seenSet = seenByType[img.tipo];
+                    if (seenSet.has(img.superficie)) continue;
+                    filtered.push(img);
+                    seenSet.add(img.superficie);
+                }
+                if (filtered.length > 0) listImages = filtered;
+            }
+        } catch (e) {
+            console.warn('Apartment list filter fallback:', e);
+        }
+
+        listImages.forEach((image, index) => {
             const apartmentCard = this.createApartmentCard(image, image.index, index);
             apartmentList.appendChild(apartmentCard);
         });
@@ -3239,11 +3281,11 @@ class ImageFilterSystem {
                 option.classList.add('selected');
                 
                 // Determinar el tipo seleccionado
+                const dataAttrType = option.dataset.projectType ? option.dataset.projectType.toLowerCase().trim() : '';
                 const label = option.querySelector('.radio-label');
-                if (label) {
-                    const projectType = label.textContent.toLowerCase().trim();
-                    this.updateProjectType(projectType);
-                }
+                const labelType = label ? label.textContent.toLowerCase().trim() : '';
+                const projectType = dataAttrType || labelType;
+                if (projectType) this.updateProjectType(projectType);
             });
         });
         
@@ -3257,12 +3299,12 @@ class ImageFilterSystem {
         // Buscar la opción seleccionada inicialmente
         const selectedOption = document.querySelector('.radio-option.selected');
         if (selectedOption) {
+            const dataAttrType = selectedOption.dataset.projectType ? selectedOption.dataset.projectType.toLowerCase().trim() : '';
             const label = selectedOption.querySelector('.radio-label');
-            if (label) {
-                const projectType = label.textContent.toLowerCase().trim();
-                this.updateProjectType(projectType);
-                console.log(`🏠 Initial project type detected: ${projectType}`);
-            }
+            const labelType = label ? label.textContent.toLowerCase().trim() : '';
+            const projectType = dataAttrType || labelType || 'apartamento';
+            this.updateProjectType(projectType);
+            console.log(`🏠 Initial project type detected: ${projectType}`);
         }
     }
     
@@ -3323,7 +3365,7 @@ class ImageFilterSystem {
         const apartmentFilters = document.querySelector('.apartment-filters');
         
         // Mostrar elementos de apartamentos
-        if (apartmentList) apartmentList.style.display = 'none';
+        if (apartmentList) apartmentList.style.display = 'block';
         if (initialMessage) initialMessage.style.display = 'block';
         if (apartmentTypeSelector) apartmentTypeSelector.style.display = 'flex';
         if (apartmentFilters) apartmentFilters.style.display = 'flex';

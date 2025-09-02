@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Videos por Scroll - Demo</title>
     <link rel="stylesheet" href="video-scroll-styles.css">
+    <link rel="stylesheet" href="css/language-switcher.css">
     <style>
         /* Mejoras adicionales para scroll más suave */
         html {
@@ -442,15 +443,15 @@
                         <div class="preview-selector layout-horizontal size-medium" style="margin-top: 3rem;">
                             <div class="selector-container">
                                 <div class="radio-group">
-                                    <div class="radio-option selected">
+                                    <div class="radio-option selected" data-project-type="apartamento">
                                         <div class="radio-circle">
                                             <div class="radio-inner"></div>
                                         </div>
-                                        <span class="radio-label text-body text-regular">Apartamento</span>
+                                        <span class="radio-label text-body text-regular" data-lang-key="apartment">Apartamento</span>
                                     </div>
-                                    <div class="radio-option">
+                                    <div class="radio-option" data-project-type="casa">
                                         <div class="radio-circle"></div>
-                                        <span class="radio-label text-body text-regular">Casa</span>
+                                        <span class="radio-label text-body text-regular" data-lang-key="house">Casa</span>
                                     </div>
                                 </div>
                             </div>
@@ -1019,14 +1020,35 @@
                 });
             }
             
-            // Change background video based on category
-            const videoMap = {
-                'amenities': 'video/equipamiento/picisna.mp4',
-                'security': 'video/equipamiento/kincho.mp4',
-                'technology': 'video/equipamiento/gym.mp4'
-            };
+            // Detect current project type (casa or apartamento)
+            const selectedProjectType = document.querySelector('.radio-option.selected');
+            const currentProjectType = selectedProjectType ? selectedProjectType.getAttribute('data-project-type') : 'apartamento';
             
-            const videoPath = videoMap[category];
+            console.log('🏠 Current project type:', currentProjectType);
+            
+            // Change background video based on category and project type
+            let videoPath;
+            
+            if (currentProjectType === 'casa') {
+                // Use casa-specific videos from video/casa/features/
+                const casaVideoMap = {
+                    'amenities': 'video/casa/features/picina.mp4',
+                    'security': 'video/casa/features/quinchoi.mp4',
+                    'technology': 'video/casa/features/gym.mp4'
+                };
+                videoPath = casaVideoMap[category];
+                console.log('🏡 Using casa video:', videoPath);
+            } else {
+                // Use default equipamiento videos for apartamentos
+                const apartamentoVideoMap = {
+                    'amenities': 'video/equipamiento/picisna.mp4',
+                    'security': 'video/equipamiento/kincho.mp4',
+                    'technology': 'video/equipamiento/gym.mp4'
+                };
+                videoPath = apartamentoVideoMap[category];
+                console.log('🏢 Using apartamento video:', videoPath);
+            }
+            
             if (videoPath) {
                 const backgroundVideo = document.getElementById('backgroundVideo');
                 if (backgroundVideo) {
@@ -1050,7 +1072,7 @@
             // Track equipment category selection
             gtag('event', 'equipment_category_selected', {
                 'event_category': 'Equipment',
-                'event_label': `Category: ${category}`,
+                'event_label': `Category: ${category} - Project: ${currentProjectType}`,
                 'value': 1
             });
         }
@@ -1070,12 +1092,25 @@
                 firstCategory.classList.add('active');
             }
             
-            // Reset background video to default
+            // Detect current project type for reset
+            const selectedProjectType = document.querySelector('.radio-option.selected');
+            const currentProjectType = selectedProjectType ? selectedProjectType.getAttribute('data-project-type') : 'apartamento';
+            
+            console.log('🏠 Resetting to project type:', currentProjectType);
+            
+            // Reset background video based on current project type
             const backgroundVideo = document.getElementById('backgroundVideo');
             if (backgroundVideo) {
                 backgroundVideo.style.opacity = '0';
                 setTimeout(() => {
-                    backgroundVideo.src = 'video/apartamento/video-0.mp4';
+                    // Use appropriate default video based on project type
+                    if (currentProjectType === 'casa') {
+                        backgroundVideo.src = 'video/casa/video-0.mp4';
+                        console.log('🏡 Reset to casa default video');
+                    } else {
+                        backgroundVideo.src = 'video/apartamento/video-0.mp4';
+                        console.log('🏢 Reset to apartamento default video');
+                    }
                     backgroundVideo.load();
                     backgroundVideo.style.opacity = '1';
                     backgroundVideo.play().catch(e => {
@@ -1087,7 +1122,7 @@
             // Track reset event
             gtag('event', 'equipment_categories_reset', {
                 'event_category': 'Equipment',
-                'event_label': 'Categories Reset',
+                'event_label': `Categories Reset - Project: ${currentProjectType}`,
                 'value': 1
             });
         }
@@ -1111,13 +1146,31 @@
             'amenities': 'video/equipamiento/picisna.mp4',
             'security': 'video/equipamiento/kincho.mp4',
             'technology': 'video/equipamiento/gym.mp4',
+            // Casa-specific videos
+            'casa-amenities': 'video/casa/features/picina.mp4',
+            'casa-security': 'video/casa/features/quinchoi.mp4',
+            'casa-technology': 'video/casa/features/gym.mp4',
             'default': 'video/apartamento/video-0.mp4'
         };
 
         // Function to change video with smooth transition
         function irisChangeVideo(videoKey) {
             const video = document.getElementById('backgroundVideo');
-            const videoPath = irisVideoLibrary[videoKey] || irisVideoLibrary['default'];
+            
+            // Detect current project type
+            const selectedProjectType = document.querySelector('.radio-option.selected');
+            const currentProjectType = selectedProjectType ? selectedProjectType.getAttribute('data-project-type') : 'apartamento';
+            
+            let videoPath;
+            
+            // If it's a casa-specific command and we're in casa mode, use casa videos
+            if (currentProjectType === 'casa' && ['amenities', 'security', 'technology'].includes(videoKey)) {
+                const casaVideoKey = `casa-${videoKey}`;
+                videoPath = irisVideoLibrary[casaVideoKey];
+                console.log('🏡 Using casa-specific video:', casaVideoKey);
+            } else {
+                videoPath = irisVideoLibrary[videoKey] || irisVideoLibrary['default'];
+            }
             
             if (video) {
                 // Fade out current video
@@ -1137,7 +1190,7 @@
                     // Track video change
                     gtag('event', 'iris_video_changed', {
                         'event_category': 'Iris Integration',
-                        'event_label': `Video Changed to ${videoKey}`,
+                        'event_label': `Video Changed to ${videoKey} - Project: ${currentProjectType}`,
                         'value': 1
                     });
                 }, 300);
@@ -1858,5 +1911,10 @@
             }
         });
     </script>
+
+    <!-- Language System Configuration -->
+    <script src="js/language-config.js"></script>
+    <!-- Language System Script -->
+    <script src="js/language-system.js"></script>
 </body>
 </html>

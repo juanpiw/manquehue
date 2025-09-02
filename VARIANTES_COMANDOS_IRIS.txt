@@ -370,3 +370,4 @@ NOTA: Este análisis cubre todas las posibles variantes de comandos que se puede
 enviar a Iris basándose en los filtros disponibles en la UI. El sistema debe ser 
 capaz de procesar y entender todas estas variantes para activar los filtros 
 correspondientes correctamente.
+

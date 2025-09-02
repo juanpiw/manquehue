@@ -1,0 +1,35 @@
+{
+  "nav": {
+    "home": "INICIO",
+    "apartments": "APARTAMENTOS",
+    "features": "CARACTERÍSTICAS",
+    "contact": "CONTACTO"
+  },
+  "hero": {
+    "title": "Mirador del Golf",
+    "subtitle": "Exclusivas casas y departamentos en Piedra Roja"
+  },
+  "description": {
+    "title": "Descripción del Proyecto",
+    "text": "Exclusivas casas y departamentos ubicados en el sector más privilegiado de Piedra Roja, dentro del Club de Golf Hacienda Chicureo Club. Diseñado para aprovechar al máximo las vistas hacia el Valle de Chicureo y el cajón cordillerano gracias a sus amplios ventanales de piso a cielo."
+  },
+  "selector": {
+    "apartment": "Apartamento",
+    "house": "Casa"
+  },
+  "stats": {
+    "metro": "Minutos del metro",
+    "golf": "Minutos del golf",
+    "shopping": "Minutos del shopping"
+  },
+  "footer": {
+    "address": "Av América 334, Las Condes",
+    "button": "Recorrer"
+  },
+  "common": {
+    "view": "Ver",
+    "contact": "Contactar",
+    "more_info": "Más información"
+  }
+}
+

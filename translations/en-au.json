@@ -1,0 +1,35 @@
+{
+  "nav": {
+    "home": "HOME",
+    "apartments": "APARTMENTS",
+    "features": "FEATURES",
+    "contact": "CONTACT"
+  },
+  "hero": {
+    "title": "Mirador del Golf",
+    "subtitle": "Exclusive houses and apartments in Piedra Roja"
+  },
+  "description": {
+    "title": "Project Description",
+    "text": "Exclusive houses and apartments located in the most privileged sector of Piedra Roja, within the Hacienda Chicureo Golf Club. Designed to maximise the views towards the Chicureo Valley and the mountain range thanks to its floor-to-ceiling windows."
+  },
+  "selector": {
+    "apartment": "Apartment",
+    "house": "House"
+  },
+  "stats": {
+    "metro": "Minutes to metro",
+    "golf": "Minutes to golf",
+    "shopping": "Minutes to shopping"
+  },
+  "footer": {
+    "address": "Av América 334, Las Condes",
+    "button": "Explore"
+  },
+  "common": {
+    "view": "View",
+    "contact": "Contact",
+    "more_info": "More info"
+  }
+}
+
