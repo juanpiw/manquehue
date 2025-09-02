@@ -6,7 +6,7 @@
 class ImageFilterSystem {
     constructor() {
         this.currentFilters = {
-            tipo: 'all',
+            tipo: '1d',
             superficie: '',
             precio: ''
         };
@@ -86,8 +86,51 @@ class ImageFilterSystem {
     
     init() {
 
+        // Prevenir parpadeo de tarjetas demo: ocultar y limpiar lista inicial
+        try {
+            const apartmentListEl = document.getElementById('apartmentList');
+            if (apartmentListEl) {
+                apartmentListEl.style.display = 'none';
+                apartmentListEl.innerHTML = '';
+            }
+        } catch (e) {
+            // noop
+        }
+
         this.setupEventListeners();
         this.setupBackButton();
+
+        // Marcar 1 Dormitorio como activo por defecto en el selector visual
+        try {
+            const typeButtons = document.querySelectorAll('.type-btn');
+            typeButtons.forEach(btn => btn.classList.remove('active'));
+            const oneDBtn = document.querySelector('.type-btn[data-type="1d"]');
+            if (oneDBtn) oneDBtn.classList.add('active');
+        } catch (e) {
+            // noop
+        }
+
+        // Render inicial acorde al tipo por defecto (1D)
+        this.updateImages();
+
+        // Fallback rápido: al finalizar la carga de la página, limpiar y volver a renderizar
+        window.addEventListener('load', () => {
+            try {
+                const list = document.getElementById('apartmentList');
+                if (list) {
+                    list.innerHTML = '';
+                    list.style.display = 'none';
+                }
+            } catch {}
+            this.updateImages();
+            // Si sigue algún contenido extraño, gatillar el botón Buscar como segundo fallback
+            try {
+                const searchBtn = document.getElementById('searchButton');
+                if (searchBtn) {
+                    searchBtn.click();
+                }
+            } catch {}
+        });
 
     }
     
@@ -407,13 +450,31 @@ class ImageFilterSystem {
         }
         
         // Crear tarjetas de apartamentos
-        // Reducir: para 1 dormitorio, mostrar solo 1 por superficie (40-60 y 80-100) y solo precio 5000+
+        // Reducción inteligente según filtros activos
         let listImages = images;
         try {
             const typeFilter = this.currentFilters ? this.currentFilters.tipo : 'all';
             const desiredSurfaces = new Set(['superficie_40_60', 'superficie_80_100']);
+            const priceFilterActive = !!(this.currentFilters && this.currentFilters.precio);
 
-            if (typeFilter === '1d' || typeFilter === '2d' || typeFilter === '3d') {
+            // Caso 1: si hay filtro de precio, mostrar solo 2 cards totales (una por superficie deseada)
+            if (priceFilterActive) {
+                const seenSurfaces = new Set();
+                const filtered = [];
+                const allowedTypes = (typeFilter === 'all') ? ['1d', '2d', '3d'] : [typeFilter];
+                for (const img of images) {
+                    if (!allowedTypes.includes(img.tipo)) continue;
+                    if (!desiredSurfaces.has(img.superficie)) continue;
+                    if (seenSurfaces.has(img.superficie)) continue;
+                    filtered.push(img);
+                    seenSurfaces.add(img.superficie);
+                    if (filtered.length >= 2) break;
+                }
+                if (filtered.length > 0) {
+                    listImages = filtered;
+                }
+            } else if (typeFilter === '1d' || typeFilter === '2d' || typeFilter === '3d') {
+
                 // Single type: keep only one per desired surface at 5000+
                 const seenSurfaces = new Set();
                 const filtered = [];
