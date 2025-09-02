@@ -115,24 +115,107 @@ class ImageFilterSystem {
 
         // Fallback rápido: al finalizar la carga de la página, limpiar y volver a renderizar
         window.addEventListener('load', () => {
+            try { console.log('[IFS] window.load start', { projectType: this.currentProjectType }); } catch {}
             try {
                 const list = document.getElementById('apartmentList');
                 if (list) {
                     list.innerHTML = '';
                     list.style.display = 'none';
+                    try { console.log('[IFS] Cleared apartmentList on load'); } catch {}
                 }
             } catch {}
             this.updateImages();
+            try {
+                const count = document.querySelectorAll('#apartmentList .apartment-card').length;
+                console.log('[IFS] After updateImages on load, cards count:', count);
+            } catch {}
+            // Remover cualquier botón "Tipo C" que se haya inyectado
+            try {
+                const removeTipoCButtonsIn = (root) => {
+                    const scope = root && root.querySelectorAll ? root : document;
+                    const btns = scope.querySelectorAll('.floor-type-options .floor-type-btn');
+                    let removed = 0;
+                    btns.forEach((btn) => {
+                        const txt = (btn.textContent || '').trim().toLowerCase();
+                        if (txt === 'tipo c') {
+                            btn.remove();
+                            removed++;
+                        }
+                    });
+                    if (removed > 0) { try { console.log('[IFS] Removed Tipo C buttons:', removed); } catch {} }
+                };
+                removeTipoCButtonsIn(document);
+                // Observar futuras inserciones para eliminar "Tipo C" automáticamente
+                const observer = new MutationObserver((mutations) => {
+                    try { console.log('[IFS] TipoC observer triggered, mutations:', mutations.length); } catch {}
+                    for (const m of mutations) {
+                        m.addedNodes && m.addedNodes.forEach((node) => {
+                            if (node && node.nodeType === 1) {
+                                try { console.log('[IFS] Checking added node for Tipo C:', node.nodeName, node.className || ''); } catch {}
+                                removeTipoCButtonsIn(node);
+                            }
+                        });
+                    }
+                });
+                observer.observe(document.body, { childList: true, subtree: true });
+            } catch {}
             // Si sigue algún contenido extraño, gatillar el botón Buscar como segundo fallback
             try {
                 const searchBtn = document.getElementById('searchButton');
                 if (searchBtn) {
+                    try { console.log('[IFS] Triggering searchButton click as fallback'); } catch {}
                     searchBtn.click();
                 }
+            } catch {}
+
+            // Defensa: si el proyecto actual es "casa", nunca mostrar listas de apartamentos
+            try {
+                const isCasaSelected = () => {
+                    try {
+                        const selected = document.querySelector('.radio-option.selected');
+                        const type = selected ? (selected.getAttribute('data-project-type') || '').toLowerCase() : '';
+                        if (type) { console.log('[IFS] Detect project type from DOM:', type); }
+                        return type === 'casa' || type === 'house';
+                    } catch { return (this.currentProjectType || '').toLowerCase() === 'casa'; }
+                };
+                const enforceCasaHidesApartments = () => {
+                    if (isCasaSelected()) {
+                        try { console.log('[IFS] Enforcing Casa mode hides apartment UI (DOM-detected)'); } catch {}
+                        const typeSelector = document.querySelector('.apartment-type-selector');
+                        const filters = document.querySelector('.apartment-filters');
+                        const list = document.getElementById('apartmentList');
+                        if (typeSelector) typeSelector.style.display = 'none';
+                        if (filters) filters.style.display = 'none';
+                        if (list) {
+                            const before = list.querySelectorAll('.apartment-card').length;
+                            list.innerHTML = '';
+                            list.style.display = 'none';
+                            try { console.log('[IFS] Cleared apartmentList due to Casa mode. Removed cards:', before); } catch {}
+                        }
+                    }
+                };
+                // Ejecutar inmediatamente
+                enforceCasaHidesApartments();
+                // Observar cambios que vuelvan a inyectar cards
+                const casaObserver = new MutationObserver((mutations) => {
+                    try { console.log('[IFS] Casa observer triggered, mutations:', mutations.length); } catch {}
+                    enforceCasaHidesApartments();
+                });
+                const listNode = document.getElementById('apartmentList') || document.body;
+                casaObserver.observe(listNode, { childList: true, subtree: true });
+
+                // Refuerzo temporal: durante 5s después de load, verificar periódicamente
+                const start = Date.now();
+                const intervalId = setInterval(() => {
+                    if (Date.now() - start > 5000) { clearInterval(intervalId); return; }
+                    enforceCasaHidesApartments();
+                }, 300);
             } catch {}
         });
 
     }
+
+    // ... resto de la clase ...
     
     setupEventListeners() {
         // Event listeners para botones de tipo de dormitorio
