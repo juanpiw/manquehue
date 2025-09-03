@@ -81,6 +81,27 @@ class ImageFilterSystem {
             }
         };
         
+        // Imágenes por defecto para carruseles (apartamento/casa)
+        this.imagesApartamento = [
+            'video/imagenes/carrousel/car_01.png',
+            'video/imagenes/carrousel/car_02.png',
+            'video/imagenes/carrousel/car_03.png',
+            'video/imagenes/carrousel/car_04.png',
+            'video/imagenes/carrousel/car_05.png',
+            'video/imagenes/carrousel/car_06.png'
+        ];
+        // Imágenes reales de Casa facilitadas
+        this.imagesCasa = [
+            'video/casa/features/carrousel/baño2.png',
+            'video/casa/features/carrousel/cocina.png',
+            'video/casa/features/carrousel/dormitorio.png',
+            'video/casa/features/carrousel/livin_1.png',
+            'video/casa/features/carrousel/livin.png'
+        ];
+        this.images = this.imagesApartamento.slice();
+        this.featuresImages = this.images.slice();
+        this.featuresCurrentSlide = 0;
+        
         this.init();
     }
     
@@ -125,6 +146,7 @@ class ImageFilterSystem {
                 }
             } catch {}
             this.updateImages();
+            try { this.refreshFeaturesCarouselImages(); } catch {}
             try {
                 const count = document.querySelectorAll('#apartmentList .apartment-card').length;
                 console.log('[IFS] After updateImages on load, cards count:', count);
@@ -213,6 +235,31 @@ class ImageFilterSystem {
             } catch {}
         });
 
+    }
+
+    registerAudio(audioEl) {
+        if (!this._allAudios) this._allAudios = new Set();
+        this._allAudios.add(audioEl);
+        // Limpiar del set cuando termine o falle
+        const cleanup = () => { try { this._allAudios.delete(audioEl); } catch {} };
+        audioEl.addEventListener('ended', cleanup);
+        audioEl.addEventListener('error', cleanup);
+    }
+
+    pauseAllAudios(except) {
+        try {
+            if (this._allAudios) {
+                this._allAudios.forEach(a => {
+                    if (a && a !== except) {
+                        try { a.pause(); } catch {}
+                    }
+                });
+            }
+            if (window.__currentPlayingAudio && window.__currentPlayingAudio !== except) {
+                try { window.__currentPlayingAudio.pause(); } catch {}
+                window.__currentPlayingAudio = null;
+            }
+        } catch {}
     }
 
     // ... resto de la clase ...
@@ -1569,10 +1616,10 @@ class ImageFilterSystem {
     setupHeroAudio() {
         try {
             console.log('🔊 [Audio-Hero] Iniciando setup...');
+            const uiLangBtn = document.querySelector('.lang-btn.active');
             const params = new URLSearchParams(window.location.search);
-            const lang = (params.get('lang') || 'es').toLowerCase();
+            const lang = (uiLangBtn?.dataset?.lang || params.get('lang') || 'es').toLowerCase();
             console.log('🔊 [Audio-Hero] Idioma detectado:', lang);
-            if (!lang.startsWith('es')) { console.log('[Audio-Hero] Idioma no ES, omitiendo'); return; }
 
             const heroDesc = document.querySelector('.hero-content .description-content');
             if (!heroDesc) { console.log('[Audio-Hero] No hay contenedor de descripción'); return; }
@@ -1608,10 +1655,13 @@ class ImageFilterSystem {
                 heroDesc.appendChild(controls);
             }
 
-            const audioPath = 'video/audio/apartamento/voz_chicureo.mp3';
+            const audioPath = (this.currentProjectType === 'casa')
+                ? (lang.startsWith('en') ? 'video/audio/casa/casa_ingles.mp3' : 'video/audio/casa/audio_casa.mp3')
+                : (lang.startsWith('en') ? 'video/audio/apartamento/apat_ingles.mp3' : 'video/audio/apartamento/voz_chicureo.mp3');
             console.log('🔊 [Audio-Hero] Creando elemento Audio con src:', audioPath);
             const audio = new Audio(audioPath);
             audio.preload = 'auto';
+            try { this.registerAudio(audio); } catch {}
             
             const btn = controls.querySelector('.audio-button');
             const status = controls.querySelector('.audio-status');
@@ -1626,7 +1676,7 @@ class ImageFilterSystem {
             audio.addEventListener('canplay', () => {
                 console.log('🔊 [Audio-Hero] canplay recibido');
                 if (btn) { btn.disabled = false; btn.style.opacity = '1'; btn.style.cursor = 'pointer'; }
-                if (status) status.textContent = 'Listo';
+                if (status) status.textContent = 'Reproducir';
             });
             audio.addEventListener('error', () => {
                 const code = audio.error ? audio.error.code : 'unknown';
@@ -1638,15 +1688,20 @@ class ImageFilterSystem {
 
             if (btn) {
                 btn.disabled = true; btn.style.opacity = '0.6'; btn.style.cursor = 'not-allowed';
-                btn.addEventListener('click', () => {
-                    console.log('🔊 [Audio-Hero] click play/pause. paused=', audio.paused);
+                if (btn.__audioClickHandler) btn.removeEventListener('click', btn.__audioClickHandler);
+                btn.__audioClickHandler = () => {
+                    console.log('🔊 [Audio-Hero] click play/pause. paused(before)=', audio.paused);
                     if (audio.paused) {
-                        try { if (window.__currentPlayingAudio && window.__currentPlayingAudio !== audio) window.__currentPlayingAudio.pause(); } catch {}
+                        try { this.pauseAllAudios(audio); } catch {}
                         audio.play().then(() => { window.__currentPlayingAudio = audio; setPlaying(true); if (status) status.textContent = 'Reproduciendo…'; }).catch(err => console.warn('🔊 [Audio-Hero] play error', err));
                     } else {
-                        audio.pause(); setPlaying(false); if (status) status.textContent = 'Pausado';
+                        try { audio.pause(); this.pauseAllAudios(); } catch {}
+                        setPlaying(false); if (status) status.textContent = 'Pausado';
+                        window.__currentPlayingAudio = null;
                     }
-                });
+                    console.log('🔊 [Audio-Hero] paused(after)=', audio.paused);
+                };
+                btn.addEventListener('click', btn.__audioClickHandler);
             }
 
             console.log('🔊 [Audio-Hero] Controles listos');
@@ -2401,15 +2456,18 @@ class ImageFilterSystem {
     }
 
     setupAudioControls(card, apartment) {
-        // Detectar idioma por querystring ?lang=es o fallback a 'es' si no hay parámetro
+        // Detectar idioma desde botón activo o querystring
+        const uiLangBtn = document.querySelector('.lang-btn.active');
         const params = new URLSearchParams(window.location.search);
-        const lang = (params.get('lang') || 'es').toLowerCase();
-        if (!lang.startsWith('es')) {
-            console.log('[Audio] Idioma no es ES, omitiendo audio. lang =', lang);
-            return;
+        const lang = (uiLangBtn?.dataset?.lang || params.get('lang') || 'es').toLowerCase();
+        console.log('[Audio] Idioma detectado para detalles:', lang);
+        // Elegir fuente según idioma y tipo
+        let audioSrc;
+        if (this.currentProjectType === 'casa') {
+            audioSrc = lang.startsWith('en') ? 'video/audio/casa/casa_ingles.mp3' : 'video/audio/casa/audio_casa.mp3';
+        } else {
+            audioSrc = lang.startsWith('en') ? 'video/audio/apartamento/apat_ingles.mp3' : 'video/audio/apartamento/voz_chicureo.mp3';
         }
-        // Ruta del audio para apartamentos (ES)
-        const audioSrc = 'video/audio/apartamento/voz_chicureo.mp3';
 
         // Evitar duplicar controles
         if (card.querySelector('.audio-controls')) {
@@ -2446,6 +2504,7 @@ class ImageFilterSystem {
         audio.preload = 'auto';
         audio.src = audioSrc;
         this.currentDetailsAudio = audio;
+        try { this.registerAudio(audio); } catch {}
 
         const btn = card.querySelector('.audio-button');
         const status = card.querySelector('.audio-status');
@@ -2484,10 +2543,11 @@ class ImageFilterSystem {
         if (btn) {
             btn.disabled = true;
             btn.style.opacity = '0.6';
-            btn.addEventListener('click', () => {
+            if (btn.__audioClickHandler) btn.removeEventListener('click', btn.__audioClickHandler);
+            btn.__audioClickHandler = () => {
                 if (audio.paused) {
                     // Pausar cualquier otro audio en reproducción
-                    try { if (window.__currentPlayingAudio && window.__currentPlayingAudio !== audio) window.__currentPlayingAudio.pause(); } catch {}
+                    try { this.pauseAllAudios(audio); } catch {}
                     audio.play().then(() => {
                         window.__currentPlayingAudio = audio;
                         setPlaying(true);
@@ -2496,11 +2556,13 @@ class ImageFilterSystem {
                         console.warn('🔊 [Audio] No se pudo reproducir:', err);
                     });
                 } else {
-                    audio.pause();
+                    try { audio.pause(); this.pauseAllAudios(); } catch {}
                     setPlaying(false);
                     if (status) status.textContent = 'Pausado';
+                    window.__currentPlayingAudio = null;
                 }
-            });
+            };
+            btn.addEventListener('click', btn.__audioClickHandler);
         }
     }
 
@@ -3386,7 +3448,7 @@ class ImageFilterSystem {
     
     initializeImageCarousel() {
         this.currentImageIndex = 0;
-        this.images = [
+        this.imagesApartamento = [
             'video/imagenes/carrousel/car_01.png',
             'video/imagenes/carrousel/car_02.png',
             'video/imagenes/carrousel/car_03.png',
@@ -3394,6 +3456,15 @@ class ImageFilterSystem {
             'video/imagenes/carrousel/car_05.png',
             'video/imagenes/carrousel/car_06.png'
         ];
+        this.imagesCasa = [
+            'video/casa/features/carrousel/car_01.png',
+            'video/casa/features/carrousel/car_02.png',
+            'video/casa/features/carrousel/car_03.png',
+            'video/casa/features/carrousel/car_04.png',
+            'video/casa/features/carrousel/car_05.png',
+            'video/casa/features/carrousel/car_06.png'
+        ];
+        this.images = this.imagesApartamento.slice();
         
         // Agregar event listeners a los thumbnails (si existen)
         const thumbnails = document.querySelectorAll('.thumbnail');
@@ -3911,6 +3982,50 @@ class ImageFilterSystem {
         this.detectInitialProjectType();
         
         console.log('✅ Project type selector setup complete');
+        // Bind reactividad de audio a cambios de idioma
+        this.setupLanguageAudioReactivity();
+    }
+
+    setupLanguageAudioReactivity() {
+        try {
+            const langButtons = document.querySelectorAll('.lang-btn');
+            if (!langButtons || langButtons.length === 0) return;
+            langButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    // Esperar a que el sistema de idioma termine de aplicar cambios en UI
+                    setTimeout(() => {
+                        try {
+                            // Detener cualquier audio en reproducción para evitar solapes
+                            try {
+                                if (window.__currentPlayingAudio) {
+                                    window.__currentPlayingAudio.pause();
+                                    window.__currentPlayingAudio.currentTime = 0;
+                                    window.__currentPlayingAudio = null;
+                                }
+                            } catch {}
+                            // Hero: reconfigurar controles y recargar fuente
+                            this.setupHeroAudio();
+                            // Detalles: si hay una tarjeta en modo detalles, reconfigurar audio
+                            const detailsCard = document.querySelector('.apartment-card.details-mode');
+                            if (detailsCard) {
+                                // Re-setup para tomar nuevo idioma
+                                this.setupAudioControls(detailsCard, detailsCard.querySelector('h3')?.textContent || '');
+                                // Asegurar que el botón quede en estado inicial (pausa)
+                                const btn = detailsCard.querySelector('.audio-button');
+                                const status = detailsCard.querySelector('.audio-status');
+                                if (btn) { btn.disabled = false; btn.style.opacity = '1'; btn.style.cursor = 'pointer'; }
+                                if (status) status.textContent = 'Reproducir';
+                            }
+                            console.log('[Audio] Language switch detected, audio sources refreshed');
+                        } catch (e) {
+                            console.warn('[Audio] Language switch refresh error', e);
+                        }
+                    }, 50);
+                });
+            });
+        } catch (e) {
+            console.warn('[Audio] Error binding language buttons', e);
+        }
     }
     
     detectInitialProjectType() {
@@ -3936,9 +4051,47 @@ class ImageFilterSystem {
         if (type === 'casa') {
             console.log('🏡 Switching to Casa mode');
             this.showHouseCard();
+            // Actualizar descripción y audio del hero para casa
+            this.updateHeroDescriptionAndAudio('casa');
+            // Cambiar imágenes del carrusel a las de casa
+            this.images = this.imagesCasa.slice();
+            this.featuresImages = this.images.slice();
+            try { this.refreshFeaturesCarouselImages(); } catch {}
         } else {
             console.log('🏢 Switching to Apartamento mode');
             this.showApartmentFilters();
+            // Actualizar descripción y audio del hero para apartamento
+            this.updateHeroDescriptionAndAudio('apartamento');
+            // Cambiar imágenes del carrusel a las de apartamento
+            this.images = this.imagesApartamento.slice();
+            this.featuresImages = this.images.slice();
+            try { this.refreshFeaturesCarouselImages(); } catch {}
+        }
+    }
+
+    updateHeroDescriptionAndAudio(projectType) {
+        try {
+            const heroDescText = document.querySelector('.hero-content .description-text');
+            const langBtn = document.querySelector('.lang-btn.active');
+            const params = new URLSearchParams(window.location.search);
+            const lang = (langBtn?.dataset?.lang || params.get('lang') || 'es').toLowerCase();
+            // Textos simples por ahora
+            const texts = {
+                apartamento: {
+                    es: 'Exclusivas casas y departamentos ubicados en el sector más privilegiado de Piedra Roja, dentro del Club de Golf Hacienda Chicureo Club. Diseñado para aprovechar al máximo las vistas hacia el Valle de Chicureo y el cajón cordillerano gracias a sus amplios ventanales de piso a cielo. Es un proyecto versátil, que invita a compartir y a disfrutar de sus amplios espacios integrados y amplias terrazas. El proyecto ofrece las opciones de elegir un gran jardín privado, salidas exclusivas al parque o azoteas.',
+                    en: 'Exclusive houses and apartments located in the most privileged area of Piedra Roja, within the Hacienda Chicureo Golf Club. Designed to maximize views of the Chicureo Valley and the Andean foothills through floor-to-ceiling windows. A versatile project that invites you to share and enjoy its integrated spaces and large terraces.'
+                },
+                casa: {
+                    es: 'Descubre nuestras exclusivas casas con amplios jardines y terminaciones de lujo, pensadas para disfrutar en familia con grandes espacios integrados.',
+                    en: 'Discover our exclusive houses with large gardens and premium finishes, designed for family living with expansive, integrated spaces.'
+                }
+            };
+            const langKey = lang.startsWith('en') ? 'en' : 'es';
+            if (heroDescText) heroDescText.textContent = texts[projectType][langKey];
+            // Reconfigurar audio de hero con fuente correcta
+            this.setupHeroAudio();
+        } catch (e) {
+            console.warn('[Hero] No se pudo actualizar descripción/audio', e);
         }
     }
     
@@ -4456,6 +4609,23 @@ class ImageFilterSystem {
         });
         
         console.log('🖼️ Carrusel de features actualizado a slide:', this.featuresCurrentSlide);
+    }
+
+    refreshFeaturesCarouselImages() {
+        // Actualiza los 6 <img> del carrusel con this.images
+        try {
+            const track = document.getElementById('featuresCarouselTrack');
+            if (!track) return;
+            // Reconstruir SIEMPRE las 5 imágenes proporcionadas
+            track.innerHTML = this.images.map((src, i) => `
+                <div class=\"carousel-slide\" onclick=\"window.imageFilterSystem.openFeaturesImageModal(${i})\">\n                    <img src=\"${src}\" alt=\"Imagen ${i+1}\">\n                    <div class=\"slide-overlay\"><span class=\"slide-title\">${this.featuresSlideTitles[i] || ''}</span></div>\n                </div>
+            `).join('');
+            this.featuresCurrentSlide = 0;
+            this.updateFeaturesCarousel();
+            console.log('🖼️ Imágenes del carrusel actualizadas para', this.currentProjectType);
+        } catch (e) {
+            console.warn('⚠️ No se pudieron refrescar imágenes del carrusel', e);
+        }
     }
     
     openFeaturesImageModal(imageIndex) {
