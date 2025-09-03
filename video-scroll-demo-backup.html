@@ -426,9 +426,6 @@
             <section class="preview-hero centered size-large">
                 <div class="hero-container">
                     <div class="hero-content">
-                        <div class="hero-logo" style="display:flex;justify-content:center;align-items:center;margin-bottom:1rem; margin-top:40px">
-                            <img src="video/logo.png" alt="Mirador del Golf" style="max-height:72px; margin-top:-20px; width:auto; object-fit:contain; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.35));">
-                        </div>
                         <h1 class="hero-title text-heading-1 text-bold" style="color: white;">Mirador del Golf</h1>
                         
                         <!-- Description integrated into hero -->
@@ -554,130 +551,24 @@
                     <div class="stat-label">% Vendidos</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-number" data-target="2025">0</div>
+                    <div class="stat-number" data-target="2024">0</div>
                     <div class="stat-label">Entrega</div>
                 </div>
             </div>
         </section>
 
-        <script>
-            (function () {
-                const projectStats = {
-                    manquehue: { numbers: [80, 25, 98, 2025] },
-                    altos: { numbers: [80, 12, 35, 2026] },
-                    // Casas
-                    casa_mirador: { numbers: [20, 3, 68, 2025] },
-                    casa_altos: { numbers: [40, 2, 40, 2026] }
-                };
-
-                function animateCounter(el, target) {
-                    const start = parseInt(el.textContent || '0', 10) || 0;
-                    const end = parseInt(String(target), 10) || 0;
-                    const durationMs = 800;
-                    const startTs = performance.now();
-                    function step(ts) {
-                        const p = Math.min((ts - startTs) / durationMs, 1);
-                        const val = Math.floor(start + (end - start) * p);
-                        el.textContent = String(val);
-                        if (p < 1) requestAnimationFrame(step);
-                    }
-                    requestAnimationFrame(step);
-                }
-
-                function updateStats(projectKey) {
-                    const cfg = projectStats[projectKey] || projectStats.manquehue;
-                    const nums = document.querySelectorAll('.stats-section .stat-number');
-                    nums.forEach((el, i) => {
-                        const target = (cfg.numbers && cfg.numbers[i] !== undefined) ? cfg.numbers[i] : 0;
-                        el.setAttribute('data-target', String(target));
-                        // Reiniciar visual y animar
-                        el.textContent = '0';
-                        animateCounter(el, target);
-                    });
-                }
-
-                function updateStatLabels(labels) {
-                    const els = document.querySelectorAll('.stats-section .stat-label');
-                    els.forEach((el, i) => {
-                        if (labels[i] !== undefined) el.textContent = labels[i];
-                    });
-                }
-
-                function attachOptionHandlers() {
-                    const opts = document.querySelectorAll('.project-selector .selector-option');
-                    opts.forEach((opt) => {
-                        opt.addEventListener('click', () => {
-                            opts.forEach(o => o.classList.remove('active'));
-                            opt.classList.add('active');
-                            const key = opt.getAttribute('data-project') || 'manquehue';
-                            updateStats(key);
-                        });
-                    });
-                }
-
-                function renderProjectSelectorFor(type) {
-                    const container = document.querySelector('.project-selector .selector-options');
-                    if (!container) return;
-                    if ((type || '').toLowerCase() === 'casa') {
-                        container.innerHTML = `
-                            <div class="selector-option active" data-project="casa_mirador">
-                                <h3>Mirador del Golf - Casas</h3>
-                                <p>Proyecto principal (Casas)</p>
-                            </div>
-                            <div class="selector-option" data-project="casa_altos">
-                                <h3>Altos de Manquehue - Casas</h3>
-                                <p>Nuevo desarrollo (Casas)</p>
-                            </div>
-                        `;
-                        attachOptionHandlers();
-                        updateStatLabels(['Casas', 'Tipos de Casa', '% Vendidas', 'Entrega']);
-                        updateStats('casa_mirador');
-                    } else {
-                        container.innerHTML = `
-                            <div class="selector-option active" data-project="manquehue">
-                                <h3>Manquehue</h3>
-                                <p>Proyecto principal</p>
-                            </div>
-                            <div class="selector-option" data-project="altos">
-                                <h3>Altos de Manquehue</h3>
-                                <p>Nuevo desarrollo</p>
-                            </div>
-                        `;
-                        attachOptionHandlers();
-                        updateStatLabels(['Apartamentos', 'Tipos de Dpto', '% Vendidos', 'Entrega']);
-                        updateStats('manquehue');
-                    }
-                }
-
-                // Reaccionar a cambios de tipo (Apartamento/Casa)
-                document.addEventListener('click', (e) => {
-                    const ro = e.target.closest && e.target.closest('.radio-option');
-                    if (ro && ro.hasAttribute('data-project-type')) {
-                        const t = ro.getAttribute('data-project-type');
-                        renderProjectSelectorFor(t);
-                    }
-                }, true);
-
-                // Inicializar según tipo actual
-                (function initSelector() {
-                    const selectedType = (document.querySelector('.radio-option.selected')?.getAttribute('data-project-type') || 'apartamento').toLowerCase();
-                    renderProjectSelectorFor(selectedType);
-                })();
-            })();
-        </script>
-
         <!-- Sección de Apartamentos -->
         <section id="apartments" class="apartments-section">
             <div class="apartments-content">
-                <h2 class="section-title" data-lang-key="apartments_title">Descubre nuestros exclusivos apartamentos</h2>
-                <p class="section-subtitle" data-lang-key="apartments_subtitle">Con las mejores vistas y acabados de lujo</p>
+                <h2 class="section-title">Descubre nuestros exclusivos apartamentos</h2>
+                <p class="section-subtitle">Con las mejores vistas y acabados de lujo</p>
                 
                 <!-- Selector de tipo de apartamento -->
                 <div class="apartment-type-selector">
-                    <button class="type-btn active" data-type="all" data-lang-key="type_all">Todos</button>
-                    <button class="type-btn" data-type="1d" data-lang-key="type_1d">1 Dormitorio</button>
-                    <button class="type-btn" data-type="2d" data-lang-key="type_2d">2 Dormitorios</button>
-                    <button class="type-btn" data-type="3d" data-lang-key="type_3d">3 Dormitorios</button>
+                    <button class="type-btn active" data-type="all">Todos</button>
+                    <button class="type-btn" data-type="1d">1 Dormitorio</button>
+                    <button class="type-btn" data-type="2d">2 Dormitorios</button>
+                    <button class="type-btn" data-type="3d">3 Dormitorios</button>
                 </div>
 
 
@@ -689,30 +580,30 @@
                 <!-- Filtros de apartamentos -->
                 <div class="apartment-filters">
                     <div class="filter-group">
-                        <label data-lang-key="filter_surface">Superficie:</label>
+                        <label>Superficie:</label>
                         <select class="filter-select" id="surfaceFilter">
-                            <option value="" data-lang-key="filter_all">Todas</option>
+                            <option value="">Todas</option>
                             <option value="40-60">40-60 m²</option>
                             <option value="80-100">80-100 m²</option>
                         </select>
                     </div>
                     <div class="filter-group">
-                        <label data-lang-key="filter_price">Precio:</label>
+                        <label>Precio:</label>
                         <select class="filter-select" id="priceFilter">
-                            <option value="" data-lang-key="filter_all">Todos</option>
+                            <option value="">Todos</option>
                             <option value="2000-3000">$2.000-3.000 UF</option>
                             <option value="4000-5000">$4.000-5.000 UF</option>
                         </select>
                     </div>
                     <div class="filter-actions">
-                        <button class="btn-primary" id="searchButton" data-lang-key="btn_search">
+                        <button class="btn-primary" id="searchButton">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"></circle>
                                 <path d="m21 21-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
                             </svg>
                             Buscar
                         </button>
-                        <button class="btn-secondary" id="clearFilters" data-lang-key="btn_clear">
+                        <button class="btn-secondary" id="clearFilters">
                             Limpiar Filtros
                         </button>
 
@@ -841,10 +732,10 @@
                 <div class="equipment-selector">
                     <div class="equipment-category active" data-category="amenities" onclick="selectEquipmentCategory('amenities')">
                         <button class="equipment-back-btn" onclick="resetEquipmentCategories(); event.stopPropagation();" style="display: none;">←</button>
-                        <h3>Piscina</h3>
+                        <h3>Amenities</h3>
                         <ul class="equipment-list">
                             <li>Piscina temperada</li>
-                            <li>Gimnasio (equipamiento de alto rendimiento)</li>
+                            <li>Gimnasio completo</li>
                             <li>Sala de eventos</li>
                             <li>Quincho con parrilla</li>
                             <li>Jardín infantil</li>

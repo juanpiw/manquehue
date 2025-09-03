@@ -144,3 +144,4 @@ await IR.detectAndNavigate("detalles");
 **¡El sistema ahora debería funcionar correctamente!** 🎉
 
 
+

@@ -98,7 +98,7 @@ class ImageFilterSystem {
         }
 
         this.setupEventListeners();
-        this.setupBackButton();
+        // this.setupBackButton(); // Comentado temporalmente para evitar error
 
         // Marcar 1 Dormitorio como activo por defecto en el selector visual
         try {
@@ -2145,7 +2145,201 @@ class ImageFilterSystem {
         // Inicializar el carrusel
         this.initializeImageCarousel();
         
+        // Configurar listeners de Tipo A/B/C
+        try {
+            this.setupFloorTypeButtons(card, apartment, superficie, precio);
+        } catch (e) {
+            console.warn('[FloorType] Error configurando listeners de tipo', e);
+        }
+        
+        // Establecer imagen real del plano para departamentos
+        try { this.setFloorPlanImageForDetails(card, apartment, superficie, precio); } catch (e) { console.warn('setFloorPlanImageForDetails error', e); }
+        
         console.log('✅ Tarjeta transformada a modo detalles');
+    }
+    
+    setFloorPlanImageForDetails(card, apartment, superficie, precio) {
+        console.log('🖼️ [setFloorPlanImageForDetails] Iniciando para:', { apartment, superficie, precio });
+        
+        if (apartment === 'Casa') {
+            console.log('🖼️ [setFloorPlanImageForDetails] Es una casa, saltando...');
+            return;
+        }
+        
+        const imgEl = card.querySelector('.floor-plan-image img');
+        if (!imgEl) {
+            console.log('❌ [setFloorPlanImageForDetails] No se encontró elemento img en .floor-plan-image');
+            return;
+        }
+        
+        console.log('🖼️ [setFloorPlanImageForDetails] Elemento img encontrado:', imgEl);
+        
+        // Evitar que el onerror inline fuerce el SVG y nos bloquee el fallback propio
+        try { 
+            imgEl.removeAttribute('onerror'); 
+            console.log('✅ [setFloorPlanImageForDetails] Atributo onerror removido');
+        } catch (e) {
+            console.warn('⚠️ [setFloorPlanImageForDetails] Error al remover onerror:', e);
+        }
+        
+        // Si el usuario cambia Tipo A/B en UI, forzamos el dígito correspondiente:
+        // Tipo A -> 2 (A-S-2), Tipo B -> 3 (A-S-3). Detectamos botón activo si existe.
+        let overrideDigit = undefined;
+        try {
+            const activeTypeBtn = card.querySelector('.floor-type-options .floor-type-btn.active');
+            if (activeTypeBtn) {
+                const label = activeTypeBtn.textContent.trim().toLowerCase();
+                if (label.includes('tipo a')) overrideDigit = '2';
+                else if (label.includes('tipo b')) overrideDigit = '3';
+                else if (label.includes('tipo c')) overrideDigit = '4';
+                console.log('🔁 [setFloorPlanImageForDetails] Tipo activo detectado:', label, '-> overrideDigit =', overrideDigit);
+            }
+        } catch {}
+
+        const candidates = this.buildFloorPlanCandidates(apartment, superficie, precio, overrideDigit);
+        if (candidates.length === 0) {
+            console.log('❌ [setFloorPlanImageForDetails] No hay candidatos de imágenes');
+            return;
+        }
+        
+        console.log('🖼️ [setFloorPlanImageForDetails] Probando', candidates.length, 'candidatos...');
+        
+        let i = 0;
+        const tryNext = () => {
+            if (i >= candidates.length) {
+                console.log('❌ [setFloorPlanImageForDetails] Todos los candidatos fallaron');
+                return;
+            }
+            
+            const src = candidates[i++];
+            console.log(`🖼️ [setFloorPlanImageForDetails] Probando candidato ${i}/${candidates.length}:`, src);
+            
+            imgEl.onerror = () => {
+                console.log(`❌ [setFloorPlanImageForDetails] Falló candidato:`, src);
+                tryNext();
+            };
+            
+            imgEl.onload = () => {
+                console.log(`✅ [setFloorPlanImageForDetails] Imagen cargada exitosamente:`, src);
+            };
+            
+            imgEl.src = src;
+        };
+        
+        tryNext();
+    }
+
+    setupFloorTypeButtons(card, apartment, superficie, precio) {
+        const container = card.querySelector('.floor-type-options');
+        if (!container) { console.log('[FloorType] No se encontró contenedor .floor-type-options'); return; }
+        const buttons = container.querySelectorAll('.floor-type-btn');
+        if (!buttons || buttons.length === 0) { console.log('[FloorType] No se encontraron botones .floor-type-btn'); return; }
+        console.log(`[FloorType] Configurando ${buttons.length} botones de tipo`);
+        buttons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const label = btn.textContent.trim();
+                console.log('[FloorType] Click en botón:', label);
+                buttons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                try {
+                    console.log('[FloorType] Recalculando imagen de plano para', { apartment, superficie, precio, seleccionado: label });
+                    this.setFloorPlanImageForDetails(card, apartment, superficie, precio);
+                } catch (e) {
+                    console.warn('[FloorType] Error al recalcular imagen', e);
+                }
+            });
+        });
+    }
+    
+    buildFloorPlanCandidates(apartment, superficie, precio, overrideDigit) {
+        console.log('🔍 [buildFloorPlanCandidates] Generando candidatos para:', { apartment, superficie, precio });
+        
+        // Mapear a códigos
+        const tipo = this.getTipoFromText(apartment); // 1d/2d/3d
+        const superficieKey = this.getSuperficieKeyFromText(superficie); // 40_60/...
+        const precioKey = this.getPrecioKeyFromText(precio); // 5000_plus/...
+        const folder = tipo === '2d' ? 'D2' : (tipo === '3d' ? 'D3' : 'D1');
+        const tipoLetter = tipo === '3d' ? 'C' : (tipo === '2d' ? 'B' : 'A');
+        const surfaceLetter = superficieKey === '100_plus' ? 'XL' : (superficieKey === '80_100' ? 'L' : (superficieKey === '60_80' ? 'M' : 'S'));
+        // Normalizar rango de superficie a formato de nombre de archivo, evitando problemas de guiones/en-dash
+        const surfaceDash = (
+            superficieKey === '100_plus' ? '100+' :
+            (superficieKey === '80_100' ? '80-100' :
+            (superficieKey === '60_80' ? '60-80' : '40-60'))
+        );
+        const priceDigit = precioKey === '5000_plus' ? '5' : (precioKey === '4000_5000' ? '4' : (precioKey === '3000_4000' ? '3' : '2'));
+        const priceDigitUsed = overrideDigit || priceDigit;
+        
+        console.log('🔍 [buildFloorPlanCandidates] Códigos mapeados:', { 
+            tipo, superficieKey, precioKey, folder, tipoLetter, surfaceLetter, surfaceDash, priceDigit, overrideDigit, priceDigitUsed 
+        });
+        
+        const base = `video/imagenes/plantas-apartamentos/${folder}/`;
+        const list = [];
+        
+        // CARPETA D1 (1 Dormitorio) - Nombres originales con D1 prefix
+        if (folder === 'D1') {
+            // D140-60 m2_A-S-2_Diseño.jpeg (con espacio antes de m2 y guion conservado)
+            list.push(`${base}D1${surfaceDash} m2_${tipoLetter}-${surfaceLetter}-${priceDigitUsed}_Diseño.jpeg`);
+            list.push(`${base}D1${surfaceDash} m2_${tipoLetter}-${surfaceLetter}-${priceDigitUsed}_Diseño.jpg`);
+            // D1 40-60 m2_A-S-2_Diseño.jpeg (con espacio entre D1 y 40-60)
+            list.push(`${base}D1 ${surfaceDash} m2_${tipoLetter}-${surfaceLetter}-${priceDigitUsed}_Diseño.jpeg`);
+            list.push(`${base}D1 ${surfaceDash} m2_${tipoLetter}-${surfaceLetter}-${priceDigitUsed}_Diseño.jpg`);
+            // D140-60m2_A-S-2_Diseño.jpeg (sin espacio antes de m2, guion conservado)
+            list.push(`${base}D1${surfaceDash}m2_${tipoLetter}-${surfaceLetter}-${priceDigitUsed}_Diseño.jpeg`);
+            list.push(`${base}D1${surfaceDash}m2_${tipoLetter}-${surfaceLetter}-${priceDigitUsed}_Diseño.jpg`);
+            // D1 40-60m2_A-S-2_Diseño.jpeg (con espacio entre D1 y 40-60)
+            list.push(`${base}D1 ${surfaceDash}m2_${tipoLetter}-${surfaceLetter}-${priceDigitUsed}_Diseño.jpeg`);
+            list.push(`${base}D1 ${surfaceDash}m2_${tipoLetter}-${surfaceLetter}-${priceDigitUsed}_Diseño.jpg`);
+            // D140-60m2_A-S-3_Dieño.jpeg (variante con error tipográfico en "Diseño")
+            list.push(`${base}D1${surfaceDash}m2_${tipoLetter}-${surfaceLetter}-${priceDigitUsed}_Dieño.jpeg`);
+            list.push(`${base}D1 ${surfaceDash}m2_${tipoLetter}-${surfaceLetter}-${priceDigitUsed}_Dieño.jpeg`);
+        }
+        
+        // CARPETA D2 (2 Dormitorios) - Nombres originales sin D2 prefix
+        if (folder === 'D2') {
+            // 40_60m2B-S-2_diseño.jpeg
+            list.push(`${base}${surfaceDash.replace('-', '_')}m2${tipoLetter}-${surfaceLetter}-${priceDigitUsed}_diseño.jpeg`);
+            // 40_60m2B-S-3_diseño.jpeg
+            list.push(`${base}${surfaceDash.replace('-', '_')}m2${tipoLetter}-${surfaceLetter}-${priceDigitUsed}_diseño.jpeg`);
+            // 80_100m2B-S-4_diseño.jpeg
+            list.push(`${base}${surfaceDash.replace('-', '_')}m2${tipoLetter}-${surfaceLetter}-${priceDigitUsed}_diseño.jpeg`);
+            // 80_100m2B-S-5_diseño.jpeg
+            list.push(`${base}${surfaceDash.replace('-', '_')}m2${tipoLetter}-${surfaceLetter}-${priceDigitUsed}_diseño.jpeg`);
+        }
+        
+        // CARPETA D3 (3 Dormitorios) - Nombres originales sin D3 prefix
+        if (folder === 'D3') {
+            // 40_60m2C-S-2_diseno.jpg
+            list.push(`${base}${surfaceDash.replace('-', '_')}m2${tipoLetter}-${surfaceLetter}-${priceDigitUsed}_diseno.jpg`);
+            // 40_60m2C-S-3_diseo.jpg (sin 'n')
+            list.push(`${base}${surfaceDash.replace('-', '_')}m2${tipoLetter}-${surfaceLetter}-${priceDigitUsed}_diseo.jpg`);
+            // 80_100 m2C-S-5_diseño.jpg (con espacio y guion bajo entre 80_100)
+            list.push(`${base}${surfaceDash.replace('-', '_')} m2${tipoLetter}-${surfaceLetter}-${priceDigitUsed}_diseño.jpg`);
+            // 80_100m2C-S-4_diseño.jpg
+            list.push(`${base}${surfaceDash.replace('-', '_')}m2${tipoLetter}-${surfaceLetter}-${priceDigitUsed}_diseño.jpg`);
+        }
+        
+        // Intentar también con dígito alternativo (2 ó 5), por si el archivo usa otro índice
+        const altDigit = (priceDigitUsed === '5' ? '2' : '5');
+        if (folder === 'D1') {
+            // Variantes alternas para D1 con y sin espacio antes de m2 y extensiones .jpeg/.jpg, con y sin espacio tras D1
+            list.push(`${base}D1${surfaceDash} m2_${tipoLetter}-${surfaceLetter}-${altDigit}_Diseño.jpeg`);
+            list.push(`${base}D1${surfaceDash} m2_${tipoLetter}-${surfaceLetter}-${altDigit}_Diseño.jpg`);
+            list.push(`${base}D1 ${surfaceDash} m2_${tipoLetter}-${surfaceLetter}-${altDigit}_Diseño.jpeg`);
+            list.push(`${base}D1 ${surfaceDash} m2_${tipoLetter}-${surfaceLetter}-${altDigit}_Diseño.jpg`);
+            list.push(`${base}D1${surfaceDash}m2_${tipoLetter}-${surfaceLetter}-${altDigit}_Diseño.jpeg`);
+            list.push(`${base}D1${surfaceDash}m2_${tipoLetter}-${surfaceLetter}-${altDigit}_Diseño.jpg`);
+            list.push(`${base}D1 ${surfaceDash}m2_${tipoLetter}-${surfaceLetter}-${altDigit}_Diseño.jpeg`);
+            list.push(`${base}D1 ${surfaceDash}m2_${tipoLetter}-${surfaceLetter}-${altDigit}_Diseño.jpg`);
+        } else if (folder === 'D2') {
+            list.push(`${base}${surfaceDash.replace('-', '_')}m2${tipoLetter}-${surfaceLetter}-${altDigit}_diseño.jpeg`);
+        } else if (folder === 'D3') {
+            list.push(`${base}${surfaceDash.replace('-', '_')}m2${tipoLetter}-${surfaceLetter}-${altDigit}_diseno.jpg`);
+        }
+        
+        console.log('🔍 [buildFloorPlanCandidates] Candidatos generados:', list);
+        return list;
     }
     
     transformCardToHouseDetails(card, apartment, superficie, precio) {
@@ -2255,7 +2449,7 @@ class ImageFilterSystem {
                                     <img src="video/imagenes/carrousel/car_02.png" alt="Imagen 2" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iSW1hZ2VuIDI8L3RleHQ+PC9zdmc+'">
                                 </div>
                                 <div class="thumbnail" data-index="2" onclick="window.imageFilterSystem.openImageModal(2)">
-                                    <img src="video/imagenes/carrousel/car_03.png" alt="Imagen 3" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMVAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iSW1hZ2VuIDM8L3RleHQ+PC9zdmc+'">
+                                    <img src="video/imagenes/carrousel/car_03.png" alt="Imagen 3" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iSW1hZ2VuIDM8L3RleHQ+PC9zdmc+'">
                                 </div>
                                 <div class="thumbnail" data-index="3">
                                     <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkJhw7FvPC90ZXh0Pjwvc3ZnPg==" alt="Baño" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkJhw7FvPC90ZXh0Pjwvc3ZnPg==">
@@ -3447,8 +3641,8 @@ class ImageFilterSystem {
             const label = selectedOption.querySelector('.radio-label');
             const labelType = label ? label.textContent.toLowerCase().trim() : '';
             const projectType = dataAttrType || labelType || 'apartamento';
-            this.updateProjectType(projectType);
-            console.log(`🏠 Initial project type detected: ${projectType}`);
+                this.updateProjectType(projectType);
+                console.log(`🏠 Initial project type detected: ${projectType}`);
         }
     }
     
@@ -3763,7 +3957,7 @@ class ImageFilterSystem {
                                     <img src="video/imagenes/carrousel/car_03.png" alt="Imagen 3" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iSW1hZ2VuIDM8L3RleHQ+PC9zdmc+'" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iSW1hZ2VuIDM8L3RleHQ+PC9zdmc+'">
                                 </div>
                                 <div class="thumbnail" data-index="3">
-                                    <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iSmFyZMOtbjwvdGV4dD48L3N2Zz4=" alt="Jardín" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iSmFyZMOtbjwvdGV4dD48L3N2Zz4=">
+                                    <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkJhw7FvPC90ZXh0Pjwvc3ZnPg==" alt="Baño" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkJhw7FvPC90ZXh0Pjwvc3ZnPg==">
                                 </div>
                             </div>
                             
@@ -4319,6 +4513,37 @@ class ImageFilterSystem {
             this.addBackButtonAttention();
         }, 500); // Pequeño delay para que aparezca después de la animación de entrada
     }
+    
+    // Diagnóstico: log de visibilidad de elementos clave
+    logUIVisibility(tag) {
+        try {
+            const sec = document.querySelector('.apartments-section');
+            const filters = document.querySelector('.apartment-filters');
+            const typeSel = document.querySelector('.apartment-type-selector');
+            const list = document.getElementById('apartmentList');
+            const title = document.querySelector('.apartments-section .section-title');
+            const subtitle = document.querySelector('.apartments-section .section-subtitle');
+            const snap = {
+                tag,
+                sectionDisplay: sec ? getComputedStyle(sec).display : 'n/a',
+                filtersDisplay: filters ? getComputedStyle(filters).display : 'n/a',
+                typeSelectorDisplay: typeSel ? getComputedStyle(typeSel).display : 'n/a',
+                listDisplay: list ? getComputedStyle(list).display : 'n/a',
+                listCards: list ? list.querySelectorAll('.apartment-card').length : 0,
+                titleDisplay: title ? getComputedStyle(title).display : 'n/a',
+                subtitleDisplay: subtitle ? getComputedStyle(subtitle).display : 'n/a'
+            };
+            console.log('[IFS][UI]', snap);
+        } catch (e) { console.warn('[IFS][UI] log error', e); }
+    }
+
+    // Configurar botón de volver después de que la clase esté completamente definida
+    setupBackButtonAfterInit() {
+        // Pequeño delay para asegurar que el DOM esté listo
+        setTimeout(() => {
+            this.setupBackButton();
+        }, 100);
+    }
 }
 
 // Export for global use
@@ -4343,6 +4568,10 @@ if (!window.imageFilterSystem) {
         if (!window.imageFilterSystem) {
             console.log('🖼️ Creating ImageFilterSystem instance from ImageFilterSystem.js');
             window.imageFilterSystem = new ImageFilterSystem();
+            // Configurar el botón de volver después de la inicialización
+            if (window.imageFilterSystem.setupBackButtonAfterInit) {
+                window.imageFilterSystem.setupBackButtonAfterInit();
+            }
         } else {
             console.log('🖼️ Using existing ImageFilterSystem instance from main.js');
         }

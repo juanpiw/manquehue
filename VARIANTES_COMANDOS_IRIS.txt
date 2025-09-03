@@ -371,3 +371,4 @@ enviar a Iris basándose en los filtros disponibles en la UI. El sistema debe se
 capaz de procesar y entender todas estas variantes para activar los filtros 
 correspondientes correctamente.
 
+

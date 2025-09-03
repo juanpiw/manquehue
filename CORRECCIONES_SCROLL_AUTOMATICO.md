@@ -239,3 +239,4 @@ window.addEventListener('scroll', () => {
 5. **Todas las correcciones son compatibles** con el sistema existente
 
 
+
