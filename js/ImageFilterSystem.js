@@ -2181,6 +2181,22 @@ class ImageFilterSystem {
         } catch (e) {
             console.warn('⚠️ [setFloorPlanImageForDetails] Error al remover onerror:', e);
         }
+
+        // Habilitar click para ver a pantalla completa en modal
+        try {
+            if (!imgEl.dataset.floorPlanClickSetup) {
+                imgEl.style.cursor = 'zoom-in';
+                imgEl.addEventListener('click', () => {
+                    const url = imgEl.currentSrc || imgEl.src;
+                    console.log('🖼️ [FloorPlanModal] Click en plano, abriendo modal con:', url);
+                    this.openFloorPlanModal(url);
+                });
+                imgEl.dataset.floorPlanClickSetup = '1';
+                console.log('🖱️ [FloorPlanModal] Listener de click configurado en imagen de plano');
+            }
+        } catch (e) {
+            console.warn('⚠️ [FloorPlanModal] No se pudo configurar el click en la imagen de plano:', e);
+        }
         
         // Si el usuario cambia Tipo A/B en UI, forzamos el dígito correspondiente:
         // Tipo A -> 2 (A-S-2), Tipo B -> 3 (A-S-3). Detectamos botón activo si existe.
@@ -2227,6 +2243,43 @@ class ImageFilterSystem {
         };
         
         tryNext();
+    }
+
+    openFloorPlanModal(imageUrl) {
+        try {
+            const existing = document.getElementById('floorPlanModal');
+            if (existing) existing.remove();
+
+            const modalHTML = `
+                <div id="floorPlanModal" class="modal-overlay" style="position: fixed; inset: 0; background: rgba(0,0,0,0.95); display: flex; align-items: center; justify-content: center; z-index: 10050;">
+                    <button class="floorplan-close" aria-label="Cerrar" style="position: fixed; top: 12px; right: 12px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); color: white; font-size: 1.5rem; cursor: pointer; padding: 0.4rem 0.75rem; border-radius: 8px; z-index: 10051;">×</button>
+                    <div class="floorplan-modal-container" style="position: relative; max-width: 95vw; max-height: 95vh;">
+                        <img src="${imageUrl}" alt="Plano" style="display: block; max-width: 95vw; max-height: 90vh; object-fit: contain; border-radius: 6px;" onerror="this.style.opacity=0.3">
+                    </div>
+                </div>`;
+
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+            const overlay = document.getElementById('floorPlanModal');
+            const closeBtn = overlay.querySelector('.floorplan-close');
+            const cleanup = () => {
+                overlay.remove();
+                document.removeEventListener('keydown', onKey);
+            };
+            const onKey = (e) => {
+                if (e.key === 'Escape') cleanup();
+            };
+
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) cleanup();
+            });
+            closeBtn.addEventListener('click', cleanup);
+            document.addEventListener('keydown', onKey);
+
+            console.log('✅ [FloorPlanModal] Modal abierto');
+        } catch (e) {
+            console.warn('⚠️ [FloorPlanModal] Error abriendo modal:', e);
+        }
     }
 
     setupFloorTypeButtons(card, apartment, superficie, precio) {
