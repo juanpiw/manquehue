@@ -2205,9 +2205,31 @@ class ImageFilterSystem {
             const activeTypeBtn = card.querySelector('.floor-type-options .floor-type-btn.active');
             if (activeTypeBtn) {
                 const label = activeTypeBtn.textContent.trim().toLowerCase();
+                // Mapeo por defecto A->2, B->3, C->4
                 if (label.includes('tipo a')) overrideDigit = '2';
                 else if (label.includes('tipo b')) overrideDigit = '3';
                 else if (label.includes('tipo c')) overrideDigit = '4';
+                // Caso especial: 1D, 80-100 m², $5.000+ UF
+                // A -> 4 (D140-60m2_A-S-4_Diseño), B -> 5 (D140-60m2_A-S-5_Diseño)
+                const isOneD = apartment === '1 Dormitorio';
+                const is80_100 = (superficie || '').includes('80-100');
+                const is5000 = (precio || '').includes('$5.000+');
+                if (isOneD && is80_100 && is5000) {
+                    if (label.includes('tipo a')) overrideDigit = '4';
+                    else if (label.includes('tipo b')) overrideDigit = '5';
+                }
+                // Caso especial: 2D, 80-100 m², $5.000+ UF → A->4, B->5
+                const isTwoD = apartment === '2 Dormitorios';
+                if (isTwoD && is80_100 && is5000) {
+                    if (label.includes('tipo a')) overrideDigit = '4';
+                    else if (label.includes('tipo b')) overrideDigit = '5';
+                }
+                // Caso especial: 3D, 80-100 m² → A->5, B->4 (archivos C-S-5 y C-S-4)
+                const isThreeD = apartment === '3 Dormitorios';
+                if (isThreeD && is80_100) {
+                    if (label.includes('tipo a')) overrideDigit = '5';
+                    else if (label.includes('tipo b')) overrideDigit = '4';
+                }
                 console.log('🔁 [setFloorPlanImageForDetails] Tipo activo detectado:', label, '-> overrideDigit =', overrideDigit);
             }
         } catch {}
@@ -2330,47 +2352,52 @@ class ImageFilterSystem {
         const base = `video/imagenes/plantas-apartamentos/${folder}/`;
         const list = [];
         
+        // Caso especial solicitado: 1D + 80-100 m² + $5.000+ UF usa archivos de 40-60 con dígitos 4/5
+        const isOneD = tipo === '1d';
+        const is80_100 = superficieKey === '80_100';
+        const is5000 = precioKey === '5000_plus';
+        const isTwoD = tipo === '2d';
+        const isThreeD = tipo === '3d';
+        const force4060For80100 = isOneD && is80_100 && is5000;
+        const dashForName = force4060For80100 ? '40-60' : surfaceDash;
+        const surfaceLetterUsed = (force4060For80100 || (isTwoD && is80_100) || (isThreeD && is80_100)) ? 'S' : surfaceLetter;
+        
         // CARPETA D1 (1 Dormitorio) - Nombres originales con D1 prefix
         if (folder === 'D1') {
             // D140-60 m2_A-S-2_Diseño.jpeg (con espacio antes de m2 y guion conservado)
-            list.push(`${base}D1${surfaceDash} m2_${tipoLetter}-${surfaceLetter}-${priceDigitUsed}_Diseño.jpeg`);
-            list.push(`${base}D1${surfaceDash} m2_${tipoLetter}-${surfaceLetter}-${priceDigitUsed}_Diseño.jpg`);
+            list.push(`${base}D1${dashForName} m2_${tipoLetter}-${surfaceLetterUsed}-${priceDigitUsed}_Diseño.jpeg`);
+            list.push(`${base}D1${dashForName} m2_${tipoLetter}-${surfaceLetterUsed}-${priceDigitUsed}_Diseño.jpg`);
             // D1 40-60 m2_A-S-2_Diseño.jpeg (con espacio entre D1 y 40-60)
-            list.push(`${base}D1 ${surfaceDash} m2_${tipoLetter}-${surfaceLetter}-${priceDigitUsed}_Diseño.jpeg`);
-            list.push(`${base}D1 ${surfaceDash} m2_${tipoLetter}-${surfaceLetter}-${priceDigitUsed}_Diseño.jpg`);
+            list.push(`${base}D1 ${dashForName} m2_${tipoLetter}-${surfaceLetterUsed}-${priceDigitUsed}_Diseño.jpeg`);
+            list.push(`${base}D1 ${dashForName} m2_${tipoLetter}-${surfaceLetterUsed}-${priceDigitUsed}_Diseño.jpg`);
             // D140-60m2_A-S-2_Diseño.jpeg (sin espacio antes de m2, guion conservado)
-            list.push(`${base}D1${surfaceDash}m2_${tipoLetter}-${surfaceLetter}-${priceDigitUsed}_Diseño.jpeg`);
-            list.push(`${base}D1${surfaceDash}m2_${tipoLetter}-${surfaceLetter}-${priceDigitUsed}_Diseño.jpg`);
+            list.push(`${base}D1${dashForName}m2_${tipoLetter}-${surfaceLetterUsed}-${priceDigitUsed}_Diseño.jpeg`);
+            list.push(`${base}D1${dashForName}m2_${tipoLetter}-${surfaceLetterUsed}-${priceDigitUsed}_Diseño.jpg`);
             // D1 40-60m2_A-S-2_Diseño.jpeg (con espacio entre D1 y 40-60)
-            list.push(`${base}D1 ${surfaceDash}m2_${tipoLetter}-${surfaceLetter}-${priceDigitUsed}_Diseño.jpeg`);
-            list.push(`${base}D1 ${surfaceDash}m2_${tipoLetter}-${surfaceLetter}-${priceDigitUsed}_Diseño.jpg`);
+            list.push(`${base}D1 ${dashForName}m2_${tipoLetter}-${surfaceLetterUsed}-${priceDigitUsed}_Diseño.jpeg`);
+            list.push(`${base}D1 ${dashForName}m2_${tipoLetter}-${surfaceLetterUsed}-${priceDigitUsed}_Diseño.jpg`);
             // D140-60m2_A-S-3_Dieño.jpeg (variante con error tipográfico en "Diseño")
-            list.push(`${base}D1${surfaceDash}m2_${tipoLetter}-${surfaceLetter}-${priceDigitUsed}_Dieño.jpeg`);
-            list.push(`${base}D1 ${surfaceDash}m2_${tipoLetter}-${surfaceLetter}-${priceDigitUsed}_Dieño.jpeg`);
+            list.push(`${base}D1${dashForName}m2_${tipoLetter}-${surfaceLetterUsed}-${priceDigitUsed}_Dieño.jpeg`);
+            list.push(`${base}D1 ${dashForName}m2_${tipoLetter}-${surfaceLetterUsed}-${priceDigitUsed}_Dieño.jpeg`);
         }
         
         // CARPETA D2 (2 Dormitorios) - Nombres originales sin D2 prefix
         if (folder === 'D2') {
-            // 40_60m2B-S-2_diseño.jpeg
-            list.push(`${base}${surfaceDash.replace('-', '_')}m2${tipoLetter}-${surfaceLetter}-${priceDigitUsed}_diseño.jpeg`);
-            // 40_60m2B-S-3_diseño.jpeg
-            list.push(`${base}${surfaceDash.replace('-', '_')}m2${tipoLetter}-${surfaceLetter}-${priceDigitUsed}_diseño.jpeg`);
-            // 80_100m2B-S-4_diseño.jpeg
-            list.push(`${base}${surfaceDash.replace('-', '_')}m2${tipoLetter}-${surfaceLetter}-${priceDigitUsed}_diseño.jpeg`);
-            // 80_100m2B-S-5_diseño.jpeg
-            list.push(`${base}${surfaceDash.replace('-', '_')}m2${tipoLetter}-${surfaceLetter}-${priceDigitUsed}_diseño.jpeg`);
+            const dashUnderscore = surfaceDash.replace('-', '_');
+            // Usar surfaceLetterUsed para forzar "S" en 80_100
+            list.push(`${base}${dashUnderscore}m2${tipoLetter}-${surfaceLetterUsed}-${priceDigitUsed}_diseño.jpeg`);
         }
         
         // CARPETA D3 (3 Dormitorios) - Nombres originales sin D3 prefix
         if (folder === 'D3') {
             // 40_60m2C-S-2_diseno.jpg
-            list.push(`${base}${surfaceDash.replace('-', '_')}m2${tipoLetter}-${surfaceLetter}-${priceDigitUsed}_diseno.jpg`);
+            list.push(`${base}${surfaceDash.replace('-', '_')}m2${tipoLetter}-${surfaceLetterUsed}-${priceDigitUsed}_diseno.jpg`);
             // 40_60m2C-S-3_diseo.jpg (sin 'n')
-            list.push(`${base}${surfaceDash.replace('-', '_')}m2${tipoLetter}-${surfaceLetter}-${priceDigitUsed}_diseo.jpg`);
+            list.push(`${base}${surfaceDash.replace('-', '_')}m2${tipoLetter}-${surfaceLetterUsed}-${priceDigitUsed}_diseo.jpg`);
             // 80_100 m2C-S-5_diseño.jpg (con espacio y guion bajo entre 80_100)
-            list.push(`${base}${surfaceDash.replace('-', '_')} m2${tipoLetter}-${surfaceLetter}-${priceDigitUsed}_diseño.jpg`);
+            list.push(`${base}${surfaceDash.replace('-', '_')} m2${tipoLetter}-${surfaceLetterUsed}-${priceDigitUsed}_diseño.jpg`);
             // 80_100m2C-S-4_diseño.jpg
-            list.push(`${base}${surfaceDash.replace('-', '_')}m2${tipoLetter}-${surfaceLetter}-${priceDigitUsed}_diseño.jpg`);
+            list.push(`${base}${surfaceDash.replace('-', '_')}m2${tipoLetter}-${surfaceLetterUsed}-${priceDigitUsed}_diseño.jpg`);
         }
         
         // Intentar también con dígito alternativo (2 ó 5), por si el archivo usa otro índice
