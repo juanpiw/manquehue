@@ -2038,6 +2038,16 @@ class ImageFilterSystem {
         
         // Insertar controles en el body
         document.body.insertAdjacentHTML('beforeend', videoControlsHTML);
+        // Traducir inmediatamente los textos de controles según idioma activo
+        try {
+            const uiLangBtn = document.querySelector('.lang-btn.active');
+            const params = new URLSearchParams(window.location.search);
+            const lang = (uiLangBtn?.dataset?.lang || params.get('lang') || 'es').toLowerCase();
+            console.log('[Lang] showVideoControls -> applying translation for video controls. lang=', lang);
+            this.translateUIToLanguage(lang);
+        } catch (e) {
+            console.warn('[Lang] Failed to translate video controls immediately', e);
+        }
         
         // Animar entrada de controles
         setTimeout(() => {
@@ -4055,9 +4065,25 @@ class ImageFilterSystem {
             // Diccionario básico
             const dict = {
                 es: {
+                    hero_title: 'Mirador del Golf',
                     apartments_title_apto: 'Descubre nuestros exclusivos apartamentos',
                     apartments_title_casa: 'Descubre nuestras exclusivas casas',
                     apartments_subtitle: 'Con las mejores vistas y acabados de lujo',
+                    // Features section
+                    features_title: 'Explora las características únicas',
+                    features_subtitle: 'de nuestro proyecto',
+                    features_gallery_title: 'Galería de Imágenes del Proyecto',
+                    features_gallery_subtitle: 'Descubre los espacios y detalles que hacen único este proyecto',
+                    features_slide_titles: ['Vista Principal', 'Áreas Comunes', 'Interiores', 'Exteriores', 'Amenities', 'Detalles'],
+                    // Equipment section
+                    equipment_title: 'Equipamiento de Lujo',
+                    equipment_subtitle: 'Todo lo que necesitas para una vida extraordinaria',
+                    equipment_amenities_title: 'Piscina',
+                    equipment_security_title: 'Seguridad',
+                    equipment_technology_title: 'Tecnología',
+                    equipment_amenities_items: ['Piscina', 'Gimnasio'],
+                    equipment_security_items: ['Control de acceso'],
+                    equipment_technology_items: ['Fibra óptica'],
                     btn_search: 'Buscar',
                     btn_clear: 'Limpiar Filtros',
                     filter_surface: 'Superficie:',
@@ -4078,6 +4104,7 @@ class ImageFilterSystem {
                     ctrl_details: 'Detalles',
                     ctrl_pause: 'Pausar',
                     ctrl_back: 'Volver',
+                    collapse_title: 'Contraer/Expandir',
                     plan_house: 'Plano de la Casa',
                     plan_apartment: 'Plano del Apartamento',
                     spec_bedroom: 'Habitación:',
@@ -4091,15 +4118,33 @@ class ImageFilterSystem {
                     floor_type_a: 'Tipo A',
                     floor_type_b: 'Tipo B',
                     floor_type_c: 'Tipo C',
+                    video_next: 'Siguiente Video',
+                    video_back: 'Volver',
                     type_all: 'Todos',
                     type_1d: '1 Dormitorio',
                     type_2d: '2 Dormitorios',
                     type_3d: '3 Dormitorios',
                 },
                 en: {
+                    hero_title: 'Mirador del Golf',
                     apartments_title_apto: 'Discover our exclusive apartments',
                     apartments_title_casa: 'Discover our exclusive houses',
                     apartments_subtitle: 'With the best views and premium finishes',
+                    // Features section
+                    features_title: 'Explore the unique features',
+                    features_subtitle: 'of our project',
+                    features_gallery_title: 'Project Image Gallery',
+                    features_gallery_subtitle: 'Discover the spaces and details that make this project unique',
+                    features_slide_titles: ['Main View', 'Common Areas', 'Interiors', 'Exteriors', 'Amenities', 'Details'],
+                    // Equipment section
+                    equipment_title: 'Luxury Equipment',
+                    equipment_subtitle: 'Everything you need for an extraordinary life',
+                    equipment_amenities_title: 'Pool',
+                    equipment_security_title: 'Security',
+                    equipment_technology_title: 'Technology',
+                    equipment_amenities_items: ['Pool', 'Gym'],
+                    equipment_security_items: ['Access control'],
+                    equipment_technology_items: ['Fiber optics'],
                     btn_search: 'Search',
                     btn_clear: 'Clear Filters',
                     filter_surface: 'Surface:',
@@ -4120,6 +4165,7 @@ class ImageFilterSystem {
                     ctrl_details: 'Details',
                     ctrl_pause: 'Pause',
                     ctrl_back: 'Back',
+                    collapse_title: 'Collapse/Expand',
                     plan_house: 'House Floor Plan',
                     plan_apartment: 'Apartment Floor Plan',
                     spec_bedroom: 'Bedroom:',
@@ -4133,6 +4179,8 @@ class ImageFilterSystem {
                     floor_type_a: 'Type A',
                     floor_type_b: 'Type B',
                     floor_type_c: 'Type C',
+                    video_next: 'Next Video',
+                    video_back: 'Back',
                     type_all: 'All',
                     type_1d: '1 Bedroom',
                     type_2d: '2 Bedrooms',
@@ -4141,6 +4189,8 @@ class ImageFilterSystem {
             }[isEnglish ? 'en' : 'es'];
 
             // Títulos y subtítulos
+            const pageHeroTitle = document.querySelector('.hero-title');
+            if (pageHeroTitle && dict.hero_title) pageHeroTitle.textContent = dict.hero_title;
             const titleEl = document.querySelector('.apartments-content .section-title');
             if (titleEl) titleEl.textContent = isHouse ? dict.apartments_title_casa : dict.apartments_title_apto;
             const subtitleEl = document.querySelector('.apartments-content .section-subtitle');
@@ -4277,6 +4327,7 @@ class ImageFilterSystem {
             // Botón volver en detalles
             const backBtn = document.querySelector('.apartment-card.details-mode .btn-back, .house-card.details-mode .btn-back');
             if (backBtn && backBtn.lastChild) backBtn.lastChild.textContent = ` ${dict.ctrl_back}`;
+            if (backBtn) backBtn.setAttribute('title', dict.ctrl_back);
 
             // Título de detalles (1 Dormitorio -> 1 Bedroom)
             const detailsTitle = document.querySelector('.details-title');
@@ -4285,6 +4336,100 @@ class ImageFilterSystem {
                 if (tipoCode === '1d') detailsTitle.textContent = dict.type_1d;
                 else if (tipoCode === '2d') detailsTitle.textContent = dict.type_2d;
                 else if (tipoCode === '3d') detailsTitle.textContent = dict.type_3d;
+            }
+
+            // Tooltip del botón colapsar/expandir en detalles
+            const collapseBtn = document.querySelector('.btn-collapse');
+            if (collapseBtn) collapseBtn.setAttribute('title', dict.collapse_title);
+
+            // === Features Section Translation ===
+            try {
+                // Update titles/subtitles
+                const featTitle = document.querySelector('.features-content .section-title');
+                if (featTitle) featTitle.textContent = dict.features_title;
+                const featSubtitle = document.querySelector('.features-content .section-subtitle');
+                if (featSubtitle) featSubtitle.textContent = dict.features_subtitle;
+                const galleryTitle = document.querySelector('.features-content .carousel-content h3');
+                if (galleryTitle) galleryTitle.textContent = dict.features_gallery_title;
+                const gallerySubtitle = document.querySelector('.features-content .carousel-subtitle');
+                if (gallerySubtitle) gallerySubtitle.textContent = dict.features_gallery_subtitle;
+
+                // Update in-memory slide titles for modal consistency
+                if (Array.isArray(dict.features_slide_titles)) {
+                    this.featuresSlideTitles = dict.features_slide_titles.slice();
+                }
+
+                // Update visible slide titles without rebuilding the track
+                const slideTitles = document.querySelectorAll('#featuresCarouselTrack .slide-title');
+                slideTitles.forEach((el, idx) => {
+                    if (this.featuresSlideTitles[idx]) el.textContent = this.featuresSlideTitles[idx];
+                });
+
+                // If modal open, update header and counter string
+                const modal = document.getElementById('featuresImageModal');
+                if (modal) {
+                    const header = modal.querySelector('.image-modal-header h3');
+                    if (header && typeof this.currentFeaturesModalImageIndex === 'number') {
+                        const i = this.currentFeaturesModalImageIndex;
+                        if (this.featuresSlideTitles[i]) header.textContent = this.featuresSlideTitles[i];
+                    }
+                    const footerCounter = modal.querySelector('.image-modal-footer span');
+                    if (footerCounter && typeof this.currentFeaturesModalImageIndex === 'number') {
+                        const i = this.currentFeaturesModalImageIndex;
+                        const ofWord = isEnglish ? 'of' : 'de';
+                        footerCounter.textContent = `${i + 1} ${ofWord} ${this.featuresImages.length}`;
+                    }
+                }
+            } catch (e) {
+                console.warn('[Lang] Error translating Features section', e);
+            }
+
+            // === Equipment Section Translation ===
+            try {
+                const eqTitle = document.querySelector('.equipment-content .section-title');
+                if (eqTitle) eqTitle.textContent = dict.equipment_title;
+                const eqSubtitle = document.querySelector('.equipment-content .section-subtitle');
+                if (eqSubtitle) eqSubtitle.textContent = dict.equipment_subtitle;
+
+                const mapConfig = [
+                    { cat: 'amenities', title: dict.equipment_amenities_title, items: dict.equipment_amenities_items },
+                    { cat: 'security', title: dict.equipment_security_title, items: dict.equipment_security_items },
+                    { cat: 'technology', title: dict.equipment_technology_title, items: dict.equipment_technology_items },
+                ];
+
+                mapConfig.forEach(cfg => {
+                    const categoryEl = document.querySelector(`.equipment-category[data-category="${cfg.cat}"]`);
+                    if (!categoryEl) return;
+                    const h3 = categoryEl.querySelector('h3');
+                    if (h3 && cfg.title) h3.textContent = cfg.title;
+                    const list = categoryEl.querySelector('.equipment-list');
+                    if (list && Array.isArray(cfg.items)) {
+                        list.innerHTML = cfg.items.map(text => `<li>${text}</li>`).join('');
+                    }
+                });
+
+                // Botón de volver en categorías de equipamiento (texto y tooltip)
+                const eqBackButtons = document.querySelectorAll('.equipment-back-btn');
+                eqBackButtons.forEach(btn => {
+                    btn.textContent = `← ${dict.ctrl_back}`;
+                    btn.setAttribute('title', dict.ctrl_back);
+                    btn.setAttribute('aria-label', dict.ctrl_back);
+                });
+            } catch (e) {
+                console.warn('[Lang] Error translating Equipment section', e);
+            }
+
+            // === Hero Video Controls Translation ===
+            try {
+                const videoControls = document.querySelector('.video-controls');
+                if (videoControls) {
+                    const btnNext = videoControls.querySelector('.btn-next');
+                    if (btnNext && btnNext.lastChild) btnNext.lastChild.textContent = ` ${dict.video_next}`;
+                    const btnStop = videoControls.querySelector('.btn-stop');
+                    if (btnStop && btnStop.lastChild) btnStop.lastChild.textContent = ` ${dict.video_back}`;
+                }
+            } catch (e) {
+                console.warn('[Lang] Error translating Hero Video controls', e);
             }
         } catch (e) {
             console.warn('[Lang] Error translating UI', e);
