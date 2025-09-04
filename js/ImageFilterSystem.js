@@ -4195,7 +4195,7 @@ class ImageFilterSystem {
                     footer_contact: 'Contact',
                     footer_location: 'Location',
                     footer_follow: 'Follow us',
-                    footer_rights: '© 2024 Manquehue. All rights reserved.',
+                    footer_rights: '© 2025 Impact Render Studios. All rights reserved.',
                     // Back button
                     back_button: 'Back',
                     // Contact modal
