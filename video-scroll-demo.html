@@ -4,6 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Videos por Scroll - Demo</title>
+    
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://impactrenderstudios.com/video-scroll-demo.html">
+    <meta property="og:title" content="Mirador del Golf — Interactive Experience">
+    <meta property="og:description" content="Explore videos, filter apartments, and discover the project's features.">
+    <meta property="og:image" content="https://impactrenderstudios.com/video/imagenes/carrousel/car_02.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:site_name" content="Impact Render Studios">
+    <meta property="og:locale" content="en_US">
+    
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Mirador del Golf — Interactive Experience">
+    <meta name="twitter:description" content="Explore videos, filter apartments, and discover the project's features.">
+    <meta name="twitter:image" content="https://impactrenderstudios.com/video/imagenes/carrousel/car_01.png">
     <link rel="icon" type="image/png" href="favicon.png">
     <link rel="stylesheet" href="video-scroll-styles.css">
     <link rel="stylesheet" href="css/language-switcher.css">
@@ -1580,6 +1597,52 @@
             };
             document.body.appendChild(irisButton);
 
+            // Add a secondary CTA button next to Iris toggle
+            const irisSellBtn = document.createElement('button');
+            irisSellBtn.className = 'iris-sell-button';
+            irisSellBtn.setAttribute('data-lang-key', 'iris_sell_cta');
+            irisSellBtn.textContent = 'Quiero que Iris venda por mí';
+            irisSellBtn.style.position = 'fixed';
+            irisSellBtn.style.bottom = '30px';
+            irisSellBtn.style.right = '90px';
+            irisSellBtn.style.padding = '10px 14px';
+            irisSellBtn.style.borderRadius = '12px';
+            irisSellBtn.style.border = '1px solid rgba(255,255,255,0.35)';
+            irisSellBtn.style.background = 'transparent';
+            irisSellBtn.style.color = '#fff';
+            irisSellBtn.style.fontWeight = '700';
+            irisSellBtn.style.cursor = 'pointer';
+            irisSellBtn.style.boxShadow = '0 8px 24px rgba(255, 200, 0, 0.35)';
+            irisSellBtn.style.backdropFilter = 'blur(8px)';
+            irisSellBtn.style.zIndex = '10003';
+            irisSellBtn.style.transition = 'transform .2s ease, box-shadow .2s ease';
+            irisSellBtn.onmouseenter = () => {
+                irisSellBtn.style.transform = 'translateY(-2px)';
+                irisSellBtn.style.background = 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)';
+                irisSellBtn.style.color = '#000';
+                irisSellBtn.style.boxShadow = '0 8px 24px rgba(255, 200, 0, 0.35)';
+            };
+            irisSellBtn.onmouseleave = () => {
+                irisSellBtn.style.transform = 'translateY(0)';
+                irisSellBtn.style.background = 'transparent';
+                irisSellBtn.style.color = '#fff';
+                irisSellBtn.style.boxShadow = 'none';
+            };
+            irisSellBtn.onclick = function() {
+                try { window.openIrisChat && window.openIrisChat(); } catch {}
+            };
+            document.body.appendChild(irisSellBtn);
+
+            // Update CTA text on language changes
+            document.addEventListener('languageChanged', function(ev){
+                try {
+                    const lang = (ev.detail?.lang || 'es').toLowerCase();
+                    const en = lang.startsWith('en');
+                    const btn = document.querySelector('.iris-sell-button');
+                    if (btn) btn.textContent = en ? 'I want Iris to sell for me' : 'Quiero que Iris venda por mí';
+                } catch {}
+            });
+
             // Update toggle title on language changes
             document.addEventListener('languageChanged', function(ev){
                 try {
@@ -1763,10 +1826,10 @@
             const isEnglish = (lang || '').toLowerCase().startsWith('en');
             const initialMessages = isEnglish
                 ? [
-                    'Hello! I am Iris, your virtual assistant for Mirador del Golf. I can help you explore our exclusive apartments, show the project amenities, or answer any questions about this premium development in Piedra Roja. How can I help you today?'
+                    'Hello! I am Iris, your virtual assistant for Mirador del Golf. I can help you explore our exclusive apartments, show the project amenities, or answer any questions about this premium development in Piedra Roja. How can I help you today? If you want a free demo, leave your name and email and we will contact you.'
                   ]
                 : [
-                    '¡Hola! Soy Iris, tu asistente virtual de Mirador del Golf. Puedo ayudarte a explorar nuestros exclusivos apartamentos, mostrar las amenidades del proyecto o responder cualquier consulta sobre este desarrollo premium en Piedra Roja. ¿En qué puedo ayudarte hoy?'
+                    '¡Hola! Soy Iris, tu asistente virtual de Mirador del Golf. Puedo ayudarte a explorar nuestros exclusivos apartamentos, mostrar las amenidades del proyecto o responder cualquier consulta sobre este desarrollo premium en Piedra Roja. ¿En qué puedo ayudarte hoy? Si quieres una demo gratuita, deja tu nombre y correo y nos pondremos en contacto.'
                   ];
 
             const instance = createChat({

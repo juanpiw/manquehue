@@ -1921,7 +1921,7 @@ class ImageFilterSystem {
         const previewSelector = document.querySelector('.preview-selector');
         if (previewSelector) {
             // Restaurar estilos de centrado originales
-            previewSelector.style.display = 'block';
+            previewSelector.style.display = 'flex';
             previewSelector.style.textAlign = 'center';
             previewSelector.style.justifyContent = 'center';
             previewSelector.style.alignItems = 'center';
@@ -1998,7 +1998,7 @@ class ImageFilterSystem {
         // Restaurar el selector de proyecto
         const previewSelector = document.querySelector('.preview-selector');
         if (previewSelector) {
-            previewSelector.style.display = 'block';
+            previewSelector.style.display = 'flex';
             // Asegurar que el centrado se mantenga
             previewSelector.style.textAlign = 'center';
             previewSelector.style.justifyContent = 'center';
@@ -2014,6 +2014,10 @@ class ImageFilterSystem {
         const previewStats = document.querySelector('.preview-stats');
         if (previewStats) {
             previewStats.style.display = 'block';
+            // Asegurar centrado al restaurar
+            previewStats.style.textAlign = 'center';
+            previewStats.style.justifyContent = 'center';
+            previewStats.style.alignItems = 'center';
             setTimeout(() => {
                 previewStats.style.opacity = '1';
                 previewStats.style.transform = 'translateY(0)';
@@ -4192,6 +4196,7 @@ class ImageFilterSystem {
                     type_1d: '1 Dormitorio',
                     type_2d: '2 Dormitorios',
                     type_3d: '3 Dormitorios',
+                    iris_sell_cta: 'Quiero que Iris venda por mí',
                 },
                 en: {
                     hero_title: 'Mirador del Golf',
@@ -4264,6 +4269,7 @@ class ImageFilterSystem {
                     collapse_title: 'Collapse/Expand',
                     plan_house: 'House Floor Plan',
                     plan_apartment: 'Apartment Floor Plan',
+                    iris_sell_cta: 'I want Iris to sell for me',
                     spec_bedroom: 'Bedroom:',
                     spec_area: 'Area:',
                     spec_balcony: 'Balcony:',
@@ -4555,6 +4561,12 @@ class ImageFilterSystem {
                     const bottom = footer.querySelector('.footer-bottom p');
                     if (bottom) bottom.textContent = dict.footer_rights;
                 }
+            } catch {}
+
+            // === Iris Sell CTA ===
+            try {
+                const sellBtn = document.querySelector('.iris-sell-button');
+                if (sellBtn) sellBtn.textContent = dict.iris_sell_cta || (lang.startsWith('en') ? 'I want Iris to sell for me' : 'Quiero que Iris venda por mí');
             } catch {}
 
             // === Global back button ===
