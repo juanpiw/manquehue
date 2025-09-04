@@ -1416,11 +1416,23 @@
 
         // Initialize Iris when page loads
         document.addEventListener('DOMContentLoaded', function() {
+            function detectUiLang() {
+                try {
+                    const btn = document.querySelector('.lang-btn.active');
+                    const params = new URLSearchParams(window.location.search);
+                    const stored = (localStorage.getItem('preferredLanguage') || '').toLowerCase();
+                    const nav = (navigator.language || 'es').toLowerCase();
+                    const lang = (btn?.dataset?.lang || params.get('lang') || stored || nav || 'es').toLowerCase();
+                    return lang;
+                } catch { return 'es'; }
+            }
+            const currentLang = detectUiLang();
+            const isEnglish = currentLang.startsWith('en');
             // Add Iris toggle button to the page
             const irisButton = document.createElement('button');
             irisButton.className = 'iris-toggle-button';
             irisButton.innerHTML = '<i class="fas fa-comments"></i>';
-            irisButton.title = 'Chat con Iris - Asistente Virtual de Mirador del Golf';
+            irisButton.title = isEnglish ? 'Chat with Iris - Mirador del Golf Virtual Assistant' : 'Chat con Iris - Asistente Virtual de Mirador del Golf';
             irisButton.onclick = function() {
                 // Toggle chat state
                 const isChatOpen = irisButton.classList.contains('chat-open');
@@ -1429,7 +1441,7 @@
                     // Close chat
                     irisButton.classList.remove('chat-open');
                     irisButton.innerHTML = '<i class="fas fa-comments"></i>';
-                    irisButton.title = 'Chat con Iris - Asistente Virtual de Mirador del Golf';
+                    irisButton.title = isEnglish ? 'Chat with Iris - Mirador del Golf Virtual Assistant' : 'Chat con Iris - Asistente Virtual de Mirador del Golf';
                     
                     // Hide chat window - try multiple selectors
                     const chatWindow = document.querySelector('.chat-window-wrapper, .chat-window, [data-testid="chat-window"]');
@@ -1446,7 +1458,7 @@
                     // Open chat
                     irisButton.classList.add('chat-open');
                     irisButton.innerHTML = '<i class="fas fa-times"></i>';
-                    irisButton.title = 'Cerrar chat';
+                    irisButton.title = isEnglish ? 'Close chat' : 'Cerrar chat';
                     
                     // First try to trigger the n8n chat toggle to open
                     const n8nToggle = document.querySelector('.chat-window-toggle');
@@ -1466,6 +1478,16 @@
                 }
             };
             document.body.appendChild(irisButton);
+
+            // Update toggle title on language changes
+            document.addEventListener('languageChanged', function(ev){
+                try {
+                    const lang = (ev.detail?.lang || 'es').toLowerCase();
+                    const en = lang.startsWith('en');
+                    const isOpen = irisButton.classList.contains('chat-open');
+                    irisButton.title = isOpen ? (en ? 'Close chat' : 'Cerrar chat') : (en ? 'Chat with Iris - Mirador del Golf Virtual Assistant' : 'Chat con Iris - Asistente Virtual de Mirador del Golf');
+                } catch {}
+            });
 
             // Add Iris video controls panel
             const irisControls = document.createElement('div');
@@ -1504,52 +1526,95 @@
     <script type="module">
         import { createChat } from 'https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js';
 
-        // Initialize Iris chat widget
-        const irisChatInstance = createChat({
-            webhookUrl: 'https://impactrender.app.n8n.cloud/webhook/57a76c39-7ea3-4ce2-b5f5-41c6adf02c34/chat',
-            webhookConfig: {
-                method: 'POST',
-                headers: {}
-            },
-            mode: 'window',
-            chatInputKey: 'chatInput',
-            chatSessionKey: 'sessionId',
-            loadPreviousSession: false,
-            metadata: {
-                page_type: 'video_scroll_demo',
-                source: 'dash_imanquehue'
-            },
-            showWelcomeScreen: false,
-            defaultLanguage: 'es',
-            initialMessages: [
-                "¡Hola! Soy Iris, tu asistente virtual de Mirador del Golf. Puedo ayudarte a explorar nuestros exclusivos apartamentos, mostrar las amenidades del proyecto o responder cualquier consulta sobre este desarrollo premium en Piedra Roja. ¿En qué puedo ayudarte hoy?"
-            ],
-            i18n: {
+        function detectUiLang() {
+            try {
+                const btn = document.querySelector('.lang-btn.active');
+                const params = new URLSearchParams(window.location.search);
+                const stored = (localStorage.getItem('preferredLanguage') || '').toLowerCase();
+                const nav = (navigator.language || 'es').toLowerCase();
+                const lang = (btn?.dataset?.lang || params.get('lang') || stored || nav || 'es').toLowerCase();
+                return lang;
+            } catch { return 'es'; }
+        }
+
+        function buildI18n() {
+            return {
                 es: {
                     title: 'Iris - Mirador del Golf',
-                    subtitle: "Tu asistente virtual inmobiliario",
+                    subtitle: 'Tu asistente virtual inmobiliario',
                     footer: '',
                     getStarted: 'Iniciar nueva conversación',
                     inputPlaceholder: 'Pregunta sobre apartamentos, amenidades...',
                 },
-            },
-            enableStreaming: false,
-        });
-
-        // Set up proper z-index for chat window but don't hide it initially
-        setTimeout(() => {
-            const chatWindow = document.querySelector('.chat-window-wrapper, .chat-window, [data-testid="chat-window"]');
-            if (chatWindow) {
-                chatWindow.style.zIndex = '10002';
-                // Only hide if it's not already visible
-                if (chatWindow.style.display === 'none' || chatWindow.style.display === '') {
-                    chatWindow.style.display = 'none';
+                en: {
+                    title: 'Iris - Mirador del Golf',
+                    subtitle: 'Your real estate virtual assistant',
+                    footer: '',
+                    getStarted: 'Start new conversation',
+                    inputPlaceholder: 'Ask about apartments, amenities...',
                 }
-                
-                // Prevent scroll propagation from chat to main page
-                preventChatScrollPropagation(chatWindow);
-            }
-        }, 1000);
+            };
+        }
+
+        function destroyIrisChatDom() {
+            const nodes = document.querySelectorAll('.chat-window-wrapper, .chat-window, [data-testid="chat-window"], .chat-window-toggle');
+            nodes.forEach(n => { try { n.remove(); } catch {} });
+        }
+
+        function initIrisChatFor(lang) {
+            const isEnglish = (lang || '').toLowerCase().startsWith('en');
+            const initialMessages = isEnglish
+                ? [
+                    'Hello! I am Iris, your virtual assistant for Mirador del Golf. I can help you explore our exclusive apartments, show the project amenities, or answer any questions about this premium development in Piedra Roja. How can I help you today?'
+                  ]
+                : [
+                    '¡Hola! Soy Iris, tu asistente virtual de Mirador del Golf. Puedo ayudarte a explorar nuestros exclusivos apartamentos, mostrar las amenidades del proyecto o responder cualquier consulta sobre este desarrollo premium en Piedra Roja. ¿En qué puedo ayudarte hoy?'
+                  ];
+
+            const instance = createChat({
+                webhookUrl: `https://impactrender.app.n8n.cloud/webhook/57a76c39-7ea3-4ce2-b5f5-41c6adf02c34/chat?lang=${isEnglish ? 'en' : 'es'}`,
+                webhookConfig: { method: 'POST', headers: { 'X-Language': isEnglish ? 'en' : 'es', 'Accept-Language': isEnglish ? 'en' : 'es' } },
+                mode: 'window',
+                chatInputKey: 'chatInput',
+                chatSessionKey: 'sessionId',
+                loadPreviousSession: false,
+                metadata: { page_type: 'video_scroll_demo', source: 'dash_imanquehue', user_language: isEnglish ? 'en' : 'es' },
+                showWelcomeScreen: false,
+                defaultLanguage: isEnglish ? 'en' : 'es',
+                initialMessages,
+                i18n: buildI18n(),
+                enableStreaming: false,
+            });
+
+            // Store chat instance globally
+            window.irisChatInstance = instance;
+
+            // Set up proper z-index for chat window but don't hide it initially
+            setTimeout(() => {
+                const chatWindow = document.querySelector('.chat-window-wrapper, .chat-window, [data-testid="chat-window"]');
+                if (chatWindow) {
+                    chatWindow.style.zIndex = '10002';
+                    if (chatWindow.style.display === 'none' || chatWindow.style.display === '') {
+                        chatWindow.style.display = 'none';
+                    }
+                    preventChatScrollPropagation(chatWindow);
+                }
+            }, 1000);
+        }
+
+        // Initialize with detected language
+        initIrisChatFor(detectUiLang());
+
+        // Recreate chat on language changes
+        window.recreateIrisChat = function(lang) {
+            destroyIrisChatDom();
+            initIrisChatFor(lang || detectUiLang());
+        };
+
+        document.addEventListener('languageChanged', function(e) {
+            const newLang = (e.detail?.lang || detectUiLang()).toLowerCase();
+            try { window.recreateIrisChat(newLang); } catch (err) { console.warn('Failed to recreate Iris chat for language change', err); }
+        });
         
         // Function to prevent scroll propagation from chat to main page
         function preventChatScrollPropagation(chatElement) {

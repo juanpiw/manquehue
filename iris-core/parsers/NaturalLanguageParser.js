@@ -66,11 +66,18 @@ class NaturalLanguageParser {
      */
     parseNavigation(text) {
         const navigationPatterns = [
-            { pattern: /(ir a|navegar a|mostrar|ver)\s+(apartamentos?|casas?|equipamiento)/, action: 'goto', key: 'apartments' },
+            // Spanish
+            { pattern: /(ir a|navegar a|mostrar|ver)\s+(apartamentos?)/, action: 'goto', key: 'apartments' },
             { pattern: /(ir a|navegar a|mostrar|ver)\s+(casa|casas)/, action: 'goto', key: 'houses' },
             { pattern: /(ir a|navegar a|mostrar|ver)\s+(equipamiento|equipamientos)/, action: 'goto', key: 'equipment' },
-            { pattern: /(ir a|navegar a|mostrar|ver)\s+(características|features)/, action: 'goto', key: 'features' },
-            { pattern: /(ir a|navegar a|mostrar|ver)\s+(inicio|home)/, action: 'goto', key: 'home' }
+            { pattern: /(ir a|navegar a|mostrar|ver)\s+(características)/, action: 'goto', key: 'features' },
+            { pattern: /(ir a|navegar a|mostrar|ver)\s+(inicio|home)/, action: 'goto', key: 'home' },
+            // English
+            { pattern: /(go to|navigate to|open|show|view)\s+(apartments?)/, action: 'goto', key: 'apartments' },
+            { pattern: /(go to|navigate to|open|show|view)\s+(houses?|homes?)/, action: 'goto', key: 'houses' },
+            { pattern: /(go to|navigate to|open|show|view)\s+(equipment|amenities)/, action: 'goto', key: 'equipment' },
+            { pattern: /(go to|navigate to|open|show|view)\s+(features?)/, action: 'goto', key: 'features' },
+            { pattern: /(go to|navigate to|open|show|view)\s+(home|start|beginning)/, action: 'goto', key: 'home' }
         ];
 
         for (const pattern of navigationPatterns) {
@@ -130,11 +137,14 @@ class NaturalLanguageParser {
         
         // Procesar patrones de salir del recorrido
         const exitRecorridoPatterns = [
+            // Spanish
             { pattern: /(?:salir|salir\s+de)\s+(?:el\s+)?(?:recorrido|modo\s+recorrido)/, action: 'exit_recorrido' },
             { pattern: /(?:terminar|finalizar|acabar)\s+(?:el\s+)?(?:recorrido)/, action: 'exit_recorrido' },
             { pattern: /(?:volver|regresar)\s+(?:a\s+)?(?:la\s+)?(?:vista\s+normal|lista\s+normal)/, action: 'exit_recorrido' },
             { pattern: /(?:salir|salir\s+de)\s+(?:modo\s+recorrido)/, action: 'exit_recorrido' },
-            { pattern: /(?:exit|salir)\s+(?:recorrido)/, action: 'exit_recorrido' }
+            // English
+            { pattern: /(?:exit|leave|close|stop)\s+(?:tour|walkthrough|recorrido|tour\s+mode)/, action: 'exit_recorrido' },
+            { pattern: /(?:back|return)\s+(?:to\s+)?(?:list|normal\s+view|default\s+view)/, action: 'exit_recorrido' }
         ];
 
         for (let i = 0; i < exitRecorridoPatterns.length; i++) {
@@ -187,13 +197,24 @@ class NaturalLanguageParser {
             { pattern: /(?:departamento|apartamento)\s+(?:de\s+)?(uno|dos|tres)\s*(?:dormitorio|dormitorios|habitación|habitaciones)/, bedrooms: (match) => {
                 const numMap = { 'uno': 1, 'dos': 2, 'tres': 3 };
                 return numMap[match[1]] || 1;
+            }},
+            // English numbers and phrases
+            { pattern: /(?:show|filter|find|search|view)\s+(?:an?\s+)?(?:apartment|unit)\s+(?:with\s+)?(\d+)\s*(?:bedrooms?|beds?)/, bedrooms: '$1' },
+            { pattern: /(\d+)\s*(?:bedrooms?|beds?)/, bedrooms: '$1' },
+            { pattern: /(?:one|two|three)\s*(?:bedrooms?|beds?)/, bedrooms: (match) => {
+                const map = { 'one': 1, 'two': 2, 'three': 3 };
+                return map[match[0].match(/one|two|three/)[0]] || 1;
             }}
         ];
 
         // Detectar comandos de filtro por superficie
         const surfacePatterns = [
+            // Spanish
             { pattern: /(\d+)\s*-\s*(\d+)\s*m²/, superficie: '$1-$2 m²' },
-            { pattern: /(?:superficie|área)\s+(?:de\s+)?(\d+)\s*-\s*(\d+)\s*m²/, superficie: '$1-$2 m²' }
+            { pattern: /(?:superficie|área)\s+(?:de\s+)?(\d+)\s*-\s*(\d+)\s*m²/, superficie: '$1-$2 m²' },
+            // English
+            { pattern: /(\d+)\s*-\s*(\d+)\s*(?:m²|m2|sqm)/, superficie: '$1-$2 m²' },
+            { pattern: /(?:surface|area)\s*(?:of\s+)?(\d+)\s*-\s*(\d+)\s*(?:m²|m2|sqm)/, superficie: '$1-$2 m²' }
         ];
 
         // Detectar comandos de filtro por precio - MEJORADOS
@@ -204,7 +225,12 @@ class NaturalLanguageParser {
             { pattern: /(?:buscar|mostrar|filtrar)\s+(?:de\s+)?\$?([0-9.,]+)\s*(?:mil\s+)?(?:uf|UF)/i, precio: '$1 UF' },
             { pattern: /(?:de\s+)?\$?([0-9.,]+)\s*(?:mil\s+)?(?:uf|UF)/i, precio: '$1 UF' },
             { pattern: /(?:precio|valor)\s+(?:de\s+)?\$?([0-9.,]+)\s*(?:mil\s+)?(?:uf|UF)/i, precio: '$1 UF' },
-            { pattern: /\$?([0-9.,]+)\s*-\s*\$?([0-9.,]+)\s*(?:mil\s+)?(?:pesos|peso)/i, precio: '$1-$2 pesos' }
+            { pattern: /\$?([0-9.,]+)\s*-\s*\$?([0-9.,]+)\s*(?:mil\s+)?(?:pesos|peso)/i, precio: '$1-$2 pesos' },
+            // English
+            { pattern: /(?:price|value)\s*(?:between|from)?\s*\$?([0-9.,]+)\s*-\s*\$?([0-9.,]+)\s*(?:uf|UF)/i, precio: '$1-$2 UF' },
+            { pattern: /\$?([0-9.,]+)\s*-\s*\$?([0-9.,]+)\s*(?:uf|UF)/i, precio: '$1-$2 UF' },
+            { pattern: /(?:price|value)\s*(?:of|at)?\s*\$?([0-9.,]+)\s*(?:uf|UF)/i, precio: '$1 UF' },
+            { pattern: /\$?([0-9.,]+)\s*-\s*\$?([0-9.,]+)\s*(?:clp|pesos)/i, precio: '$1-$2 pesos' }
         ];
 
         // Detectar comandos de filtro por tipo de departamento
@@ -222,7 +248,11 @@ class NaturalLanguageParser {
             { pattern: /(?:cuéntame|dime)\s+(?:más\s+)?(?:sobre|de)\s+(?:este\s+)?(?:departamento|apartamento)/, action: 'show_details' },
             { pattern: /(?:quiero|necesito)\s+(?:saber|ver|conocer)\s+(?:más\s+)?(?:sobre|de)\s+(?:este\s+)?(?:departamento|apartamento)/, action: 'show_details' },
             { pattern: /(?:muestra|muéstrame|dame)\s+(?:más\s+)?(?:información|detalles?|datos)/, action: 'show_details' },
-            { pattern: /(?:detalles?|información|datos)\s+(?:del\s+)?(?:departamento|apartamento)/, action: 'show_details' }
+            { pattern: /(?:detalles?|información|datos)\s+(?:del\s+)?(?:departamento|apartamento)/, action: 'show_details' },
+            // English
+            { pattern: /(?:show|give)\s+(?:me\s+)?(?:more\s+)?(?:details|information|info)/, action: 'show_details' },
+            { pattern: /(?:tell\s+me)\s+(?:more)/, action: 'show_details' },
+            { pattern: /(?:details|information|info)\s+(?:about|on)\s+(?:this\s+)?(?:apartment|unit)/, action: 'show_details' }
         ];
 
         // Detectar comandos para enviar PDF
@@ -231,7 +261,10 @@ class NaturalLanguageParser {
             { pattern: /(?:quiero|necesito)\s+(?:el\s+)?(?:pdf|documento)/, action: 'send_pdf' },
             { pattern: /(?:dame|muéstrame)\s+(?:el\s+)?(?:pdf|documento)/, action: 'send_pdf' },
             { pattern: /(?:pdf|documento)\s+(?:por\s+)?(?:email|correo)/, action: 'send_pdf' },
-            { pattern: /(?:enviar|mandar)\s+(?:por\s+)?(?:email|correo)/, action: 'send_pdf' }
+            { pattern: /(?:enviar|mandar)\s+(?:por\s+)?(?:email|correo)/, action: 'send_pdf' },
+            // English
+            { pattern: /(?:send|email)\s+(?:the\s+)?(?:pdf|document|brochure)/, action: 'send_pdf' },
+            { pattern: /(?:email)\s+(?:me\s+)?(?:the\s+)?(?:pdf|brochure)/, action: 'send_pdf' }
         ];
 
         // Detectar comandos para cotizar
@@ -240,7 +273,10 @@ class NaturalLanguageParser {
             { pattern: /(?:quiero|necesito)\s+(?:una\s+)?(?:cotización|cotiza|precio)/, action: 'quote_model' },
             { pattern: /(?:cuánto\s+)?(?:cuesta|vale|precio)\s+(?:el\s+)?(?:departamento|apartamento)/, action: 'quote_model' },
             { pattern: /(?:dame|muéstrame)\s+(?:el\s+)?(?:precio|cotización)/, action: 'quote_model' },
-            { pattern: /(?:cotización|precio)\s+(?:del\s+)?(?:modelo|departamento)/, action: 'quote_model' }
+            { pattern: /(?:cotización|precio)\s+(?:del\s+)?(?:modelo|departamento)/, action: 'quote_model' },
+            // English
+            { pattern: /(?:quote|pricing|price)\s+(?:for\s+)?(?:the\s+)?(?:apartment|unit|model)/, action: 'quote_model' },
+            { pattern: /(?:how\s+much)\s+(?:is|does\s+it\s+cost)/, action: 'quote_model' }
         ];
 
         // Detectar comandos para cerrar modales
@@ -253,7 +289,11 @@ class NaturalLanguageParser {
             { pattern: /(?:ocultar|oculta)\s+(?:detalles|información)/, action: 'close_modal' },
             { pattern: /(?:cancelar|cancela)\s+(?:detalles|información)/, action: 'close_modal' },
             { pattern: /(?:no\s+quiero|no\s+necesito)\s+(?:ver\s+)?(?:detalles|información)/, action: 'close_modal' },
-            { pattern: /(?:volver|regresar)\s+(?:a\s+)?(?:los\s+)?(?:departamentos|apartamentos)/, action: 'close_modal' }
+            { pattern: /(?:volver|regresar)\s+(?:a\s+)?(?:los\s+)?(?:departamentos|apartamentos)/, action: 'close_modal' },
+            // English
+            { pattern: /(?:close|hide|dismiss)\s+(?:modal|window|popup)/, action: 'close_modal' },
+            { pattern: /(?:close|hide)\s+(?:details|information|info)/, action: 'close_modal' },
+            { pattern: /(?:back|return)\s+(?:to\s+)?(?:list|previous\s+view|back)/, action: 'close_modal' }
         ];
 
         const filters = {};
@@ -433,6 +473,17 @@ class NaturalLanguageParser {
                 pattern: /(buscar|mostrar|ver)\s+(?:departamentos|apartamentos)/i,
                 action: 'show_all',
                 confidence: 0.7
+            },
+            // English
+            {
+                pattern: /(show|list|display)\s+(?:all\s+)?(?:apartments|units)/i,
+                action: 'show_all',
+                confidence: 0.8
+            },
+            {
+                pattern: /(clear|reset|remove)\s+(?:all\s+)?(?:filters?)/i,
+                action: 'clear',
+                confidence: 0.8
             }
         ];
 
@@ -476,10 +527,11 @@ class NaturalLanguageParser {
      */
     parseScroll(text) {
         const scrollPatterns = [
-            { pattern: /(subir|arriba|up)/, direction: 'up' },
-            { pattern: /(bajar|abajo|down)/, direction: 'down' },
-            { pattern: /(scroll\s+to|ir\s+a)\s+(inicio|top)/, position: 'top' },
-            { pattern: /(scroll\s+to|ir\s+a)\s+(final|bottom)/, position: 'bottom' }
+            // Spanish + English
+            { pattern: /(subir|arriba|up|scroll\s+up|go\s+up)/, direction: 'up' },
+            { pattern: /(bajar|abajo|down|scroll\s+down|go\s+down)/, direction: 'down' },
+            { pattern: /(scroll\s+to|ir\s+a|go\s+to)\s+(inicio|top)/, position: 'top' },
+            { pattern: /(scroll\s+to|ir\s+a|go\s+to)\s+(final|bottom)/, position: 'bottom' }
         ];
 
         for (const pattern of scrollPatterns) {
