@@ -4066,6 +4066,34 @@ class ImageFilterSystem {
             const dict = {
                 es: {
                     hero_title: 'Mirador del Golf',
+                    // Top request button
+                    top_request_btn: 'Quiero una landing para mi proyecto',
+                    // Location tag
+                    location_text: 'Piedra Roja, Club de Golf Hacienda Chicureo',
+                    // Project selector
+                    project_selector_title: 'Selecciona tu Proyecto',
+                    project_main: 'Proyecto principal',
+                    project_new: 'Nuevo desarrollo',
+                    // Footer
+                    footer_contact: 'Contacto',
+                    footer_location: 'Ubicación',
+                    footer_follow: 'Síguenos',
+                    footer_rights: '© 2024 Manquehue. Todos los derechos reservados.',
+                    // Back button
+                    back_button: 'Volver',
+                    // Contact modal
+                    modal_contact_title: 'Solicitar Información',
+                    modal_name: 'Nombre completo',
+                    modal_email: 'Email',
+                    modal_phone: 'Teléfono',
+                    modal_message: 'Mensaje',
+                    modal_submit: 'Enviar Solicitud',
+                    // Project modal
+                    project_modal_title: 'Solicitar Landing para mi Proyecto',
+                    project_modal_copy: 'Déjanos tu información y nos pondremos en contacto contigo para crear una landing interactiva para tu proyecto inmobiliario.',
+                    project_modal_name: 'Nombre completo',
+                    project_modal_email: 'Email',
+                    project_modal_submit: 'Solicitar Landing',
                     apartments_title_apto: 'Descubre nuestros exclusivos apartamentos',
                     apartments_title_casa: 'Descubre nuestras exclusivas casas',
                     apartments_subtitle: 'Con las mejores vistas y acabados de lujo',
@@ -4127,6 +4155,34 @@ class ImageFilterSystem {
                 },
                 en: {
                     hero_title: 'Mirador del Golf',
+                    // Top request button
+                    top_request_btn: 'I want a landing for my project',
+                    // Location tag
+                    location_text: 'Piedra Roja, Hacienda Chicureo Golf Club',
+                    // Project selector
+                    project_selector_title: 'Select Your Project',
+                    project_main: 'Main project',
+                    project_new: 'New development',
+                    // Footer
+                    footer_contact: 'Contact',
+                    footer_location: 'Location',
+                    footer_follow: 'Follow us',
+                    footer_rights: '© 2024 Manquehue. All rights reserved.',
+                    // Back button
+                    back_button: 'Back',
+                    // Contact modal
+                    modal_contact_title: 'Request Information',
+                    modal_name: 'Full name',
+                    modal_email: 'Email',
+                    modal_phone: 'Phone',
+                    modal_message: 'Message',
+                    modal_submit: 'Send Request',
+                    // Project modal
+                    project_modal_title: 'Request a Landing for my Project',
+                    project_modal_copy: 'Leave your information and we will contact you to create an interactive landing for your real estate project.',
+                    project_modal_name: 'Full name',
+                    project_modal_email: 'Email',
+                    project_modal_submit: 'Request Landing',
                     apartments_title_apto: 'Discover our exclusive apartments',
                     apartments_title_casa: 'Discover our exclusive houses',
                     apartments_subtitle: 'With the best views and premium finishes',
@@ -4191,6 +4247,9 @@ class ImageFilterSystem {
             // Títulos y subtítulos
             const pageHeroTitle = document.querySelector('.hero-title');
             if (pageHeroTitle && dict.hero_title) pageHeroTitle.textContent = dict.hero_title;
+            // Top request button text
+            const topRequestBtn = document.querySelector('button[onclick="openProjectModal()"]');
+            if (topRequestBtn) topRequestBtn.textContent = dict.top_request_btn;
             const titleEl = document.querySelector('.apartments-content .section-title');
             if (titleEl) titleEl.textContent = isHouse ? dict.apartments_title_casa : dict.apartments_title_apto;
             const subtitleEl = document.querySelector('.apartments-content .section-subtitle');
@@ -4418,6 +4477,79 @@ class ImageFilterSystem {
             } catch (e) {
                 console.warn('[Lang] Error translating Equipment section', e);
             }
+
+            // === Location Tag ===
+            try {
+                const loc = document.querySelector('.location-tag .location-text');
+                if (loc) loc.textContent = dict.location_text;
+            } catch {}
+
+            // === Project Selector static title ===
+            try {
+                const selTitle = document.querySelector('.project-selector .selector-title');
+                if (selTitle) selTitle.textContent = dict.project_selector_title;
+                // Update common texts inside options if Spanish variants exist
+                document.querySelectorAll('.project-selector .selector-option').forEach(opt => {
+                    const p = opt.querySelector('p');
+                    if (p) {
+                        if (/Proyecto principal/i.test(p.textContent)) p.textContent = dict.project_main;
+                        if (/Nuevo desarrollo/i.test(p.textContent)) p.textContent = dict.project_new;
+                    }
+                });
+            } catch {}
+
+            // === Footer ===
+            try {
+                const footer = document.querySelector('footer.preview-footer');
+                if (footer) {
+                    const sections = footer.querySelectorAll('.footer-section');
+                    if (sections[0]) {
+                        const h4 = sections[0].querySelector('h4'); if (h4) h4.textContent = dict.footer_contact;
+                    }
+                    if (sections[1]) {
+                        const h4 = sections[1].querySelector('h4'); if (h4) h4.textContent = dict.footer_location;
+                    }
+                    if (sections[2]) {
+                        const h4 = sections[2].querySelector('h4'); if (h4) h4.textContent = dict.footer_follow;
+                    }
+                    const bottom = footer.querySelector('.footer-bottom p');
+                    if (bottom) bottom.textContent = dict.footer_rights;
+                }
+            } catch {}
+
+            // === Global back button ===
+            try {
+                const backButton = document.getElementById('backButton');
+                if (backButton) {
+                    const spans = backButton.querySelectorAll('span');
+                    if (spans[1]) spans[1].textContent = dict.back_button;
+                }
+            } catch {}
+
+            // === Contact Modal ===
+            try {
+                const modal = document.getElementById('contactModal');
+                if (modal) {
+                    const title = modal.querySelector('.modal-header h3'); if (title) title.textContent = dict.modal_contact_title;
+                    const lblName = modal.querySelector('label[for="name"]'); if (lblName) lblName.textContent = dict.modal_name;
+                    const lblEmail = modal.querySelector('label[for="email"]'); if (lblEmail) lblEmail.textContent = dict.modal_email;
+                    const lblPhone = modal.querySelector('label[for="phone"]'); if (lblPhone) lblPhone.textContent = dict.modal_phone;
+                    const lblMsg = modal.querySelector('label[for="message"]'); if (lblMsg) lblMsg.textContent = dict.modal_message;
+                    const submit = modal.querySelector('button.btn-primary[type="submit"]'); if (submit) submit.textContent = dict.modal_submit;
+                }
+            } catch {}
+
+            // === Project Request Modal ===
+            try {
+                const pModal = document.getElementById('projectModal');
+                if (pModal) {
+                    const title = pModal.querySelector('.modal-header h3'); if (title) title.textContent = dict.project_modal_title;
+                    const copy = pModal.querySelector('.modal-body p'); if (copy) copy.textContent = dict.project_modal_copy;
+                    const lblName = pModal.querySelector('label[for="projectName"]'); if (lblName) lblName.textContent = dict.project_modal_name;
+                    const lblEmail = pModal.querySelector('label[for="projectEmail"]'); if (lblEmail) lblEmail.textContent = dict.project_modal_email;
+                    const submit = pModal.querySelector('.project-form .btn-primary'); if (submit) submit.textContent = dict.project_modal_submit;
+                }
+            } catch {}
 
             // === Hero Video Controls Translation ===
             try {

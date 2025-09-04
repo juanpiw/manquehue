@@ -1709,8 +1709,10 @@
                             typeInfo.className = 'apartment-type-info';
                             typeInfo.innerHTML = `<strong>Tipo:</strong> <span style="color: ${bedrooms === 1 ? '#dc3545' : bedrooms === 2 ? '#28a745' : '#17a2b8'}; font-weight: bold;">${apartmentTypeDisplay}</span>`;
                             
-                            // Insert after precio
-                            const precioP = apartmentInfo.querySelector('p:contains("Precio")') || apartmentInfo.querySelectorAll('p')[1];
+                            // Insert after precio (compatible ES/EN)
+                            const pNodes = apartmentInfo.querySelectorAll('p');
+                            const precioP = Array.from(pNodes).find(p => /^(Precio:|Price:)/i.test(p.textContent.trim())) || pNodes[1] || pNodes[pNodes.length - 1];
+                            console.log('[TypeInfo] Inserting type info after paragraph:', precioP ? precioP.textContent : '(fallback append)');
                             if (precioP) {
                                 precioP.parentNode.insertBefore(typeInfo, precioP.nextSibling);
                             } else {

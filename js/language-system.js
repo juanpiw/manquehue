@@ -152,6 +152,49 @@ class LanguageSystem {
         this.detectLanguage();
         this.setupLanguageSwitcher();
         this.applyLanguage(this.currentLanguage);
+        try {
+            const navLang = (navigator.language || navigator.userLanguage || '').toLowerCase();
+            const all = Array.isArray(navigator.languages) ? navigator.languages.join(',') : 'n/a';
+            console.log('[LangSys] Browser:', navLang, 'all=', all, 'current=', this.currentLanguage);
+            const doubleClickLang = (langCode, tag) => {
+                const clickFn = (label) => {
+                    const btn = document.querySelector(`.lang-btn[data-lang="${langCode}"]`);
+                    console.log(`[LangSys] ${langCode} btn present?`, !!btn, 'label=', label);
+                    if (btn) {
+                        console.log('[LangSys] Auto-click', langCode, label);
+                        btn.click();
+                    }
+                };
+                // doble click inmediato
+                clickFn(`#1 ${tag}`);
+                setTimeout(() => clickFn(`#2 ${tag}`), 80);
+                // doble click después del load
+                window.addEventListener('load', () => {
+                    setTimeout(() => {
+                        clickFn(`#3 after load ${tag}`);
+                        setTimeout(() => clickFn(`#4 after load ${tag}`), 80);
+                    }, 0);
+                });
+            };
+
+            if (navLang.startsWith('en')) {
+                doubleClickLang('en-us', '(en)');
+            } else if (navLang.startsWith('es')) {
+                doubleClickLang('es', '(es)');
+            }
+        } catch (e) {
+            console.warn('[LangSys] Auto-en click failed', e);
+        }
+        // Re-aplicar idioma al final de la carga para evitar "rebote" por otros scripts
+        try {
+            window.addEventListener('load', () => {
+                setTimeout(() => {
+                    console.log('[LangSys] Re-applying language after load to prevent fallback:', this.currentLanguage);
+                    this.applyLanguage(this.currentLanguage);
+                }, 0);
+            });
+        } catch {}
+
         console.log('Sistema de idiomas listo');
     }
 
