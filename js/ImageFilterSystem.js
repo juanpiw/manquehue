@@ -3448,29 +3448,22 @@ class ImageFilterSystem {
     
     initializeImageCarousel() {
         this.currentImageIndex = 0;
-        this.imagesApartamento = [
-            'video/imagenes/carrousel/car_01.png',
-            'video/imagenes/carrousel/car_02.png',
-            'video/imagenes/carrousel/car_03.png',
-            'video/imagenes/carrousel/car_04.png',
-            'video/imagenes/carrousel/car_05.png',
-            'video/imagenes/carrousel/car_06.png'
-        ];
-        this.imagesCasa = [
-            'video/casa/features/carrousel/car_01.png',
-            'video/casa/features/carrousel/car_02.png',
-            'video/casa/features/carrousel/car_03.png',
-            'video/casa/features/carrousel/car_04.png',
-            'video/casa/features/carrousel/car_05.png',
-            'video/casa/features/carrousel/car_06.png'
-        ];
-        this.images = this.imagesApartamento.slice();
+        // Elegir set de imágenes según tipo actual
+        const isCasa = this.currentProjectType === 'casa';
+        this.images = (isCasa ? this.imagesCasa : this.imagesApartamento).slice();
         
         // Agregar event listeners a los thumbnails (si existen)
+        // Actualizar thumbnails existentes en el panel de detalles
         const thumbnails = document.querySelectorAll('.thumbnail');
         thumbnails.forEach((thumbnail, index) => {
+            const img = thumbnail.querySelector('img');
+            if (img && this.images[index]) {
+                img.src = this.images[index];
+            } else if (img && !this.images[index]) {
+                thumbnail.style.display = 'none';
+            }
             thumbnail.addEventListener('click', (e) => {
-                e.stopPropagation(); // Evitar que se propague al click del thumbnail
+                e.stopPropagation();
                 this.openImageModal(index);
             });
         });
@@ -4003,6 +3996,12 @@ class ImageFilterSystem {
                                     window.__currentPlayingAudio = null;
                                 }
                             } catch {}
+                            // Detectar idioma activo
+                            const uiLangBtn = document.querySelector('.lang-btn.active');
+                            const params = new URLSearchParams(window.location.search);
+                            const lang = (uiLangBtn?.dataset?.lang || params.get('lang') || 'es').toLowerCase();
+                            // Traducir UI de la sección apartamentos/casa
+                            this.translateUIToLanguage(lang);
                             // Hero: reconfigurar controles y recargar fuente
                             this.setupHeroAudio();
                             // Detalles: si hay una tarjeta en modo detalles, reconfigurar audio
@@ -4025,6 +4024,179 @@ class ImageFilterSystem {
             });
         } catch (e) {
             console.warn('[Audio] Error binding language buttons', e);
+        }
+    }
+
+    translateUIToLanguage(lang) {
+        try {
+            const isEnglish = lang.startsWith('en');
+            const isHouse = this.currentProjectType === 'casa';
+            // Diccionario básico
+            const dict = {
+                es: {
+                    apartments_title_apto: 'Descubre nuestros exclusivos apartamentos',
+                    apartments_title_casa: 'Descubre nuestras exclusivas casas',
+                    apartments_subtitle: 'Con las mejores vistas y acabados de lujo',
+                    btn_search: 'Buscar',
+                    btn_clear: 'Limpiar Filtros',
+                    filter_surface: 'Superficie:',
+                    filter_price: 'Precio:',
+                    filter_all: 'Todas',
+                    house_title: 'Casa',
+                    lbl_surface: 'Superficie:',
+                    surface_variable: 'Variable',
+                    lbl_price: 'Precio:',
+                    price_consult: 'Consultar',
+                    lbl_type: 'Tipo:',
+                    type_house: 'Casa Independiente',
+                    action_explore: 'Recorrer',
+                    action_request: 'Solicitar Información',
+                    initial_title: 'Busca tu apartamento ideal',
+                    initial_text: 'Selecciona los filtros y presiona "Buscar" para ver los apartamentos disponibles',
+                    ctrl_exit: 'Salir del Recorrido',
+                    ctrl_details: 'Detalles',
+                    ctrl_pause: 'Pausar',
+                    plan_house: 'Plano de la Casa',
+                    spec_bedroom: 'Habitación:',
+                    spec_area: 'Área:',
+                    spec_balcony: 'Balcón:',
+                    spec_orientation: 'Orientación:',
+                    orientation_north: 'Norte',
+                    send_pdf: 'Enviar PDF',
+                    quote: 'Cotizar Modelo',
+                    type_all: 'Todos',
+                    type_1d: '1 Dormitorio',
+                    type_2d: '2 Dormitorios',
+                    type_3d: '3 Dormitorios',
+                },
+                en: {
+                    apartments_title_apto: 'Discover our exclusive apartments',
+                    apartments_title_casa: 'Discover our exclusive houses',
+                    apartments_subtitle: 'With the best views and premium finishes',
+                    btn_search: 'Search',
+                    btn_clear: 'Clear Filters',
+                    filter_surface: 'Surface:',
+                    filter_price: 'Price:',
+                    filter_all: 'All',
+                    house_title: 'House',
+                    lbl_surface: 'Surface:',
+                    surface_variable: 'Variable',
+                    lbl_price: 'Price:',
+                    price_consult: 'Contact us',
+                    lbl_type: 'Type:',
+                    type_house: 'Detached House',
+                    action_explore: 'Explore',
+                    action_request: 'Request Information',
+                    initial_title: 'Find your ideal apartment',
+                    initial_text: 'Select filters and press "Search" to see available apartments',
+                    ctrl_exit: 'Exit Tour',
+                    ctrl_details: 'Details',
+                    ctrl_pause: 'Pause',
+                    plan_house: 'House Floor Plan',
+                    spec_bedroom: 'Bedroom:',
+                    spec_area: 'Area:',
+                    spec_balcony: 'Balcony:',
+                    spec_orientation: 'Orientation:',
+                    orientation_north: 'North',
+                    send_pdf: 'Send PDF',
+                    quote: 'Get a Quote',
+                    type_all: 'All',
+                    type_1d: '1 Bedroom',
+                    type_2d: '2 Bedrooms',
+                    type_3d: '3 Bedrooms',
+                }
+            }[isEnglish ? 'en' : 'es'];
+
+            // Títulos y subtítulos
+            const titleEl = document.querySelector('.apartments-content .section-title');
+            if (titleEl) titleEl.textContent = isHouse ? dict.apartments_title_casa : dict.apartments_title_apto;
+            const subtitleEl = document.querySelector('.apartments-content .section-subtitle');
+            if (subtitleEl) subtitleEl.textContent = dict.apartments_subtitle;
+
+            // Botones selector de tipo de apartamento
+            const typeSel = document.querySelector('.apartment-type-selector');
+            if (typeSel) {
+                const btnAll = typeSel.querySelector('[data-type="all"]'); if (btnAll) btnAll.textContent = dict.type_all;
+                const btn1 = typeSel.querySelector('[data-type="1d"]'); if (btn1) btn1.textContent = dict.type_1d;
+                const btn2 = typeSel.querySelector('[data-type="2d"]'); if (btn2) btn2.textContent = dict.type_2d;
+                const btn3 = typeSel.querySelector('[data-type="3d"]'); if (btn3) btn3.textContent = dict.type_3d;
+            }
+
+            // House card (si visible)
+            const houseCard = document.querySelector('.house-card .apartment-info');
+            if (houseCard) {
+                const h3 = houseCard.querySelector('h3'); if (h3) h3.textContent = dict.house_title;
+                const pNodes = houseCard.querySelectorAll('p');
+                pNodes.forEach(p => {
+                    const html = p.innerHTML;
+                    if (html.includes('Superficie:')) p.innerHTML = `<strong>${dict.lbl_surface}</strong> ${dict.surface_variable}`;
+                    else if (html.includes('Precio:')) p.innerHTML = `<strong>${dict.lbl_price}</strong> ${dict.price_consult}`;
+                    else if (html.includes('Tipo:')) p.innerHTML = `<strong>${dict.lbl_type}</strong> ${dict.type_house}`;
+                });
+                const actions = houseCard.querySelector('.apartment-actions');
+                if (actions) {
+                    const [btnExplore, btnRequest] = actions.querySelectorAll('button');
+                    if (btnExplore) btnExplore.lastChild && (btnExplore.lastChild.textContent = ` ${dict.action_explore}`);
+                    if (btnRequest) btnRequest.lastChild && (btnRequest.lastChild.textContent = ` ${dict.action_request}`);
+                }
+            }
+
+            // Filtros
+            const filterSurfaceLbl = document.querySelector('.apartment-filters [data-lang-key="filter_surface"]');
+            if (filterSurfaceLbl) filterSurfaceLbl.textContent = dict.filter_surface;
+            const filterPriceLbl = document.querySelector('.apartment-filters [data-lang-key="filter_price"]');
+            if (filterPriceLbl) filterPriceLbl.textContent = dict.filter_price;
+            const allOptions = document.querySelectorAll('.apartment-filters [data-lang-key="filter_all"]');
+            allOptions.forEach(o => o.textContent = dict.filter_all);
+            const btnSearch = document.getElementById('searchButton');
+            if (btnSearch) btnSearch.childNodes[btnSearch.childNodes.length - 1].textContent = ` ${dict.btn_search}`;
+            const btnClear = document.getElementById('clearFilters');
+            if (btnClear) btnClear.textContent = dict.btn_clear;
+
+            // Mensaje inicial
+            const initial = document.getElementById('initialMessage');
+            if (initial) {
+                const h3 = initial.querySelector('h3'); if (h3) h3.textContent = dict.initial_title;
+                const p = initial.querySelector('p'); if (p) p.textContent = dict.initial_text;
+            }
+
+            // Controles de recorrido
+            const rec = document.getElementById('recorridoControls');
+            if (rec) {
+                const [btnExit, btnDetails, btnPlay] = rec.querySelectorAll('.recorrido-actions button');
+                if (btnExit) btnExit.lastChild && (btnExit.lastChild.textContent = ` ${dict.ctrl_exit}`);
+                if (btnDetails) btnDetails.lastChild && (btnDetails.lastChild.textContent = ` ${dict.ctrl_details}`);
+                if (btnPlay) { const textEl = rec.querySelector('#playPauseText'); if (textEl) textEl.textContent = dict.ctrl_pause; }
+            }
+
+            // Panel de detalles (labels)
+            const details = document.querySelector('.details-left-panel');
+            if (details) {
+                const map = new Map([
+                    ['Habitación:', dict.spec_bedroom],
+                    ['Área:', dict.spec_area],
+                    ['Balcón:', dict.spec_balcony],
+                    ['Orientación:', dict.spec_orientation],
+                ]);
+                details.querySelectorAll('.spec-item label, .orientation-section label').forEach(lbl => {
+                    const txt = lbl.textContent.trim();
+                    if (map.has(txt)) lbl.textContent = map.get(txt);
+                });
+                const orientSpan = details.querySelector('.orientation-section span');
+                if (orientSpan && /Norte/i.test(orientSpan.textContent)) orientSpan.textContent = dict.orientation_north;
+            }
+
+            // Título del plano en detalles
+            const planH4 = document.querySelector('.floor-plan h4');
+            if (planH4 && /Plano/.test(planH4.textContent)) planH4.textContent = dict.plan_house;
+
+            // Botones de acciones en detalles
+            const sendPdfBtn = document.querySelector('.action-buttons .btn-secondary');
+            if (sendPdfBtn) sendPdfBtn.lastChild && (sendPdfBtn.lastChild.textContent = ` ${dict.send_pdf}`);
+            const quoteBtn = document.querySelector('.action-buttons .btn-primary.quote-btn');
+            if (quoteBtn) quoteBtn.lastChild && (quoteBtn.lastChild.textContent = ` ${dict.quote}`);
+        } catch (e) {
+            console.warn('[Lang] Error translating UI', e);
         }
     }
     
