@@ -354,6 +354,11 @@
         .apartment-type-badge.type-c {
             background: #857452;
         }
+        /* Preview Footer enhancements */
+        .preview-footer { position: relative; }
+        .preview-footer .footer-animated-line { position: absolute; top: 0; left: 0; right: 0; height: 3px; background: rgba(59, 130, 246, 0.15); overflow: hidden; }
+        .preview-footer .footer-animated-line::after { content: ""; position: absolute; top: 0; right: 0; height: 100%; width: 28%; background: linear-gradient(90deg, rgba(59,130,246,0), #3b82f6, rgba(59,130,246,0)); box-shadow: 0 0 12px rgba(59,130,246,0.85); animation: footerSweep 3s linear infinite; }
+        @keyframes footerSweep { 0% { transform: translateX(100%);} 100% { transform: translateX(-100%);} }
     </style>
     
     <!-- Google Analytics -->
@@ -886,29 +891,36 @@
         </button>
 
         <!-- Footer -->
-        <footer class="preview-footer">
-            <div class="footer-content">
+        <footer class="preview-footer" style="margin-top: 4rem; background: rgb(0 0 0 / 29%); color: #fff; backdrop-filter: blur(12px); border-top: 1px solid rgba(255,255,255,0.08);">
+            <div class="footer-animated-line"></div>
+            <div class="footer-content" style="max-width: 1200px; margin: 0 auto; padding: 44px 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 28px; align-items: start;">
                 <div class="footer-section">
-                    <h4>Contacto</h4>
-                    <p>📧 info@manquehue.cl</p>
-                    <p>📞 +56 2 2345 6789</p>
+                    <h4 style="margin: 0 0 12px; font-weight: 700; letter-spacing: .3px;">Contacto</h4>
+                    <p style="margin: 6px 0; color: rgba(255,255,255,0.9); display:flex; align-items:center; gap:10px;"><i class="fas fa-envelope" style="color:#a09768;"></i><span>info@manquehue.cl</span></p>
+                    <p style="margin: 6px 0; color: rgba(255,255,255,0.9); display:flex; align-items:center; gap:10px;"><i class="fas fa-phone" style="color:#a09768;"></i><span>+56 2 2345 6789</span></p>
                 </div>
                 <div class="footer-section">
-                    <h4>Ubicación</h4>
-                    <p>📍 Lo Curro, Las Condes</p>
-                    <p>🏢 Santiago, Chile</p>
+                    <h4 style="margin: 0 0 12px; font-weight: 700; letter-spacing: .3px;">Ubicación</h4>
+                    <p style="margin: 6px 0; color: rgba(255,255,255,0.9); display:flex; align-items:center; gap:10px;"><i class="fas fa-map-marker-alt" style="color:#a09768;"></i><span>Lo Curro, Las Condes</span></p>
+                    <p style="margin: 6px 0; color: rgba(255,255,255,0.9); display:flex; align-items:center; gap:10px;"><i class="fas fa-city" style="color:#a09768;"></i><span>Santiago, Chile</span></p>
                 </div>
                 <div class="footer-section">
-                    <h4>Síguenos</h4>
-                    <div class="social-links">
-                        <a href="#" class="social-link">📘 Facebook</a>
-                        <a href="#" class="social-link">📷 Instagram</a>
-                        <a href="#" class="social-link">🐦 Twitter</a>
+                    <h4 style="margin: 0 0 12px; font-weight: 700; letter-spacing: .3px;">Síguenos</h4>
+                    <div class="social-links" style="display: flex; flex-wrap: wrap; gap: 12px;">
+                        <a href="#" class="social-link" style="display:inline-flex; align-items:center; justify-content:center; gap:10px; padding:10px 14px; border-radius: 12px; background: rgba(255,255,255,0.04); color:#fff; text-decoration:none; border: 1px solid rgba(255,255,255,0.08); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03); transition: all .25s ease;">
+                            <i class="fab fa-facebook-f" style="color:#a09768;"></i><span>Facebook</span>
+                        </a>
+                        <a href="#" class="social-link" style="display:inline-flex; align-items:center; justify-content:center; gap:10px; padding:10px 14px; border-radius: 12px; background: rgba(255,255,255,0.04); color:#fff; text-decoration:none; border: 1px solid rgba(255,255,255,0.08); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03); transition: all .25s ease;">
+                            <i class="fab fa-instagram" style="color:#a09768;"></i><span>Instagram</span>
+                        </a>
+                        <a href="#" class="social-link" style="display:inline-flex; align-items:center; justify-content:center; gap:10px; padding:10px 14px; border-radius: 12px; background: rgba(255,255,255,0.04); color:#fff; text-decoration:none; border: 1px solid rgba(255,255,255,0.08); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03); transition: all .25s ease;">
+                            <i class="fab fa-twitter" style="color:#a09768;"></i><span>Twitter</span>
+                        </a>
                     </div>
                 </div>
             </div>
-            <div class="footer-bottom">
-                <p>&copy; 2024 Manquehue. Todos los derechos reservados.</p>
+            <div class="footer-bottom" style="border-top: 1px solid rgba(255,255,255,0.08); padding: 18px 20px; text-align: center; color: rgba(255,255,255,0.82);">
+                <p style="margin: 0;">&copy; 2024 Manquehue. Todos los derechos reservados.</p>
             </div>
         </footer>
     </div>
