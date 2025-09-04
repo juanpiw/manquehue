@@ -2294,6 +2294,16 @@ class ImageFilterSystem {
         card.style.transition = 'all 0.3s ease';
         
         // Agregar estilos específicos para el modo detalles
+        // Traducir inmediatamente el contenido de detalles según idioma activo
+        try {
+            const uiLangBtn = document.querySelector('.lang-btn.active');
+            const params = new URLSearchParams(window.location.search);
+            const lang = (uiLangBtn?.dataset?.lang || params.get('lang') || 'es').toLowerCase();
+            console.log('[Lang] transformCardToDetails -> applying translation for details. lang=', lang);
+            this.translateUIToLanguage(lang);
+        } catch (e) {
+            console.warn('[Lang] Failed to translate details content immediately', e);
+        }
         this.addDetailsModeStyles();
         
         // Inicializar el carrusel
