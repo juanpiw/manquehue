@@ -957,38 +957,42 @@ class ImageFilterSystem {
             existingModal.remove();
         }
         
+        // Normalizar valores para evitar duplicación de etiquetas como "Surface:" o "Precio:" en el valor
+        const surfaceClean = (superficie || '').replace(/^\s*(Superficie:|Surface:)\s*/i, '').replace(/^\s*(Superficie:|Surface:)\s*/i, '');
+        const priceClean = (precio || '').replace(/^\s*(Precio:|Price:)\s*/i, '').replace(/^\s*(Precio:|Price:)\s*/i, '');
+
         const modalHTML = `
-            <div class="modal-overlay" id="contactModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); display: flex; align-items: center; justify-content: center; z-index: 10000;">
+            <div class="modal-overlay" id="contactModal" data-apartment-name="${apartment}" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); display: flex; align-items: center; justify-content: center; z-index: 10000;">
                 <div class="modal" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 15px; max-width: 600px; width: 90%; max-height: 90vh; overflow: hidden;">
                     <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; border-bottom: 1px solid rgba(255, 255, 255, 0.2);">
-                        <h3 style="margin: 0; color: white; font-size: 1.5rem; font-weight: 600;">Solicitar Información - ${apartment}</h3>
+                        <h3 style="margin: 0; color: white; font-size: 1.5rem; font-weight: 600;"><span class="modal-title-text">Solicitar Información</span> - <span class="modal-apartment-name">${apartment}</span></h3>
                         <button class="modal-close" onclick="this.closest('.modal-overlay').remove()" style="background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; padding: 0.5rem;">&times;</button>
                     </div>
                     <div class="modal-body" style="padding: 1.5rem; overflow-y: auto; max-height: 70vh;">
                         <div style="background: rgba(255, 255, 255, 0.05); padding: 1rem; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.2); margin-bottom: 1.5rem;">
                             <h4 style="margin: 0 0 0.5rem 0; color: white; font-size: 1.2rem;">${apartment}</h4>
-                            <p style="margin: 0.25rem 0; color: #cccccc;"><strong>Superficie:</strong> ${superficie}</p>
-                            <p style="margin: 0.25rem 0; color: #cccccc;"><strong>Precio:</strong> ${precio}</p>
+                            <p style="margin: 0.25rem 0; color: #cccccc;"><strong class="modal-surface-label">Superficie:</strong> <span class="modal-surface-value">${surfaceClean}</span></p>
+                            <p style="margin: 0.25rem 0; color: #cccccc;"><strong class="modal-price-label">Precio:</strong> <span class="modal-price-value">${priceClean}</span></p>
                         </div>
                         <form id="contactForm" style="display: flex; flex-direction: column; gap: 1rem;">
                             <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                                <label style="color: white; font-weight: 600; font-size: 0.9rem;">Nombre completo *</label>
-                                <input type="text" name="name" required style="padding: 0.75rem; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; background: rgba(255, 255, 255, 0.05); color: white; font-size: 1rem;">
+                                <label for="name" style="color: white; font-weight: 600; font-size: 0.9rem;">Nombre completo *</label>
+                                <input id="name" type="text" name="name" required style="padding: 0.75rem; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; background: rgba(255, 255, 255, 0.05); color: white; font-size: 1rem;">
                             </div>
                             <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                                <label style="color: white; font-weight: 600; font-size: 0.9rem;">Email *</label>
-                                <input type="email" name="email" required style="padding: 0.75rem; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; background: rgba(255, 255, 255, 0.05); color: white; font-size: 1rem;">
+                                <label for="email" style="color: white; font-weight: 600; font-size: 0.9rem;">Email *</label>
+                                <input id="email" type="email" name="email" required style="padding: 0.75rem; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; background: rgba(255, 255, 255, 0.05); color: white; font-size: 1rem;">
                             </div>
                             <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                                <label style="color: white; font-weight: 600; font-size: 0.9rem;">Teléfono</label>
-                                <input type="tel" name="phone" style="padding: 0.75rem; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; background: rgba(255, 255, 255, 0.05); color: white; font-size: 1rem;">
+                                <label for="phone" style="color: white; font-weight: 600; font-size: 0.9rem;">Teléfono</label>
+                                <input id="phone" type="tel" name="phone" style="padding: 0.75rem; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; background: rgba(255, 255, 255, 0.05); color: white; font-size: 1rem;">
                             </div>
                             <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                                <label style="color: white; font-weight: 600; font-size: 0.9rem;">Mensaje</label>
-                                <textarea name="message" rows="4" placeholder="Cuéntanos más sobre tu interés en este apartamento..." style="padding: 0.75rem; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; background: rgba(255, 255, 255, 0.05); color: white; font-size: 1rem; resize: vertical; min-height: 100px;"></textarea>
+                                <label for="message" style="color: white; font-weight: 600; font-size: 0.9rem;">Mensaje</label>
+                                <textarea id="message" name="message" rows="4" placeholder="Cuéntanos más sobre tu interés en este apartamento..." style="padding: 0.75rem; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; background: rgba(255, 255, 255, 0.05); color: white; font-size: 1rem; resize: vertical; min-height: 100px;"></textarea>
                             </div>
                             <div style="display: flex; gap: 1rem; margin-top: 1rem;">
-                                <button type="submit" style="flex: 1; padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 600; font-size: 1rem; background: #007bff; color: white; border: none; cursor: pointer;">Enviar Solicitud</button>
+                                <button class="btn-primary" type="submit" style="flex: 1; padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 600; font-size: 1rem; background: #007bff; color: white; border: none; cursor: pointer;">Enviar Solicitud</button>
                                 <button type="button" onclick="this.closest('.modal-overlay').remove()" style="flex: 1; padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 600; font-size: 1rem; background: rgba(255, 255, 255, 0.1); color: white; border: 1px solid rgba(255, 255, 255, 0.2); cursor: pointer;">Cancelar</button>
                             </div>
                         </form>
@@ -998,6 +1002,14 @@ class ImageFilterSystem {
         `;
         
         document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+        // Aplicar traducción inmediata al modal recién creado según el idioma de la UI
+        try {
+            const uiLang = (window.languageSystem && typeof window.languageSystem.getCurrentLanguage === 'function')
+                ? window.languageSystem.getCurrentLanguage()
+                : 'es';
+            this.translateUIToLanguage(uiLang);
+        } catch {}
 
         
         // Agregar event listener para el formulario
@@ -4558,7 +4570,11 @@ class ImageFilterSystem {
             try {
                 const modal = document.getElementById('contactModal');
                 if (modal) {
-                    const title = modal.querySelector('.modal-header h3'); if (title) title.textContent = dict.modal_contact_title;
+                    const titleH3 = modal.querySelector('.modal-header h3');
+                    if (titleH3) {
+                        const titleSpan = titleH3.querySelector('.modal-title-text');
+                        if (titleSpan) titleSpan.textContent = dict.modal_contact_title;
+                    }
                     const lblName = modal.querySelector('label[for="name"]'); if (lblName) lblName.textContent = dict.modal_name;
                     const lblEmail = modal.querySelector('label[for="email"]'); if (lblEmail) lblEmail.textContent = dict.modal_email;
                     const lblPhone = modal.querySelector('label[for="phone"]'); if (lblPhone) lblPhone.textContent = dict.modal_phone;

@@ -139,9 +139,9 @@ class LanguageSystem {
         };
         
         this.supportedLanguages = {
-            'es': { code: 'es', name: 'Español', flag: 'flag-es.svg', region: 'España' },
-            'en-au': { code: 'en-au', name: 'English', flag: 'flag-au.svg', region: 'Australia' },
-            'en-us': { code: 'en-us', name: 'English', flag: 'flag-us.svg', region: 'USA' }
+            'es': { code: 'es', name: 'Español', flag: 'video/banderas/espana.png', region: 'España' },
+            'en-au': { code: 'en-au', name: 'English', flag: 'assets/icons/flag-au.svg', region: 'Australia' },
+            'en-us': { code: 'en-us', name: 'English', flag: 'assets/icons/flag-us.svg', region: 'USA' }
         };
         
         this.init();
@@ -271,7 +271,7 @@ class LanguageSystem {
                         data-lang="${code}"
                         title="${lang.name} (${lang.region})"
                     >
-                        <img src="assets/icons/${lang.flag}" alt="${lang.name}" class="flag-icon">
+                        <img src="${lang.flag}" alt="${lang.name}" class="flag-icon">
                         <span class="lang-code">${code === 'es' ? 'ES' : code.toUpperCase()}</span>
                     </button>
                 `).join('')}

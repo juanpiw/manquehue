@@ -372,3 +372,4 @@ capaz de procesar y entender todas estas variantes para activar los filtros
 correspondientes correctamente.
 
 
+

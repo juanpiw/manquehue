@@ -47,13 +47,27 @@ try {
     $file = $dir . DIRECTORY_SEPARATOR . 'feedback.log';
     @file_put_contents($file, json_encode($entry, JSON_UNESCAPED_UNICODE) . PHP_EOL, FILE_APPEND);
 
-    // Optional: send notification email
-    if ($contact === 'yes' && !empty($email)) {
-        $to = 'info@manquehue.cl';
-        $subject = 'New Feedback Lead';
-        $body = "Name: {$name}\nEmail: {$email}\nInterest: " . implode(', ', $sections) . "\nComments: {$comments}\nPage: {$page}";
-        @mail($to, $subject, $body, 'From: no-reply@impactrender.com');
-    }
+    // Send notification email with full survey summary
+    $to = 'juanpablojpw@gmail.com';
+    $subject = 'New Feedback Survey Submission';
+    $sectionsStr = is_array($sections) ? implode(', ', $sections) : (string)$sections;
+    $body  = "Feedback summary\n";
+    $body .= "------------------------------\n";
+    $body .= "Attractiveness: {$attractiveness}/5\n";
+    $body .= "Sections: {$sectionsStr}\n";
+    $body .= "Wants contact: {$contact}\n";
+    $body .= "Name: {$name}\n";
+    $body .= "Email: {$email}\n";
+    $body .= "Comments: {$comments}\n";
+    $body .= "Lang: {$lang}\n";
+    $body .= "Page: {$page}\n";
+    $body .= "IP: " . ($_SERVER['REMOTE_ADDR'] ?? '') . "\n";
+    $body .= "User-Agent: " . ($_SERVER['HTTP_USER_AGENT'] ?? '') . "\n";
+
+    $headers  = "From: no-reply@impactrender.com\r\n";
+    if (!empty($email)) { $headers .= "Reply-To: {$email}\r\n"; }
+    $headers .= "Content-Type: text/plain; charset=UTF-8\r\n";
+    @mail($to, $subject, $body, $headers);
 
     echo json_encode(['ok' => true]);
 } catch (Exception $e) {

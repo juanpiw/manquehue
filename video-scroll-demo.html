@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Videos por Scroll - Demo</title>
+    <link rel="icon" type="image/png" href="favicon.png">
     <link rel="stylesheet" href="video-scroll-styles.css">
     <link rel="stylesheet" href="css/language-switcher.css">
     <style>
@@ -939,7 +940,7 @@
             <div class="footer-content" style="max-width: 1200px; margin: 0 auto; padding: 44px 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 28px; align-items: start;">
                 <div class="footer-section">
                     <h4 style="margin: 0 0 12px; font-weight: 700; letter-spacing: .3px;">Contacto</h4>
-                    <p style="margin: 6px 0; color: rgba(255,255,255,0.9); display:flex; align-items:center; gap:10px;"><i class="fas fa-envelope" style="color:#a09768;"></i><span>info@manquehue.cl</span></p>
+                    <p style="margin: 6px 0; color: rgba(255,255,255,0.9); display:flex; align-items:center; gap:10px;"><i class="fas fa-envelope" style="color:#a09768;"></i><span>infor@impactrenderstudio.com</span></p>
                     <p style="margin: 6px 0; color: rgba(255,255,255,0.9); display:flex; align-items:center; gap:10px;"><i class="fas fa-phone" style="color:#a09768;"></i><span>+56 2 2345 6789</span></p>
                 </div>
                 <div class="footer-section">
@@ -1095,7 +1096,7 @@
     <script src="js/AnimationController.js"></script>
     <script src="js/ScrollCoordinator.js"></script>
     <script src="js/ImageFilterSystem.js"></script>
-    <script src="js/main.js"></script>
+    <script src="js/main2.js"></script>
     <script src="js/ContentManager.js"></script>
     <script src="js/content-init.js"></script>
     
@@ -1150,18 +1151,22 @@
             
             // Create form data
             const formData = new FormData();
-            formData.append('correo', email);
-            formData.append('nombre', name);
-            formData.append('tipo', 'landing_request');
+            // Align with mail3.php expected fields
+            formData.append('form_type', 'project_request');
+            formData.append('name', name);
+            formData.append('email', email);
+            formData.append('message', 'Landing request from project modal');
             
-            // Send to landing.php (similar to the reference landing)
-            fetch('landing.php', {
+            // Send to mail3.php as requested
+            fetch('mail3.php', {
                 method: 'POST',
                 body: formData
             })
-            .then(res => res.text())
-            .then(text => {
-                if (text.includes('OK')) {
+            .then(res => res.json().catch(() => res.text()))
+            .then(data => {
+                const ok = (typeof data === 'object' && data && data.success === true)
+                    || (typeof data === 'string' && (/"success"\s*:\s*true/i.test(data) || /OK/i.test(data)));
+                if (ok) {
                     successMsg.style.display = 'block';
                     document.getElementById('projectForm').reset();
                     
