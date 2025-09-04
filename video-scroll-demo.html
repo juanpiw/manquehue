@@ -677,7 +677,23 @@
                     const ro = e.target.closest && e.target.closest('.radio-option');
                     if (ro && ro.hasAttribute('data-project-type')) {
                         const t = ro.getAttribute('data-project-type');
+                        // Actualizar selección visual
+                        const all = document.querySelectorAll('.radio-option');
+                        all.forEach(opt => opt.classList.remove('selected'));
+                        ro.classList.add('selected');
+                        // Renderizar data del selector
                         renderProjectSelectorFor(t);
+                        // Cambiar video base según tipo
+                        const backgroundVideo = document.getElementById('backgroundVideo');
+                        if (backgroundVideo) {
+                            backgroundVideo.style.opacity = '0';
+                            setTimeout(() => {
+                                backgroundVideo.src = (t === 'casa') ? 'video/casa/video-0.mp4' : 'video/apartamento/video-0.mp4';
+                                backgroundVideo.load();
+                                backgroundVideo.style.opacity = '1';
+                                backgroundVideo.play().catch(()=>{});
+                            }, 150);
+                        }
                     }
                 }, true);
 

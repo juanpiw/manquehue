@@ -611,11 +611,9 @@ class ComponentManager {
             card.style.display !== 'none'
         );
         
-        // Remover mensaje anterior si existe
+        // Remover cualquier mensaje anterior (no mostrar conteos)
         const existingMessage = document.getElementById('filterResultsMessage');
-        if (existingMessage) {
-            existingMessage.remove();
-        }
+        if (existingMessage) existingMessage.remove();
         
         const apartmentList = document.getElementById('apartmentList');
         
@@ -626,38 +624,10 @@ class ComponentManager {
                 
                 // Mostrar mensaje de no resultados en el contenedor de filtros
                 const filterContainer = document.querySelector('.apartment-filters');
-                if (filterContainer) {
-                    const message = document.createElement('div');
-                    message.id = 'filterResultsMessage';
-                    message.className = 'filter-results-message';
-                    message.innerHTML = `
-                        <div class="no-results">
-                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"></circle>
-                                <path d="m21 21-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-                            </svg>
-                            <h3>No se encontraron resultados</h3>
-                            <p>Intenta ajustar los filtros de búsqueda</p>
-                            <button class="btn-secondary" onclick="window.componentManager.clearFilters()">
-                                Limpiar Filtros
-                            </button>
-                        </div>
-                    `;
-                    filterContainer.appendChild(message);
-                }
+                // No mostrar mensaje contextual en filtros (el de no resultados ya existe en lista)
             }
         } else if (surfaceValue || priceValue) {
-            if (apartmentList) {
-                const message = document.createElement('div');
-                message.id = 'filterResultsMessage';
-                message.className = 'filter-results-message';
-                message.innerHTML = `
-                    <div class="results-count">
-                        <p>Se encontraron <strong>${visibleCards.length}</strong> resultado${visibleCards.length !== 1 ? 's' : ''}</p>
-                    </div>
-                `;
-                apartmentList.insertBefore(message, apartmentList.firstChild);
-            }
+            // No insertar conteo de resultados
         }
     }
 }
