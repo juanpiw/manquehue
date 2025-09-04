@@ -9,6 +9,7 @@ class IrisChatBridge {
         console.log('🔗 Inicializando IrisChatBridge...');
         this.irisCore = null;
         this.isInitialized = false;
+        this.currentLang = this.detectPreferredLang();
         this.init();
     }
 
@@ -73,6 +74,45 @@ class IrisChatBridge {
         
         // Agregar listener para mensajes del usuario (opcional)
         this.setupUserMessageListener();
+        
+        // Interceptores globales para capturar el idioma ANTES de enviar
+        this.setupGlobalInputInterceptors();
+    }
+
+    /**
+     * Interceptores globales para detectar idioma antes de que el chat envíe el mensaje
+     */
+    setupGlobalInputInterceptors() {
+        // Enter en cualquier input dentro de la ventana del chat (captura)
+        document.addEventListener('keydown', (ev) => {
+            try {
+                if (ev.key !== 'Enter') return;
+                const target = ev.target;
+                if (!(target instanceof HTMLElement)) return;
+                if (!target.closest('.chat-window-wrapper, .chat-window, [data-testid="chat-window"]')) return;
+                const val = (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) ? target.value : '';
+                if (val && val.trim()) {
+                    this.handleAdaptiveLanguage(val.trim());
+                }
+            } catch {}
+        }, true);
+
+        // Click en botones de enviar dentro del chat (captura)
+        document.addEventListener('click', (ev) => {
+            try {
+                const el = ev.target instanceof HTMLElement ? ev.target : null;
+                if (!el) return;
+                const inChat = el.closest('.chat-window-wrapper, .chat-window, [data-testid="chat-window"]');
+                if (!inChat) return;
+                const isSend = el.matches('button[type="submit"], [data-testid="send-button"], .send-button') || (el.parentElement && el.parentElement.matches('button[type="submit"], [data-testid="send-button"], .send-button'));
+                if (!isSend) return;
+                const input = inChat.querySelector('input, textarea');
+                const val = input && 'value' in input ? input.value : '';
+                if (val && String(val).trim()) {
+                    this.handleAdaptiveLanguage(String(val).trim());
+                }
+            } catch {}
+        }, true);
     }
 
     /**
@@ -133,6 +173,8 @@ class IrisChatBridge {
                             const messageText = chatInput.value.trim();
                             if (messageText) {
                                 console.log('⌨️ [Bridge] Enter presionado con mensaje:', messageText);
+                                // Adaptar idioma de chat según el texto escrito
+                                this.handleAdaptiveLanguage(messageText);
                                 
                                 // Procesar inmediatamente con el bridge
                                 setTimeout(() => {
@@ -149,6 +191,8 @@ class IrisChatBridge {
                             const messageText = chatInput.value.trim();
                             if (messageText) {
                                 console.log('⌨️ [Bridge] Botón enviar clickeado con mensaje:', messageText);
+                                // Adaptar idioma de chat según el texto escrito
+                                this.handleAdaptiveLanguage(messageText);
                                 
                                 // Procesar inmediatamente con el bridge
                                 setTimeout(() => {
@@ -172,6 +216,7 @@ class IrisChatBridge {
                                             const messageText = messageElement.textContent || messageElement.innerText;
                                             if (messageText && messageText.trim()) {
                                                 console.log('👤 [Bridge] Mensaje detectado por observer:', messageText);
+                                                this.handleAdaptiveLanguage(messageText);
                                                 this.processChatCommand(messageText);
                                             }
                                         });
@@ -197,65 +242,76 @@ class IrisChatBridge {
                 console.log('✅ Listener para input del chat configurado');
             }
 
-            /**
-             * Configurar listener para respuestas de Iris
-             */
-            setupIrisResponseListener() {
-                console.log('🤖 Configurando listener para respuestas de Iris...');
-                
-                // Observer para detectar cuando Iris responde
-                const irisResponseObserver = new MutationObserver((mutations) => {
-                    mutations.forEach((mutation) => {
-                        if (mutation.type === 'childList') {
-                            mutation.addedNodes.forEach((node) => {
-                                if (node.nodeType === 1) {
-                                    // Buscar respuestas de Iris (no del usuario)
-                                    const irisResponses = node.querySelectorAll('.chat-message:not(.chat-message-from-user) .chat-message-markdown, .chat-message-bot .chat-message-markdown');
+    /**
+     * Configurar listener para respuestas de Iris
+     */
+    setupIrisResponseListener() {
+        console.log('🤖 Configurando listener para respuestas de Iris...');
+        
+        // Observer para detectar cuando Iris responde
+        const irisResponseObserver = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'childList') {
+                    mutation.addedNodes.forEach((node) => {
+                        if (node.nodeType === 1) {
+                            // Buscar respuestas de Iris (no del usuario)
+                            const irisResponses = node.querySelectorAll('.chat-message:not(.chat-message-from-user) .chat-message-markdown, .chat-message-bot .chat-message-markdown');
+                            
+                            irisResponses.forEach((responseElement) => {
+                                const responseText = responseElement.textContent || responseElement.innerText;
+                                if (responseText && responseText.trim()) {
+                                    console.log('🤖 [Bridge] Respuesta de Iris detectada:', responseText);
                                     
-                                    irisResponses.forEach((responseElement) => {
-                                        const responseText = responseElement.textContent || responseElement.innerText;
-                                        if (responseText && responseText.trim()) {
-                                            console.log('🤖 [Bridge] Respuesta de Iris detectada:', responseText);
-                                            
-                                            // Extraer el último comando del usuario para procesarlo
-                                            this.processLastUserCommand();
+                                    // Adaptación simple: si el idioma actual es EN y la respuesta parece español, reemplazar por plantilla EN
+                                    try {
+                                        if ((this.currentLang || 'es') === 'en') {
+                                            const seemsSpanish = /[¿¡áéíóúñ]|\b(apartamentos?|dormitorio|precio|superficie|mostrar|filtrar|claro|ayudarte|opciones)\b/i.test(responseText);
+                                            if (seemsSpanish) {
+                                                const enText = this.buildEnglishReply(this.lastCommandResult, this.lastUserText) || 'Got it. I will help you with that.';
+                                                responseElement.textContent = enText;
+                                            }
                                         }
-                                    });
+                                    } catch {}
+                                    
+                                    // Extraer el último comando del usuario para procesarlo
+                                    this.processLastUserCommand();
                                 }
                             });
                         }
                     });
-                });
-                
-                // Observar cambios en el chat
-                irisResponseObserver.observe(document.body, {
-                    childList: true,
-                    subtree: true
-                });
-                
-                console.log('✅ Listener para respuestas de Iris configurado');
-            }
-
-            /**
-             * Procesar el último comando del usuario
-             */
-            processLastUserCommand() {
-                // Buscar el último mensaje del usuario
-                const userMessages = document.querySelectorAll('.chat-message-from-user .chat-message-markdown');
-                if (userMessages.length > 0) {
-                    const lastUserMessage = userMessages[userMessages.length - 1];
-                    const messageText = lastUserMessage.textContent || lastUserMessage.innerText;
-                    
-                    if (messageText && messageText.trim()) {
-                        console.log('🔄 [Bridge] Procesando último comando del usuario:', messageText);
-                        
-                        // Procesar con un pequeño delay para que la respuesta de Iris se complete
-                        setTimeout(() => {
-                            this.processChatCommand(messageText);
-                        }, 500);
-                    }
                 }
+            });
+        });
+        
+        // Observar cambios en el chat
+        irisResponseObserver.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+        
+        console.log('✅ Listener para respuestas de Iris configurado');
+    }
+
+    /**
+     * Procesar el último comando del usuario
+     */
+    processLastUserCommand() {
+        // Buscar el último mensaje del usuario
+        const userMessages = document.querySelectorAll('.chat-message-from-user .chat-message-markdown');
+        if (userMessages.length > 0) {
+            const lastUserMessage = userMessages[userMessages.length - 1];
+            const messageText = lastUserMessage.textContent || lastUserMessage.innerText;
+            
+            if (messageText && messageText.trim()) {
+                console.log('🔄 [Bridge] Procesando último comando del usuario:', messageText);
+                
+                // Procesar con un pequeño delay para que la respuesta de Iris se complete
+                setTimeout(() => {
+                    this.processChatCommand(messageText);
+                }, 500);
             }
+        }
+    }
 
     /**
      * Configurar listener de prueba para testing
@@ -496,6 +552,10 @@ class IrisChatBridge {
             console.log('🔧 [Bridge] Enviando comando a IRIS Core...');
             const result = await this.irisCore.processText(command);
             
+            // Guardar para posibles adaptaciones de idioma
+            this.lastUserText = command;
+            this.lastCommandResult = result;
+            
             console.log('✅ [Bridge] Comando procesado exitosamente:');
             console.log('   - Resultado:', result);
             
@@ -621,6 +681,92 @@ class IrisChatBridge {
             irisCore: !!this.irisCore,
             timestamp: new Date().toISOString()
         };
+    }
+
+    /**
+     * Detect preferred UI/chat language from page
+     */
+    detectPreferredLang() {
+        try {
+            const btn = document.querySelector('.lang-btn.active');
+            const params = new URLSearchParams(window.location.search);
+            const stored = (localStorage.getItem('preferredLanguage') || '').toLowerCase();
+            const nav = (navigator.language || 'es').toLowerCase();
+            const lang = (btn?.dataset?.lang || params.get('lang') || stored || nav || 'es').toLowerCase();
+            return lang.startsWith('en') ? 'en' : 'es';
+        } catch { return 'es'; }
+    }
+
+    /**
+     * Very lightweight language detector for a single message
+     */
+    detectTextLanguage(text) {
+        if (!text) return this.currentLang || 'es';
+        const t = String(text).toLowerCase();
+        // Common English words
+        const enHints = /(the|and|show|please|apartment|unit|price|between|how|much|bed(room)?s?|amenities|features|house|kitchen|bath(room)?|living|dining|office|hello|hi|send|email)/i;
+        // Common Spanish words/accents
+        const esHints = /(el|la|los|las|hola|por favor|departamento|apartamento|precio|dormitorio|amenidades|características|casa|cocina|baño|sala|comedor|oficina|enviar|correo|pdf|cotiza|cuánto)/i;
+        if (enHints.test(t) && !esHints.test(t)) return 'en';
+        if (esHints.test(t) && !enHints.test(t)) return 'es';
+        // Heuristic: presence of accented characters -> Spanish
+        if (/[áéíóúñ]/.test(t)) return 'es';
+        return this.currentLang || 'es';
+    }
+
+    /**
+     * Adapt chat language to user message language
+     */
+    handleAdaptiveLanguage(messageText) {
+        try {
+            const detected = this.detectTextLanguage(messageText);
+            if (detected && detected !== this.currentLang) {
+                console.log('🌐 [Bridge] Cambio de idioma detectado por mensaje. Nuevo idioma:', detected);
+                this.currentLang = detected;
+                // Re-crear chat con el nuevo idioma y notificar a la página
+                if (typeof window.recreateIrisChat === 'function') {
+                    window.recreateIrisChat(detected);
+                }
+                const evt = new CustomEvent('languageChanged', { detail: { lang: detected } });
+                document.dispatchEvent(evt);
+            }
+        } catch (e) {
+            console.warn('🌐 [Bridge] No se pudo adaptar el idioma:', e);
+        }
+    }
+
+    /**
+     * Build basic English reply templates from last command result
+     */
+    buildEnglishReply(result, userText) {
+        try {
+            if (!result || typeof result !== 'object') return '';
+            const { type, action, filters, area, key } = result || {};
+            if (type === 'navigation' && action === 'goto') {
+                const map = { apartments: 'Showing apartments.', houses: 'Showing houses.', equipment: 'Showing amenities.', features: 'Showing features.', home: 'Going to home.' };
+                return map[key] || 'Navigating to the requested section.';
+            }
+            if (type === 'filter') {
+                if (action === 'show_all') return 'Listing all available apartments.';
+                if (action === 'clear') return 'Filters cleared. Listing all apartments.';
+                if (action === 'apply') {
+                    const parts = [];
+                    if (filters?.bedrooms) parts.push(`${filters.bedrooms} bedroom${filters.bedrooms>1?'s':''}`);
+                    if (filters?.superficie) parts.push(`surface ${filters.superficie}`);
+                    if (filters?.precio) parts.push(`price ${filters.precio}`);
+                    return `Filtering apartments by ${parts.join(', ')}.`;
+                }
+            }
+            if (type === 'details') return 'Here are more details about this apartment.';
+            if (type === 'pdf') return 'I will send you the brochure (PDF).';
+            if (type === 'quote') return 'I will prepare pricing information for this unit.';
+            if (type === 'recorrido' && action === 'exit_recorrido') return 'Closing the tour and returning to the list.';
+            if (type === 'video') {
+                const map = { play: 'Playing the video.', pause: 'Pausing the video.', stop: 'Stopping the video.', next: 'Next video.', previous: 'Previous video.' };
+                return map[action] || 'Video updated.';
+            }
+            return '';
+        } catch { return ''; }
     }
 }
 
