@@ -851,6 +851,16 @@ class ImageFilterSystem {
         const initialMessage = document.getElementById('initialMessage');
         if (initialMessage) {
             initialMessage.style.display = 'block';
+            try {
+                const btn = document.querySelector('.lang-btn.active');
+                const params = new URLSearchParams(window.location.search);
+                const lang = (btn?.dataset?.lang || params.get('lang') || 'es').toLowerCase();
+                const en = lang.startsWith('en');
+                const h3 = initialMessage.querySelector('h3');
+                const p = initialMessage.querySelector('p');
+                if (h3) h3.textContent = en ? 'Find your ideal apartment' : 'Busca tu apartamento ideal';
+                if (p) p.textContent = en ? 'Select filters and click "Search" to see available apartments' : 'Selecciona los filtros y presiona "Buscar" para ver los apartamentos disponibles';
+            } catch {}
         }
         
         console.log('✅ Filtros limpiados');
