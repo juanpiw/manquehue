@@ -422,6 +422,11 @@
             y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
         })(window, document, "clarity", "script", "sut7jifh3h");
     </script>
+    <script>
+        // Disable verbose console.log for this demo page without affecting warnings/errors
+        window.__DEBUG__ = false;
+        (function(){ try { if (!window.__DEBUG__) console.log = function(){}; } catch(e){} })();
+    </script>
 </head>
 <body>
     <!-- Contenedor principal del preview demo -->
@@ -1783,9 +1788,12 @@
     </script>
 
     <!-- Iris Chat Widget -->
+    <link href="/js/vendor/n8n-chat/n8n-chat.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/@n8n/chat/dist/style.css" rel="stylesheet" />
     <script type="module">
-        import { createChat } from 'https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js';
+        let createChat;
+        try { ({ createChat } = await import('/js/vendor/n8n-chat/n8n-chat.js')); }
+        catch (e) { ({ createChat } = await import('https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js')); }
 
         function detectUiLang() {
             try {
@@ -1833,7 +1841,7 @@
                   ];
 
             const instance = createChat({
-                webhookUrl: `https://impactrender.app.n8n.cloud/webhook/57a76c39-7ea3-4ce2-b5f5-41c6adf02c34/chat?lang=${isEnglish ? 'en' : 'es'}`,
+                webhookUrl: `/n8n-proxy.php?lang=${isEnglish ? 'en' : 'es'}`,
                 webhookConfig: { method: 'POST', headers: { 'X-Language': isEnglish ? 'en' : 'es', 'Accept-Language': isEnglish ? 'en' : 'es' } },
                 mode: 'window',
                 chatInputKey: 'chatInput',

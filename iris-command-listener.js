@@ -1,13 +1,24 @@
 // iris-command-listener.js
-const WEBHOOK_URL = 'https://impactrender.app.n8n.cloud/webhook/57a76c39-7ea3-4ce2-b5f5-41c6adf02c34/chat';
+const WEBHOOK_URL = '/n8n-proxy.php';
+function detectLang() {
+  try {
+    const btn = document.querySelector('.lang-btn.active');
+    const params = new URLSearchParams(window.location.search);
+    const stored = (localStorage.getItem('preferredLanguage') || '').toLowerCase();
+    const nav = (navigator.language || 'es').toLowerCase();
+    return (btn?.dataset?.lang || params.get('lang') || stored || nav || 'es').toLowerCase();
+  } catch { return 'es'; }
+}
 const DEFAULT_LANG = 'es';
 
 // Chat Bootstrap
 async function loadChat() {
   try {
-    const { createChat } = await import('https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js');
+    let createChat;
+    try { ({ createChat } = await import('/js/vendor/n8n-chat/n8n-chat.js')); }
+    catch (e) { ({ createChat } = await import('https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js')); }
     const chat = createChat({
-      webhookUrl: WEBHOOK_URL,
+      webhookUrl: `${WEBHOOK_URL}?lang=${detectLang().startsWith('en') ? 'en' : 'es'}`,
       webhookConfig: {
         method: 'POST',
         headers: {}
@@ -43,7 +54,7 @@ async function loadChat() {
     if (typeof window.createChat === 'function') {
       console.warn('[iris-cmd] Usando window.createChat como fallback.');
       const chat = window.createChat({
-        webhookUrl: WEBHOOK_URL,
+        webhookUrl: `${WEBHOOK_URL}?lang=${detectLang().startsWith('en') ? 'en' : 'es'}`,
         webhookConfig: {
           method: 'POST',
           headers: {}
@@ -350,8 +361,12 @@ function attachMessageObserver(targetNode) {
   // Load chat styles
   const link = document.createElement('link');
   link.rel = 'stylesheet';
-  link.href = 'https://cdn.jsdelivr.net/npm/@n8n/chat/dist/style.css';
+  link.href = '/js/vendor/n8n-chat/n8n-chat.css';
   document.head.appendChild(link);
+  const cdnLink = document.createElement('link');
+  cdnLink.rel = 'stylesheet';
+  cdnLink.href = 'https://cdn.jsdelivr.net/npm/@n8n/chat/dist/style.css';
+  document.head.appendChild(cdnLink);
 
   // Wait for IR API to be available before initializing chat
   async function waitForIRAPI() {

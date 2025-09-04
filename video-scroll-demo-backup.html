@@ -1379,13 +1379,16 @@
     </script>
 
     <!-- Iris Chat Widget -->
+    <link href="/js/vendor/n8n-chat/n8n-chat.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/@n8n/chat/dist/style.css" rel="stylesheet" />
     <script type="module">
-        import { createChat } from 'https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js';
+        let createChat;
+        try { ({ createChat } = await import('/js/vendor/n8n-chat/n8n-chat.js')); }
+        catch (e) { ({ createChat } = await import('https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js')); }
 
         // Initialize Iris chat widget
         const irisChatInstance = createChat({
-            webhookUrl: 'https://impactrender.app.n8n.cloud/webhook/57a76c39-7ea3-4ce2-b5f5-41c6adf02c34/chat',
+            webhookUrl: '/n8n-proxy.php?lang=es',
             webhookConfig: {
                 method: 'POST',
                 headers: {}
