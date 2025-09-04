@@ -1134,9 +1134,10 @@ class ImageFilterSystem {
         let activeCardFound = false;
         
         cards.forEach(card => {
-            const cardApartment = card.querySelector('h3').textContent;
-            const cardSuperficie = card.querySelector('p:nth-child(2)').textContent.replace('Superficie: ', '');
-            const cardPrecio = card.querySelector('p:nth-child(3)').textContent.replace('Precio: ', '');
+            const btn = card.querySelector('.watchVideoBtn');
+            const cardApartment = btn ? btn.getAttribute('data-apartment') : '';
+            const cardSuperficie = btn ? btn.getAttribute('data-superficie') : '';
+            const cardPrecio = btn ? btn.getAttribute('data-precio') : '';
             
             if (cardApartment === apartment && 
                 cardSuperficie === superficie && 
@@ -1272,6 +1273,15 @@ class ImageFilterSystem {
         `;
         
         document.body.insertAdjacentHTML('beforeend', controlsHTML);
+        try {
+            const uiLangBtn = document.querySelector('.lang-btn.active');
+            const params = new URLSearchParams(window.location.search);
+            const lang = (uiLangBtn?.dataset?.lang || params.get('lang') || 'es').toLowerCase();
+            console.log('[Lang] showRecorridoControls -> applying translation for controls. lang=', lang);
+            this.translateUIToLanguage(lang);
+        } catch (e) {
+            console.warn('[Lang] Failed to translate recorrido controls immediately', e);
+        }
         
         // Ocultar el botón hero-recorrer cuando se muestran los controles
         const heroButton = document.querySelector('.hero-recorrer-button');
@@ -4029,6 +4039,7 @@ class ImageFilterSystem {
 
     translateUIToLanguage(lang) {
         try {
+            console.log('[Lang] translateUIToLanguage called with:', lang);
             const isEnglish = lang.startsWith('en');
             const isHouse = this.currentProjectType === 'casa';
             // Diccionario básico
@@ -4056,7 +4067,9 @@ class ImageFilterSystem {
                     ctrl_exit: 'Salir del Recorrido',
                     ctrl_details: 'Detalles',
                     ctrl_pause: 'Pausar',
+                    ctrl_back: 'Volver',
                     plan_house: 'Plano de la Casa',
+                    plan_apartment: 'Plano del Apartamento',
                     spec_bedroom: 'Habitación:',
                     spec_area: 'Área:',
                     spec_balcony: 'Balcón:',
@@ -4064,6 +4077,10 @@ class ImageFilterSystem {
                     orientation_north: 'Norte',
                     send_pdf: 'Enviar PDF',
                     quote: 'Cotizar Modelo',
+                    floor_type_label: 'Tipo de piso:',
+                    floor_type_a: 'Tipo A',
+                    floor_type_b: 'Tipo B',
+                    floor_type_c: 'Tipo C',
                     type_all: 'Todos',
                     type_1d: '1 Dormitorio',
                     type_2d: '2 Dormitorios',
@@ -4092,7 +4109,9 @@ class ImageFilterSystem {
                     ctrl_exit: 'Exit Tour',
                     ctrl_details: 'Details',
                     ctrl_pause: 'Pause',
+                    ctrl_back: 'Back',
                     plan_house: 'House Floor Plan',
+                    plan_apartment: 'Apartment Floor Plan',
                     spec_bedroom: 'Bedroom:',
                     spec_area: 'Area:',
                     spec_balcony: 'Balcony:',
@@ -4100,6 +4119,10 @@ class ImageFilterSystem {
                     orientation_north: 'North',
                     send_pdf: 'Send PDF',
                     quote: 'Get a Quote',
+                    floor_type_label: 'Floor type:',
+                    floor_type_a: 'Type A',
+                    floor_type_b: 'Type B',
+                    floor_type_c: 'Type C',
                     type_all: 'All',
                     type_1d: '1 Bedroom',
                     type_2d: '2 Bedrooms',
@@ -4160,6 +4183,42 @@ class ImageFilterSystem {
                 const p = initial.querySelector('p'); if (p) p.textContent = dict.initial_text;
             }
 
+            // Tarjetas de apartamentos: traducir etiquetas y botones sin cambiar data-*
+            const apartmentCards = document.querySelectorAll('.apartment-card .apartment-info');
+            apartmentCards.forEach(info => {
+                const watchBtn = info.querySelector('.watchVideoBtn');
+                const requestBtn = info.querySelector('.contactModelBtn');
+                const tipoCode = watchBtn ? watchBtn.getAttribute('data-tipo') : '';
+                const superficieVal = watchBtn ? watchBtn.getAttribute('data-superficie') : '';
+                const precioVal = watchBtn ? watchBtn.getAttribute('data-precio') : '';
+                const tipoDeptoVal = watchBtn ? watchBtn.getAttribute('data-tipo-departamento') : '';
+
+                // Título (1 Dormitorio → 1 Bedroom)
+                const h3 = info.querySelector('h3');
+                if (h3 && tipoCode) {
+                    if (tipoCode === '1d') h3.textContent = dict.type_1d;
+                    else if (tipoCode === '2d') h3.textContent = dict.type_2d;
+                    else if (tipoCode === '3d') h3.textContent = dict.type_3d;
+                }
+
+                // Párrafos de especificaciones: Surface / Price / Type
+                const pNodes = info.querySelectorAll('p');
+                pNodes.forEach(p => {
+                    const html = p.innerHTML;
+                    if (html.includes('Superficie:') || html.includes('Surface:')) {
+                        p.innerHTML = `<strong>${dict.lbl_surface}</strong> ${superficieVal || ''}`;
+                    } else if (html.includes('Precio:') || html.includes('Price:')) {
+                        p.innerHTML = `<strong>${dict.lbl_price}</strong> ${precioVal || ''}`;
+                    } else if (html.includes('Tipo de Departamento:') || html.includes('Tipo:') || html.includes('Type:')) {
+                        p.innerHTML = `<strong>${dict.lbl_type}</strong> ${tipoDeptoVal || ''}`;
+                    }
+                });
+
+                // Botones de acción
+                if (watchBtn && watchBtn.lastChild) watchBtn.lastChild.textContent = ` ${dict.action_explore}`;
+                if (requestBtn && requestBtn.lastChild) requestBtn.lastChild.textContent = ` ${dict.action_request}`;
+            });
+
             // Controles de recorrido
             const rec = document.getElementById('recorridoControls');
             if (rec) {
@@ -4184,17 +4243,39 @@ class ImageFilterSystem {
                 });
                 const orientSpan = details.querySelector('.orientation-section span');
                 if (orientSpan && /Norte/i.test(orientSpan.textContent)) orientSpan.textContent = dict.orientation_north;
+                // Tipo de piso
+                const floorTypeLabel = details.querySelector('.floor-type-section label');
+                if (floorTypeLabel) floorTypeLabel.textContent = dict.floor_type_label;
+                const floorBtns = details.querySelectorAll('.floor-type-section .floor-type-btn');
+                if (floorBtns && floorBtns.length) {
+                    if (floorBtns[0]) floorBtns[0].textContent = dict.floor_type_a;
+                    if (floorBtns[1]) floorBtns[1].textContent = dict.floor_type_b;
+                    if (floorBtns[2]) floorBtns[2].textContent = dict.floor_type_c;
+                }
             }
 
             // Título del plano en detalles
             const planH4 = document.querySelector('.floor-plan h4');
-            if (planH4 && /Plano/.test(planH4.textContent)) planH4.textContent = dict.plan_house;
+            if (planH4) planH4.textContent = isHouse ? dict.plan_house : dict.plan_apartment;
 
             // Botones de acciones en detalles
             const sendPdfBtn = document.querySelector('.action-buttons .btn-secondary');
             if (sendPdfBtn) sendPdfBtn.lastChild && (sendPdfBtn.lastChild.textContent = ` ${dict.send_pdf}`);
             const quoteBtn = document.querySelector('.action-buttons .btn-primary.quote-btn');
             if (quoteBtn) quoteBtn.lastChild && (quoteBtn.lastChild.textContent = ` ${dict.quote}`);
+
+            // Botón volver en detalles
+            const backBtn = document.querySelector('.apartment-card.details-mode .btn-back, .house-card.details-mode .btn-back');
+            if (backBtn && backBtn.lastChild) backBtn.lastChild.textContent = ` ${dict.ctrl_back}`;
+
+            // Título de detalles (1 Dormitorio -> 1 Bedroom)
+            const detailsTitle = document.querySelector('.details-title');
+            if (detailsTitle) {
+                const tipoCode = this.getTipoFromText(detailsTitle.textContent);
+                if (tipoCode === '1d') detailsTitle.textContent = dict.type_1d;
+                else if (tipoCode === '2d') detailsTitle.textContent = dict.type_2d;
+                else if (tipoCode === '3d') detailsTitle.textContent = dict.type_3d;
+            }
         } catch (e) {
             console.warn('[Lang] Error translating UI', e);
         }
