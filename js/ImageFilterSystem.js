@@ -1630,6 +1630,24 @@ class ImageFilterSystem {
             const params = new URLSearchParams(window.location.search);
             const lang = (uiLangBtn?.dataset?.lang || params.get('lang') || 'es').toLowerCase();
             console.log('🔊 [Audio-Hero] Idioma detectado:', lang);
+            const isEnglish = lang.startsWith('en');
+            const LABELS = isEnglish ? {
+                loading: 'Loading audio…',
+                play: 'Play',
+                pause: 'Pause',
+                error: 'Error loading audio',
+                playing: 'Playing…',
+                paused: 'Paused',
+                ended: 'Finished'
+            } : {
+                loading: 'Cargando audio…',
+                play: 'Reproducir',
+                pause: 'Pausar',
+                error: 'Error al cargar audio',
+                playing: 'Reproduciendo…',
+                paused: 'Pausado',
+                ended: 'Finalizado'
+            };
 
             const heroDesc = document.querySelector('.hero-content .description-content');
             if (!heroDesc) { console.log('[Audio-Hero] No hay contenedor de descripción'); return; }
@@ -1644,14 +1662,14 @@ class ImageFilterSystem {
                     btnErr.classList.remove('error');
                     // Establecer icono de altavoz por defecto (no el de error)
                     btnErr.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M5 9v6h4l5 5V4L9 9H5z" fill="currentColor"></path><path d="M15.5 8.5a4.5 4.5 0 010 6.4M13 6a7 7 0 010 12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"></path></svg>';
-                    btnErr.title = 'Reproducir';
+                    btnErr.title = LABELS.play;
                     // Asegurar estado inicial deshabilitado hasta canplay
                     btnErr.disabled = true;
                     btnErr.style.opacity = '0.6';
                     btnErr.style.cursor = 'not-allowed';
                 }
                 const statusEl = controls.querySelector('.audio-status');
-                if (statusEl) statusEl.textContent = 'Cargando audio…';
+                if (statusEl) statusEl.textContent = LABELS.loading;
             } else {
                 console.log('[Audio-Hero] Creando nuevos controles de audio');
                 controls = document.createElement('div');
@@ -1661,7 +1679,7 @@ class ImageFilterSystem {
                 controls.style.gap = '0.5rem';
                 controls.style.marginTop = '0.75rem';
                 controls.innerHTML = `
-                    <button class=\"audio-button\" title=\"Reproducir\" style=\"background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); color: white; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer;\">\n                        <svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"currentColor\" xmlns=\"http://www.w3.org/2000/svg\">\n                            <path d=\"M8 5v14l11-7z\"></path>\n                        </svg>\n                    </button>\n                    <span class=\"audio-status\" style=\"color:#cccccc; font-size: 0.95rem;\">Cargando audio…</span>`;
+                    <button class=\"audio-button\" title=\"${LABELS.play}\" style=\"background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); color: white; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer;\">\n                        <svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"currentColor\" xmlns=\"http://www.w3.org/2000/svg\">\n                            <path d=\"M8 5v14l11-7z\"></path>\n                        </svg>\n                    </button>\n                    <span class=\"audio-status\" style=\"color:#cccccc; font-size: 0.95rem;\">${LABELS.loading}</span>`;
                 heroDesc.appendChild(controls);
             }
 
@@ -1680,21 +1698,21 @@ class ImageFilterSystem {
                 btn.innerHTML = isPlaying
                     ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M6 5h4v14H6zM14 5h4v14h-4z"></path></svg>'
                     : '<svg width="18" height="18" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M5 9v6h4l5 5V4L9 9H5z" fill="currentColor"></path><path d="M15.5 8.5a4.5 4.5 0 010 6.4M13 6a7 7 0 010 12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"></path></svg>';
-                btn.title = isPlaying ? 'Pausar' : 'Reproducir';
+                btn.title = isPlaying ? LABELS.pause : LABELS.play;
             };
 
             audio.addEventListener('canplay', () => {
                 console.log('🔊 [Audio-Hero] canplay recibido');
                 if (btn) { btn.disabled = false; btn.style.opacity = '1'; btn.style.cursor = 'pointer'; }
-                if (status) status.textContent = 'Reproducir';
+                if (status) status.textContent = LABELS.play;
             });
             audio.addEventListener('error', () => {
                 const code = audio.error ? audio.error.code : 'unknown';
                 console.warn('🔊 [Audio-Hero] error event. code=', code, 'src=', audio.src);
                 if (btn) { btn.disabled = true; btn.style.opacity = '0.5'; btn.style.cursor = 'not-allowed'; }
-                if (status) status.textContent = 'Error al cargar audio';
+                if (status) status.textContent = LABELS.error;
             });
-            audio.addEventListener('ended', () => { console.log('🔊 [Audio-Hero] ended'); setPlaying(false); if (status) status.textContent = 'Finalizado'; });
+            audio.addEventListener('ended', () => { console.log('🔊 [Audio-Hero] ended'); setPlaying(false); if (status) status.textContent = LABELS.ended; });
 
             if (btn) {
                 btn.disabled = true; btn.style.opacity = '0.6'; btn.style.cursor = 'not-allowed';
@@ -1703,10 +1721,10 @@ class ImageFilterSystem {
                     console.log('🔊 [Audio-Hero] click play/pause. paused(before)=', audio.paused);
                     if (audio.paused) {
                         try { this.pauseAllAudios(audio); } catch {}
-                        audio.play().then(() => { window.__currentPlayingAudio = audio; setPlaying(true); if (status) status.textContent = 'Reproduciendo…'; }).catch(err => console.warn('🔊 [Audio-Hero] play error', err));
+                        audio.play().then(() => { window.__currentPlayingAudio = audio; setPlaying(true); if (status) status.textContent = LABELS.playing; }).catch(err => console.warn('🔊 [Audio-Hero] play error', err));
                     } else {
                         try { audio.pause(); this.pauseAllAudios(); } catch {}
-                        setPlaying(false); if (status) status.textContent = 'Pausado';
+                        setPlaying(false); if (status) status.textContent = LABELS.paused;
                         window.__currentPlayingAudio = null;
                     }
                     console.log('🔊 [Audio-Hero] paused(after)=', audio.paused);
