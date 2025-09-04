@@ -265,10 +265,13 @@ class IrisChatBridge {
                                     // Adaptación simple: si el idioma actual es EN y la respuesta parece español, reemplazar por plantilla EN
                                     try {
                                         if ((this.currentLang || 'es') === 'en') {
-                                            const seemsSpanish = /[¿¡áéíóúñ]|\b(apartamentos?|dormitorio|precio|superficie|mostrar|filtrar|claro|ayudarte|opciones)\b/i.test(responseText);
+                                            const seemsSpanish = /[¿¡áéíóúñ]|\b(apartamentos?|dormitorio|precio|superficie|mostrar|filtrar|claro|ayudarte|opciones|ver|detalles?)\b/i.test(responseText);
                                             if (seemsSpanish) {
-                                                const enText = this.buildEnglishReply(this.lastCommandResult, this.lastUserText) || 'Got it. I will help you with that.';
-                                                responseElement.textContent = enText;
+                                                const enText = this.buildEnglishReply(this.lastCommandResult, this.lastUserText);
+                                                // Solo reemplazar si tenemos una plantilla clara; si no, dejar la respuesta original
+                                                if (enText && enText.trim()) {
+                                                    responseElement.textContent = enText;
+                                                }
                                             }
                                         }
                                     } catch {}
@@ -318,6 +321,11 @@ class IrisChatBridge {
      */
     setupTestListener() {
         console.log('🧪 Configurando listener de prueba...');
+        const ENABLE_TEST_UI = false; // Desactivar UI de pruebas en producción
+        if (!ENABLE_TEST_UI) {
+            console.log('🧪 UI de pruebas desactivada');
+            return;
+        }
         
         // Crear un botón de prueba temporal
         const testButton = document.createElement('button');

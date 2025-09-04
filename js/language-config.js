@@ -12,8 +12,8 @@ window.LanguageConfig = {
         'es': {
             code: 'es',
             name: 'Español',
-            flag: 'flag-cl.svg',
-            region: 'Chile',
+            flag: 'flag-es.svg',
+            region: 'España',
             locale: 'es-CL'
         },
         'en-au': {

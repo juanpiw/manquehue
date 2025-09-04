@@ -139,7 +139,7 @@ class LanguageSystem {
         };
         
         this.supportedLanguages = {
-            'es': { code: 'es', name: 'Español', flag: 'flag-cl.svg', region: 'Chile' },
+            'es': { code: 'es', name: 'Español', flag: 'flag-es.svg', region: 'España' },
             'en-au': { code: 'en-au', name: 'English', flag: 'flag-au.svg', region: 'Australia' },
             'en-us': { code: 'en-us', name: 'English', flag: 'flag-us.svg', region: 'USA' }
         };
