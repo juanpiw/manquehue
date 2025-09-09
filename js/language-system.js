@@ -62,7 +62,7 @@ class LanguageSystem {
                     subtitle: 'Exclusive houses and apartments in Piedra Roja'
                 },
                 description: {
-                    text: 'Exclusive houses and apartments located in the most privileged sector of Piedra Roja, within the Hacienda Chicureo Golf Club. Designed to maximize the views towards the Chicureo Valley and the mountain range thanks to its floor-to-ceiling windows. It is a versatile project that invites sharing and enjoying its integrated spaces and large terraces. The project offers the option to choose a large private garden, exclusive exits to the park or rooftops.'
+                    text: 'Exclusive houses and apartments located in the most privileged sector of Piedra Roja, within the Hacienda Chicureo Golf Club. '
                 },
                 selector: {
                     apartment: 'Apartment',

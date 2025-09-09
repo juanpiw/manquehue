@@ -24,6 +24,7 @@
     <link rel="icon" type="image/png" href="favicon.png">
     <link rel="stylesheet" href="video-scroll-styles.css">
     <link rel="stylesheet" href="css/language-switcher.css">
+    <script>window.IRIS_DISABLE_FRONT = true;</script>
     <style>
         /* Mejoras adicionales para scroll más suave */
         html {
@@ -39,6 +40,119 @@
         /* Prevenir scroll nativo durante navegación */
         body.navigating {
             overflow: hidden;
+        }
+        
+        /* Modal de detalles más compacto */
+        .apartment-card.details-mode {
+            max-width: 90vw !important;
+            max-height: 80vh !important;
+            transform: scale(0.85) !important;
+            margin: 2vh auto !important;
+        }
+        
+        .apartment-details-mode {
+            padding: 1rem !important;
+        }
+        
+        .details-header {
+            margin-bottom: 0.8rem !important;
+        }
+        
+        .details-title {
+            font-size: 1.2rem !important;
+            margin: 0 0.5rem !important;
+        }
+        
+        .details-content {
+            gap: 1rem !important;
+        }
+        
+        .details-left-panel, .details-right-panel {
+            flex: 1 !important;
+        }
+        
+        .apartment-specs {
+            margin-bottom: 0.8rem !important;
+        }
+        
+        .spec-item {
+            margin-bottom: 0.3rem !important;
+            font-size: 0.9rem !important;
+        }
+        
+        .orientation-section, .floor-type-section {
+            margin-bottom: 0.8rem !important;
+            font-size: 0.9rem !important;
+        }
+        
+        .floor-type-options {
+            gap: 0.3rem !important;
+        }
+        
+        .floor-type-btn {
+            padding: 0.3rem 0.6rem !important;
+            font-size: 0.8rem !important;
+        }
+        
+        .floor-plan h4 {
+            font-size: 1rem !important;
+            margin-bottom: 0.5rem !important;
+        }
+        
+        .floor-plan-image {
+            max-height: 200px !important;
+        }
+        
+        .floor-plan-image img {
+            max-height: 200px !important;
+            object-fit: contain !important;
+        }
+        
+        .audio-controls {
+            margin-top: 0.3rem !important;
+        }
+        
+        .audio-button {
+            width: 28px !important;
+            height: 28px !important;
+        }
+        
+        .audio-status {
+            font-size: 0.8rem !important;
+        }
+        
+        .action-buttons {
+            gap: 0.5rem !important;
+            margin-top: 0.8rem !important;
+        }
+        
+        .action-buttons button {
+            padding: 0.5rem 0.8rem !important;
+            font-size: 0.85rem !important;
+        }
+        
+        .image-gallery {
+            max-height: 300px !important;
+        }
+        
+        .thumbnail-container {
+            gap: 0.3rem !important;
+        }
+        
+        .thumbnail {
+            width: 60px !important;
+            height: 45px !important;
+        }
+        
+        .thumbnail img {
+            width: 60px !important;
+            height: 45px !important;
+            object-fit: cover !important;
+        }
+        
+        .gallery-nav {
+            width: 24px !important;
+            height: 24px !important;
         }
 
         /* Iris Chat Widget Styles - Azul y Negro con Frost */
@@ -76,6 +190,112 @@
             background: linear-gradient(135deg, #0f3460 0%, #16213e 100%)!important;
             border-radius: 18px 18px 4px 18px!important;
             color: white!important;
+        }
+
+        /* Pulse/onda attention effect for Auto Tour button */
+        #autoRecorridoBtnTop,
+        #autoRecorridoBtn {
+            position: relative;
+            overflow: visible;
+            background: linear-gradient(135deg, rgb(225, 23, 255) 0%, rgb(205, 5, 255) 100%) !important;
+        }
+        #autoRecorridoBtnTop::after,
+        #autoRecorridoBtn::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 120%;
+            height: 120%;
+            border-radius: 999px;
+            background: radial-gradient(closest-side, rgba(255,255,255,0.25), rgba(255,255,255,0) 60%);
+            animation: autoPulse 2s ease-out infinite;
+            pointer-events: none;
+            filter: blur(2px);
+        }
+        /* Stroke/onda animada tipo anillo */
+        #autoRecorridoBtnTop::before,
+        #autoRecorridoBtn::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%) scale(0.9);
+            width: 128%;
+            height: 128%;
+            border-radius: 999px;
+            border: 2px solid rgba(255, 215, 0, 0.65); /* dorado */
+            box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+            animation: waveStroke 1.9s ease-out infinite;
+            pointer-events: none;
+        }
+        /* Al estar activo, atenuar las ondas/strroke para no distraer */
+        #autoRecorridoBtnTop[data-active='1']::before,
+        #autoRecorridoBtn[data-active='1']::before {
+            border-color: rgba(255, 215, 0, 0.35);
+            animation: waveStrokeActive 2.3s ease-out infinite;
+        }
+        #autoRecorridoBtnTop[data-active='1']::after,
+        #autoRecorridoBtn[data-active='1']::after {
+            /* Al estar activo, reducir la intensidad para no distraer */
+            animation: autoPulseActive 2.2s ease-out infinite;
+            background: radial-gradient(closest-side, rgba(255,255,255,0.15), rgba(255,255,255,0) 60%);
+        }
+        @keyframes autoPulse {
+            0% { opacity: 0.0; transform: translate(-50%, -50%) scale(0.85); }
+            50% { opacity: 0.55; transform: translate(-50%, -50%) scale(1.05); }
+            100% { opacity: 0.0; transform: translate(-50%, -50%) scale(1.25); }
+        }
+        @keyframes autoPulseActive {
+            0% { opacity: 0.0; transform: translate(-50%, -50%) scale(0.9); }
+            50% { opacity: 0.35; transform: translate(-50%, -50%) scale(1.05); }
+            100% { opacity: 0.0; transform: translate(-50%, -50%) scale(1.2); }
+        }
+        @keyframes waveStroke {
+            0% { opacity: 0.0; transform: translate(-50%, -50%) scale(0.85); border-color: rgba(255, 215, 0, 0.75); }
+            40% { opacity: 0.7; transform: translate(-50%, -50%) scale(1.02); border-color: rgba(255, 165, 0, 0.6); }
+            100% { opacity: 0.0; transform: translate(-50%, -50%) scale(1.28); border-color: rgba(255, 215, 0, 0.0); }
+        }
+        @keyframes waveStrokeActive {
+            0% { opacity: 0.0; transform: translate(-50%, -50%) scale(0.9); border-color: rgba(255, 215, 0, 0.35); }
+            50% { opacity: 0.45; transform: translate(-50%, -50%) scale(1.05); border-color: rgba(255, 165, 0, 0.35); }
+            100% { opacity: 0.0; transform: translate(-50%, -50%) scale(1.2); border-color: rgba(255, 215, 0, 0.0); }
+        }
+
+        /* Lock scroll when recorrido controls are active */
+        body.scroll-locked {
+            overflow: hidden !important;
+            touch-action: none !important;
+        }
+
+        /* Hide IRIS chat from front */
+        .iris-toggle-button,
+        .iris-sell-button,
+        .chat-window-wrapper,
+        .chat-layout,
+        .n8n-chat,
+        .n8n-chat-container {
+            display: none !important;
+            visibility: hidden !important;
+            pointer-events: none !important;
+        }
+
+        /* Asegurar centrado permanente de preview-stats */
+        section.preview-stats.centered {
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+            text-align: center !important;
+            margin-left: auto !important;
+            margin-right: auto !important;
+        }
+        section.preview-stats .stats-container,
+        section.preview-stats .stats-list {
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+            gap: 24px;
         }
 
         .chat-message-from-bot {
@@ -415,6 +635,43 @@
         gtag('config', 'G-6SC1WL9L8J');
         gtag('config', 'AW-16671568626');
     </script>
+    <script>
+        (function(){
+            try {
+                document.addEventListener('click', function(e){
+                    var card = e.target && e.target.closest && e.target.closest('.apartment-card');
+                    if (!card) return;
+                    // Evitar doble manejo si clickea un botón interno
+                    if (e.target.closest('button')) return;
+                    // Solo cuando está en modo recorrido activo
+                    if (!card.classList.contains('recorrido-active')) return;
+                    var apt = '', sup = '', price = '';
+                    var btn = card.querySelector('.apartment-actions .watchVideoBtn');
+                    if (btn) {
+                        apt = btn.getAttribute('data-apartment') || apt;
+                        sup = btn.getAttribute('data-superficie') || sup;
+                        price = btn.getAttribute('data-precio') || price;
+                    }
+                    if (!apt) {
+                        var h = card.querySelector('.apartment-info h3');
+                        if (h && h.textContent) apt = h.textContent.trim();
+                    }
+                    if (!sup || !price) {
+                        var ps = card.querySelectorAll('.apartment-info p');
+                        ps && ps.forEach && ps.forEach(function(p){
+                            var txt = (p.textContent || '').trim();
+                            if (!sup && /^(Superficie:|Surface:)/i.test(txt)) sup = txt.replace(/^(Superficie:|Surface:)/i,'').trim();
+                            if (!price && /^(Precio:|Price:)/i.test(txt)) price = txt.replace(/^(Precio:|Price:)/i,'').trim();
+                        });
+                    }
+                    if (window.imageFilterSystem && typeof window.imageFilterSystem.showApartmentDetails === 'function') {
+                        try { console.log('[CardDetails] opening details', { apt: apt, superficie: sup, precio: price }); } catch(_) {}
+                        window.imageFilterSystem.showApartmentDetails(apt || '', sup || '', price || '');
+                    }
+                }, false);
+            } catch (e) { try { console.warn('[CardDetails] setup error', e); } catch(_) {} }
+        })();
+    </script>
     <script type="text/javascript">
         (function(c,l,a,r,i,t,y){
             c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
@@ -432,9 +689,12 @@
     <!-- Contenedor principal del preview demo -->
     <div class="preview-demo">
         <!-- Project request button -->
-        <div style="position: fixed; top: 20px; right: 20px; z-index: 1000;">
-            <button onclick="openProjectModal()" style="padding: 10px 20px; background: linear-gradient(135deg, #854fff 0%, #6b3fd4 100%); color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: 600; box-shadow: 0 4px 15px rgba(133, 79, 255, 0.3); transition: all 0.3s ease;">
+        <div style="position: fixed; top: 20px; right: 20px; z-index: 1000; display: flex; gap: 10px; align-items: center;">
+           <!--  <button onclick="openProjectModal()" style="padding: 10px 20px; background: linear-gradient(135deg, #854fff 0%, #6b3fd4 100%); color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: 600; box-shadow: 0 4px 15px rgba(133, 79, 255, 0.3); transition: all 0.3s ease; transform: scale(1);">
                 Quiero una landing para mi proyecto
+            </button> -->
+            <button id="autoRecorridoBtnTop" onclick="window.imageFilterSystem && window.imageFilterSystem.startAutoRecorrido && window.imageFilterSystem.startAutoRecorrido();" style="padding: 10px 20px; background: linear-gradient(135deg, #0f3460 0%, #16213e 100%); color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: 700; box-shadow: 0 8px 24px rgba(15, 52, 96, 0.35); transition: transform 0.2s; transform: scale(1);">
+                AUTO RECORRIDO
             </button>
         </div>
         
@@ -566,12 +826,8 @@
             <!-- Location Tag -->
             <div class="location-tag-container">
                 <div class="location-tag size-medium">
-                    <div class="location-icon">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zM12 11.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" fill="currentColor" stroke="currentColor" stroke-width="0.5" stroke-linecap="round" stroke-linejoin="round"></path>
-                        </svg>
-                    </div>
-                    <span class="location-text">Piedra Roja, Club de Golf Hacienda Chicureo</span>
+                
+                    <button onclick="openProjectModal()" style="margin-left: 15px; padding: 8px 16px; background: linear-gradient(135deg, rgb(133, 79, 255) 0%, rgb(107, 63, 212) 100%); color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: 600; box-shadow: rgba(133, 79, 255, 0.3) 0px 4px 15px; transition: transform 0.2s; transform: scale(1); font-size: 14px;">Quiero una landing para mi proyecto</button>
                 </div>
             </div>
         </section>
@@ -1129,9 +1385,887 @@
     
     <!-- IRIS Chat Bridge -->
     <script src="iris-chat-bridge.js"></script>
+    <script>
+        (function(){
+            try {
+                const log = function(){
+                    var args = ['[LockScroll]'].concat(Array.prototype.slice.call(arguments));
+                    try { if (console && console.info) console.info.apply(console, args); } catch(e) {}
+                    try { if (console && console.log) console.log.apply(console, args); } catch(e) {}
+                    try { if (console && console.debug) console.debug.apply(console, args); } catch(e) {}
+                };
+                log('boot start');
+                var lockedScrollY = null;
+                var isClamping = false;
+                function isActuallyVisible(el){
+                    if (!el) return false;
+                    const cs = getComputedStyle(el);
+                    if (cs.display === 'none' || cs.visibility === 'hidden' || parseFloat(cs.opacity || '1') <= 0.01) return false;
+                    const r = el.getBoundingClientRect();
+                    const inViewport = r.width > 0 && r.height > 0 && r.bottom > 0 && r.top < (window.innerHeight || document.documentElement.clientHeight);
+                    log('check visible:', el.className || el.id || el.tagName, {display: cs.display, visibility: cs.visibility, opacity: cs.opacity, rect: {top: r.top, bottom: r.bottom, width: r.width, height: r.height}}, '=>', inViewport);
+                    return inViewport;
+                }
+                function isControlsVisible(){
+                    const byId = document.getElementById('recorridoControls');
+                    const byClass = document.querySelector('.recorrido-controls');
+                    const activeCard = document.querySelector('.apartment-card.recorrido-active');
+                    const bodyMode = document.body.classList.contains('recorrido-mode');
+                    const visible = bodyMode || isActuallyVisible(byId) || isActuallyVisible(byClass) || isActuallyVisible(activeCard);
+                    var reason = bodyMode ? 'body.recorrido-mode' : (isActuallyVisible(byId) ? '#recorridoControls' : (isActuallyVisible(byClass) ? '.recorrido-controls' : (isActuallyVisible(activeCard) ? '.apartment-card.recorrido-active' : 'none')));
+                    log('controls visible?', visible, 'reason=', reason);
+                    return visible;
+                }
+                function updateLock(){
+                    const visible = isControlsVisible();
+                    const locked = document.body.classList.contains('scroll-locked');
+                    log('updateLock: visible=', visible, 'locked=', locked, 'currentY=', Math.round(window.scrollY || window.pageYOffset || 0));
+                    if (visible && !locked) {
+                        lockedScrollY = Math.round(window.scrollY || window.pageYOffset || 0);
+                        log('locking: controls visible at y=', lockedScrollY);
+                        document.body.classList.add('scroll-locked');
+                        // Freeze layout at current position
+                        document.documentElement.style.overflow = 'hidden';
+                        document.documentElement.style.overscrollBehavior = 'none';
+                        document.body.style.position = 'fixed';
+                        document.body.style.top = (-lockedScrollY) + 'px';
+                        document.body.style.left = '0';
+                        document.body.style.right = '0';
+                        document.body.style.width = '100%';
+                        window.scrollTo(0, lockedScrollY);
+                        log('locked styles applied', { htmlOverflow: getComputedStyle(document.documentElement).overflow, bodyPos: getComputedStyle(document.body).position, bodyTop: document.body.style.top });
+                    }
+                    if (!visible && locked) {
+                        log('unlocking: controls hidden');
+                        document.body.classList.remove('scroll-locked');
+                        // Restore layout and position
+                        document.documentElement.style.overflow = '';
+                        document.documentElement.style.overscrollBehavior = '';
+                        document.body.style.position = '';
+                        document.body.style.top = '';
+                        document.body.style.left = '';
+                        document.body.style.right = '';
+                        document.body.style.width = '';
+                        lockedScrollY = null;
+                        log('unlocked styles cleared', { htmlOverflow: getComputedStyle(document.documentElement).overflow, bodyPos: getComputedStyle(document.body).position });
+                    }
+                }
+                const mo = new MutationObserver(function(records){ log('MutationObserver:', records ? records.length : 0); updateLock(); });
+                mo.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['style','class'] });
+                window.addEventListener('load', function(){ log('window load: scheduling updateLock'); setTimeout(updateLock, 50); });
+                // Strong prevent while locked
+                function preventIfLocked(e){
+                    if (document.body.classList.contains('scroll-locked')) {
+                        if (e.type === 'wheel') { log('blocked event', e.type, 'deltaY=', e.deltaY); }
+                        else if (e.type === 'touchmove') { log('blocked event', e.type, 'touches=', e.touches ? e.touches.length : 0); }
+                        else { log('blocked event', e.type); }
+                        e.preventDefault(); e.stopPropagation();
+                    }
+                }
+                window.addEventListener('wheel', preventIfLocked, { passive: false });
+                document.addEventListener('wheel', preventIfLocked, { passive: false, capture: true });
+                window.addEventListener('touchmove', preventIfLocked, { passive: false });
+                document.addEventListener('touchmove', preventIfLocked, { passive: false, capture: true });
+                window.addEventListener('keydown', function(e){
+                    if (!document.body.classList.contains('scroll-locked')) return;
+                    var keys = ['ArrowUp','ArrowDown','PageUp','PageDown','Home','End',' '];
+                    if (keys.indexOf(e.key) !== -1) { e.preventDefault(); e.stopPropagation(); log('blocked key', e.key, 'code=', e.code); }
+                });
+                // Clamp scroll position while locked
+                window.addEventListener('scroll', function(){
+                    if (!document.body.classList.contains('scroll-locked')) return;
+                    if (lockedScrollY == null) return;
+                    if (isClamping) return;
+                    var y = Math.round(window.scrollY || window.pageYOffset || 0);
+                    if (y !== lockedScrollY) {
+                        isClamping = true;
+                        log('clamp to y', lockedScrollY, 'from', y);
+                        window.scrollTo(0, lockedScrollY);
+                        isClamping = false;
+                    } else { log('scroll unchanged at locked y', y); }
+                }, { capture: true, passive: true });
+                document.addEventListener('scroll', function(){
+                    if (!document.body.classList.contains('scroll-locked')) return;
+                    if (lockedScrollY == null) return;
+                    var y = Math.round(window.scrollY || window.pageYOffset || 0);
+                    if (y !== lockedScrollY) { log('doc scroll detected, forcing window to locked y'); window.scrollTo(0, lockedScrollY); }
+                }, { capture: true, passive: true });
+                // Heartbeat to see the locker is alive
+                var hb = 0;
+                setInterval(function(){ hb++; log('heartbeat', hb, 'locked=', document.body.classList.contains('scroll-locked'), 'y=', Math.round(window.scrollY || window.pageYOffset || 0)); }, 3000);
+                log('listeners attached');
+            } catch (e) { try { console.warn('[LockScroll] setup error', e); } catch(_) {} }
+        })();
+    </script>
+    <script>
+        (function(){
+            try {
+                const log = function(){
+                    try {
+                        var args = ['[Scroll]'].concat(Array.prototype.slice.call(arguments));
+                        if (console && console.info) { console.info.apply(console, args); }
+                        if (console && console.log) { console.log.apply(console, args); }
+                        if (console && console.debug) { console.debug.apply(console, args); }
+                    } catch(e) {}
+                };
+                var ticking = false;
+                var sections = [];
+                function collectSections(){
+                    sections.length = 0;
+                    var set = new Set();
+                    var hero = document.querySelector('section.preview-hero');
+                    if (hero && !set.has(hero)) { set.add(hero); sections.push(hero); }
+                    ['apartments','features','equipment','contact'].forEach(function(id){
+                        var el = document.querySelector('#' + id + ', [data-section="' + id + '"]');
+                        if (el && !set.has(el)) { set.add(el); sections.push(el); }
+                    });
+                    document.querySelectorAll('[data-section]').forEach(function(el){ if (!set.has(el)) { set.add(el); sections.push(el); } });
+                }
+                function getCurrentSectionName(){
+                    if (!sections.length) return 'unknown';
+                    var y = window.scrollY || window.pageYOffset || 0;
+                    var vh = window.innerHeight || document.documentElement.clientHeight || 0;
+                    var centerY = y + vh / 2;
+                    var best = null, bestScore = Infinity;
+                    for (var i=0;i<sections.length;i++){
+                        var el = sections[i];
+                        var r = el.getBoundingClientRect();
+                        var elCenter = r.top + (window.scrollY || window.pageYOffset || 0) + r.height / 2;
+                        var score = Math.abs(centerY - elCenter);
+                        if (score < bestScore) { best = el; bestScore = score; }
+                    }
+                    if (!best) return 'unknown';
+                    var name = best.getAttribute('data-section') || best.id || '';
+                    if (!name) {
+                        var cls = best.className || '';
+                        if (typeof cls === 'string' && cls.indexOf('preview-hero') !== -1) name = 'hero';
+                    }
+                    if (!name) name = best.tagName;
+                    return name;
+                }
+                function onScroll(){
+                    if (ticking) return;
+                    ticking = true;
+                    requestAnimationFrame(function(){
+                        try {
+                            var y = Math.round(window.scrollY || window.pageYOffset || 0);
+                            var doc = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
+                            var vh = window.innerHeight || document.documentElement.clientHeight || 0;
+                            var pct = doc > vh ? Math.max(0, Math.min(100, Math.round((y / (doc - vh)) * 100))) : 0;
+                            var sec = getCurrentSectionName();
+                            log('y=' + y + 'px, ' + pct + '%', 'section=' + sec);
+                        } finally { ticking = false; }
+                    });
+                }
+                collectSections();
+                window.addEventListener('load', function(){
+                    collectSections();
+                    onScroll();
+                    // Emit a few initial samples so it is visible even without scrolling
+                    var samples = 0;
+                    var id = setInterval(function(){
+                        try { onScroll(); } catch(_) {}
+                        samples++;
+                        if (samples >= 6) clearInterval(id);
+                    }, 500);
+                });
+                window.addEventListener('resize', collectSections);
+                window.addEventListener('scroll', onScroll, { passive: true });
+            } catch (e) { try { console.warn('[Scroll] setup error', e); } catch(_) {} }
+        })();
+    </script>
     
     <!-- Project Modal Functions -->
     <script>
+        // Auto Recorrido: Paso 1 -> Forzar idioma inglés y mostrar barra de progreso
+        (function() {
+            function logPaso(stepMsg) {
+                try { console.log(stepMsg); } catch(e) {}
+            }
+
+            function isEnglishUI() {
+                try { return (window.languageSystem && typeof window.languageSystem.getCurrentLanguage === 'function' && String(window.languageSystem.getCurrentLanguage()).toLowerCase().startsWith('en')); } catch(e) { return false; }
+            }
+
+            function setAutoButtonState(isActive) {
+                var btns = [];
+                var topBtn = document.getElementById('autoRecorridoBtnTop');
+                if (topBtn) btns.push(topBtn);
+                var navBtn = document.getElementById('autoRecorridoBtn');
+                if (navBtn) btns.push(navBtn);
+                var en = isEnglishUI();
+                btns.forEach(function(btn){
+                    btn.dataset.active = isActive ? '1' : '0';
+                    btn.textContent = isActive ? (en ? 'STOP TOUR' : 'DETENER RECORRIDO') : (en ? 'AUTO TOUR' : 'AUTO RECORRIDO');
+                });
+            }
+
+            function resetAutoFlowToStep1() {
+                // Marcar flags
+                window.__autoFlowCancelled = true;
+                window.__autoFlowActive = false;
+                setAutoButtonState(false);
+                // Scroll al inicio (Hero)
+                try {
+                    var hero = document.getElementById('section-1') || document.querySelector('.preview-hero') || document.querySelector('section.section-1');
+                    if (hero) hero.scrollIntoView({ behavior: 'smooth', block: 'start' }); else window.scrollTo({ top: 0, behavior: 'smooth' });
+                } catch(e) {}
+                // Resetear barra a Paso 1
+                try {
+                    var label = document.getElementById('autoProgressLabel');
+                    var pct = document.getElementById('autoProgressPct');
+                    var fill = document.getElementById('autoProgressFill');
+                    if (label) label.textContent = 'Paso 1 de 19';
+                    if (pct) pct.textContent = '0%';
+                    if (fill) fill.style.width = '0%';
+                } catch(e) {}
+                console.log('[AutoFlow] Reset to step 1');
+            }
+
+            function cancelAutoFlowByUser(reason) {
+                if (!window.__autoFlowActive) return;
+                window.__autoFlowCancelled = true;
+                window.__autoFlowActive = false;
+                setAutoButtonState(false);
+                try { console.log('[AutoFlow] Cancelled by user:', reason || 'interaction'); } catch(e) {}
+                try { window.__autoFlowSuppressUserCancel = false; } catch(e) {}
+            }
+
+            function bindUserInteractionGuards() {
+                if (window.__autoGuardsBound) return;
+                window.__autoGuardsBound = true;
+                if (typeof window.__autoFlowSuppressUserCancel === 'undefined') {
+                    window.__autoFlowSuppressUserCancel = false;
+                }
+                // Cancel on any click on common interactive elements inside main container
+                document.addEventListener('click', function(e){
+                    if (!window.__autoFlowActive) return;
+                    if (window.__autoFlowSuppressUserCancel) { try { console.log('[AutoFlow] Suppressed cancel on click'); } catch(_) {} return; }
+                    var el = e.target;
+                    // Traverse up to find buttons/interactive
+                    var maxDepth = 5, depth = 0;
+                    while (el && depth++ < 5) {
+                        if (el.matches && (el.matches('button, a, [role="button"], .btn, .nav-link, .carousel-btn, .lang-btn, .watchVideoBtn, .hero-recorrer-btn, .equipment-back-btn, .equipment-category, .modal-close'))) {
+                            cancelAutoFlowByUser('click:' + (el.className||el.tagName));
+                            break;
+                        }
+                        el = el.parentElement;
+                    }
+                }, true);
+                // Cancel on wheel/touch interactions
+                window.addEventListener('wheel', function(){
+                    if (!window.__autoFlowActive) return;
+                    if (window.__autoFlowSuppressUserCancel) { try { console.log('[AutoFlow] Suppressed cancel on wheel'); } catch(_) {} return; }
+                    cancelAutoFlowByUser('wheel');
+                }, { passive: true });
+                window.addEventListener('touchstart', function(){
+                    if (!window.__autoFlowActive) return;
+                    if (window.__autoFlowSuppressUserCancel) { try { console.log('[AutoFlow] Suppressed cancel on touch'); } catch(_) {} return; }
+                    cancelAutoFlowByUser('touch');
+                }, { passive: true });
+                window.addEventListener('keydown', function(ev){
+                    if (!window.__autoFlowActive) return;
+                    if (window.__autoFlowSuppressUserCancel) { try { console.log('[AutoFlow] Suppressed cancel on key', ev.key); } catch(_) {} return; }
+                    var keys = ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','PageUp','PageDown','Home','End','Space',' '];
+                    if (keys.indexOf(ev.key) !== -1) cancelAutoFlowByUser('keydown:' + ev.key);
+                });
+
+                // Cancel specifically when user scrolls into Apartments (dot active), ignoring suppression
+                window.addEventListener('scroll', function(){
+                    if (!window.__autoFlowActive) return;
+                    var dot = document.querySelector('.scroll-dot[data-section="apartments"]');
+                    if (dot && dot.classList.contains('active')) {
+                        try { console.log('[AutoFlow] Cancel on scroll: apartments dot active'); } catch(_) {}
+                        // Ensure suppression does not block this
+                        window.__autoFlowSuppressUserCancel = false;
+                        cancelAutoFlowByUser('scroll:apartmentsActive');
+                    }
+                }, { passive: true });
+            }
+
+            function showAutoProgress(step, total, percent) {
+                var container = document.querySelector('div[style*="position: fixed; top: 20px; right: 20px;"]');
+                if (!container) return;
+                var progress = document.getElementById('autoProgress');
+                if (!progress) {
+                    progress = document.createElement('div');
+                    progress.id = 'autoProgress';
+                    progress.setAttribute('aria-live', 'polite');
+                    progress.style.cssText = 'width:260px; margin-top:8px; padding:8px; border-radius:10px; background: rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.14); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.04); color:#fff; font-size:12px; backdrop-filter: blur(8px); opacity:1;';
+                    progress.innerHTML = '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;"><span id="autoProgressLabel">Paso 1 de 1</span><span id="autoProgressPct">0%</span></div>'+
+                        '<div style="height:8px; background: rgba(255,255,255,0.12); border-radius:999px; overflow:hidden;">'+
+                        '<div id="autoProgressFill" style="height:100%; width:0%; background: linear-gradient(135deg, #0f3460 0%, #6b3fd4 100%); transition: width .6s ease;"></div>'+
+                        '</div>';
+                    container.appendChild(progress);
+                }
+                // Asegurar que permanezca visible
+                progress.style.opacity = '1';
+                var label = document.getElementById('autoProgressLabel');
+                var pct = document.getElementById('autoProgressPct');
+                var fill = document.getElementById('autoProgressFill');
+                if (label) label.textContent = 'Paso ' + step + ' de ' + total;
+                if (pct) pct.textContent = (percent|0) + '%';
+                if (fill) requestAnimationFrame(function(){ fill.style.width = (percent|0) + '%'; });
+            }
+
+            async function performAutoStepOne() {
+                logPaso('Paso 1: cambiar idioma a EN-US');
+                showAutoProgress(1, 16, 10);
+                // Intentar click en el botón EN-US cuando exista
+                var tries = 0;
+                await new Promise(function(resolve){
+                    var timer = setInterval(function(){
+                        tries++;
+                        var enBtn = document.querySelector('.lang-btn[data-lang="en-us"]');
+                        if (enBtn) {
+                            try { enBtn.click(); } catch(e) {}
+                            clearInterval(timer);
+                            resolve();
+                        } else if (tries > 30) { // ~3s
+                            clearInterval(timer);
+                            // Fallback a API si existe
+                            try { if (window.languageSystem && window.languageSystem.changeLanguage) window.languageSystem.changeLanguage('en-us'); } catch(e) {}
+                            resolve();
+                        }
+                    }, 100);
+                });
+                // Mantener en 10% y el flujo animará hacia el primer hito
+            }
+
+            async function performAutoStepTwo() {
+                logPaso('Paso 2: abrir video del héroe');
+                var clicked = false;
+                try {
+                    var heroBtn = document.querySelector('.hero-recorrer-btn');
+                    if (heroBtn) { heroBtn.click(); clicked = true; }
+                } catch(e) {}
+                if (!clicked && window.imageFilterSystem && typeof window.imageFilterSystem.showHeroVideo === 'function') {
+                    try { window.imageFilterSystem.showHeroVideo(); } catch(e) {}
+                }
+                // Progreso final del paso se animará en el flujo principal
+            }
+
+            async function performAutoStepThree() {
+                logPaso('Paso 3: siguiente video del héroe');
+                var clicked = false;
+                try {
+                    var nextBtn = document.querySelector('.btn-video-control.btn-next');
+                    if (nextBtn) { nextBtn.click(); clicked = true; }
+                } catch(e) {}
+                if (!clicked && window.imageFilterSystem && typeof window.imageFilterSystem.nextHeroVideo === 'function') {
+                    try { window.imageFilterSystem.nextHeroVideo(); } catch(e) {}
+                }
+            }
+
+            async function performAutoStepFour() {
+                logPaso('Paso 4: seguir presionando Next Video');
+                // Intentar 3 avances adicionales, 1s entre cada uno
+                for (var i = 0; i < 3; i++) {
+                    var clicked = false;
+                    try {
+                        var nextBtn = document.querySelector('.btn-video-control.btn-next');
+                        if (nextBtn) { nextBtn.click(); clicked = true; }
+                    } catch(e) {}
+                    if (!clicked && window.imageFilterSystem && typeof window.imageFilterSystem.nextHeroVideo === 'function') {
+                        try { window.imageFilterSystem.nextHeroVideo(); } catch(e) {}
+                    }
+                    // Esperar 1s entre clics para permitir transición
+                    await new Promise(function(r){ setTimeout(r, 1000); });
+                }
+            }
+
+            async function performAutoStepFive() {
+                logPaso('Paso 5: presionar Next Video nuevamente');
+                var clicked = false;
+                try {
+                    var nextBtn = document.querySelector('.btn-video-control.btn-next');
+                    if (nextBtn) { nextBtn.click(); clicked = true; }
+                } catch(e) {}
+                if (!clicked && window.imageFilterSystem && typeof window.imageFilterSystem.nextHeroVideo === 'function') {
+                    try { window.imageFilterSystem.nextHeroVideo(); } catch(e) {}
+                }
+            }
+
+            function animateProgress(fromPercent, toPercent, durationMs, stepIndex, totalSteps) {
+                return new Promise(function(resolve){
+                    var start = fromPercent, end = toPercent, duration = durationMs;
+                    var t0 = performance.now();
+                    function frame(t){
+                        if (window.__autoFlowCancelled) { resolve(); return; }
+                        var elapsed = t - t0;
+                        var p = Math.min(elapsed / duration, 1);
+                        var val = Math.round(start + (end - start) * p);
+                        showAutoProgress(stepIndex, totalSteps, val);
+                        if (p < 1) requestAnimationFrame(frame); else resolve();
+                    }
+                    requestAnimationFrame(frame);
+                });
+            }
+
+            async function performAutoStepSix() {
+                logPaso('Paso 6: volver (Back)');
+                var clicked = false;
+                try {
+                    var backBtn = document.querySelector('.btn-video-control.btn-stop');
+                    if (backBtn) { backBtn.click(); clicked = true; }
+                } catch(e) {}
+                if (!clicked && window.imageFilterSystem && typeof window.imageFilterSystem.stopHeroVideo === 'function') {
+                    try { window.imageFilterSystem.stopHeroVideo(); } catch(e) {}
+                }
+            }
+
+            async function performAutoStepSeven() {
+                logPaso('Paso 7: scroll suave a Apartamentos');
+                // Localizar el target por id de sección o por el dot indicador
+                var target = document.getElementById('apartments');
+                if (!target) {
+                    // fallback: usar el dot y su data-section
+                    var dot = document.querySelector('.scroll-dot[data-section="apartments"]');
+                    if (dot) {
+                        try {
+                            // Si existe un sistema de navegación, usarlo
+                            if (window.navigationSystem && typeof window.navigationSystem.navigateToSectionById === 'function') {
+                                window.navigationSystem.navigateToSectionById('apartments');
+                                return;
+                            }
+                        } catch(e) {}
+                    }
+                }
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                } else {
+                    // fallback duro: desplazar a una posición estimada
+                    window.scrollTo({ top: window.innerHeight * 1.2, behavior: 'smooth' });
+                }
+            }
+
+            async function performAutoStepEight() {
+                logPaso('Paso 8: seleccionar 2 Dormitorios');
+                // Buscar por botón con data-type="2d" o por texto '2 Bedrooms'
+                var btn = document.querySelector('.type-btn[data-type="2d"]');
+                if (!btn) {
+                    var candidates = Array.prototype.slice.call(document.querySelectorAll('.type-btn'));
+                    btn = candidates.find(function(el){ return /2\s*Bedrooms|2\s*Dorm/i.test(el.textContent || ''); });
+                }
+                if (btn) {
+                    try { btn.click(); } catch(e) {}
+                } else if (window.imageFilterSystem && typeof window.imageFilterSystem.filterByBedrooms === 'function') {
+                    try { window.imageFilterSystem.filterByBedrooms(2); } catch(e) {}
+                }
+            }
+
+            async function performAutoStepNine() {
+                logPaso('Paso 9: seleccionar 3 Dormitorios');
+                // Buscar por botón con data-type="3d" o por texto '3 Bedrooms'
+                var btn = document.querySelector('.type-btn[data-type="3d"]');
+                if (!btn) {
+                    var candidates = Array.prototype.slice.call(document.querySelectorAll('.type-btn'));
+                    btn = candidates.find(function(el){ return /3\s*Bedrooms|3\s*Dorm/i.test(el.textContent || ''); });
+                }
+                if (btn) {
+                    try { btn.click(); } catch(e) {}
+                } else if (window.imageFilterSystem && typeof window.imageFilterSystem.filterByBedrooms === 'function') {
+                    try { window.imageFilterSystem.filterByBedrooms(3); } catch(e) {}
+                }
+            }
+
+            async function performAutoStepTen() {
+                logPaso('Paso 10: presionar Recorrer en 3 Dorm 40-60 $5.000+');
+                // Buscar por id directo o por atributos data-*
+                var btn = document.getElementById('recorrer-3d-superficie_40_60-precio_5000_plus-1');
+                if (!btn) {
+                    var candidates = Array.prototype.slice.call(document.querySelectorAll('.watchVideoBtn'));
+                    btn = candidates.find(function(el){
+                        var a = el.getAttribute.bind(el);
+                        return a('data-tipo') === '3d' && /40-60/.test(a('data-superficie')||'') && /5000/.test(a('data-precio')||'') && /3\s*Dorm/i.test(a('data-apartment')||'');
+                    });
+                }
+                if (btn) {
+                    try { btn.click(); } catch(e) {}
+                }
+            }
+
+            async function performAutoStepEleven() {
+                logPaso('Paso 11: abrir Details del mismo departamento');
+                var btn = null;
+                var candidates = Array.prototype.slice.call(document.querySelectorAll('button.btn-secondary'));
+                btn = candidates.find(function(el){
+                    var oc = (el.getAttribute('onclick')||'');
+                    if (/showApartmentDetails\(/.test(oc)) return true;
+                    var txt = (el.textContent||'').trim();
+                    return /Details|Detalle/i.test(txt);
+                });
+                if (btn) {
+                    try { btn.click(); return; } catch(e) {}
+                }
+                if (window.imageFilterSystem && typeof window.imageFilterSystem.showApartmentDetails === 'function') {
+                    try { window.imageFilterSystem.showApartmentDetails('3 Dormitorios', '40-60 m²', '$5.000+ UF'); } catch(e) {}
+                }
+            }
+
+            async function performAutoStepTwelve() {
+                logPaso('Paso 12: abrir imagen 2 del carrusel');
+                // Intentar localizar la miniatura por data-index o por onclick
+                var thumb = document.querySelector('.thumbnail[data-index="1"]');
+                if (!thumb) {
+                    var candidates = Array.prototype.slice.call(document.querySelectorAll('.thumbnail'));
+                    thumb = candidates.find(function(el){
+                        var oc = (el.getAttribute('onclick')||'');
+                        return /openImageModal\(\s*1\s*\)/.test(oc);
+                    });
+                }
+                if (thumb) {
+                    try { console.log('[AutoFlow] Paso 12: click en thumbnail data-index=1'); thumb.click(); return; } catch(e) { console.warn('[AutoFlow] Error clickeando thumbnail:', e); }
+                }
+                if (window.imageFilterSystem && typeof window.imageFilterSystem.openImageModal === 'function') {
+                    try { console.log('[AutoFlow] Paso 12: fallback a openImageModal(1)'); window.imageFilterSystem.openImageModal(1); } catch(e) { console.warn('[AutoFlow] Error en openImageModal fallback:', e); }
+                } else {
+                    console.warn('[AutoFlow] Paso 12: imageFilterSystem.openImageModal no disponible');
+                }
+            }
+
+            async function performAutoStepTwelveOneCloseModal() {
+                console.log('[AutoFlow] Paso 12-1: intentar cerrar modal de imagen');
+                // Esperar breve para que el modal se inserte en DOM
+                await new Promise(function(r){ setTimeout(r, 200); });
+                var overlay = document.getElementById('imageModal') || document.querySelector('.modal-overlay#imageModal') || document.querySelector('#imageModal.modal-overlay');
+                console.log('[AutoFlow] Paso 12-1: overlay encontrado?', !!overlay);
+                if (!overlay) {
+                    // Buscar cualquier overlay activo como fallback
+                    overlay = document.querySelector('.modal-overlay');
+                    console.log('[AutoFlow] Paso 12-1: overlay genérico?', !!overlay);
+                }
+                if (overlay) {
+                    var closeBtn = overlay.querySelector('.modal-close');
+                    console.log('[AutoFlow] Paso 12-1: botón close encontrado?', !!closeBtn);
+                    if (closeBtn) {
+                        try { closeBtn.click(); console.log('[AutoFlow] Paso 12-1: click en botón close'); } catch(e) { console.warn('[AutoFlow] Paso 12-1: error click close:', e); }
+                        await new Promise(function(r){ setTimeout(r, 150); });
+                    }
+                    // Si persiste, remover overlay directamente
+                    if (document.body.contains(overlay)) {
+                        try { overlay.remove(); console.log('[AutoFlow] Paso 12-1: overlay removido por fallback'); } catch(e) { console.warn('[AutoFlow] Paso 12-1: error removiendo overlay:', e); }
+                    }
+                } else {
+                    console.warn('[AutoFlow] Paso 12-1: no hay overlay para cerrar');
+                }
+                console.log('[AutoFlow] Paso 12-1: cierre de modal completado?', !document.getElementById('imageModal'));
+            }
+
+            async function performAutoStepThirteen() {
+                logPaso('Paso 13: Exit Tour');
+                // Intentar click en el botón Exit Tour
+                var btn = null;
+                var candidates = Array.prototype.slice.call(document.querySelectorAll('button.btn-secondary'));
+                btn = candidates.find(function(el){
+                    var oc = (el.getAttribute('onclick')||'');
+                    var txt = (el.textContent||'').trim();
+                    return /exitRecorridoMode\(\)/.test(oc) || /Exit\s*Tour|Salir/i.test(txt);
+                });
+                if (btn) {
+                    try { btn.click(); return; } catch(e) {}
+                }
+                if (window.imageFilterSystem && typeof window.imageFilterSystem.exitRecorridoMode === 'function') {
+                    try { window.imageFilterSystem.exitRecorridoMode(); } catch(e) {}
+                }
+            }
+
+            async function performAutoStepFourteen() {
+                logPaso('Paso 14: scroll suave a Features');
+                var target = document.getElementById('features');
+                if (!target) {
+                    var dot = document.querySelector('.scroll-dot[data-section="features"]');
+                    try {
+                        if (window.navigationSystem && typeof window.navigationSystem.navigateToSectionById === 'function') {
+                            window.navigationSystem.navigateToSectionById('features');
+                            return;
+                        }
+                    } catch(e) {}
+                }
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                } else {
+                    window.scrollTo({ top: window.innerHeight * 2, behavior: 'smooth' });
+                }
+            }
+
+            async function performAutoStepFifteen() {
+                logPaso('Paso 15: avanzar 4 slides de Features');
+                for (var i = 0; i < 4; i++) {
+                    var clicked = false;
+                    try {
+                        var nextBtn = document.getElementById('featuresCarouselNext') || document.querySelector('.carousel-btn.next#featuresCarouselNext');
+                        if (nextBtn) { nextBtn.click(); clicked = true; }
+                    } catch(e) {}
+                    if (!clicked && window.imageFilterSystem && typeof window.imageFilterSystem.nextFeaturesSlide === 'function') {
+                        try { window.imageFilterSystem.nextFeaturesSlide(); } catch(e) {}
+                    }
+                    await new Promise(function(r){ setTimeout(r, 500); });
+                }
+            }
+
+            async function performAutoStepSixteen() {
+                logPaso('Paso 16: scroll suave a Equipment');
+                var target = document.getElementById('equipment');
+                if (!target) {
+                    var dot = document.querySelector('.scroll-dot[data-section="equipment"]');
+                    try {
+                        if (window.navigationSystem && typeof window.navigationSystem.navigateToSectionById === 'function') {
+                            window.navigationSystem.navigateToSectionById('equipment');
+                            return;
+                        }
+                    } catch(e) {}
+                }
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                } else {
+                    window.scrollTo({ top: window.innerHeight * 3, behavior: 'smooth' });
+                }
+                // Intentar presionar la categoría amenities luego del scroll
+                await new Promise(function(r){ setTimeout(r, 400); });
+                var cat = document.querySelector('.equipment-category[data-category="amenities"]');
+                if (cat) {
+                    try { console.log('[AutoFlow] Paso 16: click en categoría amenities'); cat.click(); } catch(e) { console.warn('[AutoFlow] Paso 16: error clickeando categoría amenities', e); }
+                } else if (typeof selectEquipmentCategory === 'function') {
+                    try { console.log('[AutoFlow] Paso 16: fallback selectEquipmentCategory(\'amenities\')'); selectEquipmentCategory('amenities'); } catch(e) { console.warn('[AutoFlow] Paso 16: error en fallback amenities', e); }
+                }
+            }
+
+            async function performAutoStepSeventeen() {
+                logPaso('Paso 17: seleccionar Security');
+                await new Promise(function(r){ setTimeout(r, 300); });
+                var cat = document.querySelector('.equipment-category[data-category="security"]');
+                if (cat) {
+                    try { console.log('[AutoFlow] Paso 17: click en categoría security'); cat.click(); } catch(e) { console.warn('[AutoFlow] Paso 17: error clickeando security', e); }
+                } else if (typeof selectEquipmentCategory === 'function') {
+                    try { console.log('[AutoFlow] Paso 17: fallback selectEquipmentCategory(\'security\')'); selectEquipmentCategory('security'); } catch(e) { console.warn('[AutoFlow] Paso 17: error en fallback security', e); }
+                }
+            }
+
+            async function performAutoStepNineteenScrollHero() {
+                logPaso('Paso 19: scroll suave a Hero (sin audio)');
+                var hero = document.getElementById('section-1') || document.querySelector('.preview-hero') || document.querySelector('section.section-1');
+                if (hero) {
+                    hero.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                } else {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            }
+
+            async function performAutoFlow() {
+                if (window.__autoFlowActive) return;
+                window.__autoFlowCancelled = false;
+                window.__autoFlowActive = true;
+                setAutoButtonState(true);
+                // Paso 1 (10% -> 20% en 3s)
+                try { console.warn('[AutoFlow] BEFORE step 1'); } catch(e) {}
+                window.__autoFlowSuppressUserCancel = true; // suprimir cancelación por clicks programáticos (lang switch)
+                await performAutoStepOne(); if (window.__autoFlowCancelled) { try { console.warn('[AutoFlow] CANCELLED after step 1 call'); } catch(e) {} window.__autoFlowActive=false; setAutoButtonState(false); window.__autoFlowSuppressUserCancel=false; return; }
+                await animateProgress(10, 20, 3000, 1, 12); if (window.__autoFlowCancelled) { try { console.warn('[AutoFlow] CANCELLED during step 1 progress'); } catch(e) {} window.__autoFlowActive=false; setAutoButtonState(false); window.__autoFlowSuppressUserCancel=false; return; }
+                window.__autoFlowSuppressUserCancel = false;
+                try { console.warn('[AutoFlow] AFTER step 1'); } catch(e) {}
+
+                // Paso 2 (20% -> 40% en 3s)
+                try { console.warn('[AutoFlow] BEFORE step 2'); } catch(e) {}
+                showAutoProgress(2, 12, 20);
+                window.__autoFlowSuppressUserCancel = true; // suprimir durante click en hero-recorrer-btn
+                await performAutoStepTwo(); if (window.__autoFlowCancelled) { try { console.warn('[AutoFlow] CANCELLED after step 2 call'); } catch(e) {} window.__autoFlowActive=false; setAutoButtonState(false); window.__autoFlowSuppressUserCancel=false; return; }
+                await animateProgress(20, 40, 3000, 2, 12); if (window.__autoFlowCancelled) { try { console.warn('[AutoFlow] CANCELLED during step 2 progress'); } catch(e) {} window.__autoFlowActive=false; setAutoButtonState(false); window.__autoFlowSuppressUserCancel=false; return; }
+                window.__autoFlowSuppressUserCancel = false;
+                try { console.warn('[AutoFlow] AFTER step 2'); } catch(e) {}
+
+                // Paso 3 (40% -> 60% en 2s)
+                try { console.warn('[AutoFlow] BEFORE step 3'); } catch(e) {}
+                showAutoProgress(3, 12, 40);
+                try { console.log('[AutoFlow] step 3: suppression ON'); } catch(e) {}
+                window.__autoFlowSuppressUserCancel = true; // suprimir durante click programático (Next Video)
+                await performAutoStepThree();
+                if (window.__autoFlowCancelled) {
+                    try { console.warn('[AutoFlow] CANCELLED after step 3 call'); } catch(e) {}
+                    window.__autoFlowActive=false; setAutoButtonState(false); window.__autoFlowSuppressUserCancel=false; return;
+                }
+                await animateProgress(40, 60, 2000, 3, 12);
+                if (window.__autoFlowCancelled) {
+                    try { console.warn('[AutoFlow] CANCELLED during step 3 progress'); } catch(e) {}
+                    window.__autoFlowActive=false; setAutoButtonState(false); window.__autoFlowSuppressUserCancel=false; return;
+                }
+                window.__autoFlowSuppressUserCancel = false;
+                try { console.log('[AutoFlow] step 3: suppression OFF'); } catch(e) {}
+                try { console.warn('[AutoFlow] AFTER step 3'); } catch(e) {}
+
+                // Paso 4 (60% -> 80% en 3s) con clics repetidos
+                showAutoProgress(4, 12, 60);
+                try { console.log('[AutoFlow] step 4: suppression ON'); } catch(e) {}
+                window.__autoFlowSuppressUserCancel = true; // suprimir durante serie de clics programáticos
+                await Promise.all([
+                    (async()=>{ await performAutoStepFour(); })(),
+                    (async()=>{ await animateProgress(60, 80, 3000, 4, 12); })()
+                ]);
+                window.__autoFlowSuppressUserCancel = false;
+                try { console.log('[AutoFlow] step 4: suppression OFF'); } catch(e) {}
+                if (window.__autoFlowCancelled) { window.__autoFlowActive=false; setAutoButtonState(false); return; }
+
+                // Paso 5 (80% -> 90%) clic final Next
+                try { console.warn('[AutoFlow] BEFORE step 5'); } catch(e) {}
+                showAutoProgress(5, 12, 80);
+                try { console.log('[AutoFlow] step 5: suppression ON'); } catch(e) {}
+                window.__autoFlowSuppressUserCancel = true; // suprimir durante click programático final
+                await performAutoStepFive();
+                if (window.__autoFlowCancelled) {
+                    try { console.warn('[AutoFlow] CANCELLED after step 5 call'); } catch(e) {}
+                    window.__autoFlowActive=false; setAutoButtonState(false); window.__autoFlowSuppressUserCancel=false; return;
+                }
+                await animateProgress(80, 90, 1500, 5, 12);
+                if (window.__autoFlowCancelled) {
+                    try { console.warn('[AutoFlow] CANCELLED during step 5 progress'); } catch(e) {}
+                    window.__autoFlowActive=false; setAutoButtonState(false); window.__autoFlowSuppressUserCancel=false; return;
+                }
+                window.__autoFlowSuppressUserCancel = false;
+                try { console.log('[AutoFlow] step 5: suppression OFF'); } catch(e) {}
+                try { console.warn('[AutoFlow] AFTER step 5'); } catch(e) {}
+
+                // Paso 6 (90% -> 100%) Back
+                showAutoProgress(6, 12, 90);
+                await performAutoStepSix();
+                await animateProgress(90, 92, 1000, 6, 12);
+
+                // Paso 7 (92% -> 96%) scroll suave a Apartamentos
+                showAutoProgress(7, 12, 92);
+                await performAutoStepSeven();
+                await animateProgress(92, 96, 1200, 7, 12);
+
+                // Paso 8 (96% -> 97%) seleccionar 2 Dormitorios
+                showAutoProgress(8, 12, 96);
+                await performAutoStepEight();
+                await animateProgress(96, 97, 1000, 8, 12);
+
+                // Paso 9 (97% -> 98%) seleccionar 3 Dormitorios
+                showAutoProgress(9, 12, 97);
+                await performAutoStepNine();
+                await animateProgress(97, 98, 800, 9, 12);
+
+                // Paso 10 (98% -> 99%) presionar Recorrer específico
+                showAutoProgress(10, 12, 98);
+                await performAutoStepTen();
+                await animateProgress(98, 99, 800, 10, 12);
+
+                // Paso 11 (99% -> 100%) abrir Details
+                showAutoProgress(11, 17, 99);
+                await performAutoStepEleven();
+                await animateProgress(99, 100, 800, 11, 17);
+
+                // Paso 12 (99% -> 99%) abrir imagen 2
+                showAutoProgress(12, 17, 99);
+                await performAutoStepTwelve();
+                await animateProgress(99, 99, 300, 12, 17);
+
+                // Paso 12-1: cerrar modal (mantener porcentaje)
+                showAutoProgress(12, 17, 99);
+                try { var lbl = document.getElementById('autoProgressLabel'); if (lbl) lbl.textContent = 'Paso 12-1 de 17'; } catch(e) {}
+                await performAutoStepTwelveOneCloseModal();
+
+                // Paso 13 (100% -> 100%) Exit Tour
+                showAutoProgress(13, 17, 100);
+                await performAutoStepThirteen();
+                await animateProgress(100, 100, 300, 13, 17);
+
+                // Paso 14 (100% -> 100%) scroll a Features
+                showAutoProgress(14, 17, 100);
+                await performAutoStepFourteen();
+                await animateProgress(100, 100, 300, 14, 17);
+
+                // Paso 15 (100% -> 100%) avanzar 4 slides
+                showAutoProgress(15, 17, 100);
+                await performAutoStepFifteen();
+                await animateProgress(100, 100, 300, 15, 17);
+
+                // Paso 16 (100% -> 100%) scroll a Equipment
+                showAutoProgress(16, 17, 100);
+                await performAutoStepSixteen();
+                await animateProgress(100, 100, 300, 16, 17);
+
+                // Paso 17 (100% -> 100%) seleccionar Security
+                showAutoProgress(17, 18, 100);
+                await performAutoStepSeventeen();
+                await animateProgress(100, 100, 300, 17, 18);
+
+                // Paso 18 (100% -> 100%) seleccionar Technology
+                showAutoProgress(18, 18, 100);
+                await (async function(){
+                    logPaso('Paso 18: seleccionar Technology');
+                    await new Promise(function(r){ setTimeout(r, 300); });
+                    var cat = document.querySelector('.equipment-category[data-category="technology"]');
+                    if (cat) {
+                        try { console.log('[AutoFlow] Paso 18: click en categoría technology'); cat.click(); } catch(e) { console.warn('[AutoFlow] Paso 18: error clickeando technology', e); }
+                    } else if (typeof selectEquipmentCategory === 'function') {
+                        try { console.log('[AutoFlow] Paso 18: fallback selectEquipmentCategory(\'technology\')'); selectEquipmentCategory('technology'); } catch(e) { console.warn('[AutoFlow] Paso 18: error en fallback technology', e); }
+                    }
+                })();
+                await animateProgress(100, 100, 300, 18, 18);
+
+                // Paso 19 (100% -> 100%) scroll suave a Hero
+                showAutoProgress(19, 19, 100);
+                await performAutoStepNineteenScrollHero();
+                await animateProgress(100, 100, 300, 19, 19);
+                window.__autoFlowActive = false;
+                setAutoButtonState(false);
+            }
+
+            function bindAutoButtons() {
+                var btnTop = document.getElementById('autoRecorridoBtnTop');
+                if (btnTop && !btnTop.__autoBound) {
+                    btnTop.__autoBound = true;
+                    btnTop.addEventListener('click', function(){
+                        if (window.__autoFlowActive) {
+                            resetAutoFlowToStep1();
+                        } else {
+                            performAutoFlow();
+                        }
+                    });
+                }
+                var btnNav = document.getElementById('autoRecorridoBtn');
+                if (btnNav && !btnNav.__autoBound) {
+                    btnNav.__autoBound = true;
+                    btnNav.addEventListener('click', function(){
+                        if (window.__autoFlowActive) {
+                            resetAutoFlowToStep1();
+                        } else {
+                            performAutoFlow();
+                        }
+                    });
+                }
+                // Inicializar texto según estado
+                setAutoButtonState(!!window.__autoFlowActive);
+            }
+
+            // Enlazar tras DOM listo y también un intento inmediato
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', bindAutoButtons, { once: true });
+            } else {
+                bindAutoButtons();
+            }
+
+            // Auto-inicio del recorrido al cargar la página (con guardas para no duplicar)
+            try {
+                var startAutoOnce = function(){
+                    if (window.__autoFlowStarted) return;
+                    window.__autoFlowStarted = true;
+                    performAutoFlow();
+                };
+                if (document.readyState === 'complete' || document.readyState === 'interactive') {
+                    setTimeout(startAutoOnce, 600);
+                } else {
+                    document.addEventListener('DOMContentLoaded', function(){ setTimeout(startAutoOnce, 600); }, { once: true });
+                }
+                window.addEventListener('load', function(){ setTimeout(startAutoOnce, 800); }, { once: true });
+                // Bind guards to stop auto tour on user interaction
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', bindUserInteractionGuards, { once: true });
+                } else {
+                    bindUserInteractionGuards();
+                }
+            } catch(e) { /* noop */ }
+        })();
         function openProjectModal() {
             // Track modal opening
             gtag('event', 'project_modal_opened', {

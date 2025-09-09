@@ -147,3 +147,4 @@ await IR.detectAndNavigate("detalles");
 
 
 
+
