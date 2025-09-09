@@ -24,7 +24,6 @@
     <link rel="icon" type="image/png" href="favicon.png">
     <link rel="stylesheet" href="video-scroll-styles.css">
     <link rel="stylesheet" href="css/language-switcher.css">
-    <script>window.IRIS_DISABLE_FRONT = true;</script>
     <style>
         /* Mejoras adicionales para scroll más suave */
         html {
@@ -155,16 +154,6 @@
             height: 24px !important;
         }
 
-        /* Iris Chat Widget Styles - Azul y Negro con Frost */
-        :root {
-            --n8n-chat-primary-color: #1a1a2e;
-            --n8n-chat-accent-color: #16213e;
-            --n8n-chat-message-user-bg-color: #0f3460;
-            --n8n-chat-bg-color: rgba(255, 255, 255, 0.95);
-            --n8n-chat-text-color: #333333;
-            --n8n-chat-message-bot-bg-color: rgba(248, 249, 250, 0.9);
-            --n8n-chat-message-bot-text-color: #1a1a2e;
-        }
         
         .chat-layout .chat-header {
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)!important;
@@ -269,17 +258,6 @@
             touch-action: none !important;
         }
 
-        /* Hide IRIS chat from front */
-        .iris-toggle-button,
-        .iris-sell-button,
-        .chat-window-wrapper,
-        .chat-layout,
-        .n8n-chat,
-        .n8n-chat-container {
-            display: none !important;
-            visibility: hidden !important;
-            pointer-events: none !important;
-        }
 
         /* Asegurar centrado permanente de preview-stats */
         section.preview-stats.centered {
@@ -333,239 +311,7 @@
             box-shadow: 0 4px 15px rgba(15, 52, 96, 0.3)!important;
         }
 
-        /* Ocultar el botón nativo de n8n pero mantenerlo funcional */
-        .chat-window-toggle {
-            opacity: 0 !important;
-            pointer-events: none !important;
-            position: absolute !important;
-            left: -9999px !important;
-        }
 
-        /* Iris Integration Styles - Azul y Negro con Frost */
-        .iris-chat-container {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 10000;
-        }
-
-        .iris-toggle-button {
-            position: fixed;
-            bottom: 30px;
-            right: 20px;
-            width: 55px;
-            height: 55px;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            border: 3px solid rgba(255, 255, 255, 0.2);
-            border-radius: 50%;
-            color: white;
-            font-size: 22px;
-            cursor: pointer;
-            box-shadow: 0 8px 25px rgba(26, 26, 46, 0.3);
-            transition: all 0.3s ease;
-            z-index: 10003;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            backdrop-filter: blur(10px);
-        }
-
-        .iris-toggle-button:hover {
-            transform: scale(1.1);
-            box-shadow: 0 12px 35px rgba(26, 26, 46, 0.4);
-            border-color: rgba(255, 255, 255, 0.4);
-        }
-
-        .iris-toggle-button:active {
-            transform: scale(0.95);
-        }
-
-        .iris-toggle-button i {
-            transition: transform 0.3s ease;
-            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
-        }
-
-        .iris-toggle-button.active i {
-            transform: rotate(180deg);
-        }
-
-        /* Estilos para el botón cuando el chat está abierto */
-        .iris-toggle-button.chat-open {
-            background: linear-gradient(135deg, #ffd70008 0%, #ffa50069 100%);
-            border-color: rgba(255, 255, 255, 0.4);
-        }
-
-        .iris-toggle-button.chat-open i {
-            transform: rotate(45deg);
-        }
-
-        /* Animación de ondas radiales para llamar la atención */
-        .iris-toggle-button::before,
-        .iris-toggle-button::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 55px;
-            height: 55px;
-            border: 4px solid rgba(255, 255, 255, 0.5);
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-            animation: none;
-            pointer-events: none;
-        }
-
-        .iris-toggle-button.attention-mode::before {
-            animation: irisWave1 2s ease-out infinite;
-        }
-
-        .iris-toggle-button.attention-mode::after {
-            animation: irisWave2 2s ease-out infinite 0.5s;
-        }
-
-        @keyframes irisWave1 {
-            0% {
-                width: 55px;
-                height: 55px;
-                opacity: 1;
-                border-width: 4px;
-            }
-            100% {
-                width: 90px;
-                height: 90px;
-                opacity: 0;
-                border-width: 2px;
-            }
-        }
-
-        @keyframes irisWave2 {
-            0% {
-                width: 55px;
-                height: 55px;
-                opacity: 1;
-                border-width: 4px;
-            }
-            100% {
-                width: 110px;
-                height: 110px;
-                opacity: 0;
-                border-width: 2px;
-            }
-        }
-
-        /* Efecto de pulso adicional */
-        .iris-toggle-button.attention-mode {
-            animation: irisPulse 2s ease-in-out infinite;
-        }
-
-        @keyframes irisPulse {
-            0%, 100% {
-                transform: scale(1);
-                box-shadow: 0 8px 25px rgba(26, 26, 46, 0.3);
-            }
-            50% {
-                transform: scale(1.05);
-                box-shadow: 0 12px 35px rgba(26, 26, 46, 0.5);
-            }
-        }
-
-        /* Iris Video Control Integration - Azul y Negro con Frost */
-        .iris-video-controls {
-            position: fixed;
-            top: 50%;
-            left: 20px;
-            transform: translateY(-50%);
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(15px);
-            border-radius: 20px;
-            padding: 25px;
-            box-shadow: 0 15px 50px rgba(26, 26, 46, 0.15);
-            z-index: 9999;
-            display: none;
-            border: 1px solid rgba(26, 26, 46, 0.1);
-        }
-
-        .iris-video-controls.active {
-            display: block;
-            animation: slideInLeft 0.5s ease-out;
-        }
-
-        @keyframes slideInLeft {
-            from {
-                opacity: 0;
-                transform: translateY(-50%) translateX(-100%);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(-50%) translateX(0);
-            }
-        }
-
-        .iris-video-controls h3 {
-            margin: 0 0 20px 0;
-            color: #1a1a2e;
-            font-size: 1.3rem;
-            text-align: center;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .iris-video-btn {
-            display: block;
-            width: 100%;
-            padding: 12px 18px;
-            margin: 8px 0;
-            background: linear-gradient(135deg, #0f3460 0%, #16213e 100%);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            font-size: 0.95rem;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            box-shadow: 0 4px 15px rgba(15, 52, 96, 0.2);
-        }
-
-        .iris-video-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(15, 52, 96, 0.3);
-            background: linear-gradient(135deg, #16213e 0%, #0f3460 100%);
-        }
-
-        .iris-video-btn:active {
-            transform: translateY(-1px);
-        }
-
-        /* Responsive adjustments for Iris */
-        @media (max-width: 768px) {
-            .iris-toggle-button {
-                width: 50px;
-                height: 50px;
-                font-size: 20px;
-                bottom: 25px;
-                right: 15px;
-            }
-
-            .iris-video-controls {
-                left: 10px;
-                right: 10px;
-                transform: translateY(-50%);
-                width: auto;
-                max-width: 280px;
-            }
-
-            .iris-video-controls h3 {
-                font-size: 1.1rem;
-            }
-
-            .iris-video-btn {
-                padding: 10px 15px;
-                font-size: 0.9rem;
-            }
-        }
 
         /* Simple Apartment Type System */
         .apartment-type-badge {
@@ -1378,13 +1124,6 @@
     <script src="js/ContentManager.js"></script>
     <script src="js/content-init.js"></script>
     
-    <!-- IRIS Core System -->
-    <script src="iris-core/iris-loader.js"></script>
-    <script src="iris-core/utils/apartment-type-generator.js"></script>
-    <script src="iris-core/utils/auto-type-assigner.js"></script>
-    
-    <!-- IRIS Chat Bridge -->
-    <script src="iris-chat-bridge.js"></script>
     <script>
         (function(){
             try {
@@ -2522,157 +2261,11 @@
             }
         }
 
-        // ========== IRIS INTEGRATION ==========
-        
-        // Iris Video Control System
-        const irisVideoLibrary = {
-            'apartamento': 'video/apartamento/video-0.mp4',
-            'casa': 'video/casa/video-0.mp4',
-            'amenities': 'video/equipamiento/picisna.mp4',
-            'security': 'video/equipamiento/kincho.mp4',
-            'technology': 'video/equipamiento/gym.mp4',
-            // Casa-specific videos
-            'casa-amenities': 'video/casa/features/picina.mp4',
-            'casa-security': 'video/casa/features/quinchoi.mp4',
-            'casa-technology': 'video/casa/features/gym.mp4',
-            'default': 'video/apartamento/video-0.mp4'
-        };
 
-        // Function to change video with smooth transition
-        function irisChangeVideo(videoKey) {
-            const video = document.getElementById('backgroundVideo');
-            
-            // Detect current project type
-            const selectedProjectType = document.querySelector('.radio-option.selected');
-            const currentProjectType = selectedProjectType ? selectedProjectType.getAttribute('data-project-type') : 'apartamento';
-            
-            let videoPath;
-            
-            // If it's a casa-specific command and we're in casa mode, use casa videos
-            if (currentProjectType === 'casa' && ['amenities', 'security', 'technology'].includes(videoKey)) {
-                const casaVideoKey = `casa-${videoKey}`;
-                videoPath = irisVideoLibrary[casaVideoKey];
-                console.log('🏡 Using casa-specific video:', casaVideoKey);
-            } else {
-                videoPath = irisVideoLibrary[videoKey] || irisVideoLibrary['default'];
-            }
-            
-            if (video) {
-                // Fade out current video
-                video.style.opacity = '0';
-                
-                setTimeout(() => {
-                    // Change video source
-                    video.src = videoPath;
-                    video.load();
-                    
-                    // Fade in new video
-                    video.style.opacity = '1';
-                    video.play().catch(e => {
-                        console.log('Video autoplay prevented:', e);
-                    });
-                    
-                    // Track video change
-                    gtag('event', 'iris_video_changed', {
-                        'event_category': 'Iris Integration',
-                        'event_label': `Video Changed to ${videoKey} - Project: ${currentProjectType}`,
-                        'value': 1
-                    });
-                }, 300);
-            }
-        }
 
-        // Function to detect video change commands from Iris
-        function irisDetectVideoCommands(message) {
-            console.log('🎧 [Chat] Mensaje recibido:', message);
-            
-            // PRIMERO: Intentar procesar con el bridge de filtros
-            if (window.irisChatBridge && window.irisChatBridge.isInitialized) {
-                console.log('🔗 [Chat] Procesando con bridge de filtros...');
-                
-                // Procesar comando con el bridge
-                window.irisChatBridge.processChatCommand(message)
-                    .then(result => {
-                        if (result.success) {
-                            console.log('✅ [Chat] Comando procesado por bridge:', result);
-                            return true; // Comando procesado exitosamente
-                        } else {
-                            console.log('⚠️ [Chat] Bridge no pudo procesar, intentando comandos de video...');
-                            // Si el bridge no pudo procesar, continuar con comandos de video
-                        }
-                    })
-                    .catch(error => {
-                        console.error('❌ [Chat] Error en bridge:', error);
-                        // Continuar con comandos de video en caso de error
-                    });
-            }
-            
-            // SEGUNDO: Procesar comandos de video (funcionalidad existente)
-            const videoCommands = {
-                'apartamento': 'apartamento',
-                'departamento': 'apartamento',
-                'casa': 'casa',
-                'amenities': 'amenities',
-                'amenities': 'amenities',
-                'seguridad': 'security',
-                'security': 'security',
-                'tecnología': 'technology',
-                'technology': 'technology',
-                'piscina': 'amenities',
-                'gimnasio': 'technology',
-                'kincho': 'security'
-            };
-            
-            const lowerMessage = message.toLowerCase();
-            
-            for (const [keyword, videoKey] of Object.entries(videoCommands)) {
-                if (lowerMessage.includes(keyword)) {
-                    console.log('🎬 [Chat] Comando de video detectado:', keyword, '→', videoKey);
-                    irisChangeVideo(videoKey);
-                    return true;
-                }
-            }
-            
-            console.log('❌ [Chat] No se detectó ningún comando válido');
-            return false;
-        }
 
-        // Global functions for Iris to control videos from n8n
-        window.irisControlVideo = function(videoKey) {
-            irisChangeVideo(videoKey);
-            return true;
-        };
-        
-        window.irisShowApartamento = function() {
-            return window.irisControlVideo('apartamento');
-        };
-        
-        window.irisShowCasa = function() {
-            return window.irisControlVideo('casa');
-        };
-        
-        window.irisShowAmenities = function() {
-            return window.irisControlVideo('amenities');
-        };
-        
-        window.irisShowSecurity = function() {
-            return window.irisControlVideo('security');
-        };
-        
-        window.irisShowTechnology = function() {
-            return window.irisControlVideo('technology');
-        };
 
-        // Iris Video Controls Toggle
-        function toggleIrisVideoControls() {
-            const controls = document.getElementById('irisVideoControls');
-            if (controls) {
-                controls.classList.toggle('active');
-            }
-        }
-
-        // Initialize Iris when page loads
-        document.addEventListener('DOMContentLoaded', function() {
+        // ========== ENHANCED APARTMENT TYPE SYSTEM ==========
             function detectUiLang() {
                 try {
                     const btn = document.querySelector('.lang-btn.active');
@@ -2908,121 +2501,16 @@
                 });
             })();
 
-            
-            // Activate attention animation after 5 seconds
-            setTimeout(() => {
-                irisButton.classList.add('attention-mode');
-                
-                // Remove attention mode after 10 seconds
-                setTimeout(() => {
-                    irisButton.classList.remove('attention-mode');
-                }, 10000);
-            }, 5000);
-        });
     </script>
 
-    <!-- Iris Chat Widget -->
-    <link href="/js/vendor/n8n-chat/n8n-chat.css" rel="stylesheet" />
-    <link href="https://cdn.jsdelivr.net/npm/@n8n/chat/dist/style.css" rel="stylesheet" />
-    <script type="module">
-        let createChat;
-        try { ({ createChat } = await import('/js/vendor/n8n-chat/n8n-chat.js')); }
-        catch (e) { ({ createChat } = await import('https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js')); }
 
-        function detectUiLang() {
-            try {
-                const btn = document.querySelector('.lang-btn.active');
-                const params = new URLSearchParams(window.location.search);
-                const stored = (localStorage.getItem('preferredLanguage') || '').toLowerCase();
-                const nav = (navigator.language || 'es').toLowerCase();
-                const lang = (btn?.dataset?.lang || params.get('lang') || stored || nav || 'es').toLowerCase();
-                return lang;
-            } catch { return 'es'; }
-        }
 
-        function buildI18n() {
-            return {
-                es: {
-                    title: 'Iris - Mirador del Golf',
-                    subtitle: 'Tu asistente virtual inmobiliario',
-                    footer: '',
-                    getStarted: 'Iniciar nueva conversación',
-                    inputPlaceholder: 'Pregunta sobre apartamentos, amenidades...',
-                },
-                en: {
-                    title: 'Iris - Mirador del Golf',
-                    subtitle: 'Your real estate virtual assistant',
-                    footer: '',
-                    getStarted: 'Start new conversation',
-                    inputPlaceholder: 'Ask about apartments, amenities...',
-                }
-            };
-        }
 
-        function destroyIrisChatDom() {
-            const nodes = document.querySelectorAll('.chat-window-wrapper, .chat-window, [data-testid="chat-window"], .chat-window-toggle');
-            nodes.forEach(n => { try { n.remove(); } catch {} });
-        }
 
-        function initIrisChatFor(lang) {
-            const isEnglish = (lang || '').toLowerCase().startsWith('en');
-            const initialMessages = isEnglish
-                ? [
-                    'Hello! I am Iris, your virtual assistant for Mirador del Golf. I can help you explore our exclusive apartments, show the project amenities, or answer any questions about this premium development in Piedra Roja. How can I help you today? If you want a free demo, leave your name and email and we will contact you.'
-                  ]
-                : [
-                    '¡Hola! Soy Iris, tu asistente virtual de Mirador del Golf. Puedo ayudarte a explorar nuestros exclusivos apartamentos, mostrar las amenidades del proyecto o responder cualquier consulta sobre este desarrollo premium en Piedra Roja. ¿En qué puedo ayudarte hoy? Si quieres una demo gratuita, deja tu nombre y correo y nos pondremos en contacto.'
-                  ];
 
-            const instance = createChat({
-                webhookUrl: `/n8n-proxy.php?lang=${isEnglish ? 'en' : 'es'}`,
-                webhookConfig: { method: 'POST', headers: { 'X-Language': isEnglish ? 'en' : 'es', 'Accept-Language': isEnglish ? 'en' : 'es' } },
-                mode: 'window',
-                chatInputKey: 'chatInput',
-                chatSessionKey: 'sessionId',
-                loadPreviousSession: false,
-                metadata: { page_type: 'video_scroll_demo', source: 'dash_imanquehue', user_language: isEnglish ? 'en' : 'es' },
-                showWelcomeScreen: false,
-                defaultLanguage: isEnglish ? 'en' : 'es',
-                initialMessages,
-                i18n: buildI18n(),
-                enableStreaming: false,
-            });
 
-            // Store chat instance globally
-            window.irisChatInstance = instance;
-
-            // Set up proper z-index for chat window but don't hide it initially
-            setTimeout(() => {
-                const chatWindow = document.querySelector('.chat-window-wrapper, .chat-window, [data-testid="chat-window"]');
-                if (chatWindow) {
-                    chatWindow.style.zIndex = '10002';
-                    if (chatWindow.style.display === 'none' || chatWindow.style.display === '') {
-                        chatWindow.style.display = 'none';
-                    }
-                    preventChatScrollPropagation(chatWindow);
-                }
-            }, 1000);
-        }
-
-        // Initialize with detected language
-        initIrisChatFor(detectUiLang());
-
-        // Recreate chat on language changes
-        window.recreateIrisChat = function(lang) {
-            destroyIrisChatDom();
-            initIrisChatFor(lang || detectUiLang());
-        };
-
-        document.addEventListener('languageChanged', function(e) {
-            const newLang = (e.detail?.lang || detectUiLang()).toLowerCase();
-            try { window.recreateIrisChat(newLang); } catch (err) { console.warn('Failed to recreate Iris chat for language change', err); }
-        });
         
-        // Function to prevent scroll propagation from chat to main page
-        function preventChatScrollPropagation(chatElement) {
-            // Add CSS to prevent scroll propagation
-            const style = document.createElement('style');
+    <!-- Language System Configuration -->
             style.textContent = `
                 .chat-window-wrapper,
                 .chat-window,

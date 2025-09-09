@@ -1,0 +1,40 @@
+﻿# Mirador del Golf - KB para Iris
+
+## Descripción breve
+Proyecto residencial premium en Piedra Roja, dentro del Club de Golf Hacienda Chicureo. Casas y departamentos con ventanales de piso a cielo, amplias terrazas y opciones como jardines privados, salidas al parque o azoteas.
+
+## Ubicación
+- Piedra Roja, Club de Golf Hacienda Chicureo (Valle de Chicureo)
+
+## Tipologías
+- Apartamentos: 1, 2 y 3 Dormitorios
+- Casas: (proyecto principal casa Mirador; también referencia a Altos de Manquehue)
+
+## Stats de referencia (demo)
+- Minutos del metro: 8–10 (según tipo)
+- Minutos del centro: 12–15
+- Minutos del mall: 5–8
+
+## Amenidades (equipamiento)
+- Piscina
+- Gimnasio
+- Sala de eventos
+- Quincho con parrilla
+- Jardín infantil
+- Estacionamientos para visitas
+
+## Tecnología y seguridad
+- Fibra óptica
+- Control de acceso
+
+## Mensaje de Iris
+- ES:  ¡Hola! Soy Iris tu asistente virtual de Mirador del Golf. Puedo ayudarte a explorar nuestros exclusivos apartamentos mostrar las amenidades del proyecto o responder cualquier consulta sobre este desarrollo premium en Piedra Roja. ¿En qué puedo ayudarte hoy?
+- EN: Hello! I am Iris your virtual assistant for Mirador del Golf. I can help you explore our exclusive apartments show the project amenities or answer any questions about this premium development in Piedra Roja. How can I help you today?
+
+## Frases útiles / sugerencias
+- Sugerencias de inicio: Ver Apartamentos, Ver Casas, Ver Amenities
+- Categorías sugeridas: Apartamentos, Casas, Amenities, Seguridad, Tecnología
+
+## Notas
+- Nombre del proyecto: Mirador del Golf
+- Alternativas/cross: Altos de Manquehue (casas)
