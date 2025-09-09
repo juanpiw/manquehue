@@ -552,7 +552,6 @@ class ImageFilterSystem {
         // Actualizar la lista de apartamentos
         this.updateApartmentList(availableImages);
     }
-    
     updateApartmentList(images) {
         const apartmentList = document.getElementById('apartmentList');
         if (!apartmentList) {
@@ -676,7 +675,7 @@ class ImageFilterSystem {
         const buttonId = `recorrer-${image.tipo}-${image.superficie}-${image.precio}-${imageIndex}`;
         
         // Crear el HTML de manera más limpia para evitar problemas de concatenación
-        const fallbackImage = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iUGxhbnRhIGRlICR7dGlwb1RleHR9PC90ZXh0Pjwvc3ZnPg==';
+        const fallbackImage = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0gUHJlY2lvdXMgJHt0aXBvVGV4dH08L3RleHQ+PC9zdmc+';
         
         card.innerHTML = `
             <div class="apartment-image">
@@ -1099,8 +1098,6 @@ class ImageFilterSystem {
         // Agregar clase al body para estilos específicos
         document.body.classList.add('recorrido-mode');
         
-        // Bloquear el scroll para mantener la sección visible
-        this.lockScrollToCurrentSection();
     }
     
     getRecorridoVideoPath(apartment, superficie, precio) {
@@ -1147,7 +1144,6 @@ class ImageFilterSystem {
         };
         return mapping[precioText] || '2000_3000';
     }
-    
     hideAllCardsExceptActive(apartment, superficie, precio) {
         const apartmentList = document.getElementById('apartmentList');
         if (!apartmentList) return;
@@ -1398,8 +1394,6 @@ class ImageFilterSystem {
             return; // exitDetailsMode ya maneja la salida completa
         }
         
-        // Desbloquear el scroll
-        this.unlockScroll();
         
         // Remover clase del body
         document.body.classList.remove('recorrido-mode');
@@ -1553,8 +1547,6 @@ class ImageFilterSystem {
         // Activar animaciones llamativas del botón volver
         this.enhanceBackButtonVisibility();
         
-        // Bloquear el scroll para mantener la sección visible
-        this.lockScrollToCurrentSection();
     }
     
     hideSectionBackground() {
@@ -1759,7 +1751,6 @@ class ImageFilterSystem {
             console.warn('[Audio-Hero] Error configurando audio del hero', e);
         }
     }
-    
     hideHeroElements() {
         // Ocultar todo el contenido del hero
         const heroContent = document.querySelector('.hero-content');
@@ -2382,7 +2373,6 @@ class ImageFilterSystem {
         
         console.log('✅ Tarjeta transformada a modo detalles');
     }
-    
     setFloorPlanImageForDetails(card, apartment, superficie, precio) {
         console.log('🖼️ [setFloorPlanImageForDetails] Iniciando para:', { apartment, superficie, precio });
         
@@ -2901,7 +2891,6 @@ class ImageFilterSystem {
         
         console.log('✅ Tarjeta de casa transformada a modo detalles');
     }
-    
     addDetailsModeStyles() {
         if (document.getElementById('detailsModeStyles')) return;
         
@@ -3544,7 +3533,6 @@ class ImageFilterSystem {
         
         console.log('✅ Carrusel de imágenes inicializado con 6 imágenes');
     }
-    
     showImage(index) {
         this.currentImageIndex = index;
         
@@ -3586,8 +3574,6 @@ class ImageFilterSystem {
         // Remover efectos de atención del botón volver
         this.removeBackButtonAttention();
         
-        // Desbloquear el scroll
-        this.unlockScroll();
         
         // Encontrar la tarjeta en modo detalles
         const detailsCard = document.querySelector('.apartment-card.details-mode');
@@ -4100,7 +4086,6 @@ class ImageFilterSystem {
             console.warn('[Audio] Error binding language buttons', e);
         }
     }
-
     translateUIToLanguage(lang) {
         try {
             console.log('[Lang] translateUIToLanguage called with:', lang);
@@ -4723,7 +4708,6 @@ class ImageFilterSystem {
             existingHouseCard.style.display = 'block';
         }
     }
-    
     showApartmentFilters() {
         const apartmentsContent = document.querySelector('.apartments-content');
         if (!apartmentsContent) return;
@@ -4858,8 +4842,6 @@ class ImageFilterSystem {
         // Activar animaciones llamativas del botón volver
         this.enhanceBackButtonVisibility();
         
-        // Bloquear el scroll para mantener la sección visible
-        this.lockScrollToCurrentSection();
     }
     
     createHouseDetailsCard() {
@@ -5337,67 +5319,6 @@ class ImageFilterSystem {
         const prevIndex = (this.currentFeaturesModalImageIndex - 1 + this.featuresImages.length) % this.featuresImages.length;
         this.openFeaturesImageModal(prevIndex);
     }
-    
-    // Método para bloquear el scroll en la sección actual
-    lockScrollToCurrentSection() {
-        console.log('🔒 Bloqueando scroll en la sección actual...');
-        
-        // Guardar la posición actual del scroll
-        this.savedScrollPosition = window.pageYOffset;
-        
-        // Agregar clase al body para bloquear scroll
-        document.body.classList.add('scroll-locked');
-        
-        // Agregar event listeners para prevenir scroll
-        this.scrollPreventionHandler = (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            return false;
-        };
-        
-        // Prevenir scroll con rueda del mouse
-        document.addEventListener('wheel', this.scrollPreventionHandler, { passive: false });
-        
-        // Prevenir scroll con touch en dispositivos móviles
-        document.addEventListener('touchmove', this.scrollPreventionHandler, { passive: false });
-        
-        // Prevenir scroll con teclado
-        document.addEventListener('keydown', (e) => {
-            if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' '].includes(e.key)) {
-                e.preventDefault();
-                return false;
-            }
-        });
-        
-        console.log('✅ Scroll bloqueado en la sección actual');
-    }
-    
-    // Método para desbloquear el scroll
-    unlockScroll() {
-        console.log('🔓 Desbloqueando scroll...');
-        
-        // Remover clase del body
-        document.body.classList.remove('scroll-locked');
-        
-        // Remover event listeners
-        if (this.scrollPreventionHandler) {
-            document.removeEventListener('wheel', this.scrollPreventionHandler);
-            document.removeEventListener('touchmove', this.scrollPreventionHandler);
-            this.scrollPreventionHandler = null;
-        }
-        
-        // NO restaurar posición del scroll automáticamente para evitar scroll no deseado
-        // if (this.savedScrollPosition !== undefined) {
-        //     window.scrollTo({
-        //         top: this.savedScrollPosition,
-        //         behavior: 'smooth'
-        //     });
-        //     this.savedScrollPosition = undefined;
-        // }
-        
-        console.log('✅ Scroll desbloqueado');
-    }
-    
     addDetailsBackgroundVideo(apartment) {
         console.log('🎬 Agregando video de fondo para modo detalles...', { apartment });
         

@@ -24,6 +24,47 @@
     <link rel="icon" type="image/png" href="favicon.png">
     <link rel="stylesheet" href="video-scroll-styles.css">
     <link rel="stylesheet" href="css/language-switcher.css">
+    <script>
+      (function(){
+        function inChatPath(e){
+          const path = typeof e.composedPath === 'function' ? e.composedPath() : [];
+          for (const n of path){
+            try{
+              if (!n) continue;
+              if (n.classList?.contains?.('iris-chatbot-root')) return true;
+              if (n.getAttribute?.('data-testid') === 'chat-window') return true;
+              if (n.tagName === 'INPUT' || n.tagName === 'TEXTAREA' || n.isContentEditable) return true;
+              if (n.closest && n.closest('.iris-chatbot-root, .chat-window-wrapper, .chat-window, [data-testid="chat-window"]')) return true;
+            }catch{}
+          }
+          return false;
+        }
+        const origAdd = EventTarget.prototype.addEventListener;
+        EventTarget.prototype.addEventListener = function(type, listener, options){
+          if (type === 'keydown' && typeof listener === 'function'){
+            const wrapped = function(e){
+              const isSpace = (e.key === ' ' || e.code === 'Space' || e.key === 'Spacebar');
+              if (isSpace && inChatPath(e)) {
+                e.stopImmediatePropagation();
+                return;
+              }
+              return listener.call(this, e);
+            };
+            listener.__irisWrapped = wrapped;
+            return origAdd.call(this, type, wrapped, options);
+          }
+          return origAdd.call(this, type, listener, options);
+        };
+        const origRemove = EventTarget.prototype.removeEventListener;
+        EventTarget.prototype.removeEventListener = function(type, listener, options){
+          if (type === 'keydown' && listener && listener.__irisWrapped){
+            return origRemove.call(this, type, listener.__irisWrapped, options);
+          }
+          return origRemove.call(this, type, listener, options);
+        };
+      })();
+    </script>
+    <script>window.IRIS_DISABLE_FRONT = false;</script>
     <style>
         /* Mejoras adicionales para scroll más suave */
         html {
@@ -36,10 +77,6 @@
             scroll-behavior: smooth;
         }
         
-        /* Prevenir scroll nativo durante navegación */
-        body.navigating {
-            overflow: hidden;
-        }
         
         /* Modal de detalles más compacto */
         .apartment-card.details-mode {
@@ -154,26 +191,6 @@
             height: 24px !important;
         }
 
-        
-        .chat-layout .chat-header {
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)!important;
-            border-top-left-radius: 20px!important;
-            border-top-right-radius: 20px!important;
-            backdrop-filter: blur(10px)!important;
-        }
-
-        .chat-window-wrapper .chat-window{
-            border: none!important;
-            border-radius: 20px!important;
-            box-shadow: 0 10px 40px rgba(26, 26, 46, 0.3)!important;
-            backdrop-filter: blur(15px)!important;
-            background: rgba(255, 255, 255, 0.95)!important;
-            bottom: 100px !important;
-            right: 20px !important;
-            position: fixed !important;
-            max-width: 400px !important;
-            width: 90vw !important;
-        }
 
         .chat-message-from-user {
             background: linear-gradient(135deg, #0f3460 0%, #16213e 100%)!important;
@@ -252,11 +269,6 @@
             100% { opacity: 0.0; transform: translate(-50%, -50%) scale(1.2); border-color: rgba(255, 215, 0, 0.0); }
         }
 
-        /* Lock scroll when recorrido controls are active */
-        body.scroll-locked {
-            overflow: hidden !important;
-            touch-action: none !important;
-        }
 
 
         /* Asegurar centrado permanente de preview-stats */
@@ -380,6 +392,22 @@
         gtag('js', new Date());
         gtag('config', 'G-6SC1WL9L8J');
         gtag('config', 'AW-16671568626');
+    </script>
+    <script>
+      (function ChatTypingFix(){
+        let typingInChat = false;
+        function inChat(node){ try { return !!(node?.closest && node.closest('.iris-chatbot-root, .chat-window-wrapper, .chat-window, [data-testid="chat-window"]')); } catch { return false; } }
+        document.addEventListener('focusin', e => { if (inChat(e.target)) { typingInChat = true; document.body.classList.remove('scroll-locked'); } });
+        document.addEventListener('focusout', () => { setTimeout(()=>{ if (!inChat(document.activeElement)) typingInChat = false; }, 0); });
+        window.addEventListener('keydown', function(e){
+          if (!document.body.classList.contains('scroll-locked')) return;
+          const path = typeof e.composedPath === 'function' ? e.composedPath() : [];
+          const fromChat = typingInChat || path.some(n => n?.classList?.contains?.('iris-chatbot-root') || n?.getAttribute?.('data-testid') === 'chat-window' || n?.tagName === 'INPUT' || n?.tagName === 'TEXTAREA' || n?.isContentEditable);
+          if (fromChat) return;
+          const key = e.key || e.code;
+          if ([' ', 'Space', 'Spacebar','ArrowUp','ArrowDown','PageUp','PageDown','Home','End'].includes(key)) { e.preventDefault(); e.stopImmediatePropagation(); }
+        }, { capture: true });
+      })();
     </script>
     <script>
         (function(){
@@ -1124,118 +1152,6 @@
     <script src="js/ContentManager.js"></script>
     <script src="js/content-init.js"></script>
     
-    <script>
-        (function(){
-            try {
-                const log = function(){
-                    var args = ['[LockScroll]'].concat(Array.prototype.slice.call(arguments));
-                    try { if (console && console.info) console.info.apply(console, args); } catch(e) {}
-                    try { if (console && console.log) console.log.apply(console, args); } catch(e) {}
-                    try { if (console && console.debug) console.debug.apply(console, args); } catch(e) {}
-                };
-                log('boot start');
-                var lockedScrollY = null;
-                var isClamping = false;
-                function isActuallyVisible(el){
-                    if (!el) return false;
-                    const cs = getComputedStyle(el);
-                    if (cs.display === 'none' || cs.visibility === 'hidden' || parseFloat(cs.opacity || '1') <= 0.01) return false;
-                    const r = el.getBoundingClientRect();
-                    const inViewport = r.width > 0 && r.height > 0 && r.bottom > 0 && r.top < (window.innerHeight || document.documentElement.clientHeight);
-                    log('check visible:', el.className || el.id || el.tagName, {display: cs.display, visibility: cs.visibility, opacity: cs.opacity, rect: {top: r.top, bottom: r.bottom, width: r.width, height: r.height}}, '=>', inViewport);
-                    return inViewport;
-                }
-                function isControlsVisible(){
-                    const byId = document.getElementById('recorridoControls');
-                    const byClass = document.querySelector('.recorrido-controls');
-                    const activeCard = document.querySelector('.apartment-card.recorrido-active');
-                    const bodyMode = document.body.classList.contains('recorrido-mode');
-                    const visible = bodyMode || isActuallyVisible(byId) || isActuallyVisible(byClass) || isActuallyVisible(activeCard);
-                    var reason = bodyMode ? 'body.recorrido-mode' : (isActuallyVisible(byId) ? '#recorridoControls' : (isActuallyVisible(byClass) ? '.recorrido-controls' : (isActuallyVisible(activeCard) ? '.apartment-card.recorrido-active' : 'none')));
-                    log('controls visible?', visible, 'reason=', reason);
-                    return visible;
-                }
-                function updateLock(){
-                    const visible = isControlsVisible();
-                    const locked = document.body.classList.contains('scroll-locked');
-                    log('updateLock: visible=', visible, 'locked=', locked, 'currentY=', Math.round(window.scrollY || window.pageYOffset || 0));
-                    if (visible && !locked) {
-                        lockedScrollY = Math.round(window.scrollY || window.pageYOffset || 0);
-                        log('locking: controls visible at y=', lockedScrollY);
-                        document.body.classList.add('scroll-locked');
-                        // Freeze layout at current position
-                        document.documentElement.style.overflow = 'hidden';
-                        document.documentElement.style.overscrollBehavior = 'none';
-                        document.body.style.position = 'fixed';
-                        document.body.style.top = (-lockedScrollY) + 'px';
-                        document.body.style.left = '0';
-                        document.body.style.right = '0';
-                        document.body.style.width = '100%';
-                        window.scrollTo(0, lockedScrollY);
-                        log('locked styles applied', { htmlOverflow: getComputedStyle(document.documentElement).overflow, bodyPos: getComputedStyle(document.body).position, bodyTop: document.body.style.top });
-                    }
-                    if (!visible && locked) {
-                        log('unlocking: controls hidden');
-                        document.body.classList.remove('scroll-locked');
-                        // Restore layout and position
-                        document.documentElement.style.overflow = '';
-                        document.documentElement.style.overscrollBehavior = '';
-                        document.body.style.position = '';
-                        document.body.style.top = '';
-                        document.body.style.left = '';
-                        document.body.style.right = '';
-                        document.body.style.width = '';
-                        lockedScrollY = null;
-                        log('unlocked styles cleared', { htmlOverflow: getComputedStyle(document.documentElement).overflow, bodyPos: getComputedStyle(document.body).position });
-                    }
-                }
-                const mo = new MutationObserver(function(records){ log('MutationObserver:', records ? records.length : 0); updateLock(); });
-                mo.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['style','class'] });
-                window.addEventListener('load', function(){ log('window load: scheduling updateLock'); setTimeout(updateLock, 50); });
-                // Strong prevent while locked
-                function preventIfLocked(e){
-                    if (document.body.classList.contains('scroll-locked')) {
-                        if (e.type === 'wheel') { log('blocked event', e.type, 'deltaY=', e.deltaY); }
-                        else if (e.type === 'touchmove') { log('blocked event', e.type, 'touches=', e.touches ? e.touches.length : 0); }
-                        else { log('blocked event', e.type); }
-                        e.preventDefault(); e.stopPropagation();
-                    }
-                }
-                window.addEventListener('wheel', preventIfLocked, { passive: false });
-                document.addEventListener('wheel', preventIfLocked, { passive: false, capture: true });
-                window.addEventListener('touchmove', preventIfLocked, { passive: false });
-                document.addEventListener('touchmove', preventIfLocked, { passive: false, capture: true });
-                window.addEventListener('keydown', function(e){
-                    if (!document.body.classList.contains('scroll-locked')) return;
-                    var keys = ['ArrowUp','ArrowDown','PageUp','PageDown','Home','End',' '];
-                    if (keys.indexOf(e.key) !== -1) { e.preventDefault(); e.stopPropagation(); log('blocked key', e.key, 'code=', e.code); }
-                });
-                // Clamp scroll position while locked
-                window.addEventListener('scroll', function(){
-                    if (!document.body.classList.contains('scroll-locked')) return;
-                    if (lockedScrollY == null) return;
-                    if (isClamping) return;
-                    var y = Math.round(window.scrollY || window.pageYOffset || 0);
-                    if (y !== lockedScrollY) {
-                        isClamping = true;
-                        log('clamp to y', lockedScrollY, 'from', y);
-                        window.scrollTo(0, lockedScrollY);
-                        isClamping = false;
-                    } else { log('scroll unchanged at locked y', y); }
-                }, { capture: true, passive: true });
-                document.addEventListener('scroll', function(){
-                    if (!document.body.classList.contains('scroll-locked')) return;
-                    if (lockedScrollY == null) return;
-                    var y = Math.round(window.scrollY || window.pageYOffset || 0);
-                    if (y !== lockedScrollY) { log('doc scroll detected, forcing window to locked y'); window.scrollTo(0, lockedScrollY); }
-                }, { capture: true, passive: true });
-                // Heartbeat to see the locker is alive
-                var hb = 0;
-                setInterval(function(){ hb++; log('heartbeat', hb, 'locked=', document.body.classList.contains('scroll-locked'), 'y=', Math.round(window.scrollY || window.pageYOffset || 0)); }, 3000);
-                log('listeners attached');
-            } catch (e) { try { console.warn('[LockScroll] setup error', e); } catch(_) {} }
-        })();
-    </script>
     <script>
         (function(){
             try {
@@ -2266,222 +2182,6 @@
 
 
         // ========== ENHANCED APARTMENT TYPE SYSTEM ==========
-            function detectUiLang() {
-                try {
-                    const btn = document.querySelector('.lang-btn.active');
-                    const params = new URLSearchParams(window.location.search);
-                    const stored = (localStorage.getItem('preferredLanguage') || '').toLowerCase();
-                    const nav = (navigator.language || 'es').toLowerCase();
-                    const lang = (btn?.dataset?.lang || params.get('lang') || stored || nav || 'es').toLowerCase();
-                    return lang;
-                } catch { return 'es'; }
-            }
-            const currentLang = detectUiLang();
-            const isEnglish = currentLang.startsWith('en');
-            // Add Iris toggle button to the page
-            const irisButton = document.createElement('button');
-            irisButton.className = 'iris-toggle-button';
-            irisButton.innerHTML = '<i class="fas fa-comments"></i>';
-            irisButton.title = isEnglish ? 'Chat with Iris - Mirador del Golf Virtual Assistant' : 'Chat con Iris - Asistente Virtual de Mirador del Golf';
-            irisButton.onclick = function() {
-                // Toggle chat state
-                const isChatOpen = irisButton.classList.contains('chat-open');
-                
-                if (isChatOpen) {
-                    // Close chat
-                    irisButton.classList.remove('chat-open');
-                    irisButton.innerHTML = '<i class="fas fa-comments"></i>';
-                    irisButton.title = isEnglish ? 'Chat with Iris - Mirador del Golf Virtual Assistant' : 'Chat con Iris - Asistente Virtual de Mirador del Golf';
-                    
-                    // Hide chat window - try multiple selectors
-                    const chatWindow = document.querySelector('.chat-window-wrapper, .chat-window, [data-testid="chat-window"]');
-                    if (chatWindow) {
-                        chatWindow.style.display = 'none';
-                    }
-                    
-                    // Also try to close via n8n toggle
-                    const n8nToggle = document.querySelector('.chat-window-toggle');
-                    if (n8nToggle && n8nToggle.style.display !== 'none') {
-                        n8nToggle.click();
-                    }
-                } else {
-                    // Open chat
-                    irisButton.classList.add('chat-open');
-                    irisButton.innerHTML = '<i class="fas fa-times"></i>';
-                    irisButton.title = isEnglish ? 'Close chat' : 'Cerrar chat';
-                    
-                    // First try to trigger the n8n chat toggle to open
-                    const n8nToggle = document.querySelector('.chat-window-toggle');
-                    if (n8nToggle) {
-                        n8nToggle.click();
-                    }
-                    
-                    // Then show chat window - try multiple selectors
-                    setTimeout(() => {
-                        const chatWindow = document.querySelector('.chat-window-wrapper, .chat-window, [data-testid="chat-window"]');
-                        if (chatWindow) {
-                            chatWindow.style.display = 'block';
-                            chatWindow.style.zIndex = '10002';
-                            chatWindow.style.opacity = '1';
-                        }
-                    }, 100);
-                }
-            };
-            document.body.appendChild(irisButton);
-
-            // Add a secondary CTA button next to Iris toggle
-            const irisSellBtn = document.createElement('button');
-            irisSellBtn.className = 'iris-sell-button';
-            irisSellBtn.setAttribute('data-lang-key', 'iris_sell_cta');
-            irisSellBtn.textContent = 'Quiero que Iris venda por mí';
-            irisSellBtn.style.position = 'fixed';
-            irisSellBtn.style.bottom = '30px';
-            irisSellBtn.style.right = '90px';
-            irisSellBtn.style.padding = '10px 14px';
-            irisSellBtn.style.borderRadius = '12px';
-            irisSellBtn.style.border = '1px solid rgba(255,255,255,0.35)';
-            irisSellBtn.style.background = 'transparent';
-            irisSellBtn.style.color = '#fff';
-            irisSellBtn.style.fontWeight = '700';
-            irisSellBtn.style.cursor = 'pointer';
-            irisSellBtn.style.boxShadow = '0 8px 24px rgba(255, 200, 0, 0.35)';
-            irisSellBtn.style.backdropFilter = 'blur(8px)';
-            irisSellBtn.style.zIndex = '10003';
-            irisSellBtn.style.transition = 'transform .2s ease, box-shadow .2s ease';
-            irisSellBtn.onmouseenter = () => {
-                irisSellBtn.style.transform = 'translateY(-2px)';
-                irisSellBtn.style.background = 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)';
-                irisSellBtn.style.color = '#000';
-                irisSellBtn.style.boxShadow = '0 8px 24px rgba(255, 200, 0, 0.35)';
-            };
-            irisSellBtn.onmouseleave = () => {
-                irisSellBtn.style.transform = 'translateY(0)';
-                irisSellBtn.style.background = 'transparent';
-                irisSellBtn.style.color = '#fff';
-                irisSellBtn.style.boxShadow = 'none';
-            };
-            irisSellBtn.onclick = function() {
-                try { window.openIrisChat && window.openIrisChat(); } catch {}
-            };
-            document.body.appendChild(irisSellBtn);
-
-            // Update CTA text on language changes
-            document.addEventListener('languageChanged', function(ev){
-                try {
-                    const lang = (ev.detail?.lang || 'es').toLowerCase();
-                    const en = lang.startsWith('en');
-                    const btn = document.querySelector('.iris-sell-button');
-                    if (btn) btn.textContent = en ? 'I want Iris to sell for me' : 'Quiero que Iris venda por mí';
-                } catch {}
-            });
-
-            // Update toggle title on language changes
-            document.addEventListener('languageChanged', function(ev){
-                try {
-                    const lang = (ev.detail?.lang || 'es').toLowerCase();
-                    const en = lang.startsWith('en');
-                    const isOpen = irisButton.classList.contains('chat-open');
-                    irisButton.title = isOpen ? (en ? 'Close chat' : 'Cerrar chat') : (en ? 'Chat with Iris - Mirador del Golf Virtual Assistant' : 'Chat con Iris - Asistente Virtual de Mirador del Golf');
-                } catch {}
-            });
-
-            // Add Iris video controls panel
-            const irisControls = document.createElement('div');
-            irisControls.id = 'irisVideoControls';
-            irisControls.className = 'iris-video-controls';
-            irisControls.innerHTML = `
-                <h3>Controles de Video</h3>
-                <button class="iris-video-btn" onclick="irisChangeVideo('apartamento')">Apartamentos</button>
-                <button class="iris-video-btn" onclick="irisChangeVideo('casa')">Casas</button>
-                <button class="iris-video-btn" onclick="irisChangeVideo('amenities')">Amenities</button>
-                <button class="iris-video-btn" onclick="irisChangeVideo('security')">Seguridad</button>
-                <button class="iris-video-btn" onclick="irisChangeVideo('technology')">Tecnología</button>
-            `;
-            document.body.appendChild(irisControls);
-
-            // Add Font Awesome for icons
-            const fontAwesome = document.createElement('link');
-            fontAwesome.rel = 'stylesheet';
-            fontAwesome.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css';
-            document.head.appendChild(fontAwesome);
-            
-            // Survey widget behavior
-            (function initSurveyWidget(){
-                const tab = document.getElementById('surveyTab');
-                const drawer = document.getElementById('surveyDrawer');
-                const closeBtn = document.getElementById('surveyClose');
-                const form = document.getElementById('surveyForm');
-                const thanks = document.getElementById('surveyThanks');
-                const skip = document.getElementById('surveySkip');
-
-                if (!tab || !drawer) return;
-                const openDrawer = () => { drawer.classList.add('open'); drawer.setAttribute('aria-hidden','false'); };
-                const closeDrawer = () => { drawer.classList.remove('open'); drawer.setAttribute('aria-hidden','true'); };
-                tab.addEventListener('click', openDrawer);
-                if (closeBtn) closeBtn.addEventListener('click', closeDrawer);
-                if (skip) skip.addEventListener('click', closeDrawer);
-
-                // Toggle contact fields
-                const contactFields = document.getElementById('contactFields');
-                drawer.addEventListener('change', (e) => {
-                    const t = e.target;
-                    if (t && t.name === 'contact') {
-                        if (t.value === 'yes') {
-                            if (contactFields) contactFields.style.display = 'block';
-                        } else {
-                            if (contactFields) contactFields.style.display = 'none';
-                        }
-                    }
-                });
-
-                // Translate labels on language changes
-                const applySurveyLang = (lang) => {
-                    const en = (lang||'es').toLowerCase().startsWith('en');
-                    const tabEl = document.getElementById('surveyTab');
-                    if (tabEl) tabEl.setAttribute('title', en ? 'Help us improve' : 'Ayúdanos a mejorar');
-                    const tabText = document.querySelector('#surveyTab span');
-                    if (tabText) tabText.textContent = 'Feedback';
-                    const setText = (id, es, enTxt) => { const el = document.getElementById(id); if (el) el.textContent = en ? enTxt : es; };
-                    setText('surveyTitle','¿Te está gustando esta experiencia?','Are you enjoying this experience?');
-                    setText('q1Label','¿Qué tan atractiva encuentras esta página?','How attractive is this page?');
-                    setText('q2Label','¿Qué secciones te interesaron más?','Which sections interested you most?');
-                    setText('q3Label','¿Te gustaría que te contactemos?','Would you like us to contact you?');
-                    setText('q4Label','Déjanos un comentario (opcional)','Leave a comment (optional)');
-                    setText('q5Intro','Déjanos tus datos de contacto','Leave your contact details');
-                    const nameI = document.getElementById('surveyName'); if (nameI) nameI.setAttribute('placeholder', en ? 'Name' : 'Nombre');
-                    const mailI = document.getElementById('surveyEmail'); if (mailI) mailI.setAttribute('placeholder', en ? 'Email' : 'Email');
-                    const skipBtn = document.getElementById('surveySkip'); if (skipBtn) skipBtn.textContent = en ? 'Later' : 'Luego';
-                    const submitBtn = document.getElementById('surveySubmit'); if (submitBtn) submitBtn.textContent = en ? 'Send' : 'Enviar';
-                    const thanksMsg = document.getElementById('surveyThanks'); if (thanksMsg) thanksMsg.textContent = en ? 'Thanks! Your feedback helps us improve.' : '¡Gracias! Tu opinión nos ayuda a mejorar.';
-                    const labels = drawer.querySelectorAll('label.survey-check');
-                    if (labels.length >= 4) {
-                        const setChip = (idx, es, enTxt) => { const node = labels[idx]; if (node && node.childNodes[1]) node.childNodes[1].textContent = en ? enTxt : es; };
-                        setChip(0,'Apartamentos','Apartments');
-                        setChip(1,'Características','Features');
-                        setChip(2,'Equipamiento','Equipment');
-                        setChip(3,'Videos','Videos');
-                    }
-                    const radios = drawer.querySelectorAll('label.survey-radio');
-                    radios.forEach((r) => {
-                        const input = r.querySelector('input');
-                        if (input && input.name === 'contact') {
-                            if (r.childNodes[1]) r.childNodes[1].textContent = input.value === 'yes' ? (en ? 'Yes' : 'Sí') : (en ? 'No' : 'No');
-                        }
-                    });
-                };
-                // Initial apply
-                (function(){
-                    const btn = document.querySelector('.lang-btn.active');
-                    const params = new URLSearchParams(window.location.search);
-                    const lang = (btn?.dataset?.lang || params.get('lang') || 'es').toLowerCase();
-                    applySurveyLang(lang);
-                })();
-                // Listen to language change
-                document.addEventListener('languageChanged', (e) => applySurveyLang(e.detail?.lang || 'es'));
-
-                // Submit to feedback.php
-                if (form) form.addEventListener('submit', (ev) => {
-                    ev.preventDefault();
                     try {
                         const data = new FormData(form);
                         const payload = {
@@ -2498,8 +2198,7 @@
                             .then(() => { form.style.display = 'none'; if (thanks) thanks.style.display = 'block'; setTimeout(closeDrawer, 1500); })
                             .catch(() => { form.style.display = 'none'; if (thanks) thanks.style.display = 'block'; setTimeout(closeDrawer, 1500); });
                     } catch { form.style.display = 'none'; if (thanks) thanks.style.display = 'block'; setTimeout(closeDrawer, 1500); }
-                });
-            })();
+            
 
     </script>
 
@@ -2510,279 +2209,7 @@
 
 
         
-    <!-- Language System Configuration -->
-            style.textContent = `
-                .chat-window-wrapper,
-                .chat-window,
-                [data-testid="chat-window"],
-                .chat-window *,
-                .chat-window-wrapper *,
-                [data-testid="chat-window"] * {
-                    overscroll-behavior: contain !important;
-                    scroll-behavior: auto !important;
-                }
-                
-                .chat-window-wrapper .chat-messages,
-                .chat-window .chat-messages,
-                [data-testid="chat-window"] .chat-messages {
-                    overscroll-behavior: contain !important;
-                    scroll-behavior: auto !important;
-                    -webkit-overflow-scrolling: touch !important;
-                }
-                
-                .chat-window-wrapper .chat-input,
-                .chat-window .chat-input,
-                [data-testid="chat-window"] .chat-input {
-                    overscroll-behavior: contain !important;
-                }
-            `;
-            document.head.appendChild(style);
-            
-            // Add event listeners to prevent scroll propagation
-            const scrollableElements = chatElement.querySelectorAll('.chat-messages, .chat-content, [data-testid="chat-messages"], .chat-window-content');
-            
-            scrollableElements.forEach(element => {
-                element.addEventListener('wheel', function(e) {
-                    e.stopPropagation();
-                }, { passive: false });
-                
-                element.addEventListener('touchmove', function(e) {
-                    e.stopPropagation();
-                }, { passive: false });
-                
-                element.addEventListener('scroll', function(e) {
-                    e.stopPropagation();
-                }, { passive: false });
-            });
-            
-            // Also prevent propagation on the main chat element
-            chatElement.addEventListener('wheel', function(e) {
-                e.stopPropagation();
-            }, { passive: false });
-            
-            chatElement.addEventListener('touchmove', function(e) {
-                e.stopPropagation();
-            }, { passive: false });
-            
-            chatElement.addEventListener('scroll', function(e) {
-                e.stopPropagation();
-            }, { passive: false });
-        }
 
-        // Store chat instance globally
-        window.irisChatInstance = irisChatInstance;
-
-        // ========== ENHANCED APARTMENT TYPE SYSTEM ==========
-
-        // Function to generate unique apartment ID
-        function generateApartmentId(bedrooms, superficie, precio) {
-            const bedCode = bedrooms === 1 ? 'A' : bedrooms === 2 ? 'B' : 'C';
-            const surfaceCode = superficie.includes('40-60') ? 'S' : superficie.includes('80-100') ? 'M' : 'L';
-            const priceCode = precio.includes('2000-3000') ? '2' : precio.includes('4000-5000') ? '4' : '5';
-            return `${bedCode}-${surfaceCode}-${priceCode}`;
-        }
-
-        // Function to get apartment type name
-        function getApartmentTypeName(bedrooms, superficie, precio) {
-            const bedCode = bedrooms === 1 ? 'A' : bedrooms === 2 ? 'B' : 'C';
-            const surfaceCode = superficie.includes('40-60') ? 'S' : superficie.includes('80-100') ? 'M' : 'L';
-            const priceCode = precio.includes('2000-3000') ? '2' : precio.includes('4000-5000') ? '4' : '5';
-            return `Tipo ${bedCode}${surfaceCode}${priceCode}`;
-        }
-
-        // Function to get apartment type display name
-        function getApartmentTypeDisplay(bedrooms, superficie, precio) {
-            const bedCode = bedrooms === 1 ? 'A' : bedrooms === 2 ? 'B' : 'C';
-            const surfaceCode = superficie.includes('40-60') ? 'S' : superficie.includes('80-100') ? 'M' : 'L';
-            const priceCode = precio.includes('2000-3000') ? '2' : precio.includes('4000-5000') ? '4' : '5';
-            return `Tipo ${bedCode}`;
-        }
-
-        // Function to add type information to existing apartment cards
-        function addTypeInfoToExistingCards() {
-            console.log('🏠 Adding type information to existing apartment cards...');
-            
-            const apartmentCards = document.querySelectorAll('.apartment-card');
-            let processedCount = 0;
-            
-            apartmentCards.forEach((card, index) => {
-                // Extract information from the card
-                const title = card.querySelector('h3');
-                // Buscar el párrafo que contenga "Superficie"
-                const paragraphs = card.querySelectorAll('p');
-                let superficieElement = null;
-                for (const p of paragraphs) {
-                    if (p.textContent.includes('Superficie')) {
-                        superficieElement = p;
-                        break;
-                    }
-                }
-                if (!superficieElement) {
-                    superficieElement = card.querySelector('p');
-                }
-                // Buscar el párrafo que contenga "Precio"
-                let precioElement = null;
-                for (const p of paragraphs) {
-                    if (p.textContent.includes('Precio')) {
-                        precioElement = p;
-                        break;
-                    }
-                }
-                if (!precioElement) {
-                    precioElement = card.querySelectorAll('p')[1];
-                }
-                
-                if (title && superficieElement && precioElement) {
-                    const titleText = title.textContent;
-                    const superficieText = superficieElement.textContent.replace('Superficie:', '').trim();
-                    const precioText = precioElement.textContent.replace('Precio:', '').trim();
-                    
-                    // Extract bedrooms from title
-                    const bedroomMatch = titleText.match(/(\d+)/);
-                    if (bedroomMatch) {
-                        const bedrooms = parseInt(bedroomMatch[1]);
-                        
-                        // Generate unique ID and type
-                        const apartmentId = generateApartmentId(bedrooms, superficieText, precioText);
-                        const apartmentType = getApartmentTypeName(bedrooms, superficieText, precioText);
-                        const apartmentTypeDisplay = getApartmentTypeDisplay(bedrooms, superficieText, precioText);
-                        const badgeClass = bedrooms === 1 ? 'type-a' : bedrooms === 2 ? 'type-b' : 'type-c';
-                        
-                        // Add attributes to card
-                        card.setAttribute('data-apartment-id', apartmentId);
-                        card.setAttribute('data-apartment-type', apartmentType);
-                        card.setAttribute('data-bedrooms', bedrooms);
-                        card.setAttribute('data-superficie', superficieText);
-                        card.setAttribute('data-precio', precioText);
-                        
-                        // Add type badge if not exists
-                        if (!card.querySelector('.apartment-type-badge')) {
-                            const badge = document.createElement('div');
-                            badge.className = `apartment-type-badge ${badgeClass}`;
-                            badge.textContent = apartmentTypeDisplay;
-                            card.insertBefore(badge, card.firstChild);
-                        }
-                        
-                        // Add type information to apartment-info section
-                        const apartmentInfo = card.querySelector('.apartment-info');
-                        if (apartmentInfo) {
-                            // Remove existing type info if any
-                            const existingTypeInfo = apartmentInfo.querySelector('.apartment-type-info');
-                            if (existingTypeInfo) {
-                                existingTypeInfo.remove();
-                            }
-                            
-                            // Skip adding inline apartment-type-info to avoid duplicate type line
-                            // console.log('[TypeInfo] Skipped adding inline apartment-type-info');
-                        }
-                        
-                        // Update buttons with type information
-                        const buttons = card.querySelectorAll('.watchVideoBtn, .contactModelBtn');
-                        buttons.forEach(button => {
-                            button.setAttribute('data-apartment-id', apartmentId);
-                            button.setAttribute('data-apartment-type', apartmentType);
-                            button.setAttribute('data-bedrooms', bedrooms);
-                            button.setAttribute('data-superficie', superficieText);
-                            button.setAttribute('data-precio', precioText);
-                        });
-                        
-                        processedCount++;
-                        console.log(`🏠 Card ${index + 1}: ${apartmentTypeDisplay} (ID: ${apartmentId})`);
-                    }
-                }
-            });
-            
-            console.log(`🏠 Processed ${processedCount} apartment cards with type information`);
-            return processedCount;
-        }
-
-        // Function to filter apartments by type
-        function filterByType(typeCode) {
-            console.log('🏠 Filtering by type:', typeCode);
-            
-            const apartmentCards = document.querySelectorAll('.apartment-card');
-            
-            apartmentCards.forEach(card => {
-                const cardType = card.getAttribute('data-apartment-type');
-                
-                if (typeCode === 'all' || (cardType && cardType.startsWith(typeCode))) {
-                    card.style.display = 'block';
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-            
-            // Track filter event
-            gtag('event', 'apartment_type_filtered', {
-                'event_category': 'Apartment Types',
-                'event_label': `Type: ${typeCode}`,
-                'value': 1
-            });
-        }
-
-        // Function to find apartment by ID
-        function findApartmentById(apartmentId) {
-            const card = document.querySelector(`[data-apartment-id="${apartmentId}"]`);
-            if (card) {
-                card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                card.style.border = '3px solid #28a745';
-                card.style.boxShadow = '0 0 20px rgba(40, 167, 69, 0.3)';
-                
-                setTimeout(() => {
-                    card.style.border = '';
-                    card.style.boxShadow = '';
-                }, 3000);
-                
-                return true;
-            }
-            return false;
-        }
-
-        // Function to show example apartments
-        function showExampleApartments() {
-            const apartmentList = document.getElementById('apartmentList');
-            const initialMessage = document.getElementById('initialMessage');
-            
-            if (apartmentList && initialMessage) {
-                // Hide initial message
-                initialMessage.style.display = 'none';
-                
-                // Show apartment list
-                apartmentList.style.display = 'grid';
-                
-                // Add example apartments
-                const exampleApartments = [
-                    {
-                        bedrooms: 2,
-                        type: 'B-S-2',
-                        name: 'Tipo B1',
-                        superficie: '40-60 m²',
-                        precio: '$2.000-3.000 UF'
-                    },
-                    {
-                        bedrooms: 2,
-                        type: 'B-M-4',
-                        name: 'Tipo B2',
-                        superficie: '80-100 m²',
-                        precio: '$4.000-5.000 UF'
-                    },
-                    {
-                        bedrooms: 3,
-                        type: 'C-L-5',
-                        name: 'Tipo C1',
-                        superficie: '120-140 m²',
-                        precio: '$5.000-6.000 UF'
-                    }
-                ];
-                
-                exampleApartments.forEach(apt => {
-                    const apartmentCard = document.createElement('div');
-                    apartmentCard.className = 'apartment-card';
-                    apartmentCard.setAttribute('data-bedrooms', apt.bedrooms);
-                    apartmentCard.setAttribute('data-apartment-type', apt.type);
-                    apartmentCard.setAttribute('data-apartment-name', apt.name);
-                    
-                    const badgeClass = apt.bedrooms === 1 ? 'type-a' : apt.bedrooms === 2 ? 'type-b' : 'type-c';
                     
                     apartmentCard.innerHTML = `
                         <div class="apartment-type-badge ${badgeClass}">${apt.name}</div>
@@ -2807,188 +2234,113 @@
                         </div>
                     `;
                     
-                    apartmentList.appendChild(apartmentCard);
-                });
                 
-                // Apply type information to new cards
-                addTypeInfoToExistingCards();
-                
-                console.log('🏢 Example apartments loaded');
-            }
-        }
 
-        // Initialize apartment type system when page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('🏠 Initializing enhanced apartment type system...');
-            
-            // Apply types immediately
-            addTypeInfoToExistingCards();
-            
-            // Also apply when apartment list becomes visible
-            const apartmentList = document.getElementById('apartmentList');
-            if (apartmentList) {
-                const observer = new MutationObserver(function(mutations) {
-                    mutations.forEach(function(mutation) {
-                        if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
-                            const display = apartmentList.style.display;
-                            if (display === 'grid' || display === 'block') {
-                                setTimeout(() => {
-                                    addTypeInfoToExistingCards();
-                                }, 500);
-                            }
-                        }
-                    });
-                });
-                
-                observer.observe(apartmentList, {
-                    attributes: true,
-                    attributeFilter: ['style']
-                });
-            }
-            
-            // Force apply types after a delay to ensure all cards are loaded
-            setTimeout(() => {
-                addTypeInfoToExistingCards();
-            }, 2000);
-            
-            // Also apply when window loads completely
-            window.addEventListener('load', function() {
-                setTimeout(() => {
-                    addTypeInfoToExistingCards();
-                }, 1000);
-            });
-        });
+      
 
-        // Global functions for IRIS
-        window.irisFilterByType = function(typeCode) {
-            filterByType(typeCode);
-            return true;
-        };
-
-        window.irisFindApartment = function(apartmentId) {
-            return findApartmentById(apartmentId);
-        };
-
-        window.irisGetApartmentInfo = function(apartmentId) {
-            const card = document.querySelector(`[data-apartment-id="${apartmentId}"]`);
-            if (card) {
-                return {
-                    id: apartmentId,
-                    type: card.getAttribute('data-apartment-type'),
-                    bedrooms: card.getAttribute('data-bedrooms'),
-                    superficie: card.getAttribute('data-superficie'),
-                    precio: card.getAttribute('data-precio')
-                };
-            }
-            return null;
-        };
+       
         
-        // Listen for Iris messages to control videos
-        function setupIrisVideoControlListener() {
-            const chatObserver = new MutationObserver((mutations) => {
-                mutations.forEach((mutation) => {
-                    if (mutation.type === 'childList') {
-                        mutation.addedNodes.forEach((node) => {
-                            if (node.nodeType === 1) { // Element node
-                                // Look for bot messages (Iris responses)
-                                const botMessages = node.querySelectorAll('.chat-message-from-bot .chat-message-markdown');
-                                
-                                botMessages.forEach((messageElement) => {
-                                    const messageText = messageElement.textContent || messageElement.innerText;
-                                    
-                                    // Check if message contains video commands
-                                    irisDetectVideoCommands(messageText);
-                                });
-                                
-                                // Check if new chat elements were added and prevent scroll propagation
-                                const chatWindow = document.querySelector('.chat-window-wrapper, .chat-window, [data-testid="chat-window"]');
-                                if (chatWindow && (node.contains(chatWindow) || chatWindow.contains(node))) {
-                                    preventChatScrollPropagation(chatWindow);
-                                }
-                            }
-                        });
-                    }
-                });
-            });
-            
-            // Start observing chat messages
-            chatObserver.observe(document.body, {
-                childList: true,
-                subtree: true
-            });
-        }
-        
-        // Setup video control after chat is initialized
-        setTimeout(setupIrisVideoControlListener, 3000);
-
-        // Add custom method to open chat programmatically
-        window.openIrisChat = function() {
-            const irisButton = document.querySelector('.iris-toggle-button');
-            
-            if (irisButton && !irisButton.classList.contains('chat-open')) {
-                irisButton.click();
-                return true;
-            }
-            return false;
-        };
+   
     </script>
 
-    <!-- IRIS Modular System Initialization -->
-    <script>
-        // Initialize IRIS Modular System
-        document.addEventListener('DOMContentLoaded', async function() {
-            console.log('🚀 Inicializando sistema IRIS modular...');
-            
-            try {
-                // Wait for IRIS Core to be available
-                let attempts = 0;
-                const maxAttempts = 50;
-                
-                while (!window.IRIS && attempts < maxAttempts) {
-                    await new Promise(resolve => setTimeout(resolve, 100));
-                    attempts++;
-                }
-                
-                if (!window.IRIS) {
-                    console.error('❌ IRIS Core no disponible después de 5 segundos');
-                    return;
-                }
-                
-                console.log('✅ IRIS Core detectado, inicializando...');
-                
-                // Initialize IRIS Core
-                const initResult = await window.IRIS.initialize();
-                
-                if (initResult.success) {
-                    console.log('✅ Sistema IRIS modular inicializado correctamente');
-                    
-                    // Test the filter functionality
-                    console.log('🧪 Probando funcionalidad de filtros...');
-                    
-                    // Test command processing
-                    const testResult = await window.IRIS.processText('mostrar departamento tipo A-S-2');
-                    console.log('🧪 Resultado de prueba:', testResult);
-                    
-                    // Make IRIS available globally for testing
-                    window.irisTest = async function(command) {
-                        return await window.IRIS.processText(command);
-                    };
-                    
-                    console.log('🎯 Sistema IRIS listo para usar. Prueba con: window.irisTest("mostrar departamento tipo A-S-2")');
-                    
-                } else {
-                    console.error('❌ Error al inicializar IRIS Core:', initResult.error);
-                }
-                
-            } catch (error) {
-                console.error('❌ Error durante la inicialización de IRIS:', error);
-            }
-        });
-    </script>
+  
 
     <!-- Language System Configuration -->
     <script src="js/language-config.js"></script>
     <!-- Language System Script -->
     <script src="js/language-system.js"></script>
+    
+    <!-- Iris Chatbot assets -->
+    <link rel="stylesheet" href="http://localhost:3000/iris-chatbot.css">
+    <script src="http://localhost:3000/iris-chatbot.js"></script>
+    <script>
+        (function(){
+            const sectionAlias = {
+                '#inicio':'#section-1','#home':'#section-1','#hero':'#section-1',
+                '#apartamentos':'#apartments','#departamentos':'#apartments',
+                '#features':'#features','#amenidades':'#features','#amenities':'#features',
+                '#equipamiento':'#equipment','#equipment':'#equipment',
+                '#contacto':'#contact','#contact':'#contact',
+                'inicio':'#section-1','home':'#section-1','hero':'#section-1',
+                'apartamentos':'#apartments','departamentos':'#apartments',
+                'features':'#features','amenidades':'#features','amenities':'#features',
+                'equipamiento':'#equipment','equipment':'#equipment',
+                'contacto':'#contact','contact':'#contact'
+            };
+            function resolveTarget(raw){
+                if (!raw) return null;
+                const norm = String(raw).trim().toLowerCase();
+                const mapped = sectionAlias[norm] || norm;
+                let el = document.querySelector(mapped);
+                if (el) return el;
+                const id = mapped.replace(/^#/, '');
+                el = document.getElementById(id) || document.querySelector(`[data-section="${id}"]`);
+                if (el) return el;
+                const btn = Array.from(document.querySelectorAll('button, a')).find(n => ((n.textContent||'').trim().toLowerCase() === id));
+                return btn || null;
+            }
+            // Fallback: forzar scroll aunque haya lock
+            window.__irisForceScroll = function(selector){
+                try {
+                    document.body.classList.remove('scroll-locked');
+                    document.documentElement.style.overflow = '';
+                    document.body.style.position = '';
+                    const el = document.querySelector(selector) || document.getElementById(String(selector||'').replace('#',''));
+                    if (el && el.scrollIntoView) { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); return true; }
+                } catch(e) {}
+                return false;
+            };
+            const actionRegistry = {
+                openSection: ({ target }) => {
+                    const t = String(target||'').toLowerCase();
+                    if ((t === '#contact' || t === '#contacto') && typeof window.openProjectModal === 'function') { window.openProjectModal(); return true; }
+                    const el = resolveTarget(target);
+                    if (el && el.scrollIntoView) { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); return true; }
+                    return false;
+                },
+                scrollTo: ({ target, behavior = 'smooth' }) => {
+                    const el = resolveTarget(target);
+                    if (el && el.scrollIntoView) { el.scrollIntoView({ behavior, block: 'start' }); return true; }
+                    if (window.__irisForceScroll) return window.__irisForceScroll(target);
+                    return false;
+                },
+                applyFilter: ({ key, value }) => {
+                    if (key === 'bedrooms') {
+                        const map = { '1':'1d','2':'2d','3':'3d','all':'all' };
+                        const btn = document.querySelector(`.type-btn[data-type="${map[String(value)]||'all'}"]`);
+                        if (btn && btn.click) { btn.click(); return true; }
+                    }
+                    return false;
+                },
+                openContact: ({ prefill } = {}) => {
+                    if (typeof window.openProjectModal === 'function') { window.openProjectModal(); }
+                    try {
+                        if (prefill?.name) document.getElementById('projectName')?.setAttribute('value', prefill.name);
+                        if (prefill?.email) document.getElementById('projectEmail')?.setAttribute('value', prefill.email);
+                    } catch {}
+                    return true;
+                },
+                showUnit: ({ unitId }) => (typeof window.irisFindApartment === 'function' ? !!window.irisFindApartment(unitId) : false),
+                highlight: ({ target, ms = 1200 }) => {
+                    const el = resolveTarget(target); if (!el) return false;
+                    const prev = el.style.outline; el.style.outline = '3px solid #28a745'; setTimeout(()=>{ el.style.outline = prev || ''; }, ms); return true;
+                },
+                showNotification: ({ message = 'Hecho', type = 'info', duration = 1500 }) => {
+                    try { const n = document.createElement('div'); n.textContent = message; n.style.cssText =
+                        'position:fixed;top:12px;right:12px;background:#1a1a2e;color:#fff;padding:10px 14px;border-radius:10px;z-index:10010;box-shadow:0 8px 24px rgba(0,0,0,.25)';
+                        document.body.appendChild(n); setTimeout(()=>{ try{ n.remove(); }catch{} }, duration); return true; } catch { return false; }
+                }
+            };
+            new IrisChatbot({
+                apiUrl: 'http://localhost:3000/api/chat/stream',
+                actionRegistry,
+                theme: 'light',
+                position: 'bottom-right',
+                autoOpen: false
+            });
+            // Asegura z-index alto del widget
+            const style = document.createElement('style'); style.textContent = '.iris-chatbot-root{z-index:2147483000 !important}'; document.head.appendChild(style);
+        })();
+    </script>
 </body>
 </html>
