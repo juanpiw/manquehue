@@ -52,7 +52,7 @@ export class ProyectosComponent implements OnInit {
         max: 4500,
         currency: 'UF'
       },
-      thumbnail: 'assets/logo1.png'
+      thumbnail: 'assets/images/decor.PNG'
     },
     {
       id: '2',
@@ -67,7 +67,7 @@ export class ProyectosComponent implements OnInit {
         max: 2200,
         currency: 'UF'
       },
-      thumbnail: 'assets/logo1.png'
+      thumbnail: 'assets/images/deco2r.PNG'
     },
     {
       id: '3',
@@ -77,7 +77,7 @@ export class ProyectosComponent implements OnInit {
       creationDate: '2024-03-05',
       lastModified: '2024-06-18',
       description: 'Complejo deportivo con múltiples canchas y áreas recreativas',
-      thumbnail: 'assets/logo1.png'
+      thumbnail: 'assets/images/unnamed.jpg'
     },
     {
       id: '4',
@@ -94,7 +94,7 @@ export class ProyectosComponent implements OnInit {
         max: 6000,
         currency: 'UF'
       },
-      thumbnail: 'assets/logo1.png'
+      thumbnail: 'assets/images/unnamed (1).jpg'
     },
     {
       id: '5',
@@ -109,7 +109,7 @@ export class ProyectosComponent implements OnInit {
         max: 2800,
         currency: 'UF'
       },
-      thumbnail: 'assets/logo1.png'
+      thumbnail: 'assets/images/unnamed (3).jpg'
     },
     {
       id: '6',
@@ -119,7 +119,7 @@ export class ProyectosComponent implements OnInit {
       creationDate: '2024-01-08',
       lastModified: '2024-04-30',
       description: 'Centro comercial con múltiples tiendas y restaurantes',
-      thumbnail: 'assets/logo1.png'
+      thumbnail: 'assets/images/planta.PNG'
     }
   ];
 

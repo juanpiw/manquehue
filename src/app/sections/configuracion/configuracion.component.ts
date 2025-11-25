@@ -58,6 +58,14 @@ interface Project {
   assignedScreens: string[];
 }
 
+interface ScreenStatsSummary {
+  total: number;
+  online: number;
+  offline: number;
+  maintenance: number;
+  error: number;
+}
+
 @Component({
   selector: 'app-configuracion',
   standalone: true,
@@ -71,7 +79,6 @@ interface Project {
   styleUrl: './configuracion.component.scss'
 })
 export class ConfiguracionComponent implements OnInit {
-  
   // Datos de pantallas
   screens: ScreenDevice[] = [
     {
@@ -629,7 +636,17 @@ export class ConfiguracionComponent implements OnInit {
     return [...new Set(this.screens.map(screen => screen.status))];
   }
 
-  getScreenStats() {
+  getInitials(fullName: string): string {
+    return fullName
+      .split(' ')
+      .filter(Boolean)
+      .map(part => part[0])
+      .slice(0, 2)
+      .join('')
+      .toUpperCase();
+  }
+
+  getScreenStats(): ScreenStatsSummary {
     const total = this.screens.length;
     const online = this.screens.filter(s => s.status === 'online').length;
     const offline = this.screens.filter(s => s.status === 'offline').length;
@@ -638,4 +655,5 @@ export class ConfiguracionComponent implements OnInit {
 
     return { total, online, offline, maintenance, error };
   }
+
 }

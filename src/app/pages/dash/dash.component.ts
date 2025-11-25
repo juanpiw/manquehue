@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { MenuStateService } from '../../servicios/menuStateService';
@@ -33,22 +33,30 @@ import { UsuarioComponent } from '../../sections/usuario/usuario.component';
   templateUrl: './dash.component.html',
   styleUrl: './dash.component.scss'
 })
-export class dashComponent {
-    currentComponent!: string;
-    subscription: Subscription;
-  
-    constructor(private menuStateService: MenuStateService) {
-      this.subscription = this.menuStateService.currentComponent.subscribe(component => {
+export class dashComponent implements OnDestroy {
+  currentComponent!: string;
+  isMenuCompact = false;
+  subscription: Subscription;
+
+  constructor(private menuStateService: MenuStateService) {
+    this.subscription = new Subscription();
+    this.subscription.add(
+      this.menuStateService.currentComponent.subscribe(component => {
         this.currentComponent = component;
-      });
-    }
-  
-      ngOnDestroy() {
+      })
+    );
+    this.subscription.add(
+      this.menuStateService.menuCompact$.subscribe(state => {
+        this.isMenuCompact = state;
+      })
+    );
+  }
+
+  ngOnDestroy() {
     this.subscription.unsubscribe();
   }
 
   onNavigate(destination: 'nuevoProyecto' | 'proyectos') {
     this.menuStateService.changeComponent(destination);
   }
-  
 }

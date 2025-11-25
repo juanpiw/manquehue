@@ -1,33 +1,49 @@
-<div class="container-menu">
- <app-lang-switcher></app-lang-switcher>
-<div class="logo text-heading-4 text-semibold">DashManqué</div>
-  <div class="sidebar">
-    <ul class="nav-links distancia">
-      <li (click)="changeComponent('resumen')" [class.active]="isActive('resumen')">
-        <img class="icon-menu" src="./../../../assets/icons/resumen.svg" alt="{{ 'menu.resumen' | t }}"><span class="link-name text-body text-medium">{{ 'menu.resumen' | t }}</span>
-      </li>
-      <li (click)="changeComponent('proyectos')" [class.active]="isActive('proyectos')">
-        <img class="icon-menu" src="./../../../assets/icons/proyectos.svg" alt="{{ 'menu.proyectos' | t }}" ><span class="link-name text-body text-medium">{{ 'menu.proyectos' | t }}</span>
-      </li>
-      <li (click)="changeComponent('uso')" [class.active]="isActive('uso')">
-        <img class="icon-menu" src="./../../../assets/icons/estadisticas.svg" alt="{{ 'menu.estadisticas_uso' | t }}" ><span class="link-name text-body text-medium">{{ 'menu.estadisticas_uso' | t }}</span>
-      </li>
-      <li (click)="changeComponent('configuracion')" [class.active]="isActive('configuracion')">
-        <img class="icon-menu" src="./../../../assets/icons/configuraciones.svg" alt="{{ 'menu.configuraciones' | t }}" ><span class="link-name text-body text-medium">{{ 'menu.configuraciones' | t }}</span>
-      </li>
-      <li (click)="changeComponent('nuevoProyecto')" [class.active]="isActive('nuevoProyecto')">
-        <img  class="icon-menu"src="./../../../assets/icons/nuevoproyecto.svg" alt="{{ 'menu.nuevo_proyecto' | t }}" ><span class="link-name text-body text-medium">{{ 'menu.nuevo_proyecto' | t }}</span>
-      </li>
-      <li (click)="navigateToPreview()" [class.active]="isActive('preview')">
-        <img class="icon-menu" src="./../../../assets/icons/preview.svg" alt="{{ 'menu_preview' | t }}"><span class="link-name text-body text-medium">{{ 'menu_preview' | t }}</span>
-      </li>
-      <li (click)="changeComponent('Usuario')" [class.active]="isActive('Usuario')">
-        <img class="icon-menu" src="./../../../assets/icons/usuario.svg" alt="{{ 'menu.usuario' | t }}" ><span class="link-name text-body text-medium">{{ 'menu.usuario' | t }}</span>
-      </li>
-      <li (click)="changeComponent('soporteyAyuda')" [class.active]="isActive('soporteyAyuda')">
-        <img class="icon-menu" src="./../../../assets/icons/soporte.svg" alt="{{ 'menu.soporte_ayuda' | t }}"><span class="link-name text-body text-medium">{{ 'menu.soporte_ayuda' | t }}</span>
-      </li>
-    </ul>
+<div class="menu" [class.menu--compact]="isCompact">
+  <div class="menu__header">
+    <div class="menu__lang">
+      <app-lang-switcher></app-lang-switcher>
+      <button class="menu__toggle" type="button" (click)="toggleCompact()" aria-label="Toggle menu">
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div class="menu__logo">
+      <img
+        src="assets/logo1.png"
+        alt="Inmobiliaria Manquehue"
+        class="menu__logo-img"
+        loading="lazy">
+    </div>
   </div>
-</div>
 
+  <nav class="menu__nav custom-scrollbar">
+    <button
+      type="button"
+      class="menu__nav-item"
+      *ngFor="let item of mainItems"
+      (click)="handleItemClick(item)"
+      [class.menu__nav-item--active]="isActive(item.component)">
+      <span class="menu__indicator" *ngIf="isActive(item.component)"></span>
+      <span class="menu__icon">
+        <lucide-icon [name]="item.icon"></lucide-icon>
+      </span>
+      <span class="menu__label">{{ item.labelKey | t }}</span>
+    </button>
+  </nav>
+
+  <footer class="menu__footer">
+    <div class="menu__footer-title">{{ 'menu.soporte_ayuda' | t }}</div>
+    <button
+      type="button"
+      class="menu__nav-item menu__nav-item--muted"
+      *ngFor="let item of footerItems"
+      (click)="handleItemClick(item)"
+      [class.menu__nav-item--active]="isActive(item.component)">
+      <span class="menu__icon">
+        <lucide-icon [name]="item.icon"></lucide-icon>
+      </span>
+      <span class="menu__label">{{ item.labelKey | t }}</span>
+      <span class="menu__badge" *ngIf="item.id === 'soporte'"></span>
+    </button>
+  </footer>
+</div>

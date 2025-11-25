@@ -1,894 +1,133 @@
+<div class="resumen">
+  <main class="resumen__main">
+      <div class="resumen__background"></div>
 
-<div class="order-card-global">
-
-<div class="header-section">
-   <div class="title text-heading-2 text-bold">{{ 'resumen.title' | t }}</div>
-   <app-user-profile 
-     [userName]="currentUser.name" 
-     [userImage]="currentUser.image"
-     size="medium">
-   </app-user-profile>
-</div>
-
-<!-- Componente de búsqueda -->
-<div class="search-section">
-  <app-search-input 
-    placeholder="common.search_projects"
-    (searchChange)="onSearch($event)">
-  </app-search-input>
-</div>
-
-<div class="card-section">
-  <app-card-new 
-    label="New project" 
-    (pressed)="goNuevo()">
-  </app-card-new>
-  
-
-</div>
-<div>
- <div class="text-heading-5 text-semibold">{{ 'resumen.edited' | t }}</div>
-</div>
-<div>
-    <app-project-tile [label]="'resumen.project_name' | t" [iconSize]="74"></app-project-tile>
-
-</div>
-<div class="order-footer">
-<div class="order-footer-espacio-l">
- <app-stat-donut
-    [title]="'resumen.total' | t"
-    [value]="projectsCount"
-    [max]="projectsMax"
-    [size]="160"
-    [thickness]="12">
-  </app-stat-donut>
-</div>
-<div>
-     <app-projects-created
-      [title]="'resumen.created' | t"
-    [items]="filteredProjects"
-    (open)="openProject($event)">
-  </app-projects-created>
-</div>
-</div>
-
-  <!-- Sección de prueba para componentes shared -->
-  <!-- Sección de prueba para componentes shared -->
-  <!-- Sección de prueba para componentes shared -->
-  <!-- Sección de prueba para componentes shared -->
-  <div class="test-components-section">
-    <h3 class="text-heading-3 text-semibold">Componentes de Prueba (Shared)</h3>
-  
-  <!-- Botones de acción -->
-  <div class="test-component">
-    <h4>Action Buttons Component</h4>
-    <app-action-buttons
-      (cancelClick)="onCancel()"
-      (saveClick)="onSave()"
-      (viewClick)="onView()"
-      (buttonClick)="onButtonClick($event)">
-    </app-action-buttons>
-  </div>
-
-  <!-- Step Indicator Component -->
-  <div class="test-component">
-    <h4>Step Indicator Component</h4>
-    <app-step-indicator
-      [currentStep]="currentStep"
-      [steps]="customSteps"
-      (stepChange)="onStepChange($event)"
-      (stepClick)="onStepClick($event)">
-    </app-step-indicator>
-    
-    <!-- Controles de prueba -->
-    <div class="step-controls">
-      <button (click)="previousStep()">Anterior</button>
-      <span>Paso actual: {{ currentStep }}</span>
-      <button (click)="nextStep()">Siguiente</button>
-    </div>
-  </div>
-
-  <!-- Search Input Component - Ejemplos de reutilización -->
-  <div class="test-component">
-    <h4>Search Input Component - Reutilización</h4>
-    
-    <!-- Búsqueda de proyectos (ya implementada arriba) -->
-    <div class="search-example">
-      <h5>Búsqueda de Proyectos:</h5>
-      <app-search-input 
-        placeholder="common.search_projects"
-        (searchChange)="onSearchProjects($event)">
-      </app-search-input>
-    </div>
-
-    <!-- Búsqueda de usuarios -->
-    <div class="search-example">
-      <h5>Búsqueda de Usuarios:</h5>
-      <app-search-input 
-        placeholder="common.search_users"
-        [maxLength]="50"
-        (searchChange)="onSearchUsers($event)">
-      </app-search-input>
-    </div>
-
-    <!-- Búsqueda de archivos -->
-    <div class="search-example">
-      <h5>Búsqueda de Archivos:</h5>
-      <app-search-input 
-        placeholder="common.search_files"
-        [maxLength]="200"
-        (searchChange)="onSearchFiles($event)">
-      </app-search-input>
-    </div>
-
-    <!-- Búsqueda deshabilitada -->
-    <div class="search-example">
-      <h5>Búsqueda Deshabilitada:</h5>
-      <app-search-input 
-        placeholder="common.search_placeholder"
-        [disabled]="true"
-        (searchChange)="onSearchDisabled($event)">
-      </app-search-input>
-    </div>
-  </div>
-
-  <!-- Input Component - Ejemplos de reutilización -->
-  <div class="test-component">
-    <h4>Input Component - Reutilización</h4>
-    
-    <!-- Input básico -->
-    <div class="input-example">
-      <h5>Input Básico:</h5>
-      <app-input 
-        labelKey="common.input_name"
-        placeholderKey="common.input_name"
-        (valueChange)="onInputChange($event, 'name')"
-        (inputFocus)="onInputFocus('name')"
-        (inputBlur)="onInputBlur('name')">
-      </app-input>
-    </div>
-
-    <!-- Input de email -->
-    <div class="input-example">
-      <h5>Input de Email:</h5>
-      <app-input 
-        labelKey="common.input_email"
-        placeholderKey="common.input_email"
-        type="email"
-        [required]="true"
-        (valueChange)="onInputChange($event, 'email')"
-        (inputFocus)="onInputFocus('email')"
-        (inputBlur)="onInputBlur('email')">
-      </app-input>
-    </div>
-
-    <!-- Input de contraseña -->
-    <div class="input-example">
-      <h5>Input de Contraseña:</h5>
-      <app-input 
-        labelKey="common.input_password"
-        placeholderKey="common.input_password"
-        type="password"
-        [required]="true"
-        [minLength]="8"
-        (valueChange)="onInputChange($event, 'password')"
-        (inputFocus)="onInputFocus('password')"
-        (inputBlur)="onInputBlur('password')">
-      </app-input>
-    </div>
-
-    <!-- Input deshabilitado -->
-    <div class="input-example">
-      <h5>Input Deshabilitado:</h5>
-      <app-input 
-        labelKey="common.input_company"
-        placeholderKey="common.input_company"
-        [disabled]="true"
-        value="Empresa Ejemplo"
-        (valueChange)="onInputChange($event, 'company')">
-      </app-input>
-    </div>
-
-    <!-- Input sin label -->
-    <div class="input-example">
-      <h5>Input Sin Label:</h5>
-      <app-input 
-        placeholderKey="common.input_phone"
-        [showLabel]="false"
-        type="tel"
-        (valueChange)="onInputChange($event, 'phone')">
-      </app-input>
-    </div>
-
-    <!-- Project Type Selector Component -->
-    <div class="test-component">
-      <h4>Project Type Selector Component</h4>
-      
-      <!-- Selector básico -->
-      <div class="selector-example">
-        <h5>Selector de Tipo de Proyecto:</h5>
-        <app-project-type-selector
-          (typeChange)="onProjectTypeChange($event)"
-          (typeSelect)="onProjectTypeSelect($event)">
-        </app-project-type-selector>
-      </div>
-
-      <!-- Selector con tipo predefinido -->
-      <div class="selector-example">
-        <h5>Selector con Tipo Predefinido (Departamento):</h5>
-        <app-project-type-selector
-          [selectedType]="'apartment'"
-          (typeChange)="onProjectTypeChange($event)"
-          (typeSelect)="onProjectTypeSelect($event)">
-        </app-project-type-selector>
-      </div>
-
-      <!-- Selector deshabilitado -->
-      <div class="selector-example">
-        <h5>Selector Deshabilitado:</h5>
-        <app-project-type-selector
-          [disabled]="true"
-          [selectedType]="'field'"
-          (typeChange)="onProjectTypeChange($event)"
-          (typeSelect)="onProjectTypeSelect($event)">
-        </app-project-type-selector>
-      </div>
-    </div>
-
-    <!-- Textarea Component -->
-    <div class="test-component">
-      <h4>Textarea Component</h4>
-      
-      <!-- Textarea básico -->
-      <div class="textarea-example">
-        <h5>Textarea Básico:</h5>
-        <app-textarea
-          labelKey="common.project_description"
-          placeholderKey="common.project_description_placeholder"
-          [maxLength]="500"
-          [rows]="4"
-          (valueChange)="onTextareaChange($event)"
-          (textareaFocus)="onTextareaFocus()"
-          (textareaBlur)="onTextareaBlur()"
-          (textareaInput)="onTextareaInput($event)">
-        </app-textarea>
-      </div>
-
-      <!-- Textarea con valor predefinido -->
-      <div class="textarea-example">
-        <h5>Textarea con Valor Predefinido:</h5>
-        <app-textarea
-          labelKey="common.project_notes"
-          placeholderKey="common.project_notes_placeholder"
-          value="Este es un proyecto de ejemplo con texto predefinido."
-          [maxLength]="300"
-          [rows]="3"
-          (valueChange)="onTextareaChange($event)">
-        </app-textarea>
-      </div>
-
-      <!-- Textarea deshabilitado -->
-      <div class="textarea-example">
-        <h5>Textarea Deshabilitado:</h5>
-        <app-textarea
-          labelKey="common.project_details"
-          placeholderKey="common.project_details_placeholder"
-          value="Este textarea está deshabilitado y no se puede editar."
-          [disabled]="true"
-          [maxLength]="200"
-          [rows]="2"
-          (valueChange)="onTextareaChange($event)">
-        </app-textarea>
-      </div>
-
-      <!-- Textarea sin contador -->
-      <div class="textarea-example">
-        <h5>Textarea Sin Contador:</h5>
-        <app-textarea
-          labelKey="common.project_notes"
-          placeholderKey="common.project_notes_placeholder"
-          [showCounter]="false"
-          [maxLength]="1000"
-          [rows]="5"
-          (valueChange)="onTextareaChange($event)">
-        </app-textarea>
-      </div>
-    </div>
-
-    <!-- Dropdown Component -->
-    <div class="test-component">
-      <h4>Dropdown Component</h4>
-      
-      <!-- Dropdown básico -->
-      <div class="dropdown-example">
-        <h5>Dropdown Básico:</h5>
-        <app-dropdown
-          labelKey="common.delivery"
-          [options]="deliveryOptions"
-          (valueChange)="onDropdownChange($event)"
-          (optionSelect)="onDropdownOptionSelect($event)"
-          (dropdownOpen)="onDropdownOpen()"
-          (dropdownClose)="onDropdownClose()">
-        </app-dropdown>
-      </div>
-
-      <!-- Dropdown con valor predefinido -->
-      <div class="dropdown-example">
-        <h5>Dropdown con Valor Predefinido:</h5>
-        <app-dropdown
-          labelKey="common.delivery"
-          [options]="deliveryOptions"
-          selectedValue="immediate"
-          (valueChange)="onDropdownChange($event)"
-          (optionSelect)="onDropdownOptionSelect($event)">
-        </app-dropdown>
-      </div>
-
-      <!-- Dropdown deshabilitado -->
-      <div class="dropdown-example">
-        <h5>Dropdown Deshabilitado:</h5>
-        <app-dropdown
-          labelKey="common.delivery"
-          [options]="deliveryOptions"
-          [disabled]="true"
-          selectedValue="future"
-          (valueChange)="onDropdownChange($event)">
-        </app-dropdown>
-      </div>
-
-      <!-- Dropdown con estado de carga -->
-      <div class="dropdown-example">
-        <h5>Dropdown con Estado de Carga:</h5>
-        <app-dropdown
-          labelKey="common.delivery"
-          [options]="[]"
-          [loading]="true"
-          (valueChange)="onDropdownChange($event)">
-        </app-dropdown>
-      </div>
-
-      <!-- Dropdown con error -->
-      <div class="dropdown-example">
-        <h5>Dropdown con Error:</h5>
-        <app-dropdown
-          labelKey="common.delivery"
-          [options]="deliveryOptions"
-          errorKey="common.select_required"
-          (valueChange)="onDropdownChange($event)">
-        </app-dropdown>
-      </div>
-    </div>
-
-    <!-- File Upload Component -->
-    <div class="test-component">
-      <h4>File Upload Component</h4>
-      
-      <!-- Upload de audio básico -->
-      <div class="upload-example">
-        <h5>Upload de Audio:</h5>
-        <app-file-upload
-          labelKey="common.upload_audio"
-          acceptedTypes=".mp3,.wav,.m4a,.wma,.flac,.aac"
-          [maxFileSize]="50 * 1024 * 1024"
-          [multiple]="true"
-          [maxFiles]="3"
-          (fileSelect)="onFileSelect($event)"
-          (fileUpload)="onFileUpload($event)"
-          (fileRemove)="onFileRemove($event)"
-          (uploadComplete)="onUploadComplete($event)"
-          (uploadError)="onUploadError($event)">
-        </app-file-upload>
-      </div>
-
-      <!-- Upload de video -->
-      <div class="upload-example">
-        <h5>Upload de Video:</h5>
-        <app-file-upload
-          labelKey="common.upload_video"
-          acceptedTypes=".mp4,.avi,.mov,.wmv"
-          [maxFileSize]="100 * 1024 * 1024"
-          [multiple]="false"
-          [autoUpload]="true"
-          (fileSelect)="onFileSelect($event)"
-          (fileUpload)="onFileUpload($event)"
-          (fileRemove)="onFileRemove($event)"
-          (uploadComplete)="onUploadComplete($event)"
-          (uploadError)="onUploadError($event)">
-        </app-file-upload>
-      </div>
-
-      <!-- Upload deshabilitado -->
-      <div class="upload-example">
-        <h5>Upload Deshabilitado:</h5>
-        <app-file-upload
-          labelKey="common.upload_file"
-          [disabled]="true"
-          (fileSelect)="onFileSelect($event)">
-        </app-file-upload>
-      </div>
-
-      <!-- Upload con archivo único -->
-      <div class="upload-example">
-        <h5>Upload de Archivo Único:</h5>
-        <app-file-upload
-          labelKey="common.upload_audio"
-          acceptedTypes=".mp3,.wav"
-          [maxFileSize]="10 * 1024 * 1024"
-          [multiple]="false"
-          [required]="true"
-          (fileSelect)="onFileSelect($event)"
-          (fileUpload)="onFileUpload($event)"
-          (fileRemove)="onFileRemove($event)"
-          (uploadComplete)="onUploadComplete($event)"
-          (uploadError)="onUploadError($event)">
-        </app-file-upload>
-      </div>
-    </div>
-
-    <!-- Image Manager Component -->
-    <div class="test-component">
-      <h4>Image Manager Component</h4>
-      
-      <!-- Gestor de imágenes básico -->
-      <div class="image-manager-example">
-        <h5>Gestor de Imágenes:</h5>
-        <app-image-manager
-          labelKey="common.images"
-          [maxImages]="5"
-          [maxFileSize]="5 * 1024 * 1024"
-          [autoUpload]="true"
-          (imageAdd)="onImageAdd($event)"
-          (imageEdit)="onImageEdit($event)"
-          (imageRemove)="onImageRemove($event)"
-          (imageUpload)="onImageUpload($event)"
-          (imagesChange)="onImagesChange($event)"
-          (uploadError)="onImageUploadError($event)">
-        </app-image-manager>
-      </div>
-
-      <!-- Gestor de imágenes con imágenes preexistentes -->
-      <div class="image-manager-example">
-        <h5>Gestor con Imágenes Existentes:</h5>
-        <app-image-manager
-          labelKey="common.images"
-          [maxImages]="3"
-          [maxFileSize]="2 * 1024 * 1024"
-          [autoUpload]="false"
-          [images]="[
-            {
-              id: '1',
-              name: 'imagen1.jpg',
-              url: 'https://via.placeholder.com/150',
-              size: 1024000,
-              type: 'image/jpeg',
-              status: 'completed'
-            },
-            {
-              id: '2',
-              name: 'imagen2.png',
-              url: 'https://via.placeholder.com/150/ff0000',
-              size: 2048000,
-              type: 'image/png',
-              status: 'completed'
-            }
-          ]"
-          (imageAdd)="onImageAdd($event)"
-          (imageEdit)="onImageEdit($event)"
-          (imageRemove)="onImageRemove($event)"
-          (imageUpload)="onImageUpload($event)"
-          (imagesChange)="onImagesChange($event)"
-          (uploadError)="onImageUploadError($event)">
-        </app-image-manager>
-      </div>
-
-      <!-- Gestor de imágenes deshabilitado -->
-      <div class="image-manager-example">
-        <h5>Gestor Deshabilitado:</h5>
-        <app-image-manager
-          labelKey="common.images"
-          [disabled]="true"
-          [maxImages]="2"
-          (imageAdd)="onImageAdd($event)">
-        </app-image-manager>
-      </div>
-
-      <!-- Gestor de imágenes requerido -->
-      <div class="image-manager-example">
-        <h5>Gestor Requerido:</h5>
-        <app-image-manager
-          labelKey="common.images"
-          [required]="true"
-          [maxImages]="1"
-          [maxFileSize]="1 * 1024 * 1024"
-          (imageAdd)="onImageAdd($event)"
-          (imageEdit)="onImageEdit($event)"
-          (imageRemove)="onImageRemove($event)"
-          (imageUpload)="onImageUpload($event)"
-          (imagesChange)="onImagesChange($event)"
-          (uploadError)="onImageUploadError($event)">
-        </app-image-manager>
-      </div>
-    </div>
-
-    <!-- Project Tag Component -->
-    <div class="test-component">
-      <h4>Project Tag Component</h4>
-      
-      <!-- Ejemplos básicos -->
-      <div class="project-tag-example">
-        <h5>Project Tags Básicos:</h5>
-        <div class="project-tags-container">
-          <app-project-tag
-            *ngFor="let project of testProjects"
-            [project]="project"
-            (edit)="onProjectEdit($event)"
-            (delete)="onProjectDelete($event)"
-            (select)="onProjectSelect($event)">
-          </app-project-tag>
-        </div>
-      </div>
-
-      <!-- Diferentes tamaños -->
-      <div class="project-tag-example">
-        <h5>Diferentes Tamaños:</h5>
-        <div class="project-tags-container">
-          <app-project-tag
-            [project]="testProjects[0]"
-            size="small"
-            (edit)="onProjectEdit($event)"
-            (delete)="onProjectDelete($event)">
-          </app-project-tag>
-          <app-project-tag
-            [project]="testProjects[1]"
-            size="medium"
-            (edit)="onProjectEdit($event)"
-            (delete)="onProjectDelete($event)">
-          </app-project-tag>
-          <app-project-tag
-            [project]="testProjects[2]"
-            size="large"
-            (edit)="onProjectEdit($event)"
-            (delete)="onProjectDelete($event)">
-          </app-project-tag>
-        </div>
-      </div>
-
-      <!-- Diferentes variantes -->
-      <div class="project-tag-example">
-        <h5>Diferentes Variantes:</h5>
-        <div class="project-tags-container">
-          <app-project-tag
-            [project]="testProjects[0]"
-            variant="default"
-            (edit)="onProjectEdit($event)"
-            (delete)="onProjectDelete($event)">
-          </app-project-tag>
-          <app-project-tag
-            [project]="testProjects[1]"
-            variant="outlined"
-            (edit)="onProjectEdit($event)"
-            (delete)="onProjectDelete($event)">
-          </app-project-tag>
-          <app-project-tag
-            [project]="testProjects[2]"
-            variant="filled"
-            (edit)="onProjectEdit($event)"
-            (delete)="onProjectDelete($event)">
-          </app-project-tag>
-        </div>
-      </div>
-
-      <!-- Sin botones de acción -->
-      <div class="project-tag-example">
-        <h5>Sin Botones de Acción:</h5>
-        <div class="project-tags-container">
-          <app-project-tag
-            [project]="testProjects[0]"
-            [showEdit]="false"
-            [showDelete]="false"
-            (select)="onProjectSelect($event)">
-          </app-project-tag>
-          <app-project-tag
-            [project]="testProjects[1]"
-            [showEdit]="false"
-            (select)="onProjectSelect($event)">
-          </app-project-tag>
-          <app-project-tag
-            [project]="testProjects[2]"
-            [showDelete]="false"
-            (select)="onProjectSelect($event)">
-          </app-project-tag>
-        </div>
-      </div>
-
-      <!-- Deshabilitado -->
-      <div class="project-tag-example">
-        <h5>Deshabilitado:</h5>
-        <div class="project-tags-container">
-          <app-project-tag
-            [project]="testProjects[0]"
-            [disabled]="true"
-            (edit)="onProjectEdit($event)"
-            (delete)="onProjectDelete($event)">
-          </app-project-tag>
-        </div>
-      </div>
-    </div>
-
-    <!-- Info Tooltip Component (nuevo al final) -->
-    <div class="test-component">
-      <h4>Info Tooltip Component</h4>
-      <div class="tooltip-examples">
-        <div class="tooltip-example">
-          <span>Información del proyecto:</span>
-          <app-info-tooltip
-            [data]="tooltipData"
-            iconSize="md"
-            iconColor="success"
-            position="bottom"
-            (tooltipOpen)="onTooltipOpen()"
-            (tooltipClose)="onTooltipClose()">
-          </app-info-tooltip>
-        </div>
-        
-        <div class="tooltip-example">
-          <span>Ayuda:</span>
-          <app-info-tooltip
-            [data]="{
-              title: 'Ayuda del Sistema',
-              content: 'Este es un sistema de gestión de proyectos que te permite crear, editar y administrar tus proyectos de manera eficiente.'
-            }"
-            iconSize="sm"
-            iconColor="primary"
-            position="right">
-          </app-info-tooltip>
-        </div>
-      </div>
-    </div>
-
-    <!-- Number Dropdown Component -->
-    <div class="test-component">
-      <h4>Number Dropdown Component</h4>
-      <div class="number-dropdown-examples">
-        <div class="dropdown-example">
-          <h5>Dropdown Básico (1-30):</h5>
-          <app-number-dropdown
-            [(value)]="selectedNumber"
-            [min]="minNumber"
-            [max]="maxNumber"
-            (change)="onNumberChange($event)">
-          </app-number-dropdown>
-          <span class="selected-info">Valor seleccionado: {{ selectedNumber }}</span>
+      <header class="resumen__header">
+        <div>
+          <p class="resumen__subtitle">Bienvenido de nuevo,</p>
+          <h1 class="resumen__title">
+            Panel de <span class="resumen__title-highlight">Control</span>
+          </h1>
         </div>
 
-        <div class="dropdown-example">
-          <h5>Diferentes Tamaños:</h5>
-          <div class="size-examples">
-            <div class="size-example">
-              <span>Pequeño:</span>
-              <app-number-dropdown
-                [value]="5"
-                size="sm"
-                (change)="onNumberChange($event)">
-              </app-number-dropdown>
+        <div class="resumen__date-pill">
+          📅 {{ currentDate | date:'d MMMM, yyyy' }}
+        </div>
+      </header>
+
+      <section class="resumen__grid">
+
+        <!-- Hero action card -->
+        <article class="resumen__hero-card">
+          <div class="resumen__hero-media"></div>
+          <div class="resumen__hero-gradient"></div>
+
+          <div class="resumen__hero-content">
+            <div class="resumen__hero-top">
+              <span class="resumen__hero-chip">Acción rápida</span>
+              <button class="resumen__hero-arrow">
+                <svg viewBox="0 0 24 24" stroke="currentColor" fill="none">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                </svg>
+              </button>
             </div>
-            <div class="size-example">
-              <span>Mediano:</span>
-              <app-number-dropdown
-                [value]="10"
-                size="md"
-                (change)="onNumberChange($event)">
-              </app-number-dropdown>
-            </div>
-            <div class="size-example">
-              <span>Grande:</span>
-              <app-number-dropdown
-                [value]="15"
-                size="lg"
-                (change)="onNumberChange($event)">
-              </app-number-dropdown>
+
+            <div class="resumen__hero-body">
+              <h3>Crear nuevo proyecto residencial</h3>
+              <p>
+                Comienza la configuración de una nueva sala de ventas digital. Carga planos, define unidades y publica.
+              </p>
+              <button class="resumen__hero-cta" (click)="goNuevo()">+ Iniciar configuración</button>
             </div>
           </div>
-        </div>
+        </article>
 
-        <div class="dropdown-example">
-          <h5>Rango Personalizado (5-15):</h5>
-          <app-number-dropdown
-            [value]="8"
-            [min]="5"
-            [max]="15"
-            (change)="onNumberChange($event)">
-          </app-number-dropdown>
-        </div>
-
-        <div class="dropdown-example">
-          <h5>Deshabilitado:</h5>
-          <app-number-dropdown
-            [value]="3"
-            [disabled]="true"
-            (change)="onNumberChange($event)">
-          </app-number-dropdown>
-        </div>
-      </div>
-    </div>
-
-    <!-- Add More Component -->
-    <div class="test-component">
-      <h4>Add More Component</h4>
-      <div class="add-more-examples">
-        <div class="add-more-example">
-          <h5>Botón Básico:</h5>
-          <app-add-more
-            (addMore)="onAddMore()">
-          </app-add-more>
-        </div>
-
-        <div class="add-more-example">
-          <h5>Diferentes Tamaños:</h5>
-          <div class="size-examples">
-            <div class="size-example">
-              <span>Pequeño:</span>
-              <app-add-more
-                size="sm"
-                iconSize="sm"
-                (addMore)="onAddMore()">
-              </app-add-more>
+        <!-- Stats stack -->
+        <div class="resumen__stats">
+          <article class="resumen__stat-card">
+            <div>
+              <p>Proyectos activos</p>
+              <h4>{{ projectsCount | number:'2.0' }}<span>/{{ projectsMax | number:'2.0' }}</span></h4>
             </div>
-            <div class="size-example">
-              <span>Mediano:</span>
-              <app-add-more
-                size="md"
-                iconSize="md"
-                (addMore)="onAddMore()">
-              </app-add-more>
+            <div class="resumen__stat-icon">
+              <svg viewBox="0 0 24 24" stroke="currentColor" fill="none">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
             </div>
-            <div class="size-example">
-              <span>Grande:</span>
-              <app-add-more
-                size="lg"
-                iconSize="lg"
-                (addMore)="onAddMore()">
-              </app-add-more>
+            <div class="resumen__progress">
+              <span [style.width.%]="projectsProgress"></span>
+            </div>
+            <span class="resumen__annotation">Buen ritmo</span>
+          </article>
+
+          <article class="resumen__stat-card resumen__stat-card--accent">
+            <div>
+              <p>98% Uptime</p>
+              <small>Tus salas de ventas digitales están funcionando perfectamente.</small>
+            </div>
+            <div class="resumen__stat-badge">
+              <svg viewBox="0 0 24 24" stroke="currentColor" fill="none">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+            </div>
+          </article>
+        </div>
+
+        <!-- Projects -->
+        <section class="resumen__projects">
+          <div class="resumen__projects-head">
+            <h3>Proyectos recientes</h3>
+            <div class="resumen__filters">
+              <button class="active">Todos</button>
+              <button>En venta</button>
+              <button>Drafts</button>
             </div>
           </div>
-        </div>
 
-        <div class="add-more-example">
-          <h5>Diferentes Variantes:</h5>
-          <div class="variant-examples">
-            <div class="variant-example">
-              <span>Primario:</span>
-              <app-add-more
-                variant="primary"
-                (addMore)="onAddMore()">
-              </app-add-more>
-            </div>
-            <div class="variant-example">
-              <span>Secundario:</span>
-              <app-add-more
-                variant="secondary"
-                (addMore)="onAddMore()">
-              </app-add-more>
-            </div>
-            <div class="variant-example">
-              <span>Outline:</span>
-              <app-add-more
-                variant="outline"
-                (addMore)="onAddMore()">
-              </app-add-more>
-            </div>
+          <div class="resumen__projects-grid">
+            <article
+              class="resumen__project-card"
+              *ngFor="let project of featuredProjects">
+              <div class="resumen__project-media">
+                <img [src]="project.image" [alt]="project.name" />
+                <div class="resumen__project-pill" [class]="'status-' + project.status">
+                  <span class="resumen__status-dot"></span>
+                  {{ project.status | titlecase }}
+                </div>
+                <button class="resumen__project-edit">
+                  <svg viewBox="0 0 24 24" stroke="currentColor" fill="none">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                  </svg>
+                </button>
+              </div>
+
+              <div class="resumen__project-info">
+                <h4>{{ project.name }}</h4>
+                <p>{{ project.location }}</p>
+                <div class="resumen__mini-progress">
+                  <span [style.width.%]="project.progress"></span>
+                </div>
+                <small>{{ project.progress }}% completado</small>
+              </div>
+            </article>
+
+            <button class="resumen__project-add" (click)="goNuevo()">
+              <span>Iniciar proyecto</span>
+            </button>
           </div>
-        </div>
+        </section>
 
-        <div class="add-more-example">
-          <h5>Textos Personalizados:</h5>
-          <div class="text-examples">
-            <div class="text-example">
-              <app-add-more
-                text="add_more.add_project"
-                (addMore)="onAddProject()">
-              </app-add-more>
-            </div>
-            <div class="text-example">
-              <app-add-more
-                text="add_more.add_file"
-                (addMore)="onAddFile()">
-              </app-add-more>
-            </div>
-            <div class="text-example">
-              <app-add-more
-                text="add_more.add_image"
-                (addMore)="onAddImage()">
-              </app-add-more>
-            </div>
-          </div>
-        </div>
+      </section>
 
-        <div class="add-more-example">
-          <h5>Deshabilitado:</h5>
-          <app-add-more
-            [disabled]="true"
-            (addMore)="onAddMore()">
-          </app-add-more>
-        </div>
-      </div>
-    </div>
-  <!-- Info Tooltip Component -->
-  <div class="info-tooltip-section">
-    <h4>Componente Info Tooltip</h4>
-    <div class="tooltip-examples">
-      <div class="tooltip-example">
-        <span>Información del proyecto:</span>
-        <app-info-tooltip
-          [data]="tooltipData"
-          iconSize="md"
-          iconColor="success"
-          position="bottom"
-          (tooltipOpen)="onTooltipOpen()"
-          (tooltipClose)="onTooltipClose()"
-          (contentChange)="onTooltipContentChange($event)">
-        </app-info-tooltip>
-      </div>
-      
-      <div class="tooltip-example">
-        <span>Ayuda:</span>
-        <app-info-tooltip
-          [data]="{
-            title: 'Ayuda del Sistema',
-            content: 'Este es un sistema de gestión de proyectos que te permite crear, editar y administrar tus proyectos de manera eficiente.',
-            maxLength: 300,
-            showCounter: true
-          }"
-          iconSize="sm"
-          iconColor="primary"
-          position="right">
-        </app-info-tooltip>
-      </div>
-    </div>
-  </div>d
-    <!-- Features Component -->
-    <div class="test-component">
-      <h4>Features Component</h4>
-      <div class="features-examples">
-        <div class="features-example">
-          <h5>Componente de Características del Edificio:</h5>
-          <div class="features-placeholder">
-            <p>Componente Features Manager - Temporalmente deshabilitado</p>
-            <p>Features disponibles: {{ features.length }}</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal Component - Pruebas -->
-  <div class="modal-section">
-    <h4>Componente Modal Reutilizable</h4>
-    <div class="modal-examples">
-      <div class="modal-example">
-        <h5>Pruebas del Modal:</h5>
-        <div class="modal-buttons">
-          <button class="btn btn-primary" (click)="openModal()">
-            Abrir Modal Básico
-          </button>
-          <button class="btn btn-danger" (click)="openDeleteModal()">
-            Abrir Modal de Eliminación
-          </button>
-          <button class="btn btn-success" (click)="openCreateProjectModal()">
-            Abrir Modal de Crear Proyecto
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal Component -->
-  <app-modal
-    [isOpen]="isModalOpen"
-    [config]="modalConfig"
-    (confirm)="onModalConfirm($event)"
-    (cancel)="onModalCancel()"
-    (close)="onModalClose()">
-  </app-modal>
+      <footer class="resumen__footer">
+        <img src="assets/logo-im-gray.png" alt="Inmobiliaria Manquehue" />
+        <p>© 2024 Inmobiliaria Manquehue · Sistema IRIS v2.1</p>
+      </footer>
+  </main>
 </div>
-</div>
+
+

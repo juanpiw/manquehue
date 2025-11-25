@@ -1,4 +1,6 @@
-<div class="config-premium">
+from pathlib import Path
+
+TEMPLATE = """<div class="config-premium">
   <header class="config-premium__hero">
     <div class="config-premium__intro">
       <div class="config-premium__breadcrumb">
@@ -28,56 +30,53 @@
   </header>
 
   <div class="config-premium__canvas custom-scrollbar">
-    <ng-container *ngIf="getScreenStats() as stats">
-      <section class="stat-grid">
-        <article class="stat-card stat-card--total">
-          <div class="stat-card__halo"></div>
-          <p class="stat-card__eyebrow">{{ 'configuracion.total_screens' | t | uppercase }}</p>
-          <strong class="stat-card__value">{{ stats.total | number:'2.0-0' }}</strong>
-          <div class="stat-card__chip stat-card__chip--glass">
-            <span class="chip-dot"></span>
-            Red Manquehue
+    <section class="stat-grid">
+      <article class="stat-card stat-card--total">
+        <div>
+          <p>{{ 'configuracion.total_screens' | t }}</p>
+          <strong>{{ getScreenStats().total | number:'2.0-0' }}</strong>
+          <span class="chip">Red Manquehue</span>
+        </div>
+        <div class="halo"></div>
+      </article>
+      <article class="stat-card">
+        <header>
+          <div>
+            <p>{{ 'configuracion.online_screens' | t }}</p>
+            <strong>{{ getScreenStats().online }}<span>/{{ getScreenStats().total }}</span></strong>
           </div>
-        </article>
-        <article class="stat-card stat-card--online">
-          <header class="stat-card__header">
-            <div>
-              <p class="stat-card__eyebrow">{{ 'configuracion.online_screens' | t | uppercase }}</p>
-              <strong>{{ stats.online | number:'2.0-0' }}<span>/{{ stats.total | number:'2.0-0' }}</span></strong>
-            </div>
-            <div class="stat-icon stat-icon--green">
-              <svg viewBox="0 0 24 24"><path d="M5.636 18.364a9 9 0 010-12.728m12.728 0a9 9 0 010 12.728m-9.9-2.829a5 5 0 010-7.07m7.072 0a5 5 0 010 7.07M13 12a1 1 0 11-2 0 1 1 0 012 0z"/></svg>
-            </div>
-          </header>
-          <div class="progress">
-            <div
-              class="progress__bar"
-              [style.width.%]="stats.total ? (stats.online / stats.total) * 100 : 0">
-            </div>
+          <div class="stat-icon stat-icon--green">
+            <svg viewBox="0 0 24 24"><path d="M5.636 18.364a9 9 0 010-12.728m12.728 0a9 9 0 010 12.728m-9.9-2.829a5 5 0 010-7.07m7.072 0a5 5 0 010 7.07M13 12a1 1 0 11-2 0 1 1 0 012 0z"/></svg>
           </div>
-        </article>
-        <article class="stat-card stat-card--maintenance">
-          <header class="stat-card__header">
-            <div>
-              <p class="stat-card__eyebrow">{{ 'configuracion.maintenance_screens' | t | uppercase }}</p>
-              <strong class="stat-card__value stat-card__value--accent">{{ stats.maintenance | number:'2.0-0' }}</strong>
-            </div>
-            <div class="stat-icon stat-icon--orange">
-              <svg viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065zM15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-            </div>
-          </header>
-          <small class="pill pill--warning stat-card__ticket">1 ticket activo</small>
-        </article>
-        <article class="stat-card stat-card--soft">
-          <p class="stat-card__eyebrow">Salud de red</p>
-          <div class="stat-card__status">
-            <strong>Estable</strong>
-            <span>- Sin errores críticos</span>
+        </header>
+        <div class="progress">
+          <div
+            class="progress__bar"
+            [style.width.%]="getScreenStats().total ? (getScreenStats().online / getScreenStats().total) * 100 : 0">
           </div>
-        </article>
-      </section>
-
-    </ng-container>
+        </div>
+      </article>
+      <article class="stat-card">
+        <header>
+          <div>
+            <p>{{ 'configuracion.maintenance_screens' | t }}</p>
+            <strong class="text-orange">{{ getScreenStats().maintenance }}</strong>
+          </div>
+          <div class="stat-icon stat-icon--orange">
+            <svg viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065zM15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          </div>
+        </header>
+        <small class="pill pill--warning">1 ticket activo</small>
+      </article>
+      <article class="stat-card stat-card--soft">
+        <p>Salud de Red</p>
+        <div class="stat-card__status">
+          Estable
+          <span>- Sin errores críticos</span>
+        </div>
+        <svg viewBox="0 0 24 24"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+      </article>
+    </section>
 
     <section class="filter-pill">
       <div class="filter-pill__search">
@@ -290,3 +289,7 @@
   (cancel)="onModalCancel()"
   (close)="onModalClose()">
 </app-modal>
+"""
+
+Path("src/app/sections/configuracion/configuracion.component.html").write_text(TEMPLATE, encoding="utf-8")
+

@@ -1,8 +1,9 @@
-import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
+import { ApplicationConfig, provideZoneChangeDetection, importProvidersFrom } from '@angular/core';
 import { provideRouter, withRouterConfig, withEnabledBlockingInitialNavigation } from '@angular/router';
 import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
 import { provideClientHydration } from '@angular/platform-browser';
 import { APP_ROUTES, ROUTING_CONFIG } from './app.routes';
+import { LucideAngularModule, LayoutGrid, Building2, BarChart3, Settings2, PlusCircle, Eye, UserRound, LifeBuoy } from 'lucide-angular';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -14,5 +15,17 @@ export const appConfig: ApplicationConfig = {
     ),
     provideClientHydration(),
     provideHttpClient(withFetch(), withInterceptors([])),
+    importProvidersFrom(
+      LucideAngularModule.pick({
+        LayoutGrid,
+        Building2,
+        BarChart3,
+        Settings2,
+        PlusCircle,
+        Eye,
+        UserRound,
+        LifeBuoy
+      })
+    )
   ]
 };

@@ -9,6 +9,11 @@ export const ROUTING_CONFIG: ExtraOptions = {
 export const APP_ROUTES: Routes = [
   {
     path: '',
+    pathMatch: 'full',
+    redirectTo: 'login',
+  },
+  {
+    path: '',
     loadChildren: () =>
       import('./pages/pages.routes').then(m => m.PAGES_ROUTES),
     // canActivateChild: [authGuardCanActivate], // opcional

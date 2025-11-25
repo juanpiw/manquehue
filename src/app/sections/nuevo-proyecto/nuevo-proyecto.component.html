@@ -1,789 +1,489 @@
-<div class="nuevo-proyecto-container">
-  
-  <!-- Header con título -->
-
-  <!-- Step Indicator -->
-  <div class="step-indicator-section">
-    <app-step-indicator
-      [title]="'nuevo_proyecto.steps_title'"
-      [steps]="steps"
-      [currentStep]="currentStep"
-      [showTitle]="true"
-      [clickable]="true"
-      (stepChange)="onStepChange($event)"
-      (stepClick)="onStepClick($event)">
-    </app-step-indicator>
-  </div>
-
-  <!-- Contenedores de pasos -->
-  <div class="steps-content">
-    
-    <!-- Paso 1: Información básica -->
-    <div class="step-container" [class.active]="isStepActive(1)" *ngIf="isStepActive(1)">
-      <div class="step-header">
-        <h2>{{ 'nuevo_proyecto.step_1_title' | t }}</h2>
-        <p>{{ 'nuevo_proyecto.step_1_description' | t }}</p>
-      </div>
-      
-      <div class="step-content">
-        <div class="form-layout">
-          <!-- Columna izquierda: Información del proyecto -->
-          <div class="left-column">
-            <div class="form-section">
-              <h3>{{ 'nuevo_proyecto.project_type' | t }}</h3>
-              <app-project-type-selector
-                (typeChange)="onProjectTypeChange($event)"
-                (typeSelect)="onProjectTypeSelect($event)">
-              </app-project-type-selector>
-            </div>
-
-            <div class="form-section">
-              <h3>{{ 'nuevo_proyecto.project_name' | t }}</h3>
-              <app-input 
-                labelKey=""
-                placeholderKey="nuevo_proyecto.project_name_placeholder"
-                (valueChange)="onInputChange($event, 'projectName')">
-              </app-input>
-            </div>
-
-            <div class="form-section">
-              <h3>{{ 'nuevo_proyecto.project_description' | t }}</h3>
-              <app-textarea
-                labelKey=""
-                placeholderKey="nuevo_proyecto.project_description_placeholder"
-                [maxLength]="500"
-                [rows]="4"
-                (valueChange)="onTextareaChange($event)">
-              </app-textarea>
-            </div>
-
-            <div class="form-section">
-              <h3>{{ 'nuevo_proyecto.key_data' | t }}</h3>
-              
-              <!-- Primer conjunto de datos -->
-              <div class="key-data-group">
-                <div class="data-item">
-                  <div class="data-label">
-                    <span>{{ 'nuevo_proyecto.time' | t }}</span>
-                    <app-info-tooltip
-                      [data]="tiempoTooltipData"
-                      iconSize="sm"
-                      iconColor="success"
-                      position="right">
-                    </app-info-tooltip>
-                  </div>
-                  <app-number-dropdown
-                    [value]="tiempo1"
-                    [min]="1"
-                    [max]="60"
-                    size="sm"
-                    (change)="onTiempoChange($event, 'tiempo1')">
-                  </app-number-dropdown>
-                </div>
-                <div class="data-item">
-                  <div class="data-label">
-                    <span>{{ 'nuevo_proyecto.nearby_point' | t }}</span>
-                  </div>
-                  <app-input 
-                    labelKey=""
-                    placeholderKey="nuevo_proyecto.nearby_point_placeholder"
-                    (valueChange)="onInputChange($event, 'puntoCercano1')">
-                  </app-input>
-                </div>
-              </div>
-
-              <!-- Segundo conjunto de datos -->
-              <div class="key-data-group">
-                <div class="data-item">
-                  <div class="data-label">
-                    <span>{{ 'nuevo_proyecto.time' | t }}</span>
-                    <app-info-tooltip
-                      [data]="tiempoTooltipData"
-                      iconSize="sm"
-                      iconColor="success"
-                      position="right">
-                    </app-info-tooltip>
-                  </div>
-                  <app-number-dropdown
-                    [value]="tiempo2"
-                    [min]="1"
-                    [max]="60"
-                    size="sm"
-                    (change)="onTiempoChange($event, 'tiempo2')">
-                  </app-number-dropdown>
-                </div>
-                <div class="data-item">
-                  <div class="data-label">
-                    <span>{{ 'nuevo_proyecto.orientation' | t }}</span>
-                  </div>
-                  <app-input 
-                    labelKey=""
-                    placeholderKey="nuevo_proyecto.orientation_placeholder"
-                    (valueChange)="onInputChange($event, 'orientacion')">
-                  </app-input>
-                </div>
-              </div>
-
-              <!-- Tercer conjunto de datos -->
-              <div class="key-data-group">
-                <div class="data-item">
-                  <div class="data-label">
-                    <span>{{ 'nuevo_proyecto.time' | t }}</span>
-                    <app-info-tooltip
-                      [data]="tiempoTooltipData"
-                      iconSize="sm"
-                      iconColor="success"
-                      position="right">
-                    </app-info-tooltip>
-                  </div>
-                  <app-number-dropdown
-                    [value]="tiempo3"
-                    [min]="1"
-                    [max]="60"
-                    size="sm"
-                    (change)="onTiempoChange($event, 'tiempo3')">
-                  </app-number-dropdown>
-                </div>
-                <div class="data-item">
-                  <div class="data-label">
-                    <span>{{ 'nuevo_proyecto.nearby_point' | t }}</span>
-                  </div>
-                  <app-input 
-                    labelKey=""
-                    placeholderKey="nuevo_proyecto.nearby_point_placeholder"
-                    (valueChange)="onInputChange($event, 'puntoCercano2')">
-                  </app-input>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Columna derecha: Entrega y medios -->
-          <div class="right-column">
-            <div class="form-section">
-              <h3>{{ 'nuevo_proyecto.delivery' | t }}</h3>
-              <app-dropdown
-                labelKey=""
-                [options]="deliveryOptions"
-                selectedValue="future"
-                (valueChange)="onDeliveryChange($event)">
-              </app-dropdown>
-            </div>
-
-            <div class="form-section">
-              <h3>{{ 'nuevo_proyecto.upload_audio' | t }}</h3>
-              <app-file-upload
-                labelKey=""
-                acceptedTypes=".mp3,.wav,.m4a,.wma,.flac,.aac"
-                [maxFileSize]="50 * 1024 * 1024"
-                [multiple]="false">
-              </app-file-upload>
-            </div>
-
-            <div class="form-section">
-              <h3>{{ 'nuevo_proyecto.background_media' | t }}</h3>
-              <app-image-manager
-                labelKey=""
-                [maxImages]="1"
-                [maxFileSize]="10 * 1024 * 1024"
-                [autoUpload]="false">
-              </app-image-manager>
-            </div>
-          </div>
+<div class="np">
+  <div class="np__canvas custom-scrollbar">
+    <header class="np__hero">
+      <div class="np__hero-copy">
+        <div class="np__breadcrumb">
+          <span>Proyectos</span>
+          <svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" /></svg>
+          <span>Creación</span>
         </div>
+        <h1>
+          Nuevo Proyecto
+          <svg viewBox="0 0 100 100">
+            <path d="M10,50 Q30,20 50,50 T90,50" />
+            <path d="M80,45 L90,50 L85,60" />
+          </svg>
+        </h1>
+        <p class="np__hero-note">Vamos a construir algo increíble hoy.</p>
       </div>
-
-      <!-- Botones de acción -->
-      <div class="step-actions">
-        <app-action-buttons
-          (cancelClick)="onCancel()"
-          (saveClick)="onSave()"
-          (viewClick)="onView()"
-          (buttonClick)="onButtonClick($event)">
-        </app-action-buttons>
+      <div class="np__hero-actions">
+        <button type="button" class="btn ghost" (click)="cancel()">Cancelar</button>
+        <button type="button" class="btn light" (click)="saveDraft()">
+          <span>Guardar borrador</span>
+          <svg viewBox="0 0 24 24"><path d="M8 7H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3m-1 4-3 3-3-3m3 3V4" /></svg>
+        </button>
       </div>
-    </div>
+    </header>
 
-    <!-- Paso 2: Configuración -->
-    <div class="step-container" [class.active]="isStepActive(2)" *ngIf="isStepActive(2)">
-      <div class="step-header">
-        <h2>{{ 'nuevo_proyecto.step_2_title' | t }}</h2>
-        <p>{{ 'nuevo_proyecto.step_2_description' | t }}</p>
-      </div>
+    <section class="np__stepper">
+      <div class="np__step-line"></div>
+      <button
+        *ngFor="let step of steps"
+        type="button"
+        class="np__step"
+        [class.np__step--current]="currentStep === step.id"
+        [class.np__step--done]="currentStep > step.id"
+        (click)="setStep(step.id)">
+        <span>{{ step.id }}</span>
+        <small>{{ step.label }}</small>
+      </button>
+    </section>
 
-      <div class="step-content">
-        <div class="form-layout">
-          <!-- Columna izquierda: Información del apartamento -->
-          <div class="left-column">
-            <!-- Agregación de apartamentos -->
-            <div class="form-section">
-              <h3>{{ 'nuevo_proyecto.apartment_aggregation' | t }}</h3>
-              <div class="aggregation-section">
-                <div class="aggregation-header">
-                  <span>{{ 'nuevo_proyecto.quantity_aggregated' | t }}</span>
-                  <app-number-dropdown
-                    [(value)]="apartmentQuantity"
-                    [min]="1"
-                    [max]="10"
-                    size="sm"
-                    (change)="onApartmentQuantityChange($event)">
-                  </app-number-dropdown>
-                </div>
-                <div class="project-tags">
-                  <div class="project-tag" *ngFor="let tag of projectTags; let i = index">
-                    <span>{{ tag.name }}</span>
-                    <button class="tag-remove" (click)="removeProjectTag(i)">
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
-                        <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2"/>
-                      </svg>
+    <ng-container [ngSwitch]="currentStep">
+      <section class="np__grid" *ngSwitchCase="1">
+        <div class="np__col np__col--main">
+          <article class="np-card">
+            <div class="np-card__head">
+              <span>1</span>
+              <h3>Identidad del Proyecto</h3>
+            </div>
+            <div class="np-form">
+              <label>
+                <span>Nombre del Proyecto</span>
+                <input type="text" placeholder="Edificio Mirador de los Andes" [(ngModel)]="project.name" />
+              </label>
+              <label>
+                <span>Descripción Comercial</span>
+                <textarea rows="4" placeholder="Describe las características principales..." [(ngModel)]="project.description"></textarea>
+                <small>{{ project.description.length }}/500</small>
+              </label>
+              <div class="np-form__group">
+                <label>
+                  <span>Tiempo de visita (min)</span>
+                  <input type="number" min="1" max="60" [(ngModel)]="timings.preVenta" />
+                </label>
+                <label>
+                  <span>Punto Cercano</span>
+                  <input type="text" placeholder="Metro Manquehue" [(ngModel)]="project.puntoCercano" />
+                </label>
+              </div>
+              <div class="np-form__group">
+                <label>
+                  <span>Tiempo recorrido (min)</span>
+                  <input type="number" min="1" max="60" [(ngModel)]="timings.recorrido" />
+                </label>
+                <label>
+                  <span>Orientación Principal</span>
+                  <div class="np-pill-group">
+                    <button
+                      type="button"
+                      *ngFor="let option of orientationOptions"
+                      [class.active]="project.orientacion === option"
+                      (click)="project.orientacion = option">
+                      {{ option }}
                     </button>
                   </div>
+                </label>
+              </div>
+              <div class="np-form__group">
+                <label>
+                  <span>Tiempo post-venta (min)</span>
+                  <input type="number" min="1" max="60" [(ngModel)]="timings.postVenta" />
+                </label>
+                <label>
+                  <span>Punto Cercano 2</span>
+                  <input type="text" placeholder="Colegio, parque, etc." [(ngModel)]="project.puntoCercano2" />
+                </label>
+              </div>
+            </div>
+          </article>
+
+          <article class="np-card">
+            <div class="np-card__head">
+              <span>2</span>
+              <h3>Multimedia & Portada</h3>
+            </div>
+            <div class="np-media-grid">
+              <label class="np-upload">
+                <input type="file" accept=".jpg,.png,.webp" (change)="handleFileChange($event, 'coverImage')" hidden />
+                <p>Imagen de Portada</p>
+                <small>{{ project.coverImage || 'JPG, PNG o WebP (max 5MB)' }}</small>
+              </label>
+              <label class="np-upload np-upload--accent">
+                <input type="file" accept=".mp3,.wav" (change)="handleFileChange($event, 'ambientAudio')" hidden />
+                <p>Audio Ambiental</p>
+                <small>{{ project.ambientAudio || 'MP3 para experiencia inmersiva' }}</small>
+              </label>
+            </div>
+          </article>
+        </div>
+
+        <div class="np__col np__col--side">
+          <article class="np-card np-card--compact">
+            <h3>Tipo de Inmueble</h3>
+            <div class="np-type-list">
+              <button
+                type="button"
+                *ngFor="let type of propertyTypes"
+                [class.active]="project.propertyType === type.id"
+                (click)="selectPropertyType(type.id)">
+                <span class="np-type-icon">
+                  <svg [attr.viewBox]="type.icon.viewBox" role="presentation" aria-hidden="true">
+                    <path
+                      *ngFor="let path of type.icon.paths"
+                      [attr.d]="path"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round" />
+                  </svg>
+                </span>
+                <span class="np-type-label">{{ type.label }}</span>
+              </button>
+            </div>
+          </article>
+
+          <article class="np-card np-card--compact">
+            <h3>Parámetros</h3>
+            <label>
+              <span>Estado Entrega</span>
+              <select [(ngModel)]="project.estado">
+                <option *ngFor="let option of deliveryOptions" [value]="option">{{ option }}</option>
+              </select>
+            </label>
+            <label>
+              <span>Orientación</span>
+              <input type="text" placeholder="Norte" [(ngModel)]="project.orientacion" />
+            </label>
+            <label>
+              <span>Ubicación Referencial</span>
+              <input type="text" placeholder="Av. Manquehue 1234" [(ngModel)]="project.ubicacion" />
+            </label>
+          </article>
+        </div>
+      </section>
+
+      <section class="np__grid" *ngSwitchCase="2">
+        <div class="np__col np__col--main">
+          <article class="np-card">
+            <div class="np-card__head">
+              <span>2</span>
+              <h3>Configuración General</h3>
+            </div>
+            <div class="np-form np-form__group">
+              <label>
+                <span>Unidades totales</span>
+                <input type="number" min="1" [(ngModel)]="unitConfig.totalUnits" />
+              </label>
+              <label>
+                <span>Número de torres</span>
+                <input type="number" min="1" [(ngModel)]="unitConfig.towers" />
+              </label>
+              <label>
+                <span>Entrega estimada</span>
+                <input type="text" placeholder="Q4 · 2025" [(ngModel)]="unitConfig.deliveryQuarter" />
+              </label>
+              <label>
+                <span>Tipología base</span>
+                <input type="text" placeholder="2D / 2B" [(ngModel)]="unitConfig.defaultTypology" />
+              </label>
+              <label>
+                <span>Ratio estacionamientos</span>
+                <input type="number" step="0.1" min="0" [(ngModel)]="unitConfig.parkingRatio" />
+              </label>
+              <label class="np-toggle">
+                <span>Bodega incluida</span>
+                <input type="checkbox" [(ngModel)]="unitConfig.storageIncluded" />
+                <span class="np-toggle__slider"></span>
+              </label>
+              <label class="np-toggle">
+                <span>Pet friendly</span>
+                <input type="checkbox" [(ngModel)]="unitConfig.petFriendly" />
+                <span class="np-toggle__slider"></span>
+              </label>
+            </div>
+          </article>
+
+          <article class="np-card">
+            <div class="np-card__head">
+              <span>2</span>
+              <h3>Tipologías & Amenities</h3>
+            </div>
+            <div class="np-form">
+              <div class="np-checkbox-grid">
+                <label class="np-checkbox-pill" *ngFor="let typology of typologyOptions">
+                  <input type="checkbox" [(ngModel)]="typology.selected" />
+                  <span>{{ typology.label }}</span>
+                </label>
+              </div>
+              <p class="np-card__hint">Selecciona las tipologías que estarán disponibles en la plataforma.</p>
+              <div class="np-checkbox-grid np-checkbox-grid--amenities">
+                <label class="np-checkbox-pill" *ngFor="let amenity of amenityOptions">
+                  <input type="checkbox" [(ngModel)]="amenity.selected" />
+                  <span>{{ amenity.label }}</span>
+                </label>
+              </div>
+            </div>
+          </article>
+        </div>
+
+        <div class="np__col np__col--side">
+          <article class="np-card np-card--compact">
+            <h3>Checklist rápido</h3>
+            <div class="np-summary">
+              <div>
+                <span class="np-summary__label">Tiempos claves</span>
+                <strong>{{ timings.preVenta }} · {{ timings.recorrido }} · {{ timings.postVenta }} min</strong>
+              </div>
+              <div>
+                <span class="np-summary__label">Entrega</span>
+                <strong>{{ unitConfig.deliveryQuarter }}</strong>
+              </div>
+            </div>
+            <label>
+              <span>Notas operacionales</span>
+              <textarea rows="4" placeholder="Consideraciones internas..." [(ngModel)]="unitConfig.observation"></textarea>
+            </label>
+          </article>
+
+          <article class="np-card np-card--compact">
+            <h3>Estado de avance</h3>
+            <ul class="np-checklist">
+              <li>
+                <span>Tipologías definidas</span>
+                <strong>{{ selectedTypologies.length }}/{{ typologyOptions.length }}</strong>
+              </li>
+              <li>
+                <span>Amenities destacados</span>
+                <strong>{{ selectedAmenities.length }}/{{ amenityOptions.length }}</strong>
+              </li>
+              <li>
+                <span>Documentación comercial</span>
+                <strong>{{ mediaAssets.brochure ? 'Listo' : 'Pendiente' }}</strong>
+              </li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section class="np__grid" *ngSwitchCase="3">
+        <div class="np__col np__col--main">
+          <article class="np-card">
+            <div class="np-card__head">
+              <span>3</span>
+              <h3>Carga de archivos clave</h3>
+            </div>
+            <div class="np-upload-grid">
+              <label class="np-upload np-upload--outline">
+                <input type="file" accept=".pdf" (change)="handleAssetUpload($event, 'masterPlan')" hidden />
+                <p>Masterplan</p>
+                <small>{{ mediaAssets.masterPlan || 'PDF, hasta 20MB' }}</small>
+              </label>
+              <label class="np-upload np-upload--outline">
+                <input type="file" accept=".pdf,.pptx" (change)="handleAssetUpload($event, 'brochure')" hidden />
+                <p>Brochure comercial</p>
+                <small>{{ mediaAssets.brochure || 'PDF/PPTX, hasta 20MB' }}</small>
+              </label>
+              <label class="np-upload np-upload--outline">
+                <input type="file" accept=".pdf" (change)="handleAssetUpload($event, 'legalDocs')" hidden />
+                <p>Documentos legales</p>
+                <small>{{ mediaAssets.legalDocs || 'Escrituras, reglamentos, etc.' }}</small>
+              </label>
+            </div>
+          </article>
+
+          <article class="np-card">
+            <div class="np-card__head">
+              <span>3</span>
+              <h3>Galería de recursos</h3>
+            </div>
+            <div class="np-media-grid">
+              <label class="np-upload np-upload--accent">
+                <input type="file" multiple accept="image/*,video/*" (change)="handleGalleryUpload($event)" hidden />
+                <p>Agregar renders / videos</p>
+                <small>Hasta 10 archivos · PNG, JPG, MP4</small>
+              </label>
+              <div class="np-gallery" *ngIf="mediaGallery.length > 0">
+                <div class="np-gallery__item" *ngFor="let asset of mediaGallery; let i = index">
+                  <span>{{ asset }}</span>
+                  <button type="button" (click)="removeGalleryAsset(i)" aria-label="Eliminar archivo">×</button>
                 </div>
               </div>
+              <p *ngIf="mediaGallery.length === 0" class="np-card__hint">No hay archivos cargados todavía.</p>
             </div>
-
-            <!-- Detalles del apartamento -->
-            <div class="form-section">
-              <h3>{{ 'nuevo_proyecto.apartment_details' | t }}</h3>
-              
-              <div class="form-field">
-                <label>{{ 'nuevo_proyecto.apartment_name' | t }}</label>
-                <app-input
-                  labelKey=""
-                  placeholderKey="nuevo_proyecto.apartment_name_placeholder"
-                  [value]="apartmentName"
-                  (valueChange)="onInputChange($event, 'apartmentName')">
-                </app-input>
-              </div>
-
-              <div class="form-field">
-                <label>{{ 'nuevo_proyecto.price_range' | t }}</label>
-                <div class="price-range-group">
-                  <div class="price-input">
-                    <label>{{ 'nuevo_proyecto.min_value' | t }}</label>
-                    <app-input
-                      labelKey=""
-                      placeholderKey="nuevo_proyecto.min_value_placeholder"
-                      [value]="minPrice"
-                      (valueChange)="onInputChange($event, 'minPrice')">
-                    </app-input>
-                  </div>
-                  <div class="price-input">
-                    <label>{{ 'nuevo_proyecto.max_value' | t }}</label>
-                    <app-input
-                      labelKey=""
-                      placeholderKey="nuevo_proyecto.max_value_placeholder"
-                      [value]="maxPrice"
-                      (valueChange)="onInputChange($event, 'maxPrice')">
-                    </app-input>
-                  </div>
-                  <div class="price-input">
-                    <label>{{ 'nuevo_proyecto.currency' | t }}</label>
-                    <app-dropdown
-                      labelKey=""
-                      [options]="currencyOptions"
-                      [selectedValue]="selectedCurrency"
-                      (valueChange)="onCurrencyChange($event)">
-                    </app-dropdown>
-                  </div>
-                </div>
-              </div>
-
-              <div class="form-field">
-                <label>{{ 'nuevo_proyecto.square_meters' | t }}</label>
-                <app-input
-                  labelKey=""
-                  placeholderKey="nuevo_proyecto.square_meters_placeholder"
-                  [value]="squareMeters"
-                  (valueChange)="onInputChange($event, 'squareMeters')">
-                </app-input>
-              </div>
-
-              <div class="form-field">
-                <label>{{ 'nuevo_proyecto.floor_number' | t }}</label>
-                <app-number-dropdown
-                  [(value)]="floorNumber"
-                  [min]="1"
-                  [max]="50"
-                  size="sm"
-                  (change)="onFloorNumberChange($event)">
-                </app-number-dropdown>
-              </div>
-
-              <div class="form-field">
-                <label>{{ 'nuevo_proyecto.orientation' | t }}</label>
-                <app-input
-                  labelKey=""
-                  placeholderKey="nuevo_proyecto.orientation_placeholder"
-                  [value]="orientation"
-                  (valueChange)="onInputChange($event, 'orientation')">
-                </app-input>
-              </div>
-
-              <div class="form-field">
-                <label>{{ 'nuevo_proyecto.bathrooms' | t }}</label>
-                <app-number-dropdown
-                  [(value)]="bathrooms"
-                  [min]="1"
-                  [max]="10"
-                  size="sm"
-                  (change)="onBathroomsChange($event)">
-                </app-number-dropdown>
-              </div>
-
-              <div class="form-field">
-                <label>{{ 'nuevo_proyecto.rooms' | t }}</label>
-                <app-number-dropdown
-                  [(value)]="rooms"
-                  [min]="1"
-                  [max]="10"
-                  size="sm"
-                  (change)="onRoomsChange($event)">
-                </app-number-dropdown>
-              </div>
-
-              <div class="form-field">
-                <label>{{ 'nuevo_proyecto.terraces' | t }}</label>
-                <app-number-dropdown
-                  [(value)]="terraces"
-                  [min]="0"
-                  [max]="5"
-                  size="sm"
-                  (change)="onTerracesChange($event)">
-                </app-number-dropdown>
-              </div>
-            </div>
-          </div>
-
-          <!-- Columna derecha: Medios y contacto -->
-          <div class="right-column">
-            <!-- Medios y 360 Pin -->
-            <div class="form-section">
-              <h3>{{ 'nuevo_proyecto.media_360' | t }}</h3>
-              
-              <div class="form-field">
-                <label>{{ 'nuevo_proyecto.floor_plan_image' | t }}</label>
-                <app-file-upload
-                  labelKey=""
-                  acceptedTypes=".jpg,.jpeg,.png,.gif,.svg"
-                  [maxFileSize]="10 * 1024 * 1024"
-                  [multiple]="false">
-                </app-file-upload>
-              </div>
-
-              <div class="form-field">
-                <label>{{ 'nuevo_proyecto.background_media' | t }}</label>
-                <app-image-manager
-                  labelKey=""
-                  [maxImages]="1"
-                  [maxFileSize]="10 * 1024 * 1024"
-                  [autoUpload]="false">
-                </app-image-manager>
-              </div>
-
-              <div class="form-field">
-                <label>{{ 'nuevo_proyecto.create_360_pin' | t }}</label>
-                <div class="pin-creation-group">
-                  <button class="btn btn-secondary btn-sm">{{ 'nuevo_proyecto.view' | t }}</button>
-                  <app-input
-                    labelKey=""
-                    placeholderKey="nuevo_proyecto.pin_coordinates_placeholder"
-                    [value]="pinCoordinates"
-                    (valueChange)="onInputChange($event, 'pinCoordinates')">
-                  </app-input>
-                  <app-input
-                    labelKey=""
-                    placeholderKey="nuevo_proyecto.pin_description_placeholder"
-                    [value]="pinDescription"
-                    (valueChange)="onInputChange($event, 'pinDescription')">
-                  </app-input>
-                  <app-add-more
-                    text="add_more.add_pin"
-                    size="sm"
-                    (addMore)="onAddPin()">
-                  </app-add-more>
-                </div>
-              </div>
-
-              <div class="form-field">
-                <label>{{ 'nuevo_proyecto.background_media_2' | t }}</label>
-                <app-file-upload
-                  labelKey=""
-                  acceptedTypes=".jpg,.jpeg,.png,.gif,.mp4,.mov,.avi"
-                  [maxFileSize]="50 * 1024 * 1024"
-                  [multiple]="false">
-                </app-file-upload>
-              </div>
-            </div>
-
-            <!-- Información de contacto -->
-            <div class="form-section">
-              <h3>{{ 'nuevo_proyecto.contact_information' | t }}</h3>
-              
-              <div class="form-field">
-                <label>{{ 'nuevo_proyecto.executive' | t }}</label>
-                <app-input
-                  labelKey=""
-                  placeholderKey="nuevo_proyecto.executive_placeholder"
-                  [value]="executiveName"
-                  (valueChange)="onInputChange($event, 'executiveName')">
-                </app-input>
-              </div>
-
-              <div class="form-field">
-                <label>{{ 'nuevo_proyecto.contact_phone' | t }}</label>
-                <app-input
-                  labelKey=""
-                  placeholderKey="nuevo_proyecto.contact_phone_placeholder"
-                  [value]="contactPhone"
-                  (valueChange)="onInputChange($event, 'contactPhone')">
-                </app-input>
-              </div>
-
-              <div class="form-field">
-                <label>{{ 'nuevo_proyecto.contact_email' | t }}</label>
-                <app-input
-                  labelKey=""
-                  placeholderKey="nuevo_proyecto.contact_email_placeholder"
-                  [value]="contactEmail"
-                  (valueChange)="onInputChange($event, 'contactEmail')">
-                </app-input>
-              </div>
-            </div>
-          </div>
+          </article>
         </div>
-      </div>
 
-      <!-- Botones de acción -->
-      <div class="step-actions">
-        <div class="left-actions">
-          <app-add-more
-            text="add_more.add_more"
-            size="md"
-            (addMore)="onAddMoreApartments()">
-          </app-add-more>
+        <div class="np__col np__col--side">
+          <article class="np-card np-card--compact">
+            <h3>Guías de formato</h3>
+            <ul class="np-list">
+              <li>Renders: 2400px · JPG/PNG</li>
+              <li>Videos: MP4 · 1080p · 60s</li>
+              <li>Audio: MP3 · loop 45s</li>
+            </ul>
+          </article>
+
+          <article class="np-card np-card--compact">
+            <h3>Tips de contenido</h3>
+            <p class="np-card__hint">
+              Prioriza renders con personas y vegetación realista. Incluye al menos un recorrido 360°.
+            </p>
+          </article>
         </div>
-        <div class="right-actions">
-          <app-action-buttons
-            (cancelClick)="onCancel()"
-            (saveClick)="onSave()"
-            (viewClick)="onView()"
-            (buttonClick)="onButtonClick($event)">
-          </app-action-buttons>
+      </section>
+
+      <section class="np__grid" *ngSwitchCase="4">
+        <div class="np__col np__col--main">
+          <article class="np-card">
+            <div class="np-card__head">
+              <span>4</span>
+              <h3>Copy & Storytelling</h3>
+            </div>
+            <div class="np-form">
+              <label>
+                <span>Headline principal</span>
+                <input type="text" placeholder="Titular hero" [(ngModel)]="contentPlan.heroHeadline" />
+              </label>
+              <label>
+                <span>Subtítulo inspiracional</span>
+                <input type="text" placeholder="Mensaje secundario" [(ngModel)]="contentPlan.heroTagline" />
+              </label>
+              <label>
+                <span>Narrativa comercial</span>
+                <textarea rows="5" placeholder="Describe la propuesta de valor..." [(ngModel)]="contentPlan.narrative"></textarea>
+              </label>
+            </div>
+          </article>
+
+          <article class="np-card">
+            <div class="np-card__head">
+              <span>4</span>
+              <h3>Diferenciadores & CTA</h3>
+            </div>
+            <div class="np-form">
+              <div class="np-form__group np-form__group--single">
+                <label *ngFor="let point of contentPlan.sellingPoints; let i = index">
+                  <span>Diferenciador {{ i + 1 }}</span>
+                  <input type="text" [(ngModel)]="contentPlan.sellingPoints[i]" placeholder="Ej: Sky pool panorámica" />
+                </label>
+              </div>
+              <label>
+                <span>CTA principal</span>
+                <input type="text" [(ngModel)]="contentPlan.ctaLabel" />
+              </label>
+              <label>
+                <span>Video / Tour virtual</span>
+                <input type="url" placeholder="https://..." [(ngModel)]="contentPlan.videoUrl" />
+              </label>
+            </div>
+          </article>
         </div>
-      </div>
-    </div>
 
-    <!-- Paso 3: Archivos -->
-    <div class="step-container" [class.active]="isStepActive(3)" *ngIf="isStepActive(3)">
-      <div class="step-header">
-        <h2>{{ 'nuevo_proyecto.step_3_title' | t }}</h2>
-        <p>{{ 'nuevo_proyecto.step_3_description' | t }}</p>
-      </div>
-
-      <div class="step-content">
-        <div class="form-layout-single">
-          <!-- Sección superior: Selección de apartamento y tipo de pisos -->
-          <div class="form-section">
-            <div class="top-row">
-              <div class="form-field">
-                <label>{{ 'nuevo_proyecto.apartment_selection' | t }}</label>
-                <app-dropdown
-                  labelKey=""
-                  [options]="apartmentSelectionOptions"
-                  [selectedValue]="selectedApartment"
-                  (valueChange)="onApartmentSelectionChange($event)">
-                </app-dropdown>
-              </div>
-              <div class="form-field">
-                <label>{{ 'nuevo_proyecto.floor_type' | t }}</label>
-                <app-dropdown
-                  labelKey=""
-                  [options]="floorTypeOptions"
-                  [selectedValue]="selectedFloorType"
-                  (valueChange)="onFloorTypeChange($event)">
-                </app-dropdown>
-              </div>
+        <div class="np__col np__col--side">
+          <article class="np-card np-card--compact np-card--preview">
+            <h3>Preview hero</h3>
+            <div class="np-preview">
+              <p class="np-preview__eyebrow">Proyectos · {{ project.propertyType }}</p>
+              <h4>{{ contentPlan.heroHeadline || 'Titular pendiente' }}</h4>
+              <p>{{ contentPlan.heroTagline || 'Añade una frase inspiradora' }}</p>
+              <ul>
+                <li *ngFor="let point of contentPlan.sellingPoints">{{ point }}</li>
+              </ul>
+              <button type="button" class="btn light">{{ contentPlan.ctaLabel }}</button>
             </div>
-          </div>
-
-          <!-- Campos principales en columna única -->
-          <div class="form-section">
-            <div class="form-field">
-              <label>{{ 'nuevo_proyecto.apartment_number' | t }}</label>
-              <app-dropdown
-                labelKey=""
-                [options]="apartmentNumberOptions"
-                [selectedValue]="apartmentNumber + ''"
-                (valueChange)="onApartmentNumberChange($event)">
-              </app-dropdown>
-            </div>
-
-            <div class="form-field">
-              <label>{{ 'nuevo_proyecto.bathrooms_number' | t }}</label>
-              <app-dropdown
-                labelKey=""
-                [options]="bathroomsNumberOptions"
-                [selectedValue]="bathroomsNumber + ''"
-                (valueChange)="onBathroomsNumberChange($event)">
-              </app-dropdown>
-            </div>
-
-            <div class="form-field">
-              <label>{{ 'nuevo_proyecto.background_video_image' | t }}</label>
-              <div class="media-group">
-                <div class="media-preview">
-                  <div class="media-placeholder">
-                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                  </div>
-                  <button class="btn btn-edit-overlay" (click)="onEditMedia()">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                      <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <div class="form-field">
-              <label>{{ 'nuevo_proyecto.balconies_number' | t }}</label>
-              <app-dropdown
-                labelKey=""
-                [options]="balconiesNumberOptions"
-                [selectedValue]="balconiesNumber + ''"
-                (valueChange)="onBalconiesNumberChange($event)">
-              </app-dropdown>
-            </div>
-          </div>
+          </article>
         </div>
-      </div>
+      </section>
 
-      <!-- Botones de acción -->
-      <div class="step-actions">
-        <app-action-buttons
-          (cancelClick)="onCancel()"
-          (saveClick)="onSave()"
-          (viewClick)="onView()"
-          (buttonClick)="onButtonClick($event)">
-        </app-action-buttons>
-      </div>
-    </div>
-
-    <!-- Paso 4: Gestión de Contenido -->
-    <div class="step-container" [class.active]="isStepActive(4)" *ngIf="isStepActive(4)">
-      <div class="step-header">
-        <h2>{{ 'nuevo_proyecto.step_4_title' | t }}</h2>
-        <p>{{ 'nuevo_proyecto.step_4_description' | t }}</p>
-      </div>
-      
-      <div class="step-content">
-        <div class="content-grid">
-          <!-- Columna Izquierda -->
-          <div class="left-column">
-            <!-- Carrousel de Imágenes -->
-            <div class="form-section">
-              <h3>{{ 'nuevo_proyecto.image_carousel' | t }}</h3>
-              
-              <!-- Selección de Apartamento -->
-              <div class="form-field">
-                <app-dropdown
-                  labelKey="nuevo_proyecto.apartment_selection"
-                  [options]="apartmentSelectionOptions"
-                  [selectedValue]="selectedApartmentForImages"
-                  (valueChange)="onApartmentForImagesChange($event)">
-                </app-dropdown>
+      <section class="np__grid" *ngSwitchCase="5">
+        <div class="np__col np__col--main">
+          <article class="np-card">
+            <div class="np-card__head">
+              <span>5</span>
+              <h3>Resumen antes de publicar</h3>
+            </div>
+            <div class="np-summary np-summary--grid">
+              <div>
+                <span class="np-summary__label">Proyecto</span>
+                <strong>{{ project.name || 'Sin nombre' }}</strong>
+                <small>{{ project.ubicacion || 'Ubicación pendiente' }}</small>
               </div>
-
-              <!-- Gestor de Imágenes -->
-              <div class="form-field">
-                <app-image-manager
-                  labelKey="nuevo_proyecto.images"
-                  [images]="carouselImages"
-                  [maxImages]="10"
-                  (imagesChange)="onCarouselImagesChange($event)"
-                  (imageAdd)="onCarouselImageAdd($event)"
-                  (imageEdit)="onCarouselImageEdit($event)"
-                  (imageRemove)="onCarouselImageRemove($event)">
-                </app-image-manager>
+              <div>
+                <span class="np-summary__label">Tipologías</span>
+                <strong>{{ selectedTypologies.length > 0 ? selectedTypologies.join(', ') : 'Selecciona al menos una' }}</strong>
               </div>
-
-              <!-- Título de la Pantalla -->
-              <div class="form-field">
-                <app-input
-                  labelKey="nuevo_proyecto.screen_title"
-                  placeholderKey="nuevo_proyecto.screen_title_placeholder"
-                  [value]="screenTitle"
-                  [required]="true"
-                  (valueChange)="onScreenTitleChange($event)">
-                </app-input>
+              <div>
+                <span class="np-summary__label">Amenities</span>
+                <strong>{{ selectedAmenities.length > 0 ? selectedAmenities.join(' · ') : 'Define amenities clave' }}</strong>
+              </div>
+              <div>
+                <span class="np-summary__label">Archivos</span>
+                <strong>{{ mediaAssets.masterPlan ? 'Masterplan listo' : 'Falta Masterplan' }}</strong>
+                <small>{{ mediaGallery.length }} recursos en galería</small>
               </div>
             </div>
-          </div>
+          </article>
 
-          <!-- Columna Derecha -->
-          <div class="right-column">
-            <!-- Descripción Breve -->
-            <div class="form-section">
-              <h3>{{ 'nuevo_proyecto.brief_description' | t }}</h3>
-              <div class="form-field">
-                <app-textarea
-                  labelKey="nuevo_proyecto.brief_description"
-                  placeholderKey="nuevo_proyecto.brief_description_placeholder"
-                  [value]="briefDescription"
-                  [rows]="6"
-                  [maxLength]="500"
-                  (valueChange)="onBriefDescriptionChange($event)">
-                </app-textarea>
-              </div>
+          <article class="np-card">
+            <div class="np-card__head">
+              <span>5</span>
+              <h3>Agenda & Automatización</h3>
             </div>
-
-            <!-- Features -->
-            <div class="form-section">
-              <h3>{{ 'nuevo_proyecto.features' | t }}</h3>
-              <p class="section-description">{{ 'nuevo_proyecto.building_characteristics' | t }}</p>
-              
-              <!-- Lista de Features -->
-              <div class="features-list">
-                <div class="feature-item" *ngFor="let feature of features; let i = index">
-                  <div class="feature-header">
-                    <h4>{{ 'nuevo_proyecto.feature' | t }} {{ i + 1 }}</h4>
-                    <button class="btn-remove-feature" (click)="removeFeature(i)" *ngIf="features.length > 1">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                      </svg>
-                    </button>
-                  </div>
-                  
-                  <div class="feature-fields">
-                    <!-- Título del Feature -->
-                    <div class="form-field">
-                      <app-input
-                        labelKey="nuevo_proyecto.feature_title"
-                        placeholderKey="nuevo_proyecto.feature_title_placeholder"
-                        [value]="feature.title"
-                        (valueChange)="onFeatureTitleChange(i, $event)">
-                      </app-input>
-                    </div>
-
-                    <!-- Descripción del Feature -->
-                    <div class="form-field">
-                      <app-textarea
-                        labelKey="nuevo_proyecto.feature_description"
-                        placeholderKey="nuevo_proyecto.feature_description_placeholder"
-                        [value]="feature.description"
-                        [rows]="3"
-                        [maxLength]="200"
-                        (valueChange)="onFeatureDescriptionChange(i, $event)">
-                      </app-textarea>
-                    </div>
-
-                    <!-- Imagen o Video -->
-                    <div class="form-field">
-                      <app-input
-                        labelKey="nuevo_proyecto.image_or_video"
-                        placeholderKey="nuevo_proyecto.image_or_video_placeholder"
-                        [value]="feature.imageVideo"
-                        (valueChange)="onFeatureImageVideoChange(i, $event)">
-                      </app-input>
-                    </div>
-
-                    <!-- Subir Audio -->
-                    <div class="form-field">
-                      <app-file-upload
-                        labelKey="nuevo_proyecto.upload_audio"
-                        [acceptedTypes]="'.mp3,.wav,.m4a,.aac'"
-                        [maxFileSize]="10 * 1024 * 1024"
-                        [multiple]="false"
-                        (fileSelect)="onFeatureAudioSelect($event, i)">
-                      </app-file-upload>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Botón Agregar Más Features -->
-              <div class="form-field">
-                <app-add-more
-                  [text]="'nuevo_proyecto.add_more_features'"
-                  (addMoreClick)="addFeature()">
-                </app-add-more>
-              </div>
+            <div class="np-form np-form__group">
+              <label>
+                <span>Fecha publicación</span>
+                <input type="date" [(ngModel)]="publicationSettings.scheduleDate" />
+              </label>
+              <label>
+                <span>Hora</span>
+                <input type="time" [(ngModel)]="publicationSettings.scheduleTime" />
+              </label>
+              <label class="np-toggle">
+                <span>Notificar equipo comercial</span>
+                <input type="checkbox" [(ngModel)]="publicationSettings.notifyTeam" />
+                <span class="np-toggle__slider"></span>
+              </label>
+              <label class="np-toggle">
+                <span>Traducir a inglés</span>
+                <input type="checkbox" [(ngModel)]="publicationSettings.autoTranslate" />
+                <span class="np-toggle__slider"></span>
+              </label>
+              <label>
+                <span>Notas finales</span>
+                <textarea rows="4" placeholder="Recordatorios, pendientes..." [(ngModel)]="publicationSettings.remarks"></textarea>
+              </label>
             </div>
-          </div>
+          </article>
         </div>
-      </div>
 
-      <!-- Botones de acción -->
-      <div class="step-actions">
-        <app-action-buttons
-          (cancelClick)="onCancel()"
-          (saveClick)="onSave()"
-          (viewClick)="onView()"
-          (buttonClick)="onButtonClick($event)">
-        </app-action-buttons>
-      </div>
-    </div>
-
-    <!-- Paso 5: Datos Entregables -->
-    <div class="step-container" [class.active]="isStepActive(5)" *ngIf="isStepActive(5)">
-      <div class="step-header">
-        <h2>{{ 'nuevo_proyecto.step_5_title' | t }}</h2>
-        <p>{{ 'nuevo_proyecto.step_5_description' | t }}</p>
-      </div>
-      
-      <div class="step-content">
-        <div class="deliverables-form">
-          <!-- Subir PDF Brochure -->
-          <div class="form-field">
-            <app-file-upload
-              labelKey="nuevo_proyecto.upload_pdf_brochure"
-              [acceptedTypes]="'.pdf'"
-              [maxFileSize]="20 * 1024 * 1024"
-              [multiple]="false"
-              [required]="true"
-              (fileSelect)="onPdfBrochureSelect($event)">
-            </app-file-upload>
-          </div>
-
-          <!-- Contacto del Ejecutivo -->
-          <div class="form-field">
-            <app-input
-              labelKey="nuevo_proyecto.executive_contact"
-              placeholderKey="nuevo_proyecto.executive_contact_placeholder"
-              [value]="executiveContact"
-              [required]="true"
-              (valueChange)="onExecutiveContactChange($event)">
-            </app-input>
-          </div>
-
-          <!-- Mail del Ejecutivo -->
-          <div class="form-field">
-            <app-input
-              labelKey="nuevo_proyecto.executive_mail"
-              placeholderKey="nuevo_proyecto.executive_mail_placeholder"
-              [value]="executiveMail"
-              [type]="'email'"
-              [required]="true"
-              (valueChange)="onExecutiveMailChange($event)">
-            </app-input>
-          </div>
+        <div class="np__col np__col--side">
+          <article class="np-card np-card--compact">
+            <h3>Canales de publicación</h3>
+            <div class="np-checkbox-grid np-checkbox-grid--channels">
+              <label class="np-checkbox-pill" *ngFor="let channel of publicationChannels">
+                <input type="checkbox" [(ngModel)]="channel.selected" />
+                <span>
+                  <strong>{{ channel.label }}</strong>
+                  <small>{{ channel.description }}</small>
+                </span>
+              </label>
+            </div>
+          </article>
         </div>
-      </div>
-
-      <!-- Botones de acción -->
-      <div class="step-actions">
-        <app-action-buttons
-          (cancelClick)="onCancel()"
-          (saveClick)="onSave()"
-          (viewClick)="onView()"
-          (buttonClick)="onButtonClick($event)">
-        </app-action-buttons>
-      </div>
-    </div>
-
+      </section>
+    </ng-container>
   </div>
 
+  <div class="np__cta">
+    <button type="button" class="btn ghost" (click)="goPrev()" [disabled]="currentStep === 1">
+      Paso anterior
+    </button>
+    <button type="button" class="btn primary" (click)="handlePrimaryAction()">
+      <span>{{ primaryCtaLabel }}</span>
+      <svg viewBox="0 0 24 24"><path d="M14 5l7 7-7 7M21 12H3" /></svg>
+    </button>
+  </div>
 </div>
+

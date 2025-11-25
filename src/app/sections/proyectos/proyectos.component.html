@@ -1,181 +1,156 @@
-<div class="projects-container">
-  
-  <!-- Header de la sección -->
-  <div class="projects-header">
-    <div class="header-content">
-      <h1>{{ 'proyectos.title' | t }}</h1>
-      <p>{{ 'proyectos.subtitle' | t }}</p>
+<div class="projects">
+  <div class="projects__header">
+    <div>
+      <p class="projects__subtitle">{{ 'proyectos.subtitle' | t }}</p>
+      <h1 class="projects__title">
+        <span>{{ 'proyectos.title' | t }}</span>
+        <span class="projects__title-highlight"></span>
+      </h1>
+      <p class="projects__caption">Gestiona y visualiza todos tus desarrollos inmobiliarios</p>
     </div>
-    <div class="header-actions">
-      <button class="btn btn-primary" (click)="loadProjects()">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        {{ 'proyectos.refresh' | t }}
-      </button>
-    </div>
+    <button class="projects__refresh" type="button" (click)="loadProjects()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+      </svg>
+      {{ 'proyectos.refresh' | t }}
+    </button>
   </div>
 
-  <!-- Filtros y búsqueda -->
-  <div class="filters-section">
-    <div class="search-box">
-      <div class="search-input">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/>
-          <path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        <input 
-          type="text" 
-          [placeholder]="'proyectos.search_placeholder' | t"
-          [(ngModel)]="searchTerm"
-          (input)="onSearchChange($event)">
-      </div>
+  <div class="projects__toolbar">
+    <div class="projects__search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"></circle>
+        <path d="M21 21l-4.35-4.35"></path>
+      </svg>
+      <input
+        type="text"
+        [placeholder]="'proyectos.search_placeholder' | t"
+        [(ngModel)]="searchTerm"
+        (input)="onSearchChange($event)"
+      >
     </div>
-    
-    <div class="filters">
-      <div class="filter-group">
+
+    <div class="projects__filters">
+      <div class="projects__filter">
         <label>{{ 'proyectos.filter_status' | t }}</label>
-        <select [(ngModel)]="statusFilter" (change)="onStatusFilterChange($event)">
-          <option value="all">{{ 'proyectos.all_status' | t }}</option>
-          <option value="active">{{ 'proyectos.status_active' | t }}</option>
-          <option value="completed">{{ 'proyectos.status_completed' | t }}</option>
-          <option value="draft">{{ 'proyectos.status_draft' | t }}</option>
-        </select>
+        <div class="projects__select">
+          <select [(ngModel)]="statusFilter" (change)="onStatusFilterChange($event)">
+            <option value="all">{{ 'proyectos.all_status' | t }}</option>
+            <option value="active">{{ 'proyectos.status_active' | t }}</option>
+            <option value="completed">{{ 'proyectos.status_completed' | t }}</option>
+            <option value="draft">{{ 'proyectos.status_draft' | t }}</option>
+          </select>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 9l6 6 6-6"></path>
+          </svg>
+        </div>
       </div>
-      
-      <div class="filter-group">
+
+      <div class="projects__filter">
         <label>{{ 'proyectos.filter_type' | t }}</label>
-        <select [(ngModel)]="typeFilter" (change)="onTypeFilterChange($event)">
-          <option value="all">{{ 'proyectos.all_types' | t }}</option>
-          <option value="apartment">{{ 'proyectos.type_apartment' | t }}</option>
-          <option value="house">{{ 'proyectos.type_house' | t }}</option>
-          <option value="field">{{ 'proyectos.type_field' | t }}</option>
-        </select>
+        <div class="projects__select">
+          <select [(ngModel)]="typeFilter" (change)="onTypeFilterChange($event)">
+            <option value="all">{{ 'proyectos.all_types' | t }}</option>
+            <option value="apartment">{{ 'proyectos.type_apartment' | t }}</option>
+            <option value="house">{{ 'proyectos.type_house' | t }}</option>
+            <option value="field">{{ 'proyectos.type_field' | t }}</option>
+          </select>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 9l6 6 6-6"></path>
+          </svg>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Lista de proyectos -->
-  <div class="projects-list">
-    <div class="projects-grid">
-      <div class="project-card" *ngFor="let project of filteredProjects">
-        
-        <!-- Imagen del proyecto -->
-        <div class="project-image">
-          <img [src]="project.thumbnail || 'assets/logo1.png'" [alt]="project.name">
-          <div class="project-overlay">
-            <div class="project-type-badge">
-              <span class="type-icon">{{ getTypeIcon(project.type) }}</span>
-              <span class="type-text">{{ getTypeText(project.type) | t }}</span>
-            </div>
-          </div>
+  <section class="projects__grid" *ngIf="filteredProjects.length > 0; else emptyState">
+    <article class="project-card" *ngFor="let project of filteredProjects">
+      <div class="project-card__media">
+        <img [src]="project.thumbnail || 'assets/logo1.png'" [alt]="project.name">
+        <div class="project-card__type">
+          <span class="project-card__type-icon">{{ getTypeIcon(project.type) }}</span>
+          <span class="project-card__type-text">{{ getTypeText(project.type) | t }}</span>
         </div>
-
-        <!-- Información del proyecto -->
-        <div class="project-info">
-          <div class="project-header">
-            <h3 class="project-name">{{ project.name }}</h3>
-            <div class="project-status" [class]="getStatusClass(project.status)">
-              {{ getStatusText(project.status) | t }}
-            </div>
-          </div>
-
-          <p class="project-description">{{ project.description }}</p>
-
-          <!-- Detalles específicos del proyecto -->
-          <div class="project-details">
-            <div class="detail-item" *ngIf="project.apartmentsCount">
-              <span class="detail-label">{{ 'proyectos.apartments' | t }}:</span>
-              <span class="detail-value">{{ project.apartmentsCount }}</span>
-            </div>
-            
-            <div class="detail-item" *ngIf="project.floorsCount">
-              <span class="detail-label">{{ 'proyectos.floors' | t }}:</span>
-              <span class="detail-value">{{ project.floorsCount }}</span>
-            </div>
-            
-            <div class="detail-item" *ngIf="project.priceRange">
-              <span class="detail-label">{{ 'proyectos.price_range' | t }}:</span>
-              <span class="detail-value">
-                {{ formatPrice(project.priceRange.min, project.priceRange.currency) }} - 
-                {{ formatPrice(project.priceRange.max, project.priceRange.currency) }}
-              </span>
-            </div>
-          </div>
-
-          <!-- Fechas -->
-          <div class="project-dates">
-            <div class="date-item">
-              <span class="date-label">{{ 'proyectos.created' | t }}:</span>
-              <span class="date-value">{{ formatDate(project.creationDate) }}</span>
-            </div>
-            <div class="date-item">
-              <span class="date-label">{{ 'proyectos.modified' | t }}:</span>
-              <span class="date-value">{{ formatDate(project.lastModified) }}</span>
-            </div>
-          </div>
+        <div class="project-card__status" [ngClass]="getStatusClass(project.status)">
+          {{ getStatusText(project.status) | t }}
         </div>
+      </div>
 
-        <!-- Botones de acción -->
-        <div class="project-actions">
-          <!-- Botón principal con icono de ojo para preview -->
-          <button class="btn btn-preview" (click)="onPreviewProject(project)">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <div class="project-card__body">
+        <div class="project-card__head">
+          <h3>{{ project.name }}</h3>
+          <button type="button" class="project-card__icon" (click)="onEditProject(project)" title="{{ 'proyectos.edit' | t }}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+              <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
             </svg>
-            {{ 'proyectos.preview' | t }}
           </button>
+        </div>
+        <p class="project-card__description">{{ project.description }}</p>
 
-          <!-- Botones secundarios -->
-          <div class="secondary-actions">
-            <button class="btn btn-edit" (click)="onEditProject(project)" title="{{ 'proyectos.edit' | t }}">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <div class="project-card__stats">
+          <div class="project-card__stat" *ngIf="project.apartmentsCount">
+            <p>Unidades</p>
+            <strong>{{ project.apartmentsCount }}</strong>
+          </div>
+          <div class="project-card__stat" *ngIf="project.floorsCount">
+            <p>Pisos</p>
+            <strong>{{ project.floorsCount }}</strong>
+          </div>
+          <div class="project-card__stat project-card__stat--wide" *ngIf="project.priceRange">
+            <p>UF</p>
+            <strong>{{ formatPrice(project.priceRange.min, project.priceRange.currency) }} - {{ formatPrice(project.priceRange.max, project.priceRange.currency) }}</strong>
+          </div>
+        </div>
+
+        <div class="project-card__footer">
+          <div class="project-card__dates">
+            <span>Creado: <strong>{{ formatDate(project.creationDate) }}</strong></span>
+            <span>Modificado: <strong>{{ formatDate(project.lastModified) }}</strong></span>
+          </div>
+          <div class="project-card__actions">
+            <button type="button" class="project-card__ghost" (click)="onDeleteProject(project)" title="{{ 'proyectos.delete' | t }}">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14z" />
               </svg>
             </button>
-            
-            <button class="btn btn-delete" (click)="onDeleteProject(project)" title="{{ 'proyectos.delete' | t }}">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <button type="button" class="project-card__primary" (click)="onPreviewProject(project)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
               </svg>
+              {{ 'proyectos.preview' | t }}
             </button>
           </div>
         </div>
       </div>
-    </div>
+    </article>
+  </section>
 
-    <!-- Estado vacío -->
-    <div class="empty-state" *ngIf="filteredProjects.length === 0">
-      <div class="empty-icon">
-        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          <polyline points="14,2 14,8 20,8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          <line x1="16" y1="13" x2="8" y2="13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          <line x1="16" y1="17" x2="8" y2="17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          <polyline points="10,9 9,9 8,9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <ng-template #emptyState>
+    <div class="projects__empty">
+      <div class="projects__empty-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="16" y1="13" x2="8" y2="13"></line>
+          <line x1="16" y1="17" x2="8" y2="17"></line>
         </svg>
       </div>
       <h3>{{ 'proyectos.no_projects' | t }}</h3>
       <p>{{ 'proyectos.no_projects_description' | t }}</p>
     </div>
-  </div>
+  </ng-template>
 
-  <!-- Paginación -->
-  <div class="pagination" *ngIf="filteredProjects.length > 0">
-    <div class="pagination-info">
-      <span>{{ 'proyectos.showing' | t }} {{ filteredProjects.length }} {{ 'proyectos.of' | t }} {{ projects.length }} {{ 'proyectos.projects' | t }}</span>
-    </div>
+  <div class="projects__pagination" *ngIf="filteredProjects.length > 0">
+    <span>{{ 'proyectos.showing' | t }} {{ filteredProjects.length }} {{ 'proyectos.of' | t }} {{ projects.length }} {{ 'proyectos.projects' | t }}</span>
   </div>
-
 </div>
 
-<!-- Modal Component -->
 <app-modal
   [isOpen]="isModalOpen"
   [config]="modalConfig"
   (confirm)="onModalConfirm()"
   (cancel)="onModalCancel()"
-  (close)="onModalClose()">
-</app-modal>
+  (close)="onModalClose()"
+></app-modal>
