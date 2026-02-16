@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterOutlet } from '@angular/router';
+import { Router, RouterOutlet } from '@angular/router';
 import { TranslatePipe } from '../../i18n/t.pipe';
 import { PreviewDemoComponent } from '../../shared-preview/preview-demo.component';
 
@@ -23,7 +23,7 @@ export class LivePreviewComponent implements OnInit {
   // Estado para controlar la vista de componentes
   showComponentsPreview: boolean = false;
 
-  constructor() { }
+  constructor(private router: Router) { }
 
   ngOnInit(): void {
     console.log('Live Preview Component initialized');
@@ -50,5 +50,9 @@ export class LivePreviewComponent implements OnInit {
   toggleComponentsPreview(): void {
     this.showComponentsPreview = !this.showComponentsPreview;
     console.log('Components preview toggled:', this.showComponentsPreview);
+  }
+
+  goToDashboard(): void {
+    this.router.navigateByUrl('/dash');
   }
 }

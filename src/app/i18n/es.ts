@@ -61,6 +61,7 @@ export const ES = {
     preview_live_description: 'Aquí puedes ver la previsualización en tiempo real de tu proyecto',
     preview_status_active: 'Activo',
     preview_status_inactive: 'Inactivo',
+    preview_back: 'Volver al dashboard',
     preview_refresh: 'Actualizar',
     preview_fullscreen: 'Pantalla Completa',
     preview_edit_project: 'Editar Proyecto',

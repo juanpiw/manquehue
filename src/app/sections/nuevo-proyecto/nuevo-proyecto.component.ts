@@ -67,7 +67,7 @@ export class NuevoProyectoComponent {
     },
     {
       id: 'field',
-      label: 'Terreno / Lote',
+      label: 'Townhouses',
       icon: {
         viewBox: '0 0 24 24',
         paths: [
@@ -80,19 +80,37 @@ export class NuevoProyectoComponent {
   ];
 
   readonly orientationOptions = ['Norte', 'Sur', 'Oriente', 'Poniente'];
-  readonly deliveryOptions = ['Entrega inmediata', 'En verde', 'En blanco'];
+  readonly deliveryOptions = [
+    { id: 'inmediata', label: 'Entrega inmediata' },
+    { id: 'pronta', label: 'Pronta' },
+    { id: 'futura', label: 'Futura' }
+  ];
   readonly typologyOptions = [
-    { id: 'studio', label: 'Studio / 1B', selected: false },
-    { id: 'onePlus', label: '1D + Flex', selected: true },
-    { id: 'two', label: '2D / 2B', selected: true },
-    { id: 'three', label: '3D / 3B', selected: false }
+    { id: '1d1b', label: '1D / 1B', selected: false },
+    { id: '2d1b', label: '2D / 1B', selected: true },
+    { id: '2d2b', label: '2D / 2B', selected: true },
+    { id: '3d2b', label: '3D / 2B', selected: false },
+    { id: '3d3b', label: '3D / 3B', selected: false },
+    { id: '4d3b', label: '4D / 3B', selected: false },
+    { id: '4d4b', label: '4D / 4B', selected: false },
+    { id: '4d5b', label: '4D / 5B', selected: false }
+  ];
+  modelAssociations = [
+    { typology: '2D / 2B', model: 'Azotea' },
+    { typology: '3D / 3B', model: 'Jardín' }
   ];
   readonly amenityOptions = [
     { id: 'cowork', label: 'Cowork panorámico', selected: true },
-    { id: 'skyPool', label: 'Sky pool climatizada', selected: true },
-    { id: 'gourmet', label: 'Sala gourmet', selected: false },
-    { id: 'fitness', label: 'Fitness 24/7', selected: true },
-    { id: 'petSpa', label: 'Pet spa', selected: false }
+    { id: 'gourmet', label: 'Salón gourmet', selected: true },
+    { id: 'gym', label: 'Gimnasio', selected: true },
+    { id: 'petSpa', label: 'Pet spa', selected: false },
+    { id: 'pool', label: 'Piscina climatizada', selected: true },
+    { id: 'quincho', label: 'Quincho', selected: false },
+    { id: 'bike', label: 'Bicicleteros', selected: false },
+    { id: 'pump', label: 'Circuito pump track', selected: false },
+    { id: 'kids', label: 'Juegos infantiles', selected: false },
+    { id: 'ecommerce', label: 'Recepción e-commerce', selected: false },
+    { id: 'kidsRoom', label: 'Salón de niños', selected: false }
   ];
   readonly publicationChannels = [
     { id: 'web', label: 'Web Manquehue', description: 'Impact Render Studios', selected: true },
@@ -106,11 +124,13 @@ export class NuevoProyectoComponent {
     name: '',
     description: '',
     propertyType: 'apartment',
-    estado: this.deliveryOptions[0],
+    estado: this.deliveryOptions[0].id,
+    fechaEntrega: '',
     orientacion: '',
     ubicacion: '',
     puntoCercano: '',
     puntoCercano2: '',
+    entornoDescripcion: '',
     coverImage: '',
     ambientAudio: ''
   };
@@ -156,6 +176,12 @@ export class NuevoProyectoComponent {
     remarks: ''
   };
 
+  isAssociationModalOpen = false;
+  associationForm = {
+    typology: '',
+    model: ''
+  };
+
   selectPropertyType(typeId: string) {
     this.project.propertyType = typeId;
   }
@@ -192,6 +218,31 @@ export class NuevoProyectoComponent {
 
   removeGalleryAsset(index: number) {
     this.mediaGallery = this.mediaGallery.filter((_, i) => i !== index);
+  }
+
+  openAssociationModal() {
+    this.isAssociationModalOpen = true;
+    this.associationForm = {
+      typology: this.typologyOptions[0]?.label ?? '',
+      model: ''
+    };
+  }
+
+  closeAssociationModal() {
+    this.isAssociationModalOpen = false;
+  }
+
+  selectAssociationModel(model: string) {
+    this.associationForm.model = model;
+  }
+
+  addAssociation() {
+    const { typology, model } = this.associationForm;
+    if (!typology || !model) {
+      return;
+    }
+    this.modelAssociations = [...this.modelAssociations, { typology, model }];
+    this.closeAssociationModal();
   }
 
   saveDraft() {

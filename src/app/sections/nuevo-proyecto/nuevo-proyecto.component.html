@@ -9,10 +9,6 @@
         </div>
         <h1>
           Nuevo Proyecto
-          <svg viewBox="0 0 100 100">
-            <path d="M10,50 Q30,20 50,50 T90,50" />
-            <path d="M80,45 L90,50 L85,60" />
-          </svg>
         </h1>
         <p class="np__hero-note">Vamos a construir algo increíble hoy.</p>
       </div>
@@ -101,6 +97,53 @@
           <article class="np-card">
             <div class="np-card__head">
               <span>2</span>
+              <h3 class="np-card__title--uppercase">Ubicación y Entorno</h3>
+            </div>
+
+            <div class="np-form">
+              <label>
+                <span>Descripción Comercial / Entorno</span>
+                <textarea
+                  rows="3"
+                  maxlength="500"
+                  placeholder="Detalla las características del entorno, conectividad y puntos de interés..."
+                  [(ngModel)]="project.entornoDescripcion"></textarea>
+                <div class="np-form__meta">
+                  <small>{{ project.entornoDescripcion.length }}/500</small>
+                </div>
+              </label>
+
+              <div class="np-map__meta">
+                <span class="np-map__label">Mapa Interactivo de Recorrido</span>
+                <div class="np-map__range">
+                  <span>Rango visual:</span>
+                  <strong>2.5 km</strong>
+                </div>
+              </div>
+
+              <div class="np-map">
+                <div class="np-map__bg"></div>
+
+                <div class="np-map__range-circle"></div>
+
+                <div class="np-map__marker">
+                  <svg viewBox="0 0 24 24">
+                    <path
+                      d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"></path>
+                  </svg>
+                </div>
+
+                <div class="np-map__note">
+                  <p><strong>Google Maps API</strong></p>
+                  <p>Cargando capas de recorrido...</p>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article class="np-card">
+            <div class="np-card__head">
+              <span>2</span>
               <h3>Multimedia & Portada</h3>
             </div>
             <div class="np-media-grid">
@@ -144,22 +187,36 @@
             </div>
           </article>
 
-          <article class="np-card np-card--compact">
-            <h3>Parámetros</h3>
-            <label>
-              <span>Estado Entrega</span>
-              <select [(ngModel)]="project.estado">
-                <option *ngFor="let option of deliveryOptions" [value]="option">{{ option }}</option>
-              </select>
-            </label>
-            <label>
-              <span>Orientación</span>
-              <input type="text" placeholder="Norte" [(ngModel)]="project.orientacion" />
-            </label>
-            <label>
-              <span>Ubicación Referencial</span>
-              <input type="text" placeholder="Av. Manquehue 1234" [(ngModel)]="project.ubicacion" />
-            </label>
+          <article class="np-card">
+            <h3 class="font-bold text-slate-800 text-sm mb-4">Parámetros</h3>
+            <div class="np-form">
+              <label>
+                <span>Estado Entrega</span>
+                <select [(ngModel)]="project.estado">
+                  <option *ngFor="let option of deliveryOptions" [value]="option.id">{{ option.label }}</option>
+                </select>
+              </label>
+
+              <div *ngIf="project.estado !== 'inmediata'">
+                <label>
+                  <span>Fecha estimada entrega</span>
+                  <input
+                    type="text"
+                    placeholder="Ej: 1er semestre 2027"
+                    [(ngModel)]="project.fechaEntrega" />
+                </label>
+              </div>
+
+              <label>
+                <span>Orientación</span>
+                <input type="text" placeholder="Norte" [(ngModel)]="project.orientacion" />
+              </label>
+
+              <label>
+                <span>Ubicación del Proyecto</span>
+                <input type="text" placeholder="Av. Manquehue 1234" [(ngModel)]="project.ubicacion" />
+              </label>
+            </div>
           </article>
         </div>
       </section>
@@ -177,7 +234,7 @@
                 <input type="number" min="1" [(ngModel)]="unitConfig.totalUnits" />
               </label>
               <label>
-                <span>Número de torres</span>
+                <span>Unidades disponibles</span>
                 <input type="number" min="1" [(ngModel)]="unitConfig.towers" />
               </label>
               <label>
@@ -185,7 +242,7 @@
                 <input type="text" placeholder="Q4 · 2025" [(ngModel)]="unitConfig.deliveryQuarter" />
               </label>
               <label>
-                <span>Tipología base</span>
+                <span>Etapa</span>
                 <input type="text" placeholder="2D / 2B" [(ngModel)]="unitConfig.defaultTypology" />
               </label>
               <label>
@@ -211,18 +268,40 @@
               <h3>Tipologías & Amenities</h3>
             </div>
             <div class="np-form">
-              <div class="np-checkbox-grid">
-                <label class="np-checkbox-pill" *ngFor="let typology of typologyOptions">
-                  <input type="checkbox" [(ngModel)]="typology.selected" />
-                  <span>{{ typology.label }}</span>
-                </label>
+              <div class="np-section">
+                <span class="np-label">Selecciona las tipologías disponibles</span>
+                <div class="np-grid np-grid--typologies">
+                  <label
+                    class="np-checkbox-pill"
+                    *ngFor="let typology of typologyOptions"
+                    title="Asociar extras haciendo clic">
+                    <input type="checkbox" [(ngModel)]="typology.selected" />
+                    <span>{{ typology.label }}</span>
+                  </label>
+                </div>
+                <div class="np-association">
+                  <p class="np-association__title">Modelos Asociados (Azotea, Jardín, Zócalo)</p>
+                  <div class="np-association__list">
+                    <div class="np-association__item" *ngFor="let item of modelAssociations">
+                      <span class="np-association__type">{{ item.typology }}</span>
+                      <span class="np-association__arrow">→</span>
+                      <span class="np-association__tag">{{ item.model }}</span>
+                    </div>
+                    <button type="button" class="np-association__action" (click)="openAssociationModal()">
+                      + Asociar modelo
+                    </button>
+                  </div>
+                </div>
               </div>
-              <p class="np-card__hint">Selecciona las tipologías que estarán disponibles en la plataforma.</p>
-              <div class="np-checkbox-grid np-checkbox-grid--amenities">
-                <label class="np-checkbox-pill" *ngFor="let amenity of amenityOptions">
-                  <input type="checkbox" [(ngModel)]="amenity.selected" />
-                  <span>{{ amenity.label }}</span>
-                </label>
+
+              <div class="np-section">
+                <span class="np-label">Amenities Destacados</span>
+                <div class="np-grid np-grid--amenities">
+                  <label class="np-checkbox-pill" *ngFor="let amenity of amenityOptions">
+                    <input type="checkbox" [(ngModel)]="amenity.selected" />
+                    <span>{{ amenity.label }}</span>
+                  </label>
+                </div>
               </div>
             </div>
           </article>
@@ -473,6 +552,67 @@
           </article>
         </div>
       </section>
+
+      <div
+        class="np-modal"
+        *ngIf="isAssociationModalOpen"
+        (click)="closeAssociationModal()">
+        <div class="np-modal__content" (click)="$event.stopPropagation()">
+          <h3>Asociar Modelo</h3>
+          <p>Vincula una característica especial a una tipología seleccionada.</p>
+
+          <div class="np-modal__form">
+            <label>
+              <span class="np-label">Seleccionar Tipología</span>
+              <select [(ngModel)]="associationForm.typology">
+                <option *ngFor="let typology of typologyOptions" [value]="typology.label">
+                  {{ typology.label }}
+                </option>
+              </select>
+            </label>
+
+            <label>
+              <span class="np-label">Característica Especial</span>
+              <div class="np-attr-grid">
+                <button
+                  type="button"
+                  class="np-attr-button"
+                  [class.is-active]="associationForm.model === 'Azotea'"
+                  (click)="selectAssociationModel('Azotea')">
+                  Azotea
+                </button>
+                <button
+                  type="button"
+                  class="np-attr-button"
+                  [class.is-active]="associationForm.model === 'Jardín'"
+                  (click)="selectAssociationModel('Jardín')">
+                  Jardín
+                </button>
+                <button
+                  type="button"
+                  class="np-attr-button"
+                  [class.is-active]="associationForm.model === 'Zócalo'"
+                  (click)="selectAssociationModel('Zócalo')">
+                  Zócalo
+                </button>
+              </div>
+            </label>
+          </div>
+
+          <div class="np-modal__actions">
+            <button type="button" class="np-btn np-btn--ghost" (click)="closeAssociationModal()">
+              Cancelar
+            </button>
+            <button
+              type="button"
+              class="np-btn np-btn--primary"
+              [disabled]="!associationForm.typology || !associationForm.model"
+              (click)="addAssociation()">
+              Guardar
+            </button>
+          </div>
+        </div>
+      </div>
     </ng-container>
   </div>
 

@@ -111,6 +111,15 @@
       background-color: #faf5ff;
     }
   }
+
+  &.back-btn {
+    color: #111827;
+    border-color: #111827;
+
+    &:hover {
+      background-color: #f9fafb;
+    }
+  }
 }
 
 // Main Content Styles
