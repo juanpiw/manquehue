@@ -99,7 +99,7 @@ export class NuevoProyectoComponent {
     { typology: '2D / 2B', model: 'Azotea' },
     { typology: '3D / 3B', model: 'Jardín' }
   ];
-  readonly amenityOptions = [
+  amenityOptions = [
     { id: 'cowork', label: 'Cowork panorámico', selected: true },
     { id: 'gourmet', label: 'Salón gourmet', selected: true },
     { id: 'gym', label: 'Gimnasio', selected: true },
@@ -112,12 +112,17 @@ export class NuevoProyectoComponent {
     { id: 'ecommerce', label: 'Recepción e-commerce', selected: false },
     { id: 'kidsRoom', label: 'Salón de niños', selected: false }
   ];
-  readonly publicationChannels = [
-    { id: 'web', label: 'Web Manquehue', description: 'Impact Render Studios', selected: true },
-    { id: 'kiosko', label: 'Kioskos VR', description: 'Salas físicas', selected: false },
-    { id: 'email', label: 'Email marketing', description: 'Base clientes', selected: false },
-    { id: 'social', label: 'Social Ads', description: 'Meta + LinkedIn', selected: true }
+  newAmenityLabel = '';
+  publicationChannels = [
+    { id: 'residencial-las-condes', label: 'Residencial Las Condes', description: 'Sucursal', selected: true },
+    { id: 'casa-familiar-providencia', label: 'Casa Familiar Providencia', description: 'Sucursal', selected: false },
+    { id: 'cancha-deportiva-maipu', label: 'Cancha Deportiva Maipú', description: 'Sucursal', selected: false },
+    { id: 'edificio-corporativo-santiago-centro', label: 'Edificio Corporativo Santiago Centro', description: 'Sucursal', selected: false },
+    { id: 'villa-residencial-nunoa', label: 'Villa Residencial Ñuñoa', description: 'Sucursal', selected: false },
+    { id: 'centro-comercial-las-condes', label: 'Centro Comercial Las Condes', description: 'Sucursal', selected: false }
   ];
+  branchSearch = '';
+  newBranchName = '';
 
   currentStep = 1;
   project = {
@@ -131,6 +136,7 @@ export class NuevoProyectoComponent {
     puntoCercano: '',
     puntoCercano2: '',
     entornoDescripcion: '',
+    mapAddress: '',
     coverImage: '',
     ambientAudio: ''
   };
@@ -175,6 +181,7 @@ export class NuevoProyectoComponent {
     autoTranslate: false,
     remarks: ''
   };
+  publicationSettingsEnabled = true;
 
   isAssociationModalOpen = false;
   associationForm = {
@@ -243,6 +250,78 @@ export class NuevoProyectoComponent {
     }
     this.modelAssociations = [...this.modelAssociations, { typology, model }];
     this.closeAssociationModal();
+  }
+
+  addAmenity() {
+    const label = this.newAmenityLabel.trim();
+    if (!label) {
+      return;
+    }
+    const exists = this.amenityOptions.some(
+      amenity => amenity.label.toLowerCase() === label.toLowerCase()
+    );
+    if (exists) {
+      this.newAmenityLabel = '';
+      return;
+    }
+    const id = label
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '');
+    this.amenityOptions = [...this.amenityOptions, { id, label, selected: true }];
+    this.newAmenityLabel = '';
+  }
+
+  addBranchChannel() {
+    const label = this.branchSearch.trim();
+    if (!label) {
+      return;
+    }
+    const existing = this.publicationChannels.find(
+      channel => channel.label.toLowerCase() === label.toLowerCase()
+    );
+    if (existing) {
+      this.selectBranchChannel(existing.label);
+      return;
+    }
+    const id = `branch-${label
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '')}`;
+    this.publicationChannels = [
+      ...this.publicationChannels,
+      { id, label, description: 'Sucursal', selected: false }
+    ];
+    this.selectBranchChannel(label);
+  }
+
+  selectBranchChannel(label: string) {
+    this.publicationChannels = this.publicationChannels.map(channel => ({
+      ...channel,
+      selected: channel.label === label
+    }));
+    this.branchSearch = label;
+  }
+
+  addBranchFromInput() {
+    const label = this.newBranchName.trim();
+    if (!label) {
+      return;
+    }
+    this.branchSearch = label;
+    this.newBranchName = '';
+    this.addBranchChannel();
+  }
+
+  get branchOptions(): string[] {
+    return this.publicationChannels
+      .filter(channel => channel.description === 'Sucursal')
+      .map(channel => channel.label)
+      .sort((a, b) => a.localeCompare(b));
   }
 
   saveDraft() {

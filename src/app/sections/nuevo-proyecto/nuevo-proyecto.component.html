@@ -38,7 +38,7 @@
     <ng-container [ngSwitch]="currentStep">
       <section class="np__grid" *ngSwitchCase="1">
         <div class="np__col np__col--main">
-          <article class="np-card">
+          <article class="np-card" [class.np-card--disabled]="!publicationSettingsEnabled">
             <div class="np-card__head">
               <span>1</span>
               <h3>Identidad del Proyecto</h3>
@@ -111,6 +111,14 @@
                 <div class="np-form__meta">
                   <small>{{ project.entornoDescripcion.length }}/500</small>
                 </div>
+              </label>
+
+              <label>
+                <span>Dirección para ubicar el pin</span>
+                <input
+                  type="text"
+                  placeholder="Ej: Av. Manquehue 1234, Las Condes"
+                  [(ngModel)]="project.mapAddress" />
               </label>
 
               <div class="np-map__meta">
@@ -243,7 +251,7 @@
               </label>
               <label>
                 <span>Etapa</span>
-                <input type="text" placeholder="2D / 2B" [(ngModel)]="unitConfig.defaultTypology" />
+                <input type="text" [(ngModel)]="unitConfig.defaultTypology" />
               </label>
               <label>
                 <span>Ratio estacionamientos</span>
@@ -296,6 +304,16 @@
 
               <div class="np-section">
                 <span class="np-label">Amenities Destacados</span>
+                <div class="np-amenity-add">
+                  <input
+                    type="text"
+                    placeholder="Agregar amenity"
+                    [(ngModel)]="newAmenityLabel"
+                    (keyup.enter)="addAmenity()" />
+                  <button type="button" class="np-amenity-add__btn" (click)="addAmenity()">
+                    Agregar
+                  </button>
+                </div>
                 <div class="np-grid np-grid--amenities">
                   <label class="np-checkbox-pill" *ngFor="let amenity of amenityOptions">
                     <input type="checkbox" [(ngModel)]="amenity.selected" />
@@ -511,27 +529,31 @@
               <h3>Agenda & Automatización</h3>
             </div>
             <div class="np-form np-form__group">
+              <label class="np-toggle">
+                <span>Activar agenda y automatización</span>
+                <input type="checkbox" [(ngModel)]="publicationSettingsEnabled" />
+                <span class="np-toggle__slider"></span>
+              </label>
               <label>
                 <span>Fecha publicación</span>
-                <input type="date" [(ngModel)]="publicationSettings.scheduleDate" />
+                <input type="date" [(ngModel)]="publicationSettings.scheduleDate" [disabled]="!publicationSettingsEnabled" />
               </label>
               <label>
                 <span>Hora</span>
-                <input type="time" [(ngModel)]="publicationSettings.scheduleTime" />
+                <input type="time" [(ngModel)]="publicationSettings.scheduleTime" [disabled]="!publicationSettingsEnabled" />
               </label>
               <label class="np-toggle">
                 <span>Notificar equipo comercial</span>
-                <input type="checkbox" [(ngModel)]="publicationSettings.notifyTeam" />
-                <span class="np-toggle__slider"></span>
-              </label>
-              <label class="np-toggle">
-                <span>Traducir a inglés</span>
-                <input type="checkbox" [(ngModel)]="publicationSettings.autoTranslate" />
+                <input type="checkbox" [(ngModel)]="publicationSettings.notifyTeam" [disabled]="!publicationSettingsEnabled" />
                 <span class="np-toggle__slider"></span>
               </label>
               <label>
                 <span>Notas finales</span>
-                <textarea rows="4" placeholder="Recordatorios, pendientes..." [(ngModel)]="publicationSettings.remarks"></textarea>
+                <textarea
+                  rows="4"
+                  placeholder="Recordatorios, pendientes..."
+                  [(ngModel)]="publicationSettings.remarks"
+                  [disabled]="!publicationSettingsEnabled"></textarea>
               </label>
             </div>
           </article>
@@ -540,9 +562,40 @@
         <div class="np__col np__col--side">
           <article class="np-card np-card--compact">
             <h3>Canales de publicación</h3>
+            <div class="np-channel-form">
+              <label>
+                <span>Agregar sucursal</span>
+                <div class="np-channel-form__row">
+                  <input
+                    type="text"
+                    placeholder="Nombre nueva sucursal"
+                    [(ngModel)]="newBranchName"
+                    (keyup.enter)="addBranchFromInput()" />
+                  <button type="button" class="np-channel-form__btn" (click)="addBranchFromInput()">
+                    Agregar
+                  </button>
+                </div>
+              </label>
+              <label>
+                <span>Seleccionar sucursal</span>
+                <div class="np-channel-form__row">
+                  <select [(ngModel)]="branchSearch" (change)="addBranchChannel()">
+                    <option value="">Selecciona sucursal</option>
+                    <option *ngFor="let branch of branchOptions" [value]="branch">{{ branch }}</option>
+                  </select>
+                  <button type="button" class="np-channel-form__btn" (click)="addBranchChannel()">
+                    OK
+                  </button>
+                </div>
+              </label>
+            </div>
             <div class="np-checkbox-grid np-checkbox-grid--channels">
               <label class="np-checkbox-pill" *ngFor="let channel of publicationChannels">
-                <input type="checkbox" [(ngModel)]="channel.selected" />
+                <input
+                  type="radio"
+                  name="publicationChannel"
+                  [checked]="channel.selected"
+                  (change)="selectBranchChannel(channel.label)" />
                 <span>
                   <strong>{{ channel.label }}</strong>
                   <small>{{ channel.description }}</small>

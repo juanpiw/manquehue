@@ -144,6 +144,8 @@
   display: flex;
   flex-direction: column;
   gap: 2rem;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 .stat-grid {
@@ -455,6 +457,8 @@
   gap: 1.25rem;
   position: relative;
   transition: transform 0.25s ease, box-shadow 0.25s ease;
+  max-width: 100%;
+  overflow: hidden;
 
   &:hover {
     transform: translateY(-6px);
@@ -497,12 +501,15 @@
   justify-content: space-between;
   gap: 1rem;
   padding-top: 1rem;
+  flex-wrap: wrap;
 }
 
 .screen-card__device {
   display: flex;
   gap: 1rem;
   align-items: center;
+  min-width: 0;
+  flex: 1 1 240px;
 }
 
 .screen-card__icon {
@@ -534,6 +541,14 @@
   letter-spacing: 0.18em;
   font-size: 0.68rem;
   color: #94a3b8;
+}
+
+.screen-card__device h3,
+.screen-card__device strong {
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .location {
@@ -579,6 +594,11 @@
   gap: 0.6rem 1rem;
   color: #475569;
   font-size: 0.9rem;
+
+  span {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
 }
 
 .spec-pill {
@@ -606,6 +626,12 @@
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
+  min-width: 0;
+
+  strong {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
 
   &__label {
     font-size: 0.65rem;
@@ -701,6 +727,8 @@
   a {
     color: #0ea5e9;
     text-decoration: none;
+    overflow-wrap: anywhere;
+    word-break: break-word;
 
     &:hover {
       text-decoration: underline;
@@ -742,6 +770,13 @@
   flex-wrap: wrap;
   gap: 1rem;
   justify-content: space-between;
+  min-width: 0;
+
+  strong,
+  small {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
 }
 
 .accessories {
@@ -766,11 +801,26 @@
   gap: 1rem;
   font-size: 0.85rem;
   color: #94a3b8;
+  flex-direction: column;
+
+  span {
+    overflow-wrap: anywhere;
+  }
 }
 
 .cta {
   display: flex;
   gap: 0.5rem;
+  flex-wrap: wrap;
+  width: 100%;
+  justify-content: flex-end;
+
+  .btn {
+    white-space: nowrap;
+    max-width: 100%;
+    flex: 1 1 140px;
+    justify-content: center;
+  }
 }
 
 .pager {

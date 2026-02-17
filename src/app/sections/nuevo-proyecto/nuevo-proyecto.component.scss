@@ -187,6 +187,12 @@
   box-shadow: 0 25px 70px rgba(15, 23, 42, 0.08);
 }
 
+.np-card--disabled {
+  opacity: 0.55;
+  pointer-events: none;
+  filter: grayscale(0.2);
+}
+
 .np-card__head {
   display: flex;
   align-items: center;
@@ -556,6 +562,102 @@
   text-decoration: underline;
   cursor: pointer;
   padding: 0.2rem 0.2rem;
+}
+
+.np-amenity-add {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  flex-wrap: wrap;
+
+  input {
+    flex: 1 1 220px;
+    min-width: 200px;
+  }
+}
+
+.np-amenity-add__btn {
+  border: none;
+  border-radius: 999px;
+  padding: 0.7rem 1.4rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  background: #fdb300;
+  color: #1d1d1b;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 20px rgba(253, 179, 0, 0.25);
+  }
+}
+
+.np-channel-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  margin-bottom: 1rem;
+
+  label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #64748b;
+  }
+}
+
+.np-channel-form .np-channel-form__row {
+  margin-top: 0.2rem;
+}
+
+.np-channel-form__row {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+  flex-wrap: wrap;
+
+  input,
+  select {
+    flex: 1 1 180px;
+    min-width: 160px;
+    border: 1px solid rgba(148, 163, 184, 0.45);
+    border-radius: 1rem;
+    padding: 0.7rem 1rem;
+    background: #f8fafc;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #1d1d1b;
+    transition: border 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+
+    &:focus {
+      outline: none;
+      border-color: #1d1d1b;
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(253, 179, 0, 0.2);
+    }
+  }
+}
+
+.np-channel-form__btn {
+  border: none;
+  border-radius: 999px;
+  padding: 0.6rem 1.2rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  background: #1d1d1b;
+  color: #fff;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.2);
+  }
 }
 
 .np-modal {
