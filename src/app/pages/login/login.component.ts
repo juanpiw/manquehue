@@ -7,6 +7,7 @@ import {
   ReactiveFormsModule,
 } from '@angular/forms';
 import { NgIf } from '@angular/common';
+import { AuthService } from '../../servicios/authService.service';
 
 @Component({
   selector: 'app-login-app',
@@ -29,8 +30,13 @@ export class LoginComponent {
 
   passwordVisible = false;
   submitted = false;
+  loading = false;
+  authError = '';
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private authService: AuthService
+  ) {}
 
   get emailControl(): FormControl<string> {
     return this.loginForm.get('email') as FormControl<string>;
@@ -46,12 +52,25 @@ export class LoginComponent {
 
   onSubmit(): void {
     this.submitted = true;
+    this.authError = '';
 
     if (this.loginForm.invalid) {
       this.loginForm.markAllAsTouched();
       return;
     }
 
-    this.router.navigate(['/dash']);
+    const credentials = this.loginForm.getRawValue();
+    this.loading = true;
+
+    this.authService.login(credentials).subscribe({
+      next: () => {
+        this.loading = false;
+        this.router.navigate(['/dash']);
+      },
+      error: (error: { error?: { error?: { message?: string }; message?: string } }) => {
+        this.loading = false;
+        this.authError = error?.error?.error?.message || error?.error?.message || 'No pudimos iniciar sesión.';
+      }
+    });
   }
 }
