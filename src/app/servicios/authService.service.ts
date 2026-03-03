@@ -1,7 +1,7 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
-import { map, tap } from 'rxjs/operators';
+import { Observable, throwError } from 'rxjs';
+import { catchError, map, tap } from 'rxjs/operators';
 
 interface AuthApiUser {
   id: number;
@@ -25,10 +25,7 @@ interface AuthApiResponse {
   providedIn: 'root'
 })
 export class AuthService {
-  private readonly apiBaseUrl =
-    typeof window !== 'undefined' && window.location.hostname === 'localhost'
-      ? 'http://localhost:4000'
-      : '';
+  private readonly apiBaseUrl = '';
   private readonly accessTokenKey = 'imanquehue_access_token';
   private readonly refreshTokenKey = 'imanquehue_refresh_token';
   private readonly userKey = 'imanquehue_user';
@@ -36,11 +33,39 @@ export class AuthService {
   constructor(private http: HttpClient) {}
 
   login(credentials: { email: string; password: string }): Observable<AuthApiData> {
+    const endpoint = `${this.apiBaseUrl}/api/dash-manquehue/auth/login`;
+    console.log('[DashLogin] request', {
+      endpoint,
+      email: credentials.email
+    });
+
     return this.http
-      .post<AuthApiResponse>(`${this.apiBaseUrl}/api/dash-manquehue/auth/login`, credentials)
+      .post<AuthApiResponse>(endpoint, credentials)
       .pipe(
+        tap((response) => {
+          console.log('[DashLogin] response ok', {
+            endpoint,
+            success: response?.success === true
+          });
+        }),
         map((response) => response.data),
-        tap((data) => this.persistSession(data))
+        tap((data) => this.persistSession(data)),
+        catchError((error: HttpErrorResponse) => {
+          const rawBody =
+            typeof error?.error === 'string'
+              ? error.error.slice(0, 200)
+              : JSON.stringify(error?.error || {}).slice(0, 200);
+
+          console.error('[DashLogin] response error', {
+            endpoint,
+            status: error?.status,
+            statusText: error?.statusText,
+            url: error?.url,
+            rawBody
+          });
+
+          return throwError(() => error);
+        })
       );
   }
 

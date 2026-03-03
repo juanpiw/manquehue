@@ -69,7 +69,17 @@ export class LoginComponent {
       },
       error: (error: { error?: { error?: { message?: string }; message?: string } }) => {
         this.loading = false;
-        this.authError = error?.error?.error?.message || error?.error?.message || 'No pudimos iniciar sesión.';
+        const rawMessage = String(
+          error?.error?.error?.message || error?.error?.message || ''
+        );
+
+        if (rawMessage.includes('Unexpected token') || rawMessage.includes('<!DOCTYPE')) {
+          this.authError =
+            'El servidor devolvió HTML en vez de JSON. Revisa proxy/reverse proxy de /api hacia backend.';
+          return;
+        }
+
+        this.authError = rawMessage || 'No pudimos iniciar sesión.';
       }
     });
   }
