@@ -30,7 +30,13 @@ export class AuthService {
   private readonly refreshTokenKey = 'imanquehue_refresh_token';
   private readonly userKey = 'imanquehue_user';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) {
+    console.log('[DashLogin] auth service initialized', {
+      host: typeof window !== 'undefined' ? window.location.hostname : 'ssr',
+      apiBaseUrl: this.apiBaseUrl || '(relative-origin)',
+      loginEndpoint: this.getLoginEndpoint()
+    });
+  }
 
   private resolveApiBaseUrl(): string {
     if (typeof window === 'undefined') {
@@ -49,7 +55,7 @@ export class AuthService {
   }
 
   login(credentials: { email: string; password: string }): Observable<AuthApiData> {
-    const endpoint = `${this.apiBaseUrl}/api/dash-manquehue/auth/login`;
+    const endpoint = this.getLoginEndpoint();
     console.log('[DashLogin] request', {
       endpoint,
       email: credentials.email
@@ -83,6 +89,10 @@ export class AuthService {
           return throwError(() => error);
         })
       );
+  }
+
+  getLoginEndpoint(): string {
+    return `${this.apiBaseUrl}/api/dash-manquehue/auth/login`;
   }
 
   isLoggedIn(): boolean {

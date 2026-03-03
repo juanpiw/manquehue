@@ -61,6 +61,10 @@ export class LoginComponent {
 
     const credentials = this.loginForm.getRawValue();
     this.loading = true;
+    console.log('[DashLogin] submit', {
+      endpoint: this.authService.getLoginEndpoint(),
+      email: credentials.email
+    });
 
     this.authService.login(credentials).subscribe({
       next: () => {
