@@ -25,12 +25,28 @@ interface AuthApiResponse {
   providedIn: 'root'
 })
 export class AuthService {
-  private readonly apiBaseUrl = '';
+  private readonly apiBaseUrl = this.resolveApiBaseUrl();
   private readonly accessTokenKey = 'imanquehue_access_token';
   private readonly refreshTokenKey = 'imanquehue_refresh_token';
   private readonly userKey = 'imanquehue_user';
 
   constructor(private http: HttpClient) {}
+
+  private resolveApiBaseUrl(): string {
+    if (typeof window === 'undefined') {
+      return '';
+    }
+
+    const host = window.location.hostname.toLowerCase();
+
+    // Local dev: use Angular proxy (/api -> localhost:4000)
+    if (host === 'localhost' || host === '127.0.0.1') {
+      return '';
+    }
+
+    // Production/staging frontend: call backend API host directly
+    return 'https://www.api.thefutureagencyai.com';
+  }
 
   login(credentials: { email: string; password: string }): Observable<AuthApiData> {
     const endpoint = `${this.apiBaseUrl}/api/dash-manquehue/auth/login`;
