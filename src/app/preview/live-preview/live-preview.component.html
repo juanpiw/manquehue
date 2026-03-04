@@ -16,13 +16,12 @@
           </svg>
           {{ 'common.preview_back' | t }}
         </button>
-        <!-- Botón Preview de Componentes -->
-        <button class="action-button components-btn" (click)="toggleComponentsPreview()">
+        <button class="action-button components-btn" (click)="goToApiTester()">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M4 6H20M4 12H20M4 18H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             <path d="M8 3V9M16 3V9M8 15V21M16 15V21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
-          Preview de Componentes
+          Simulador API
         </button>
         <button class="action-button refresh-btn" (click)="updatePreview({})">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -47,13 +46,7 @@
 
   <!-- Main Content -->
   <div class="preview-content">
-    <!-- Vista de Componentes -->
-    <div *ngIf="showComponentsPreview" class="components-preview">
-      <app-preview-demo></app-preview-demo>
-    </div>
-
-    <!-- Vista Normal -->
-    <div *ngIf="!showComponentsPreview" class="content-wrapper">
+    <div class="content-wrapper">
       <!-- Preview Area -->
       <div class="preview-area">
         <div class="preview-frame">

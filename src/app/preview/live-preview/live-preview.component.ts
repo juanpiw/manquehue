@@ -2,12 +2,11 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterOutlet } from '@angular/router';
 import { TranslatePipe } from '../../i18n/t.pipe';
-import { PreviewDemoComponent } from '../../shared-preview/preview-demo.component';
 
 @Component({
   selector: 'app-live-preview',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, TranslatePipe, PreviewDemoComponent],
+  imports: [CommonModule, RouterOutlet, TranslatePipe],
   templateUrl: './live-preview.component.html',
   styleUrl: './live-preview.component.scss'
 })
@@ -19,9 +18,6 @@ export class LivePreviewComponent implements OnInit {
     status: 'active',
     lastUpdate: new Date()
   };
-
-  // Estado para controlar la vista de componentes
-  showComponentsPreview: boolean = false;
 
   constructor(private router: Router) { }
 
@@ -46,10 +42,8 @@ export class LivePreviewComponent implements OnInit {
     return this.previewData.status === 'active' ? 'common.preview_status_active' : 'common.preview_status_inactive';
   }
 
-  // Método para alternar la vista de componentes
-  toggleComponentsPreview(): void {
-    this.showComponentsPreview = !this.showComponentsPreview;
-    console.log('Components preview toggled:', this.showComponentsPreview);
+  goToApiTester(): void {
+    this.router.navigateByUrl('/preview/api-tester');
   }
 
   goToDashboard(): void {

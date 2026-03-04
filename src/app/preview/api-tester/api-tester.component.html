@@ -1,0 +1,110 @@
+<div class="tester-wrap">
+  <section class="card">
+    <div class="top">
+      <h1>Simulador API Dash Manquehue</h1>
+      <button type="button" class="btn light" (click)="goBackToPreview()">Volver a Preview</button>
+    </div>
+
+    <div class="grid">
+      <div class="field span-8">
+        <label>API Base URL</label>
+        <input [(ngModel)]="apiBaseUrl" placeholder="https://www.api.thefutureagencyai.com" />
+      </div>
+      <div class="field span-4">
+        <label>Bearer Token</label>
+        <input [(ngModel)]="token" placeholder="eyJ..." />
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="steps">
+      <button type="button" [class.active]="selectedStep==='all'" (click)="onStepChange('all')">Todos</button>
+      <button type="button" [class.active]="selectedStep==='1'" (click)="onStepChange('1')">Paso 1</button>
+      <button type="button" [class.active]="selectedStep==='2'" (click)="onStepChange('2')">Paso 2</button>
+      <button type="button" [class.active]="selectedStep==='3'" (click)="onStepChange('3')">Paso 3</button>
+      <button type="button" [class.active]="selectedStep==='4'" (click)="onStepChange('4')">Paso 4</button>
+      <button type="button" [class.active]="selectedStep==='5'" (click)="onStepChange('5')">Paso 5</button>
+    </div>
+
+    <div class="grid">
+      <div class="field span-6">
+        <label>Endpoint preset</label>
+        <select [(ngModel)]="selectedPresetId" (ngModelChange)="applyPreset($event)">
+          <option *ngFor="let preset of filteredPresets" [ngValue]="preset.id">
+            {{ preset.label }} - {{ preset.method }} {{ preset.pathTemplate }}
+          </option>
+        </select>
+      </div>
+      <div class="field span-2">
+        <label>Método</label>
+        <select [(ngModel)]="method">
+          <option>GET</option>
+          <option>POST</option>
+          <option>PATCH</option>
+          <option>PUT</option>
+          <option>DELETE</option>
+        </select>
+      </div>
+      <div class="field span-4">
+        <label>Path</label>
+        <input [(ngModel)]="path" />
+      </div>
+    </div>
+
+    <div class="grid compact">
+      <div class="field span-2">
+        <label>Project ID</label>
+        <input [(ngModel)]="projectId" />
+      </div>
+      <div class="field span-2">
+        <label>Step</label>
+        <input [(ngModel)]="stepNumber" />
+      </div>
+      <div class="field span-2">
+        <label>Typology ID</label>
+        <input [(ngModel)]="typologyId" />
+      </div>
+      <div class="field span-2">
+        <label>Model Code</label>
+        <input [(ngModel)]="modelCode" />
+      </div>
+      <div class="field span-2">
+        <label>File ID</label>
+        <input [(ngModel)]="fileId" />
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="field span-12">
+        <label>JSON Body</label>
+        <textarea [(ngModel)]="jsonBody"></textarea>
+      </div>
+
+      <div class="field span-6" *ngIf="selectedPreset?.fileMode === 'single'">
+        <label>Archivo (single)</label>
+        <input type="file" (change)="onSingleFileSelected($event)" />
+      </div>
+
+      <div class="field span-6" *ngIf="selectedPreset?.fileMode === 'multiple'">
+        <label>Archivos galería (multiple)</label>
+        <input type="file" multiple (change)="onGalleryFilesSelected($event)" />
+      </div>
+    </div>
+
+    <div class="actions">
+      <button type="button" class="btn primary" [disabled]="loading" (click)="send()">
+        {{ loading ? 'Enviando...' : 'Enviar Request' }}
+      </button>
+      <button type="button" class="btn light" (click)="copyCurl()">Copiar cURL</button>
+      <button type="button" class="btn light" (click)="clearResponse()">Limpiar</button>
+    </div>
+
+    <div class="status" [class.ok]="statusClass==='ok'" [class.err]="statusClass==='err'">{{ statusText }}</div>
+  </section>
+
+  <section class="card">
+    <h2>Response</h2>
+    <pre>{{ responseText }}</pre>
+  </section>
+</div>
