@@ -42,10 +42,6 @@ export class LivePreviewComponent implements OnInit {
     return this.previewData.status === 'active' ? 'common.preview_status_active' : 'common.preview_status_inactive';
   }
 
-  goToApiTester(): void {
-    this.router.navigateByUrl('/preview/api-tester');
-  }
-
   goToDashboard(): void {
     this.router.navigateByUrl('/dash');
   }
