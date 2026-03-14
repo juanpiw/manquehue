@@ -451,6 +451,10 @@
             return `/api/dash-manquehue/public/projects/${projectId}/step1`;
         }
 
+        function getPublicProjectsPath() {
+            return '/api/dash-manquehue/public/projects?limit=200';
+        }
+
         function readStoredProjectIds() {
             try {
                 const raw = localStorage.getItem(PROJECT_IDS_STORAGE_KEY) || '[]';
@@ -483,26 +487,55 @@
             }
         }
 
-        function renderProjectIdsDropdown() {
+        async function fetchPublicProjectsList() {
+            const url = `${getApiBaseUrl()}${getPublicProjectsPath()}`;
+            console.log('[LandingAPI] fetching public projects list', { url });
+            appendLog('PUBLIC API CALL', { method: 'GET', endpoint: url });
+            const res = await fetch(url, { method: 'GET' });
+            const text = await res.text();
+            let parsed = text;
+            try { parsed = JSON.parse(text); } catch (e) {}
+            console.log('[LandingAPI] public projects list response', { status: res.status, ok: res.ok, parsed });
+            if (!res.ok) {
+                throw new Error(`HTTP ${res.status} al listar proyectos públicos`);
+            }
+            return Array.isArray(parsed?.data) ? parsed.data : [];
+        }
+
+        async function renderProjectIdsDropdown() {
             if (!apiProjectSelect) return;
-            const ids = readStoredProjectIds();
+            const storedIds = readStoredProjectIds();
+            let apiItems = [];
+            try {
+                apiItems = await fetchPublicProjectsList();
+            } catch (error) {
+                console.warn('[LandingAPI] fallback to stored IDs only', error);
+                appendLog('WARN public list fallback', error?.message || String(error));
+            }
+            const apiIds = apiItems
+                .map((item) => Number(item?.projectId))
+                .filter((value) => Number.isInteger(value) && value > 0);
+            const ids = Array.from(new Set([...apiIds, ...storedIds])).sort((a, b) => b - a);
             const selected = String((apiProjectIdInput.value || '').trim());
             apiProjectSelect.innerHTML = '<option value="">Selecciona ID guardado</option>';
             ids.forEach((id) => {
                 const option = document.createElement('option');
                 option.value = String(id);
-                option.textContent = `Proyecto #${id}`;
+                const apiMatch = apiItems.find((item) => Number(item?.projectId) === id);
+                option.textContent = apiMatch?.nombre
+                    ? `#${id} - ${apiMatch.nombre}`
+                    : `Proyecto #${id}`;
                 apiProjectSelect.appendChild(option);
             });
             if (selected && ids.includes(Number(selected))) {
                 apiProjectSelect.value = selected;
             }
-            console.log('[LandingAPI] dropdown IDs', ids);
+            console.log('[LandingAPI] dropdown IDs', { ids, apiCount: apiItems.length, storedCount: storedIds.length });
         }
 
-        function refreshProjectIdsDropdown() {
-            renderProjectIdsDropdown();
-            appendLog('PROJECT IDS', { ids: readStoredProjectIds() });
+        async function refreshProjectIdsDropdown() {
+            await renderProjectIdsDropdown();
+            appendLog('PROJECT IDS', { ids: readStoredProjectIds(), source: 'api+local' });
         }
 
         function updateRuntimeStatus(projectId = null) {
@@ -615,7 +648,7 @@
                     throw new Error('No se recibieron datos publicos del proyecto');
                 }
                 rememberProjectId(projectId);
-                renderProjectIdsDropdown();
+                await renderProjectIdsDropdown();
                 console.log('[LandingAPI] public API mapped data', mapped);
                 console.table({
                     projectId: mapped.projectId || projectId,
@@ -667,6 +700,7 @@
             console.log('[LandingAPI] onload runtime', runtime);
             apiBaseInput.value = runtime.apiBase || resolveDefaultApiBaseUrl();
             console.log('[LandingAPI] public APIs enabled', {
+                listProjects: `${apiBaseInput.value}/api/dash-manquehue/public/projects`,
                 step1ById: `${apiBaseInput.value}/api/dash-manquehue/public/projects/:id/step1`
             });
             if (runtime.projectId) {
