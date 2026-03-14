@@ -156,15 +156,33 @@
             </div>
             <div class="np-media-grid">
               <label class="np-upload">
-                <input type="file" accept=".jpg,.png,.webp" (change)="handleFileChange($event, 'coverImage')" hidden />
+                <input #coverImageInput type="file" accept=".jpg,.png,.webp" (change)="handleFileChange($event, 'coverImage')" hidden />
                 <p>Imagen de Portada</p>
                 <small>{{ project.coverImage || 'JPG, PNG o WebP (max 5MB)' }}</small>
               </label>
+              <div class="np-upload-state" *ngIf="project.coverImage">
+                <div class="np-upload-state__preview" *ngIf="coverImagePreviewUrl; else noCoverPreview">
+                  <img [src]="coverImagePreviewUrl" alt="Preview portada seleccionada" />
+                </div>
+                <ng-template #noCoverPreview>
+                  <div class="np-upload-state__empty">Sin preview disponible</div>
+                </ng-template>
+                <button type="button" class="np-upload-state__remove" (click)="clearCoverImageSelection(coverImageInput)">
+                  Eliminar portada
+                </button>
+              </div>
+
               <label class="np-upload np-upload--accent">
-                <input type="file" accept=".mp3,.wav" (change)="handleFileChange($event, 'ambientAudio')" hidden />
+                <input #ambientAudioInput type="file" accept=".mp3,.wav" (change)="handleFileChange($event, 'ambientAudio')" hidden />
                 <p>Audio Ambiental</p>
                 <small>{{ project.ambientAudio || 'MP3 para experiencia inmersiva' }}</small>
               </label>
+              <div class="np-upload-state np-upload-state--audio" *ngIf="project.ambientAudio">
+                <div class="np-upload-state__empty">Audio cargado: {{ project.ambientAudio }}</div>
+                <button type="button" class="np-upload-state__remove" (click)="clearAmbientAudioSelection(ambientAudioInput)">
+                  Eliminar audio
+                </button>
+              </div>
             </div>
           </article>
         </div>

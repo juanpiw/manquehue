@@ -1,7 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 
 interface SimpleStep {
@@ -29,7 +29,7 @@ type MediaAssetKey = 'masterPlan' | 'brochure' | 'legalDocs';
   templateUrl: './nuevo-proyecto.component.html',
   styleUrl: './nuevo-proyecto.component.scss'
 })
-export class NuevoProyectoComponent {
+export class NuevoProyectoComponent implements OnDestroy {
   readonly steps: SimpleStep[] = [
     { id: 1, label: 'Información' },
     { id: 2, label: 'Configuración' },
@@ -195,6 +195,7 @@ export class NuevoProyectoComponent {
   };
   private coverImageFile: File | null = null;
   private ambientAudioFile: File | null = null;
+  coverImagePreviewUrl: string | null = null;
 
   constructor(private http: HttpClient) {
     this.currentProjectId = this.getStoredProjectId();
@@ -213,13 +214,34 @@ export class NuevoProyectoComponent {
   handleFileChange(event: Event, key: 'coverImage' | 'ambientAudio') {
     const input = event.target as HTMLInputElement;
     if (input?.files?.length) {
-      this.project[key] = input.files[0].name;
+      const selectedFile = input.files[0];
+      this.project[key] = selectedFile.name;
       if (key === 'coverImage') {
-        this.coverImageFile = input.files[0];
+        if (this.coverImagePreviewUrl) {
+          URL.revokeObjectURL(this.coverImagePreviewUrl);
+        }
+        this.coverImagePreviewUrl = URL.createObjectURL(selectedFile);
+        this.coverImageFile = selectedFile;
       } else {
-        this.ambientAudioFile = input.files[0];
+        this.ambientAudioFile = selectedFile;
       }
     }
+  }
+
+  clearCoverImageSelection(input: HTMLInputElement): void {
+    if (this.coverImagePreviewUrl) {
+      URL.revokeObjectURL(this.coverImagePreviewUrl);
+    }
+    this.coverImagePreviewUrl = null;
+    this.coverImageFile = null;
+    this.project.coverImage = '';
+    input.value = '';
+  }
+
+  clearAmbientAudioSelection(input: HTMLInputElement): void {
+    this.ambientAudioFile = null;
+    this.project.ambientAudio = '';
+    input.value = '';
   }
 
   handleAssetUpload(event: Event, key: MediaAssetKey) {
@@ -398,47 +420,77 @@ export class NuevoProyectoComponent {
     const token = this.getAccessToken();
     if (!token) {
       this.saveFeedback = 'Primero debes iniciar sesión para guardar.';
+      console.warn('[NuevoProyectoUI] save blocked: missing access token');
       return;
     }
 
     this.isSaving = true;
     this.saveFeedback = '';
+    console.log('[NuevoProyectoUI] save start', {
+      step: this.currentStep,
+      hasProjectId: Boolean(this.currentProjectId),
+      hasCoverFile: Boolean(this.coverImageFile),
+      hasAmbientFile: Boolean(this.ambientAudioFile)
+    });
 
     try {
       const projectId = await this.ensureProjectId(token);
+      console.log('[NuevoProyectoUI] project ready', { projectId, step: this.currentStep });
 
       if (this.currentStep === 1) {
+        const step1Payload = this.buildStep1ProjectPayload();
+        console.log('[NuevoProyectoUI] PATCH project payload', step1Payload);
         await firstValueFrom(
           this.http.patch(
             `${this.getApiBaseUrl()}/api/dash-manquehue/projects/${projectId}`,
-            this.buildStep1ProjectPayload(),
+            step1Payload,
             { headers: this.buildJsonHeaders(token) }
           )
         );
+        console.log('[NuevoProyectoUI] PATCH project ok', { projectId });
 
         if (this.coverImageFile) {
+          console.log('[NuevoProyectoUI] upload cover start', {
+            projectId,
+            name: this.coverImageFile.name,
+            size: this.coverImageFile.size
+          });
           await this.uploadStep1File(projectId, token, this.coverImageFile, 'cover-image');
           this.coverImageFile = null;
+          console.log('[NuevoProyectoUI] upload cover ok', { projectId });
         }
 
         if (this.ambientAudioFile) {
+          console.log('[NuevoProyectoUI] upload ambient start', {
+            projectId,
+            name: this.ambientAudioFile.name,
+            size: this.ambientAudioFile.size
+          });
           await this.uploadStep1File(projectId, token, this.ambientAudioFile, 'ambient-audio');
           this.ambientAudioFile = null;
+          console.log('[NuevoProyectoUI] upload ambient ok', { projectId });
         }
       }
 
+      const stepPayload = this.buildCurrentStepPayload();
+      console.log('[NuevoProyectoUI] PATCH step payload', {
+        projectId,
+        step: this.currentStep,
+        payload: stepPayload
+      });
       await firstValueFrom(
         this.http.patch(
           `${this.getApiBaseUrl()}/api/dash-manquehue/projects/${projectId}/step/${this.currentStep}`,
-          this.buildCurrentStepPayload(),
+          stepPayload,
           { headers: this.buildJsonHeaders(token) }
         )
       );
+      console.log('[NuevoProyectoUI] PATCH step ok', { projectId, step: this.currentStep });
 
       this.saveFeedback = `Paso ${this.currentStep} guardado correctamente.`;
     } catch (error) {
       console.error('[NuevoProyecto] saveCurrentStep error', error);
-      this.saveFeedback = 'No se pudo guardar. Revisa el backend o tu sesión.';
+      this.saveFeedback = this.getApiErrorMessage(error);
     } finally {
       this.isSaving = false;
     }
@@ -446,13 +498,16 @@ export class NuevoProyectoComponent {
 
   private async ensureProjectId(token: string): Promise<number> {
     if (this.currentProjectId) {
+      console.log('[NuevoProyectoUI] reusing projectId', { projectId: this.currentProjectId });
       return this.currentProjectId;
     }
 
+    const createPayload = this.buildStep1ProjectPayload();
+    console.log('[NuevoProyectoUI] create project payload', createPayload);
     const response = await firstValueFrom(
       this.http.post<{ data?: { projectId?: number } }>(
         `${this.getApiBaseUrl()}/api/dash-manquehue/projects`,
-        this.buildStep1ProjectPayload(),
+        createPayload,
         { headers: this.buildJsonHeaders(token) }
       )
     );
@@ -464,6 +519,7 @@ export class NuevoProyectoComponent {
 
     this.currentProjectId = projectId;
     this.storeProjectId(projectId);
+    console.log('[NuevoProyectoUI] created projectId', { projectId });
     return projectId;
   }
 
@@ -477,7 +533,7 @@ export class NuevoProyectoComponent {
       puntoCercano1: this.project.puntoCercano?.trim() || null,
       puntoCercano2: this.project.puntoCercano2?.trim() || null,
       orientacionPrincipal: this.project.orientacion?.trim() || null,
-      tipoInmueble: this.project.propertyType || null,
+      tipoInmueble: this.mapPropertyTypeForApi(this.project.propertyType),
       estadoEntrega: this.project.estado || null,
       orientacionTexto: this.project.orientacion?.trim() || null,
       ubicacionTexto: this.project.ubicacion?.trim() || null,
@@ -581,6 +637,44 @@ export class NuevoProyectoComponent {
       return;
     }
     localStorage.setItem('imanquehue_current_project_id', String(projectId));
+  }
+
+  ngOnDestroy(): void {
+    if (this.coverImagePreviewUrl) {
+      URL.revokeObjectURL(this.coverImagePreviewUrl);
+    }
+  }
+
+  private mapPropertyTypeForApi(value: string): 'departamento' | 'casa' | 'townhouses' | null {
+    if (value === 'house') {
+      return 'casa';
+    }
+    if (value === 'field' || value === 'townhouses') {
+      return 'townhouses';
+    }
+    if (value === 'apartment' || value === 'departamento') {
+      return 'departamento';
+    }
+    return null;
+  }
+
+  private getApiErrorMessage(error: unknown): string {
+    const fallback = 'No se pudo guardar. Revisa backend y sesión.';
+    if (!(error instanceof HttpErrorResponse)) {
+      return fallback;
+    }
+
+    const err = error.error as string | { error?: { message?: string }; message?: string } | null | undefined;
+    if (typeof err === 'string' && err.trim()) {
+      return `No se pudo guardar: ${err.slice(0, 160)}`;
+    }
+
+    const apiMessage = err?.error?.message || err?.message;
+    if (apiMessage) {
+      return `No se pudo guardar: ${apiMessage}`;
+    }
+
+    return `No se pudo guardar (HTTP ${error.status || '0'}).`;
   }
 }
 
