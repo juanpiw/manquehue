@@ -35,8 +35,7 @@
         <p class="np__project-id-value">{{ currentProjectId || 'Sin guardar' }}</p>
         <div class="np__project-id-actions">
           <button type="button" class="btn light" (click)="copyProjectId()" [disabled]="!currentProjectId">Copiar ID</button>
-          <button type="button" class="btn light" (click)="copyLandingUrl()" [disabled]="!currentProjectId">Copiar URL Landing</button>
-          <button type="button" class="btn save-blue" (click)="openLandingWithProjectId()" [disabled]="!currentProjectId">Abrir Landing</button>
+          <button type="button" class="btn save-blue" (click)="openLandingWithProjectId()" [disabled]="!currentProjectId">Abrir Landing (ID)</button>
         </div>
       </div>
     </div>

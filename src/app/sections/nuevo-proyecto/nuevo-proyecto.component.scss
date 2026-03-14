@@ -198,13 +198,13 @@
   }
 
   &__project-id-panel {
-    background: rgba(15, 23, 42, 0.94);
-    color: #fff;
+    background: #eef2f7;
+    color: #1f2937;
     border-radius: 1rem;
     padding: 0.8rem 0.95rem;
     min-width: 300px;
-    box-shadow: 0 20px 45px rgba(15, 23, 42, 0.35);
-    border: 1px solid rgba(148, 163, 184, 0.2);
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+    border: 1px solid rgba(148, 163, 184, 0.35);
   }
 
   &__project-id-panel--inline {
@@ -217,7 +217,7 @@
     font-size: 0.63rem;
     text-transform: uppercase;
     letter-spacing: 0.14em;
-    color: #94a3b8;
+    color: #64748b;
     font-weight: 700;
   }
 
@@ -225,7 +225,7 @@
     margin: 0.2rem 0 0.55rem;
     font-size: 1.25rem;
     font-weight: 800;
-    color: #93c5fd;
+    color: #1e40af;
     line-height: 1;
   }
 
