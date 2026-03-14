@@ -78,8 +78,13 @@
         <div id="debug-content" class="p-6 space-y-4">
             <div class="grid grid-cols-1 gap-2">
                 <input id="api-base-url" class="w-full bg-black/40 text-emerald-300 font-mono text-[11px] p-3 rounded-xl border border-white/5 outline-none focus:border-emerald-500" placeholder="API Base URL (ej: http://localhost:4000)" />
-                <input id="api-token" class="w-full bg-black/40 text-amber-300 font-mono text-[11px] p-3 rounded-xl border border-white/5 outline-none focus:border-amber-500" placeholder="Bearer token" />
-                <input id="api-project-id" class="w-full bg-black/40 text-indigo-300 font-mono text-[11px] p-3 rounded-xl border border-white/5 outline-none focus:border-indigo-500" placeholder="Project ID (se completa al crear)" />
+                <input id="api-project-id" class="w-full bg-black/40 text-indigo-300 font-mono text-[11px] p-3 rounded-xl border border-white/5 outline-none focus:border-indigo-500" placeholder="Project ID (manual)" />
+                <div class="grid grid-cols-[1fr_auto] gap-2 items-center">
+                    <select id="api-project-select" class="w-full bg-black/40 text-cyan-300 font-mono text-[11px] p-3 rounded-xl border border-white/5 outline-none focus:border-cyan-500">
+                        <option value="">Selecciona ID guardado</option>
+                    </select>
+                    <button onclick="refreshProjectIdsDropdown()" class="px-3 py-3 bg-cyan-700 hover:bg-cyan-600 text-white text-[10px] font-extrabold uppercase tracking-widest rounded-xl transition-all shadow-lg active:scale-95">Refrescar</button>
+                </div>
             </div>
             <div class="rounded-xl border border-white/10 bg-black/30 p-3 space-y-1">
                 <p class="text-[9px] uppercase tracking-[0.18em] text-slate-400 font-bold">Modo</p>
@@ -88,20 +93,8 @@
                 <p id="api-project-state" class="text-[10px] font-mono text-indigo-300">Project ID: -</p>
             </div>
             <textarea id="api-json" class="w-full h-64 bg-black/40 text-indigo-300 font-mono text-[11px] p-4 rounded-2xl border border-white/5 outline-none focus:border-indigo-500 transition-colors"></textarea>
-            <div class="grid grid-cols-2 gap-2">
-                <button onclick="createDraftFromJson()" class="py-3 bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] font-extrabold uppercase tracking-widest rounded-xl transition-all shadow-lg active:scale-95">Crear Borrador</button>
-                <button onclick="updateProjectFromJson()" class="py-3 bg-indigo-500 hover:bg-indigo-400 text-white text-[10px] font-extrabold uppercase tracking-widest rounded-xl transition-all shadow-lg active:scale-95">Actualizar Paso 1</button>
-                <button onclick="saveStep1Payload()" class="py-3 bg-purple-600 hover:bg-purple-500 text-white text-[10px] font-extrabold uppercase tracking-widest rounded-xl transition-all shadow-lg active:scale-95">Guardar Step/1</button>
-                <button onclick="fetchProjectById()" class="py-3 bg-emerald-700 hover:bg-emerald-600 text-white text-[10px] font-extrabold uppercase tracking-widest rounded-xl transition-all shadow-lg active:scale-95">Cargar por ID</button>
-            </div>
             <div class="grid grid-cols-1 gap-2">
-                <label class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Portada (JPG/PNG/WebP)</label>
-                <input id="cover-file" type="file" accept=".jpg,.jpeg,.png,.webp" class="w-full bg-black/40 text-indigo-300 font-mono text-[11px] p-2 rounded-xl border border-white/5" />
-                <button onclick="uploadCoverImage()" class="py-3 bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-extrabold uppercase tracking-widest rounded-xl transition-all shadow-lg active:scale-95">Subir Portada</button>
-                <label class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Audio (MP3/WAV)</label>
-                <input id="ambient-audio-file" type="file" accept=".mp3,.wav" class="w-full bg-black/40 text-indigo-300 font-mono text-[11px] p-2 rounded-xl border border-white/5" />
-                <button onclick="uploadAmbientAudio()" class="py-3 bg-cyan-600 hover:bg-cyan-500 text-white text-[10px] font-extrabold uppercase tracking-widest rounded-xl transition-all shadow-lg active:scale-95">Subir Audio</button>
-                <button onclick="fetchStep1Media()" class="py-3 bg-slate-700 hover:bg-slate-600 text-white text-[10px] font-extrabold uppercase tracking-widest rounded-xl transition-all shadow-lg active:scale-95">Ver Media Paso 1</button>
+                <button onclick="fetchProjectById()" class="py-3 bg-emerald-700 hover:bg-emerald-600 text-white text-[10px] font-extrabold uppercase tracking-widest rounded-xl transition-all shadow-lg active:scale-95">Cargar por ID</button>
             </div>
             <button onclick="updateFromAPI()" class="w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-extrabold uppercase tracking-widest rounded-2xl transition-all shadow-lg active:scale-95">Aplicar JSON a Vista</button>
             <pre id="api-log" class="w-full h-40 bg-black/50 text-slate-200 font-mono text-[10px] p-3 rounded-2xl border border-white/5 overflow-auto"></pre>
@@ -398,12 +391,13 @@
 
         const jsonArea = document.getElementById('api-json');
         const apiBaseInput = document.getElementById('api-base-url');
-        const apiTokenInput = document.getElementById('api-token');
         const apiProjectIdInput = document.getElementById('api-project-id');
+        const apiProjectSelect = document.getElementById('api-project-select');
         const apiLog = document.getElementById('api-log');
         const apiModeState = document.getElementById('api-mode-state');
         const apiEndpointState = document.getElementById('api-endpoint-state');
         const apiProjectState = document.getElementById('api-project-state');
+        const PROJECT_IDS_STORAGE_KEY = 'dm_landing_project_ids';
 
         function appendLog(title, payload) {
             const stamp = new Date().toLocaleTimeString();
@@ -412,10 +406,6 @@
         }
 
         function resolveDefaultApiBaseUrl() {
-            const host = (window.location.hostname || '').toLowerCase();
-            if (host === 'localhost' || host === '127.0.0.1') {
-                return 'http://localhost:4000';
-            }
             return 'https://www.api.thefutureagencyai.com';
         }
 
@@ -427,7 +417,6 @@
                 (hash.get('projectId') || hash.get('id') || hash.get('project') || '').trim();
             return {
                 apiBase: (params.get('apiBase') || '').trim(),
-                token: (params.get('token') || '').trim(),
                 projectId
             };
         }
@@ -438,24 +427,82 @@
             return base;
         }
 
-        function getAuthHeaders(extra = {}) {
-            const token = (apiTokenInput.value || '').trim();
-            return {
-                ...(token ? { Authorization: `Bearer ${token}` } : {}),
-                ...extra
-            };
-        }
-
         function getProjectId() {
-            const id = Number(apiProjectIdInput.value);
-            if (!Number.isInteger(id) || id <= 0) {
-                throw new Error('Project ID invalido');
+            const inputId = Number(apiProjectIdInput.value);
+            if (Number.isInteger(inputId) && inputId > 0) {
+                return inputId;
             }
+            let jsonId = NaN;
+            try {
+                const parsed = JSON.parse(jsonArea.value || '{}');
+                jsonId = Number(parsed?.projectId || parsed?.id || parsed?.project_id);
+            } catch (e) {
+                // Ignore JSON parse errors here; validation below handles missing ID.
+            }
+            const id = jsonId;
+            if (!Number.isInteger(id) || id <= 0) {
+                throw new Error('Project ID invalido (usa input o JSON: projectId/id/project_id)');
+            }
+            apiProjectIdInput.value = String(id);
             return id;
         }
 
         function getPublicStep1Path(projectId) {
             return `/api/dash-manquehue/public/projects/${projectId}/step1`;
+        }
+
+        function readStoredProjectIds() {
+            try {
+                const raw = localStorage.getItem(PROJECT_IDS_STORAGE_KEY) || '[]';
+                const parsed = JSON.parse(raw);
+                if (!Array.isArray(parsed)) return [];
+                return parsed
+                    .map((value) => Number(value))
+                    .filter((value) => Number.isInteger(value) && value > 0)
+                    .sort((a, b) => a - b);
+            } catch (error) {
+                console.warn('[LandingAPI] readStoredProjectIds failed', error);
+                return [];
+            }
+        }
+
+        function storeProjectIds(ids) {
+            const normalized = ids
+                .map((value) => Number(value))
+                .filter((value) => Number.isInteger(value) && value > 0)
+                .sort((a, b) => a - b);
+            localStorage.setItem(PROJECT_IDS_STORAGE_KEY, JSON.stringify(Array.from(new Set(normalized))));
+        }
+
+        function rememberProjectId(id) {
+            if (!Number.isInteger(id) || id <= 0) return;
+            const current = readStoredProjectIds();
+            if (!current.includes(id)) {
+                current.push(id);
+                storeProjectIds(current);
+            }
+        }
+
+        function renderProjectIdsDropdown() {
+            if (!apiProjectSelect) return;
+            const ids = readStoredProjectIds();
+            const selected = String((apiProjectIdInput.value || '').trim());
+            apiProjectSelect.innerHTML = '<option value="">Selecciona ID guardado</option>';
+            ids.forEach((id) => {
+                const option = document.createElement('option');
+                option.value = String(id);
+                option.textContent = `Proyecto #${id}`;
+                apiProjectSelect.appendChild(option);
+            });
+            if (selected && ids.includes(Number(selected))) {
+                apiProjectSelect.value = selected;
+            }
+            console.log('[LandingAPI] dropdown IDs', ids);
+        }
+
+        function refreshProjectIdsDropdown() {
+            renderProjectIdsDropdown();
+            appendLog('PROJECT IDS', { ids: readStoredProjectIds() });
         }
 
         function updateRuntimeStatus(projectId = null) {
@@ -466,35 +513,15 @@
             apiProjectState.textContent = `Project ID: ${currentId}`;
         }
 
-        function mapUiJsonToApiPayload(data) {
-            return {
-                nombre: data.nombre || null,
-                descripcionComercial: data.descripcion_comercial || null,
-                tiempoVisitaMin: data.tiempo_visita_min ?? null,
-                puntoCercano1: data.punto_cercano_1 || null,
-                tiempoRecorridoMin: data.tiempo_recorrido_min ?? null,
-                puntoCercano2: data.punto_cercano_2 || null,
-                orientacionPrincipal: data.orientacion_principal || null,
-                tiempoPostventaMin: data.tiempo_post_venta ?? null,
-                entornoDescripcion: data.descripcion_entorno || null,
-                direccionPin: data.direccion_pin || null,
-                tipoInmueble: (data.tipo_inmueble || '').toLowerCase(),
-                estadoEntrega: (data.estado_entrega || '').toLowerCase(),
-                ubicacionTexto: data.ubicacion_label || null,
-                mapRangeKm: 2.5
-            };
-        }
-
         async function apiRequest(method, path, body = null, isFormData = false) {
             const url = `${getApiBaseUrl()}${path}`;
-            const headers = isFormData ? getAuthHeaders() : getAuthHeaders({ 'Content-Type': 'application/json' });
+            const headers = isFormData ? {} : { 'Content-Type': 'application/json' };
             const options = { method, headers };
-            const hasAuth = Boolean(headers.Authorization);
             console.log('[LandingAPI] request start', {
                 method,
                 path,
                 url,
-                hasAuth,
+                mode: 'public',
                 isFormData,
                 bodyPreview: isFormData ? '[FormData]' : body
             });
@@ -564,59 +591,41 @@
             }
         }
 
-        async function createDraftFromJson() {
-            try {
-                const data = JSON.parse(jsonArea.value);
-                const payload = mapUiJsonToApiPayload(data);
-                const res = await apiRequest('POST', '/api/dash-manquehue/projects', payload);
-                const projectId = res?.data?.projectId;
-                if (projectId) {
-                    apiProjectIdInput.value = String(projectId);
-                    showNotification(`Borrador creado ID ${projectId}`);
-                } else {
-                    showNotification('Borrador creado');
-                }
-            } catch (e) {
-                alert(`Error creando borrador: ${e.message}`);
-            }
-        }
-
-        async function updateProjectFromJson() {
-            try {
-                const projectId = getProjectId();
-                const data = JSON.parse(jsonArea.value);
-                const payload = mapUiJsonToApiPayload(data);
-                await apiRequest('PATCH', `/api/dash-manquehue/projects/${projectId}`, payload);
-                showNotification('Paso 1 actualizado');
-            } catch (e) {
-                alert(`Error actualizando: ${e.message}`);
-            }
-        }
-
-        async function saveStep1Payload() {
-            try {
-                const projectId = getProjectId();
-                const data = JSON.parse(jsonArea.value);
-                await apiRequest('PATCH', `/api/dash-manquehue/projects/${projectId}/step/1`, data);
-                showNotification('Step 1 payload guardado');
-            } catch (e) {
-                alert(`Error guardando step1: ${e.message}`);
-            }
-        }
-
         async function fetchProjectById() {
             try {
                 const projectId = getProjectId();
+                const endpointPath = getPublicStep1Path(projectId);
+                const endpointUrl = `${getApiBaseUrl()}${endpointPath}`;
                 updateRuntimeStatus(String(projectId));
                 console.log('[LandingAPI] fetchProjectById', {
                     projectId,
-                    mode: 'public'
+                    mode: 'public',
+                    endpointPath,
+                    endpointUrl
                 });
-                const publicRes = await apiRequest('GET', getPublicStep1Path(projectId));
+                console.log(`[LandingAPI] calling public API -> GET ${endpointUrl}`);
+                appendLog('PUBLIC API CALL', { method: 'GET', endpoint: endpointUrl, projectId });
+                const publicRes = await apiRequest('GET', endpointPath);
+                console.log('[LandingAPI] public API raw response', publicRes);
+                try {
+                    console.log('[LandingAPI] public API raw response JSON', JSON.stringify(publicRes, null, 2));
+                } catch (e) {}
                 const mapped = publicRes?.data || null;
                 if (!mapped) {
                     throw new Error('No se recibieron datos publicos del proyecto');
                 }
+                rememberProjectId(projectId);
+                renderProjectIdsDropdown();
+                console.log('[LandingAPI] public API mapped data', mapped);
+                console.table({
+                    projectId: mapped.projectId || projectId,
+                    nombre: mapped.nombre || '',
+                    tipo_inmueble: mapped.tipo_inmueble || '',
+                    estado_entrega: mapped.estado_entrega || '',
+                    direccion_pin: mapped.direccion_pin || '',
+                    portada_url: mapped?.multimedia?.portada_url || '',
+                    audio_url: mapped?.multimedia?.audio_url || ''
+                });
                 jsonArea.value = JSON.stringify(mapped, null, 2);
                 renderLanding(mapped);
                 showNotification('Proyecto cargado (publico)');
@@ -625,45 +634,6 @@
                     message: e?.message || e
                 });
                 alert(`Error obteniendo proyecto: ${e.message}`);
-            }
-        }
-
-        async function uploadCoverImage() {
-            try {
-                const projectId = getProjectId();
-                const fileInput = document.getElementById('cover-file');
-                if (!fileInput.files || !fileInput.files[0]) throw new Error('Selecciona una portada');
-                const form = new FormData();
-                form.append('file', fileInput.files[0]);
-                await apiRequest('POST', `/api/dash-manquehue/projects/${projectId}/files/cover-image`, form, true);
-                showNotification('Portada subida');
-            } catch (e) {
-                alert(`Error subiendo portada: ${e.message}`);
-            }
-        }
-
-        async function uploadAmbientAudio() {
-            try {
-                const projectId = getProjectId();
-                const fileInput = document.getElementById('ambient-audio-file');
-                if (!fileInput.files || !fileInput.files[0]) throw new Error('Selecciona un audio');
-                const form = new FormData();
-                form.append('file', fileInput.files[0]);
-                await apiRequest('POST', `/api/dash-manquehue/projects/${projectId}/files/ambient-audio`, form, true);
-                showNotification('Audio subido');
-            } catch (e) {
-                alert(`Error subiendo audio: ${e.message}`);
-            }
-        }
-
-        async function fetchStep1Media() {
-            try {
-                const projectId = getProjectId();
-                const res = await apiRequest('GET', `/api/dash-manquehue/projects/${projectId}/files/step1-media`);
-                showNotification('Media paso 1 consultada');
-                appendLog('STEP1 MEDIA', res);
-            } catch (e) {
-                alert(`Error consultando media: ${e.message}`);
             }
         }
 
@@ -696,24 +666,51 @@
             const runtime = getRuntimeConfigFromUrl();
             console.log('[LandingAPI] onload runtime', runtime);
             apiBaseInput.value = runtime.apiBase || resolveDefaultApiBaseUrl();
-            if (runtime.token) {
-                apiTokenInput.value = runtime.token;
-            }
+            console.log('[LandingAPI] public APIs enabled', {
+                step1ById: `${apiBaseInput.value}/api/dash-manquehue/public/projects/:id/step1`
+            });
             if (runtime.projectId) {
                 apiProjectIdInput.value = runtime.projectId;
+                rememberProjectId(Number(runtime.projectId));
             }
             updateRuntimeStatus(runtime.projectId || null);
             apiBaseInput.addEventListener('input', () => updateRuntimeStatus());
             apiProjectIdInput.addEventListener('input', () => updateRuntimeStatus());
+            apiProjectIdInput.addEventListener('input', () => {
+                const id = Number(apiProjectIdInput.value || 0);
+                if (Number.isInteger(id) && id > 0) {
+                    rememberProjectId(id);
+                    renderProjectIdsDropdown();
+                }
+            });
+            apiProjectSelect?.addEventListener('change', () => {
+                const selectedId = String(apiProjectSelect.value || '').trim();
+                if (!selectedId) {
+                    return;
+                }
+                apiProjectIdInput.value = selectedId;
+                updateRuntimeStatus(selectedId);
+                console.log('[LandingAPI] selected ID from dropdown', { projectId: selectedId });
+            });
             jsonArea.value = JSON.stringify(initialData, null, 2);
+            try {
+                const parsed = JSON.parse(jsonArea.value);
+                const jsonProjectId = parsed?.projectId || parsed?.id || parsed?.project_id || '';
+                if (!apiProjectIdInput.value && jsonProjectId) {
+                    apiProjectIdInput.value = String(jsonProjectId);
+                    rememberProjectId(Number(jsonProjectId));
+                    console.log('[LandingAPI] projectId loaded from JSON', { projectId: apiProjectIdInput.value });
+                }
+            } catch (e) {}
+            renderProjectIdsDropdown();
             renderLanding(initialData);
             setTimeout(() => toggleDebug(), 1000); // Abrir después de carga inicial
             if (window.location.protocol === 'file:') {
                 appendLog(
                     'WARN file:// origin',
-                    'Abre esta landing en http(s), no en file://. Recomendado: http://localhost:5500/landing-prueba-api.html'
+                    'Abre esta landing en http(s), no en file://'
                 );
-                showNotification('Abre en http://localhost:5500 (no file://)');
+                showNotification('Abre la landing en http(s), no file://');
             }
             if (apiProjectIdInput.value) {
                 console.log('[LandingAPI] auto-fetching project', { projectId: apiProjectIdInput.value });

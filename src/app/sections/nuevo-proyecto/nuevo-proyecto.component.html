@@ -29,6 +29,16 @@
         </svg>
         <span>Rellenar con IA</span>
       </button>
+
+      <div class="np__project-id-panel np__project-id-panel--inline">
+        <p class="np__project-id-title">ID de Proyecto (BD)</p>
+        <p class="np__project-id-value">{{ currentProjectId || 'Sin guardar' }}</p>
+        <div class="np__project-id-actions">
+          <button type="button" class="btn light" (click)="copyProjectId()" [disabled]="!currentProjectId">Copiar ID</button>
+          <button type="button" class="btn light" (click)="copyLandingUrl()" [disabled]="!currentProjectId">Copiar URL Landing</button>
+          <button type="button" class="btn save-blue" (click)="openLandingWithProjectId()" [disabled]="!currentProjectId">Abrir Landing</button>
+        </div>
+      </div>
     </div>
 
     <section class="np__stepper">
@@ -744,14 +754,5 @@
   </div>
   <p class="np__save-feedback" *ngIf="saveFeedback">{{ saveFeedback }}</p>
 
-  <div class="np__project-id-panel" *ngIf="currentProjectId">
-    <p class="np__project-id-title">ID de Proyecto</p>
-    <p class="np__project-id-value">{{ currentProjectId }}</p>
-    <div class="np__project-id-actions">
-      <button type="button" class="btn light" (click)="copyProjectId()">Copiar ID</button>
-      <button type="button" class="btn light" (click)="copyLandingUrl()">Copiar URL Landing</button>
-      <button type="button" class="btn save-blue" (click)="openLandingWithProjectId()">Abrir Landing</button>
-    </div>
-  </div>
 </div>
 
