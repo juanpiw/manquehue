@@ -21,6 +21,12 @@ interface PropertyType {
 }
 
 type MediaAssetKey = 'masterPlan' | 'brochure' | 'legalDocs';
+type SavedProjectItem = {
+  id: number;
+  nombre: string;
+  status: string;
+  updatedAt: string | null;
+};
 
 @Component({
   selector: 'app-nuevo-proyecto',
@@ -187,6 +193,10 @@ export class NuevoProyectoComponent implements OnDestroy {
     remarks: ''
   };
   publicationSettingsEnabled = true;
+  isSavedProjectsModalOpen = false;
+  isLoadingSavedProjects = false;
+  savedProjectsError = '';
+  savedProjects: SavedProjectItem[] = [];
 
   isAssociationModalOpen = false;
   associationForm = {
@@ -365,7 +375,7 @@ export class NuevoProyectoComponent implements OnDestroy {
   }
 
   saveDraft() {
-    console.log('Guardando borrador', this.project);
+    this.openSavedProjectsModal();
   }
 
   cancel() {
@@ -496,6 +506,95 @@ export class NuevoProyectoComponent implements OnDestroy {
     }
     const absoluteUrl = `${window.location.origin}/${this.landingManualUrl}`;
     window.open(absoluteUrl, '_blank', 'noopener,noreferrer');
+  }
+
+  async openSavedProjectsModal(): Promise<void> {
+    this.isSavedProjectsModalOpen = true;
+    this.savedProjectsError = '';
+    await this.loadSavedProjects();
+  }
+
+  closeSavedProjectsModal(): void {
+    this.isSavedProjectsModalOpen = false;
+  }
+
+  async loadSavedProjects(): Promise<void> {
+    const token = this.getAccessToken();
+    if (!token) {
+      this.savedProjects = [];
+      this.savedProjectsError = 'Primero debes iniciar sesión para ver proyectos guardados.';
+      return;
+    }
+    this.isLoadingSavedProjects = true;
+    this.savedProjectsError = '';
+    try {
+      const response = await firstValueFrom(
+        this.http.get<{ data?: Array<Record<string, unknown>> }>(
+          `${this.getApiBaseUrl()}/api/dash-manquehue/projects`,
+          { headers: this.buildJsonHeaders(token) }
+        )
+      );
+      const rows = Array.isArray(response?.data) ? response.data : [];
+      this.savedProjects = rows.map((row) => ({
+        id: Number(row['id'] || 0),
+        nombre: String(row['nombre'] || `Proyecto ${row['id'] || ''}`),
+        status: String(row['status'] || 'draft'),
+        updatedAt: row['updated_at'] ? String(row['updated_at']) : null
+      })).filter((row) => row.id > 0);
+      console.log('[NuevoProyectoUI] saved projects loaded', { total: this.savedProjects.length });
+    } catch (error) {
+      console.error('[NuevoProyectoUI] loadSavedProjects error', error);
+      this.savedProjects = [];
+      this.savedProjectsError = 'No se pudieron cargar los proyectos guardados.';
+    } finally {
+      this.isLoadingSavedProjects = false;
+    }
+  }
+
+  async selectSavedProject(projectId: number): Promise<void> {
+    if (!projectId) {
+      return;
+    }
+    const token = this.getAccessToken();
+    if (!token) {
+      this.savedProjectsError = 'Sesión inválida para cargar proyecto.';
+      return;
+    }
+    this.isLoadingSavedProjects = true;
+    this.savedProjectsError = '';
+    try {
+      const response = await firstValueFrom(
+        this.http.get<{ data?: Record<string, unknown> }>(
+          `${this.getApiBaseUrl()}/api/dash-manquehue/projects/${projectId}`,
+          { headers: this.buildJsonHeaders(token) }
+        )
+      );
+      const data = (response?.data || {}) as Record<string, unknown>;
+      this.currentProjectId = projectId;
+      this.storeProjectId(projectId);
+      this.project.name = String(data['nombre'] || '');
+      this.project.description = String(data['descripcion_comercial'] || '');
+      this.timings.preVenta = Number(data['tiempo_visita_min'] || 0) || this.timings.preVenta;
+      this.timings.recorrido = Number(data['tiempo_recorrido_min'] || 0) || this.timings.recorrido;
+      this.timings.postVenta = Number(data['tiempo_postventa_min'] || 0) || this.timings.postVenta;
+      this.project.puntoCercano = String(data['punto_cercano_1'] || '');
+      this.project.puntoCercano2 = String(data['punto_cercano_2'] || '');
+      this.project.orientacion = String(data['orientacion_principal'] || data['orientacion_texto'] || '');
+      this.project.propertyType = this.mapPropertyTypeFromApi(String(data['tipo_inmueble'] || ''));
+      this.project.estado = String(data['estado_entrega'] || this.deliveryOptions[0].id);
+      this.project.ubicacion = String(data['ubicacion_texto'] || '');
+      this.project.entornoDescripcion = String(data['entorno_descripcion'] || '');
+      this.project.mapAddress = String(data['direccion_pin'] || '');
+      this.currentStep = Number(data['current_step'] || 1) || 1;
+      this.saveFeedback = `Proyecto #${projectId} cargado correctamente.`;
+      console.log('[NuevoProyectoUI] saved project selected', { projectId, data });
+      this.closeSavedProjectsModal();
+    } catch (error) {
+      console.error('[NuevoProyectoUI] selectSavedProject error', error);
+      this.savedProjectsError = 'No se pudo cargar el proyecto seleccionado.';
+    } finally {
+      this.isLoadingSavedProjects = false;
+    }
   }
 
   async saveCurrentStep(): Promise<void> {
@@ -822,6 +921,16 @@ export class NuevoProyectoComponent implements OnDestroy {
       return 'departamento';
     }
     return null;
+  }
+
+  private mapPropertyTypeFromApi(value: string): 'apartment' | 'house' | 'field' {
+    if (value === 'casa') {
+      return 'house';
+    }
+    if (value === 'townhouses') {
+      return 'field';
+    }
+    return 'apartment';
   }
 
   private getApiErrorMessage(error: unknown): string {

@@ -753,6 +753,10 @@
   width: min(620px, 100%);
 }
 
+.np-modal__content--saved-projects {
+  width: min(680px, 100%);
+}
+
 .np-modal__content--ai .np-modal__form {
   width: 100%;
 }
@@ -840,6 +844,64 @@
   border-color: #1d1d1b;
   box-shadow: 0 0 0 3px rgba(253, 179, 0, 0.2);
   background-color: #fff;
+}
+
+.np-saved-projects {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.np-saved-projects__state {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.np-saved-projects__state--error {
+  color: #b91c1c;
+  font-weight: 700;
+}
+
+.np-saved-projects__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  max-height: 320px;
+  overflow-y: auto;
+  padding-right: 0.2rem;
+}
+
+.np-saved-project {
+  width: 100%;
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  background: #f8fafc;
+  border-radius: 0.9rem;
+  padding: 0.75rem 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.np-saved-project:hover {
+  border-color: #1d1d1b;
+  background: #fff;
+  box-shadow: 0 8px 16px rgba(15, 23, 42, 0.08);
+}
+
+.np-saved-project__name {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #1d1d1b;
+}
+
+.np-saved-project__meta {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 600;
 }
 
 .np-attr-grid {

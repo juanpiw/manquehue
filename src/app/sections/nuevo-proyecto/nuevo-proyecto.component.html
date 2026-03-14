@@ -15,7 +15,7 @@
       <div class="np__hero-actions">
         <button type="button" class="btn ghost" (click)="cancel()">Cancelar</button>
         <button type="button" class="btn light" (click)="saveDraft()">
-          <span>Guardar borrador</span>
+          <span>Proyectos guardados</span>
           <svg viewBox="0 0 24 24"><path d="M8 7H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3m-1 4-3 3-3-3m3 3V4" /></svg>
         </button>
       </div>
@@ -643,6 +643,48 @@
           </article>
         </div>
       </section>
+
+      <div
+        class="np-modal"
+        *ngIf="isSavedProjectsModalOpen"
+        (click)="closeSavedProjectsModal()">
+        <div class="np-modal__content np-modal__content--saved-projects" (click)="$event.stopPropagation()">
+          <h3>Proyectos guardados</h3>
+          <p>Selecciona un proyecto para cargar sus datos e ID en el creador.</p>
+
+          <div class="np-saved-projects">
+            <p class="np-saved-projects__state" *ngIf="isLoadingSavedProjects">Cargando proyectos...</p>
+            <p class="np-saved-projects__state np-saved-projects__state--error" *ngIf="!isLoadingSavedProjects && savedProjectsError">
+              {{ savedProjectsError }}
+            </p>
+            <p class="np-saved-projects__state" *ngIf="!isLoadingSavedProjects && !savedProjectsError && savedProjects.length === 0">
+              No hay proyectos guardados todavía.
+            </p>
+
+            <div class="np-saved-projects__list" *ngIf="!isLoadingSavedProjects && savedProjects.length > 0">
+              <button
+                type="button"
+                class="np-saved-project"
+                *ngFor="let item of savedProjects"
+                (click)="selectSavedProject(item.id)">
+                <span class="np-saved-project__name">{{ item.nombre || ('Proyecto #' + item.id) }}</span>
+                <span class="np-saved-project__meta">
+                  ID: {{ item.id }} · {{ item.status }}<span *ngIf="item.updatedAt"> · {{ item.updatedAt | date:'short' }}</span>
+                </span>
+              </button>
+            </div>
+          </div>
+
+          <div class="np-modal__actions">
+            <button type="button" class="np-btn np-btn--ghost" (click)="closeSavedProjectsModal()">
+              Cerrar
+            </button>
+            <button type="button" class="np-btn np-btn--primary" (click)="loadSavedProjects()" [disabled]="isLoadingSavedProjects">
+              Recargar lista
+            </button>
+          </div>
+        </div>
+      </div>
 
       <div
         class="np-modal"
