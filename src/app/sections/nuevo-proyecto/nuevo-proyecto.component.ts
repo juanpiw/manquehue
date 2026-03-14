@@ -193,6 +193,8 @@ export class NuevoProyectoComponent implements OnDestroy {
     typology: '',
     model: ''
   };
+  isAiModalOpen = false;
+  aiContextPrompt = '';
   private coverImageFile: File | null = null;
   private ambientAudioFile: File | null = null;
   coverImagePreviewUrl: string | null = null;
@@ -368,6 +370,55 @@ export class NuevoProyectoComponent implements OnDestroy {
 
   cancel() {
     console.log('Cancelado');
+  }
+
+  fillWithAi() {
+    this.isAiModalOpen = true;
+  }
+
+  closeAiModal() {
+    this.isAiModalOpen = false;
+  }
+
+  applyAiAutofill() {
+    const context = this.aiContextPrompt.trim();
+    if (!context) {
+      this.saveFeedback = 'Escribe un contexto para rellenar con IA.';
+      return;
+    }
+
+    const propertyType = this.inferPropertyType(context);
+    const orientation = this.inferOrientation(context);
+    const delivery = this.inferDeliveryState(context);
+    const normalizedContext = this.normalizeText(context);
+    const contextoCapitalized = context.charAt(0).toUpperCase() + context.slice(1);
+
+    this.project.name = this.project.name || this.buildProjectName(context, propertyType);
+    this.project.description =
+      `Proyecto ${contextoCapitalized}. Diseñado para entregar una experiencia residencial superior, ` +
+      `con foco en calidad de vida, conectividad y plusvalía de largo plazo.`;
+    this.project.entornoDescripcion =
+      `Entorno destacado por ${context}. Cercano a comercio, servicios, áreas verdes y conectividad urbana.`;
+    this.project.puntoCercano = this.pickNearbyPoint(normalizedContext, 1);
+    this.project.puntoCercano2 = this.pickNearbyPoint(normalizedContext, 2);
+    this.project.mapAddress = this.project.mapAddress || this.buildAddressFromContext(normalizedContext);
+    this.project.ubicacion = this.project.ubicacion || this.project.mapAddress;
+    this.project.propertyType = propertyType;
+    this.project.orientacion = orientation;
+    this.project.estado = delivery;
+
+    this.timings.preVenta = this.timings.preVenta || 7;
+    this.timings.recorrido = this.timings.recorrido || 12;
+    this.timings.postVenta = this.timings.postVenta || 18;
+
+    this.isAiModalOpen = false;
+    this.saveFeedback = 'Campos del Paso 1 rellenados con IA.';
+    console.log('[NuevoProyectoUI] ai autofill applied', {
+      context,
+      propertyType,
+      orientation,
+      delivery
+    });
   }
 
   goNext() {
@@ -643,6 +694,75 @@ export class NuevoProyectoComponent implements OnDestroy {
     if (this.coverImagePreviewUrl) {
       URL.revokeObjectURL(this.coverImagePreviewUrl);
     }
+  }
+
+  private normalizeText(value: string): string {
+    return value
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+  }
+
+  private inferPropertyType(context: string): 'apartment' | 'house' | 'field' {
+    const normalized = this.normalizeText(context);
+    if (normalized.includes('casa') || normalized.includes('condominio')) {
+      return 'house';
+    }
+    if (normalized.includes('townhouse') || normalized.includes('townhouses')) {
+      return 'field';
+    }
+    return 'apartment';
+  }
+
+  private inferOrientation(context: string): string {
+    const normalized = this.normalizeText(context);
+    if (normalized.includes('sur')) return 'Sur';
+    if (normalized.includes('oriente')) return 'Oriente';
+    if (normalized.includes('poniente')) return 'Poniente';
+    return 'Norte';
+  }
+
+  private inferDeliveryState(context: string): 'inmediata' | 'pronta' | 'futura' {
+    const normalized = this.normalizeText(context);
+    if (normalized.includes('futura') || normalized.includes('2027') || normalized.includes('2028')) {
+      return 'futura';
+    }
+    if (normalized.includes('pronta') || normalized.includes('2026')) {
+      return 'pronta';
+    }
+    return 'inmediata';
+  }
+
+  private buildProjectName(context: string, propertyType: 'apartment' | 'house' | 'field'): string {
+    const suffix = propertyType === 'house' ? 'Casas' : propertyType === 'field' ? 'Townhouses' : 'Residencias';
+    const cleaned = context
+      .split(' ')
+      .map((token) => token.trim())
+      .filter(Boolean)
+      .slice(0, 3)
+      .map((token) => token.charAt(0).toUpperCase() + token.slice(1).toLowerCase())
+      .join(' ');
+    return `Proyecto ${cleaned || 'Manquehue'} ${suffix}`;
+  }
+
+  private pickNearbyPoint(context: string, slot: 1 | 2): string {
+    const references = ['Metro Manquehue', 'Parque Araucano', 'Mall Parque Arauco', 'Clínica Alemana'];
+    if (context.includes('metro')) return slot === 1 ? 'Metro Manquehue' : 'Parque Araucano';
+    if (context.includes('parque')) return slot === 1 ? 'Parque Araucano' : 'Mall Parque Arauco';
+    return references[slot - 1] || references[0];
+  }
+
+  private buildAddressFromContext(context: string): string {
+    if (context.includes('las condes')) {
+      return 'Av. Manquehue 1234, Las Condes';
+    }
+    if (context.includes('providencia')) {
+      return 'Av. Providencia 1450, Providencia';
+    }
+    if (context.includes('nunoa') || context.includes('ñunoa')) {
+      return 'Av. Irarrázaval 2500, Ñuñoa';
+    }
+    return 'Av. Manquehue 1234, Las Condes';
   }
 
   private mapPropertyTypeForApi(value: string): 'departamento' | 'casa' | 'townhouses' | null {

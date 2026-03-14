@@ -105,6 +105,12 @@
     margin-bottom: 3rem;
   }
 
+  &__ai-actions {
+    display: flex;
+    justify-content: flex-start;
+    margin: -0.5rem 0 1.25rem;
+  }
+
   &__step-line {
     position: absolute;
     top: 50%;
@@ -702,6 +708,15 @@
   }
 }
 
+.np-modal__content--ai {
+  width: min(620px, 100%);
+}
+
+.np-modal__content--ai textarea {
+  min-height: 140px;
+  resize: vertical;
+}
+
 .np-modal__form {
   display: flex;
   flex-direction: column;
@@ -1191,6 +1206,23 @@
 }
 
 .btn.save-blue:hover {
+  transform: translateY(-2px);
+}
+
+.btn.ai-fill {
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  color: #fff;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 16px 35px rgba(79, 70, 229, 0.35);
+}
+
+.btn.ai-fill svg {
+  width: 1rem;
+  height: 1rem;
+  fill: currentColor;
+}
+
+.btn.ai-fill:hover {
   transform: translateY(-2px);
 }
 
