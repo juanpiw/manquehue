@@ -1,6 +1,8 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
 
 interface SimpleStep {
   id: number;
@@ -125,6 +127,9 @@ export class NuevoProyectoComponent {
   newBranchName = '';
 
   currentStep = 1;
+  currentProjectId: number | null = null;
+  isSaving = false;
+  saveFeedback = '';
   project = {
     name: '',
     description: '',
@@ -188,6 +193,12 @@ export class NuevoProyectoComponent {
     typology: '',
     model: ''
   };
+  private coverImageFile: File | null = null;
+  private ambientAudioFile: File | null = null;
+
+  constructor(private http: HttpClient) {
+    this.currentProjectId = this.getStoredProjectId();
+  }
 
   selectPropertyType(typeId: string) {
     this.project.propertyType = typeId;
@@ -203,6 +214,11 @@ export class NuevoProyectoComponent {
     const input = event.target as HTMLInputElement;
     if (input?.files?.length) {
       this.project[key] = input.files[0].name;
+      if (key === 'coverImage') {
+        this.coverImageFile = input.files[0];
+      } else {
+        this.ambientAudioFile = input.files[0];
+      }
     }
   }
 
@@ -372,6 +388,199 @@ export class NuevoProyectoComponent {
 
   get selectedAmenities(): string[] {
     return this.amenityOptions.filter(option => option.selected).map(option => option.label);
+  }
+
+  async saveCurrentStep(): Promise<void> {
+    if (this.isSaving) {
+      return;
+    }
+
+    const token = this.getAccessToken();
+    if (!token) {
+      this.saveFeedback = 'Primero debes iniciar sesión para guardar.';
+      return;
+    }
+
+    this.isSaving = true;
+    this.saveFeedback = '';
+
+    try {
+      const projectId = await this.ensureProjectId(token);
+
+      if (this.currentStep === 1) {
+        await firstValueFrom(
+          this.http.patch(
+            `${this.getApiBaseUrl()}/api/dash-manquehue/projects/${projectId}`,
+            this.buildStep1ProjectPayload(),
+            { headers: this.buildJsonHeaders(token) }
+          )
+        );
+
+        if (this.coverImageFile) {
+          await this.uploadStep1File(projectId, token, this.coverImageFile, 'cover-image');
+          this.coverImageFile = null;
+        }
+
+        if (this.ambientAudioFile) {
+          await this.uploadStep1File(projectId, token, this.ambientAudioFile, 'ambient-audio');
+          this.ambientAudioFile = null;
+        }
+      }
+
+      await firstValueFrom(
+        this.http.patch(
+          `${this.getApiBaseUrl()}/api/dash-manquehue/projects/${projectId}/step/${this.currentStep}`,
+          this.buildCurrentStepPayload(),
+          { headers: this.buildJsonHeaders(token) }
+        )
+      );
+
+      this.saveFeedback = `Paso ${this.currentStep} guardado correctamente.`;
+    } catch (error) {
+      console.error('[NuevoProyecto] saveCurrentStep error', error);
+      this.saveFeedback = 'No se pudo guardar. Revisa el backend o tu sesión.';
+    } finally {
+      this.isSaving = false;
+    }
+  }
+
+  private async ensureProjectId(token: string): Promise<number> {
+    if (this.currentProjectId) {
+      return this.currentProjectId;
+    }
+
+    const response = await firstValueFrom(
+      this.http.post<{ data?: { projectId?: number } }>(
+        `${this.getApiBaseUrl()}/api/dash-manquehue/projects`,
+        this.buildStep1ProjectPayload(),
+        { headers: this.buildJsonHeaders(token) }
+      )
+    );
+
+    const projectId = Number(response?.data?.projectId || 0);
+    if (!projectId) {
+      throw new Error('No projectId returned');
+    }
+
+    this.currentProjectId = projectId;
+    this.storeProjectId(projectId);
+    return projectId;
+  }
+
+  private buildStep1ProjectPayload() {
+    return {
+      nombre: this.project.name?.trim() || null,
+      descripcionComercial: this.project.description?.trim() || null,
+      tiempoVisitaMin: this.timings.preVenta ?? null,
+      tiempoRecorridoMin: this.timings.recorrido ?? null,
+      tiempoPostventaMin: this.timings.postVenta ?? null,
+      puntoCercano1: this.project.puntoCercano?.trim() || null,
+      puntoCercano2: this.project.puntoCercano2?.trim() || null,
+      orientacionPrincipal: this.project.orientacion?.trim() || null,
+      tipoInmueble: this.project.propertyType || null,
+      estadoEntrega: this.project.estado || null,
+      orientacionTexto: this.project.orientacion?.trim() || null,
+      ubicacionTexto: this.project.ubicacion?.trim() || null,
+      entornoDescripcion: this.project.entornoDescripcion?.trim() || null,
+      direccionPin: this.project.mapAddress?.trim() || null,
+      mapRangeKm: 2.5
+    };
+  }
+
+  private buildCurrentStepPayload() {
+    if (this.currentStep === 1) {
+      return {
+        ...this.buildStep1ProjectPayload(),
+        coverImageName: this.project.coverImage || null,
+        ambientAudioName: this.project.ambientAudio || null
+      };
+    }
+
+    if (this.currentStep === 2) {
+      return {
+        unitConfig: this.unitConfig,
+        selectedTypologies: this.selectedTypologies,
+        modelAssociations: this.modelAssociations,
+        selectedAmenities: this.selectedAmenities,
+        observation: this.unitConfig.observation || null
+      };
+    }
+
+    if (this.currentStep === 3) {
+      return {
+        mediaAssets: this.mediaAssets,
+        mediaGallery: this.mediaGallery
+      };
+    }
+
+    if (this.currentStep === 4) {
+      return {
+        contentPlan: this.contentPlan
+      };
+    }
+
+    return {
+      publicationSettingsEnabled: this.publicationSettingsEnabled,
+      publicationSettings: this.publicationSettings,
+      publicationChannels: this.publicationChannels
+    };
+  }
+
+  private async uploadStep1File(
+    projectId: number,
+    token: string,
+    file: File,
+    endpoint: 'cover-image' | 'ambient-audio'
+  ): Promise<void> {
+    const formData = new FormData();
+    formData.append('file', file);
+    await firstValueFrom(
+      this.http.post(
+        `${this.getApiBaseUrl()}/api/dash-manquehue/projects/${projectId}/files/${endpoint}`,
+        formData,
+        { headers: new HttpHeaders({ Authorization: `Bearer ${token}` }) }
+      )
+    );
+  }
+
+  private getApiBaseUrl(): string {
+    if (typeof window === 'undefined') {
+      return '';
+    }
+    const host = window.location.hostname.toLowerCase();
+    return host === 'localhost' || host === '127.0.0.1'
+      ? ''
+      : 'https://www.api.thefutureagencyai.com';
+  }
+
+  private buildJsonHeaders(token: string): HttpHeaders {
+    return new HttpHeaders({
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
+  }
+
+  private getAccessToken(): string {
+    if (typeof window === 'undefined') {
+      return '';
+    }
+    return localStorage.getItem('imanquehue_access_token') || '';
+  }
+
+  private getStoredProjectId(): number | null {
+    if (typeof window === 'undefined') {
+      return null;
+    }
+    const raw = localStorage.getItem('imanquehue_current_project_id');
+    const parsed = Number(raw || 0);
+    return parsed > 0 ? parsed : null;
+  }
+
+  private storeProjectId(projectId: number): void {
+    if (typeof window === 'undefined') {
+      return;
+    }
+    localStorage.setItem('imanquehue_current_project_id', String(projectId));
   }
 }
 

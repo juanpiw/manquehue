@@ -177,6 +177,16 @@
     gap: 1rem;
     align-items: center;
   }
+
+  &__save-feedback {
+    position: fixed;
+    right: 2.5rem;
+    bottom: 0.35rem;
+    margin: 0;
+    color: #2563eb;
+    font-size: 0.78rem;
+    font-weight: 700;
+  }
 }
 
 .np-card {
@@ -1117,6 +1127,17 @@
 }
 
 .btn.primary:hover {
+  transform: translateY(-2px);
+}
+
+.btn.save-blue {
+  background: #2563eb;
+  color: #fff;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 20px 40px rgba(37, 99, 235, 0.3);
+}
+
+.btn.save-blue:hover {
   transform: translateY(-2px);
 }
 

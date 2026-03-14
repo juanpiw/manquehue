@@ -673,10 +673,14 @@
     <button type="button" class="btn ghost" (click)="goPrev()" [disabled]="currentStep === 1">
       Paso anterior
     </button>
+    <button type="button" class="btn save-blue" (click)="saveCurrentStep()" [disabled]="isSaving">
+      <span>{{ isSaving ? 'Guardando...' : 'Guardar' }}</span>
+    </button>
     <button type="button" class="btn primary" (click)="handlePrimaryAction()">
       <span>{{ primaryCtaLabel }}</span>
       <svg viewBox="0 0 24 24"><path d="M14 5l7 7-7 7M21 12H3" /></svg>
     </button>
   </div>
+  <p class="np__save-feedback" *ngIf="saveFeedback">{{ saveFeedback }}</p>
 </div>
 
