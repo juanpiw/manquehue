@@ -402,8 +402,31 @@
             apiLog.textContent = line + apiLog.textContent;
         }
 
+        function resolveDefaultApiBaseUrl() {
+            const host = (window.location.hostname || '').toLowerCase();
+            if (host === 'localhost' || host === '127.0.0.1') {
+                return 'http://localhost:4000';
+            }
+            return 'https://www.api.thefutureagencyai.com';
+        }
+
+        function readSessionFromFrontend() {
+            const token = localStorage.getItem('imanquehue_access_token') || '';
+            const projectId = localStorage.getItem('imanquehue_current_project_id') || '';
+            return { token, projectId };
+        }
+
+        function getRuntimeConfigFromUrl() {
+            const params = new URLSearchParams(window.location.search || '');
+            return {
+                apiBase: (params.get('apiBase') || '').trim(),
+                token: (params.get('token') || '').trim(),
+                projectId: (params.get('projectId') || '').trim()
+            };
+        }
+
         function getApiBaseUrl() {
-            return (apiBaseInput.value || 'http://localhost:4000').replace(/\/$/, '');
+            return (apiBaseInput.value || resolveDefaultApiBaseUrl()).replace(/\/$/, '');
         }
 
         function getAuthHeaders(extra = {}) {
@@ -420,6 +443,10 @@
                 throw new Error('Project ID invalido');
             }
             return id;
+        }
+
+        function hasBearerToken() {
+            return Boolean((apiTokenInput.value || '').trim());
         }
 
         function mapUiJsonToApiPayload(data) {
@@ -540,30 +567,52 @@
         async function fetchProjectById() {
             try {
                 const projectId = getProjectId();
-                const res = await apiRequest('GET', `/api/dash-manquehue/projects/${projectId}`);
-                const p = res?.data || {};
-                const mapped = {
-                    nombre: p.nombre || '',
-                    descripcion_comercial: p.descripcion_comercial || '',
-                    punto_cercano_1: p.punto_cercano_1 || '',
-                    tiempo_visita_min: p.tiempo_visita_min || 0,
-                    punto_cercano_2: p.punto_cercano_2 || '',
-                    tiempo_recorrido_min: p.tiempo_recorrido_min || 0,
-                    orientacion_principal: p.orientacion_principal || '',
-                    tiempo_post_venta: p.tiempo_postventa_min || 0,
-                    descripcion_entorno: p.entorno_descripcion || '',
-                    direccion_pin: p.direccion_pin || '',
-                    tipo_inmueble: p.tipo_inmueble || '',
-                    estado_entrega: p.estado_entrega || '',
-                    ubicacion_label: p.ubicacion_texto || '',
-                    multimedia: {
-                        portada_url: initialData.multimedia.portada_url,
-                        audio_url: initialData.multimedia.audio_url
+                let mapped;
+                if (hasBearerToken()) {
+                    const res = await apiRequest('GET', `/api/dash-manquehue/projects/${projectId}`);
+                    const p = res?.data || {};
+                    mapped = {
+                        nombre: p.nombre || '',
+                        descripcion_comercial: p.descripcion_comercial || '',
+                        punto_cercano_1: p.punto_cercano_1 || '',
+                        tiempo_visita_min: p.tiempo_visita_min || 0,
+                        punto_cercano_2: p.punto_cercano_2 || '',
+                        tiempo_recorrido_min: p.tiempo_recorrido_min || 0,
+                        orientacion_principal: p.orientacion_principal || '',
+                        tiempo_post_venta: p.tiempo_postventa_min || 0,
+                        descripcion_entorno: p.entorno_descripcion || '',
+                        direccion_pin: p.direccion_pin || '',
+                        tipo_inmueble: p.tipo_inmueble || '',
+                        estado_entrega: p.estado_entrega || '',
+                        ubicacion_label: p.ubicacion_texto || '',
+                        multimedia: {
+                            portada_url: initialData.multimedia.portada_url,
+                            audio_url: initialData.multimedia.audio_url
+                        }
+                    };
+                    try {
+                        const mediaRes = await apiRequest('GET', `/api/dash-manquehue/projects/${projectId}/files/step1-media`);
+                        const coverPath = mediaRes?.data?.cover?.file_path || '';
+                        if (coverPath) {
+                            mapped.multimedia.portada_url = `${getApiBaseUrl()}/${String(coverPath).replace(/^\/+/, '')}`;
+                        }
+                        const audioPath = mediaRes?.data?.ambientAudio?.file_path || '';
+                        if (audioPath) {
+                            mapped.multimedia.audio_url = `${getApiBaseUrl()}/${String(audioPath).replace(/^\/+/, '')}`;
+                        }
+                    } catch (mediaError) {
+                        appendLog('WARN media paso 1', String(mediaError?.message || mediaError));
                     }
-                };
+                } else {
+                    const publicRes = await apiRequest('GET', `/api/dash-manquehue/public/projects/${projectId}/step1`);
+                    mapped = publicRes?.data || null;
+                    if (!mapped) {
+                        throw new Error('No se recibieron datos publicos del proyecto');
+                    }
+                }
                 jsonArea.value = JSON.stringify(mapped, null, 2);
                 renderLanding(mapped);
-                showNotification('Proyecto cargado');
+                showNotification(hasBearerToken() ? 'Proyecto cargado (privado)' : 'Proyecto cargado (publico)');
             } catch (e) {
                 alert(`Error obteniendo proyecto: ${e.message}`);
             }
@@ -634,10 +683,32 @@
         });
 
         window.onload = () => {
-            apiBaseInput.value = 'http://localhost:4000';
+            const runtime = getRuntimeConfigFromUrl();
+            apiBaseInput.value = runtime.apiBase || resolveDefaultApiBaseUrl();
+            const session = readSessionFromFrontend();
+            if (runtime.token) {
+                apiTokenInput.value = runtime.token;
+            } else if (session.token) {
+                apiTokenInput.value = session.token;
+            }
+            if (runtime.projectId) {
+                apiProjectIdInput.value = runtime.projectId;
+            } else if (session.projectId) {
+                apiProjectIdInput.value = session.projectId;
+            }
             jsonArea.value = JSON.stringify(initialData, null, 2);
             renderLanding(initialData);
             setTimeout(() => toggleDebug(), 1000); // Abrir después de carga inicial
+            if (window.location.protocol === 'file:') {
+                appendLog(
+                    'WARN file:// origin',
+                    'Abre esta landing en http(s), no en file://. Recomendado: http://localhost:5500/landing-prueba-api.html'
+                );
+                showNotification('Abre en http://localhost:5500 (no file://)');
+            }
+            if (apiProjectIdInput.value) {
+                fetchProjectById();
+            }
         };
     </script>
 </body>

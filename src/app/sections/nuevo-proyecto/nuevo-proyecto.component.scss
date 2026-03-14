@@ -713,8 +713,35 @@
 }
 
 .np-modal__content--ai textarea {
-  min-height: 140px;
+  min-height: 160px;
   resize: vertical;
+  border-radius: 1.25rem;
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  background:
+    linear-gradient(180deg, rgba(15, 23, 42, 0.92), rgba(30, 41, 59, 0.88));
+  color: #e2e8f0;
+  padding: 1rem 1.1rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  letter-spacing: 0.01em;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 12px 30px rgba(15, 23, 42, 0.18);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.np-modal__content--ai textarea::placeholder {
+  color: rgba(148, 163, 184, 0.9);
+  font-style: italic;
+}
+
+.np-modal__content--ai textarea:focus {
+  outline: none;
+  border-color: rgba(129, 140, 248, 0.95);
+  box-shadow:
+    0 0 0 4px rgba(99, 102, 241, 0.2),
+    0 16px 36px rgba(79, 70, 229, 0.28);
+  transform: translateY(-1px);
 }
 
 .np-modal__form {
