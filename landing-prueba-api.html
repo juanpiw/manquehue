@@ -81,12 +81,18 @@
                 <input id="api-token" class="w-full bg-black/40 text-amber-300 font-mono text-[11px] p-3 rounded-xl border border-white/5 outline-none focus:border-amber-500" placeholder="Bearer token" />
                 <input id="api-project-id" class="w-full bg-black/40 text-indigo-300 font-mono text-[11px] p-3 rounded-xl border border-white/5 outline-none focus:border-indigo-500" placeholder="Project ID (se completa al crear)" />
             </div>
+            <div class="rounded-xl border border-white/10 bg-black/30 p-3 space-y-1">
+                <p class="text-[9px] uppercase tracking-[0.18em] text-slate-400 font-bold">Modo</p>
+                <p id="api-mode-state" class="text-[11px] font-black text-emerald-300">PUBLICO (sin token)</p>
+                <p id="api-endpoint-state" class="text-[10px] font-mono text-slate-300 break-all">Endpoint: -</p>
+                <p id="api-project-state" class="text-[10px] font-mono text-indigo-300">Project ID: -</p>
+            </div>
             <textarea id="api-json" class="w-full h-64 bg-black/40 text-indigo-300 font-mono text-[11px] p-4 rounded-2xl border border-white/5 outline-none focus:border-indigo-500 transition-colors"></textarea>
             <div class="grid grid-cols-2 gap-2">
                 <button onclick="createDraftFromJson()" class="py-3 bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] font-extrabold uppercase tracking-widest rounded-xl transition-all shadow-lg active:scale-95">Crear Borrador</button>
                 <button onclick="updateProjectFromJson()" class="py-3 bg-indigo-500 hover:bg-indigo-400 text-white text-[10px] font-extrabold uppercase tracking-widest rounded-xl transition-all shadow-lg active:scale-95">Actualizar Paso 1</button>
                 <button onclick="saveStep1Payload()" class="py-3 bg-purple-600 hover:bg-purple-500 text-white text-[10px] font-extrabold uppercase tracking-widest rounded-xl transition-all shadow-lg active:scale-95">Guardar Step/1</button>
-                <button onclick="fetchProjectById()" class="py-3 bg-slate-700 hover:bg-slate-600 text-white text-[10px] font-extrabold uppercase tracking-widest rounded-xl transition-all shadow-lg active:scale-95">Traer Proyecto</button>
+                <button onclick="fetchProjectById()" class="py-3 bg-emerald-700 hover:bg-emerald-600 text-white text-[10px] font-extrabold uppercase tracking-widest rounded-xl transition-all shadow-lg active:scale-95">Cargar por ID</button>
             </div>
             <div class="grid grid-cols-1 gap-2">
                 <label class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Portada (JPG/PNG/WebP)</label>
@@ -395,6 +401,9 @@
         const apiTokenInput = document.getElementById('api-token');
         const apiProjectIdInput = document.getElementById('api-project-id');
         const apiLog = document.getElementById('api-log');
+        const apiModeState = document.getElementById('api-mode-state');
+        const apiEndpointState = document.getElementById('api-endpoint-state');
+        const apiProjectState = document.getElementById('api-project-state');
 
         function appendLog(title, payload) {
             const stamp = new Date().toLocaleTimeString();
@@ -410,23 +419,23 @@
             return 'https://www.api.thefutureagencyai.com';
         }
 
-        function readSessionFromFrontend() {
-            const token = localStorage.getItem('imanquehue_access_token') || '';
-            const projectId = localStorage.getItem('imanquehue_current_project_id') || '';
-            return { token, projectId };
-        }
-
         function getRuntimeConfigFromUrl() {
             const params = new URLSearchParams(window.location.search || '');
+            const hash = new URLSearchParams((window.location.hash || '').replace(/^#/, ''));
+            const projectId =
+                (params.get('projectId') || params.get('id') || params.get('project') || '').trim() ||
+                (hash.get('projectId') || hash.get('id') || hash.get('project') || '').trim();
             return {
                 apiBase: (params.get('apiBase') || '').trim(),
                 token: (params.get('token') || '').trim(),
-                projectId: (params.get('projectId') || '').trim()
+                projectId
             };
         }
 
         function getApiBaseUrl() {
-            return (apiBaseInput.value || resolveDefaultApiBaseUrl()).replace(/\/$/, '');
+            const base = (apiBaseInput.value || resolveDefaultApiBaseUrl()).replace(/\/$/, '');
+            console.log('[LandingAPI] baseUrl resolved', { base });
+            return base;
         }
 
         function getAuthHeaders(extra = {}) {
@@ -445,8 +454,16 @@
             return id;
         }
 
-        function hasBearerToken() {
-            return Boolean((apiTokenInput.value || '').trim());
+        function getPublicStep1Path(projectId) {
+            return `/api/dash-manquehue/public/projects/${projectId}/step1`;
+        }
+
+        function updateRuntimeStatus(projectId = null) {
+            const currentId = projectId || (apiProjectIdInput.value || '').trim() || '-';
+            const endpoint = currentId !== '-' ? `${getApiBaseUrl()}${getPublicStep1Path(currentId)}` : '-';
+            apiModeState.textContent = 'PUBLICO (sin token)';
+            apiEndpointState.textContent = `Endpoint: ${endpoint}`;
+            apiProjectState.textContent = `Project ID: ${currentId}`;
         }
 
         function mapUiJsonToApiPayload(data) {
@@ -472,6 +489,15 @@
             const url = `${getApiBaseUrl()}${path}`;
             const headers = isFormData ? getAuthHeaders() : getAuthHeaders({ 'Content-Type': 'application/json' });
             const options = { method, headers };
+            const hasAuth = Boolean(headers.Authorization);
+            console.log('[LandingAPI] request start', {
+                method,
+                path,
+                url,
+                hasAuth,
+                isFormData,
+                bodyPreview: isFormData ? '[FormData]' : body
+            });
             if (body !== null) {
                 options.body = isFormData ? body : JSON.stringify(body);
             }
@@ -479,8 +505,22 @@
             const text = await res.text();
             let parsed = text;
             try { parsed = JSON.parse(text); } catch (e) {}
+            console.log('[LandingAPI] response', {
+                method,
+                path,
+                status: res.status,
+                ok: res.ok,
+                parsed
+            });
             appendLog(`${method} ${path} -> ${res.status}`, parsed);
             if (!res.ok) {
+                console.error('[LandingAPI] request error', {
+                    method,
+                    path,
+                    url,
+                    status: res.status,
+                    parsed
+                });
                 throw new Error(`HTTP ${res.status}`);
             }
             return parsed;
@@ -567,53 +607,23 @@
         async function fetchProjectById() {
             try {
                 const projectId = getProjectId();
-                let mapped;
-                if (hasBearerToken()) {
-                    const res = await apiRequest('GET', `/api/dash-manquehue/projects/${projectId}`);
-                    const p = res?.data || {};
-                    mapped = {
-                        nombre: p.nombre || '',
-                        descripcion_comercial: p.descripcion_comercial || '',
-                        punto_cercano_1: p.punto_cercano_1 || '',
-                        tiempo_visita_min: p.tiempo_visita_min || 0,
-                        punto_cercano_2: p.punto_cercano_2 || '',
-                        tiempo_recorrido_min: p.tiempo_recorrido_min || 0,
-                        orientacion_principal: p.orientacion_principal || '',
-                        tiempo_post_venta: p.tiempo_postventa_min || 0,
-                        descripcion_entorno: p.entorno_descripcion || '',
-                        direccion_pin: p.direccion_pin || '',
-                        tipo_inmueble: p.tipo_inmueble || '',
-                        estado_entrega: p.estado_entrega || '',
-                        ubicacion_label: p.ubicacion_texto || '',
-                        multimedia: {
-                            portada_url: initialData.multimedia.portada_url,
-                            audio_url: initialData.multimedia.audio_url
-                        }
-                    };
-                    try {
-                        const mediaRes = await apiRequest('GET', `/api/dash-manquehue/projects/${projectId}/files/step1-media`);
-                        const coverPath = mediaRes?.data?.cover?.file_path || '';
-                        if (coverPath) {
-                            mapped.multimedia.portada_url = `${getApiBaseUrl()}/${String(coverPath).replace(/^\/+/, '')}`;
-                        }
-                        const audioPath = mediaRes?.data?.ambientAudio?.file_path || '';
-                        if (audioPath) {
-                            mapped.multimedia.audio_url = `${getApiBaseUrl()}/${String(audioPath).replace(/^\/+/, '')}`;
-                        }
-                    } catch (mediaError) {
-                        appendLog('WARN media paso 1', String(mediaError?.message || mediaError));
-                    }
-                } else {
-                    const publicRes = await apiRequest('GET', `/api/dash-manquehue/public/projects/${projectId}/step1`);
-                    mapped = publicRes?.data || null;
-                    if (!mapped) {
-                        throw new Error('No se recibieron datos publicos del proyecto');
-                    }
+                updateRuntimeStatus(String(projectId));
+                console.log('[LandingAPI] fetchProjectById', {
+                    projectId,
+                    mode: 'public'
+                });
+                const publicRes = await apiRequest('GET', getPublicStep1Path(projectId));
+                const mapped = publicRes?.data || null;
+                if (!mapped) {
+                    throw new Error('No se recibieron datos publicos del proyecto');
                 }
                 jsonArea.value = JSON.stringify(mapped, null, 2);
                 renderLanding(mapped);
-                showNotification(hasBearerToken() ? 'Proyecto cargado (privado)' : 'Proyecto cargado (publico)');
+                showNotification('Proyecto cargado (publico)');
             } catch (e) {
+                console.error('[LandingAPI] fetchProjectById failed', {
+                    message: e?.message || e
+                });
                 alert(`Error obteniendo proyecto: ${e.message}`);
             }
         }
@@ -684,18 +694,17 @@
 
         window.onload = () => {
             const runtime = getRuntimeConfigFromUrl();
+            console.log('[LandingAPI] onload runtime', runtime);
             apiBaseInput.value = runtime.apiBase || resolveDefaultApiBaseUrl();
-            const session = readSessionFromFrontend();
             if (runtime.token) {
                 apiTokenInput.value = runtime.token;
-            } else if (session.token) {
-                apiTokenInput.value = session.token;
             }
             if (runtime.projectId) {
                 apiProjectIdInput.value = runtime.projectId;
-            } else if (session.projectId) {
-                apiProjectIdInput.value = session.projectId;
             }
+            updateRuntimeStatus(runtime.projectId || null);
+            apiBaseInput.addEventListener('input', () => updateRuntimeStatus());
+            apiProjectIdInput.addEventListener('input', () => updateRuntimeStatus());
             jsonArea.value = JSON.stringify(initialData, null, 2);
             renderLanding(initialData);
             setTimeout(() => toggleDebug(), 1000); // Abrir después de carga inicial
@@ -707,7 +716,13 @@
                 showNotification('Abre en http://localhost:5500 (no file://)');
             }
             if (apiProjectIdInput.value) {
+                console.log('[LandingAPI] auto-fetching project', { projectId: apiProjectIdInput.value });
                 fetchProjectById();
+            } else {
+                appendLog(
+                    'INFO projectId requerido',
+                    'Define ?projectId=123 en la URL o escribe Project ID en el panel para cargar datos por GET publico.'
+                );
             }
         };
     </script>

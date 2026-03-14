@@ -193,6 +193,42 @@
     font-size: 0.78rem;
     font-weight: 700;
   }
+
+  &__project-id-panel {
+    position: fixed;
+    left: 2.5rem;
+    bottom: 1.4rem;
+    background: rgba(15, 23, 42, 0.94);
+    color: #fff;
+    border-radius: 1rem;
+    padding: 0.8rem 0.95rem;
+    min-width: 300px;
+    box-shadow: 0 20px 45px rgba(15, 23, 42, 0.35);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+  }
+
+  &__project-id-title {
+    margin: 0;
+    font-size: 0.63rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: #94a3b8;
+    font-weight: 700;
+  }
+
+  &__project-id-value {
+    margin: 0.2rem 0 0.55rem;
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #93c5fd;
+    line-height: 1;
+  }
+
+  &__project-id-actions {
+    display: flex;
+    gap: 0.45rem;
+    flex-wrap: wrap;
+  }
 }
 
 .np-card {
@@ -712,9 +748,30 @@
   width: min(620px, 100%);
 }
 
+.np-modal__content--ai .np-modal__form {
+  width: 100%;
+}
+
+.np-modal__content--ai .np-modal__form label {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+  gap: 0.55rem;
+}
+
+.np-modal__content--ai .np-label {
+  display: block;
+  width: 100%;
+  margin: 0;
+}
+
 .np-modal__content--ai textarea {
   min-height: 160px;
   resize: vertical;
+  width: 100%;
+  display: block;
+  box-sizing: border-box;
   border-radius: 1.25rem;
   border: 1px solid rgba(99, 102, 241, 0.25);
   background:

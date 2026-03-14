@@ -463,6 +463,41 @@ export class NuevoProyectoComponent implements OnDestroy {
     return this.amenityOptions.filter(option => option.selected).map(option => option.label);
   }
 
+  get landingManualUrl(): string {
+    if (!this.currentProjectId) {
+      return '';
+    }
+    const apiBase = encodeURIComponent(this.resolvePublicApiBaseUrl());
+    return `landing-prueba-api.html?apiBase=${apiBase}&projectId=${this.currentProjectId}`;
+  }
+
+  async copyProjectId(): Promise<void> {
+    if (!this.currentProjectId || typeof window === 'undefined' || !navigator?.clipboard) {
+      this.saveFeedback = 'No se pudo copiar el ID.';
+      return;
+    }
+    await navigator.clipboard.writeText(String(this.currentProjectId));
+    this.saveFeedback = `ID ${this.currentProjectId} copiado.`;
+  }
+
+  async copyLandingUrl(): Promise<void> {
+    if (!this.currentProjectId || typeof window === 'undefined' || !navigator?.clipboard) {
+      this.saveFeedback = 'No se pudo copiar la URL.';
+      return;
+    }
+    const absoluteUrl = `${window.location.origin}/${this.landingManualUrl}`;
+    await navigator.clipboard.writeText(absoluteUrl);
+    this.saveFeedback = 'URL de landing copiada.';
+  }
+
+  openLandingWithProjectId(): void {
+    if (!this.currentProjectId || typeof window === 'undefined') {
+      return;
+    }
+    const absoluteUrl = `${window.location.origin}/${this.landingManualUrl}`;
+    window.open(absoluteUrl, '_blank', 'noopener,noreferrer');
+  }
+
   async saveCurrentStep(): Promise<void> {
     if (this.isSaving) {
       return;
@@ -538,7 +573,7 @@ export class NuevoProyectoComponent implements OnDestroy {
       );
       console.log('[NuevoProyectoUI] PATCH step ok', { projectId, step: this.currentStep });
 
-      this.saveFeedback = `Paso ${this.currentStep} guardado correctamente.`;
+      this.saveFeedback = `Paso ${this.currentStep} guardado correctamente. ID: ${projectId}`;
     } catch (error) {
       console.error('[NuevoProyecto] saveCurrentStep error', error);
       this.saveFeedback = this.getApiErrorMessage(error);
@@ -658,6 +693,17 @@ export class NuevoProyectoComponent implements OnDestroy {
     return host === 'localhost' || host === '127.0.0.1'
       ? ''
       : 'https://www.api.thefutureagencyai.com';
+  }
+
+  private resolvePublicApiBaseUrl(): string {
+    if (typeof window === 'undefined') {
+      return 'https://www.api.thefutureagencyai.com';
+    }
+    const host = window.location.hostname.toLowerCase();
+    if (host === 'localhost' || host === '127.0.0.1') {
+      return 'http://localhost:4000';
+    }
+    return 'https://www.api.thefutureagencyai.com';
   }
 
   private buildJsonHeaders(token: string): HttpHeaders {
