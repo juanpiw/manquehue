@@ -669,7 +669,12 @@ export class NuevoProyectoComponent implements OnDestroy {
       return `No se pudo guardar: ${err.slice(0, 160)}`;
     }
 
-    const apiMessage = err?.error?.message || err?.message;
+    let apiMessage = '';
+    if (err && typeof err === 'object') {
+      const obj = err as { error?: { message?: string }; message?: string };
+      apiMessage = obj.error?.message || obj.message || '';
+    }
+
     if (apiMessage) {
       return `No se pudo guardar: ${apiMessage}`;
     }
