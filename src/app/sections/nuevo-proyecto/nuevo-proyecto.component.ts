@@ -310,7 +310,7 @@ export class NuevoProyectoComponent implements OnDestroy {
     const selectedFile = input.files[0];
     const mediaType: TypologyMediaType = selectedFile.type.startsWith('video/') ? 'video' : 'image';
     if (!selectedFile.type.startsWith('image/') && !selectedFile.type.startsWith('video/')) {
-      this.saveFeedback = 'La media por tipología debe ser imagen o video.';
+      this.saveFeedback = 'La media por tipología debe ser un plano/planta en imagen o un video.';
       input.value = '';
       return;
     }

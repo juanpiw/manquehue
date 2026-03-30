@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Horizon - Real Estate Experience</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- GSAP para animaciones cinematográficas -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,400;1,700&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --accent: #ffffff; --bg: #050505; }
+        body { background: var(--bg); color: white; font-family: 'Inter', sans-serif; overflow: hidden; height: 100vh; margin: 0; }
+        .font-serif { font-family: 'Playfair Display', serif; }
+
+        /* Contenedor de Cámara */
+        #cam-viewport { perspective: 1000px; width: 100%; height: 100%; position: relative; overflow: hidden; }
+        #cam-rail { 
+            position: absolute; inset: -20%; width: 140%; height: 140%; 
+            will-change: transform; pointer-events: none; 
+        }
+
+        .layer {
+            position: absolute; inset: 0; background-size: cover; background-position: center;
+            opacity: 0; transition: opacity 1s ease-in-out;
+        }
+        .layer.active { opacity: 0.5; }
+
+        /* UI Overlays */
+        .page {
+            position: absolute; inset: 0; display: none; opacity: 0; z-index: 50;
+            pointer-events: none;
+        }
+        .page.active { display: flex; opacity: 1; pointer-events: all; }
+
+        .hud-glass {
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(40px);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Nav Indicators */
+        .nav-link { opacity: 0.3; transition: all 0.4s ease; position: relative; }
+        .nav-link.active, .nav-link:hover { opacity: 1; }
+        .nav-link::after {
+            content: ''; position: absolute; bottom: -8px; left: 0; width: 0; height: 1px;
+            background: white; transition: width 0.5s ease;
+        }
+        .nav-link.active::after { width: 100%; }
+
+        /* Facade Interaction */
+        .apt-marker {
+            position: absolute; border: 1px solid rgba(255,255,255,0.05);
+            transition: all 0.6s cubic-bezier(0.19, 1, 0.22, 1);
+            pointer-events: none;
+        }
+        .apt-marker.highlight {
+            border-color: white; background: rgba(255,255,255,0.15);
+            box-shadow: 0 0 50px rgba(255,255,255,0.1);
+        }
+
+        /* Blueprint HUD */
+        #blueprint-hud {
+            transform: translateX(50px);
+            transition: all 0.8s cubic-bezier(0.19, 1, 0.22, 1);
+        }
+        #blueprint-hud.visible { opacity: 1; transform: translateX(0); }
+
+        /* Grain Effect */
+        .grain {
+            position: fixed; inset: 0; pointer-events: none; z-index: 999;
+            background: url('https://grainy-gradients.vercel.app/noise.svg');
+            opacity: 0.04; mix-blend-mode: overlay;
+        }
+
+        .no-scrollbar::-webkit-scrollbar { width: 0; }
+    </style>
+</head>
+<body>
+
+    <div class="grain"></div>
+
+    <div id="cam-viewport">
+        <!-- Riel de Cámara (Manejado por GSAP) -->
+        <div id="cam-rail">
+            <div id="img-home" class="layer active" style="background-image: url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80&w=2400');"></div>
+            <div id="img-int" class="layer" style="background-image: url('https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&q=80&w=2400');"></div>
+            <div id="img-feat" class="layer" style="background-image: url('https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&q=80&w=2400');"></div>
+            <div class="absolute inset-0 bg-gradient-to-tr from-black via-black/40 to-transparent"></div>
+        </div>
+
+        <!-- Capa de Marcadores -->
+        <div id="markers-layer" class="absolute inset-0 z-10 pointer-events-none"></div>
+
+        <!-- Cabecera -->
+        <header class="absolute top-0 w-full p-12 flex justify-between items-start z-[100]">
+            <div class="cursor-pointer group flex flex-col items-start" onclick="navigateTo('home')">
+                <span class="text-3xl font-light tracking-[0.6em] group-hover:tracking-[0.8em] transition-all">HORIZON</span>
+                <div class="h-[1px] w-8 bg-white/40 group-hover:w-full transition-all duration-700"></div>
+            </div>
+            
+            <div class="flex gap-16 text-[10px] font-bold tracking-[0.5em] pt-4">
+                <button onclick="navigateTo('home')" class="nav-link active" id="btn-home">INICIO</button>
+                <button onclick="navigateTo('filter')" class="nav-link" id="btn-filter">APARTAMENTOS</button>
+                <button onclick="navigateTo('features')" class="nav-link" id="btn-features">AMENIDADES</button>
+                <button onclick="navigateTo('contact')" class="nav-link">CONTACTO</button>
+            </div>
+        </header>
+
+        <!-- Secciones -->
+        <main class="relative w-full h-full">
+            
+            <!-- HOME -->
+            <section id="section-home" class="page active flex flex-col justify-center px-32 max-w-7xl">
+                <div class="flex items-center gap-8 mb-10">
+                    <div class="h-[1px] w-20 bg-white/20"></div>
+                    <span class="text-[11px] tracking-[0.7em] text-white/40 uppercase">Elegancia Arquitectónica</span>
+                </div>
+                <h2 class="text-[11vw] leading-[0.85] font-light tracking-tighter mb-20">
+                    YOUR PLACE <br> <span class="font-serif italic text-white/60 lowercase">on earth</span>
+                </h2>
+                <div class="flex items-center gap-24">
+                    <button onclick="navigateTo('filter')" class="group relative px-28 py-10 border border-white/20 text-[11px] font-black tracking-[0.6em] uppercase overflow-hidden">
+                        <span class="relative z-10 group-hover:text-black transition-colors duration-500">Explorar Unidades</span>
+                        <div class="absolute inset-0 bg-white translate-y-full group-hover:translate-y-0 transition-transform duration-700"></div>
+                    </button>
+                </div>
+            </section>
+
+            <!-- FILTRO -->
+            <section id="section-filter" class="page h-full flex">
+                <div class="w-[550px] hud-glass p-24 pt-56 flex flex-col z-30">
+                    <div class="mb-20">
+                        <h3 class="text-5xl font-light tracking-tighter mb-4 uppercase">Unidades</h3>
+                        <p class="text-[10px] tracking-[0.5em] text-white/20 uppercase font-black">Selección Técnica</p>
+                    </div>
+                    <div id="apt-list" class="flex-1 overflow-y-auto no-scrollbar pr-4 space-y-6"></div>
+                </div>
+
+                <div class="flex-1 relative">
+                    <!-- HUD Blueprint -->
+                    <div id="blueprint-hud" class="absolute right-36 top-1/2 -translate-y-1/2 w-[480px] opacity-0 pointer-events-none">
+                        <div class="bg-black/80 backdrop-blur-3xl border border-white/10 p-14 shadow-2xl">
+                            <div class="flex justify-between items-center mb-10">
+                                <span class="text-[10px] tracking-[0.5em] uppercase font-bold text-white/30">Blueprint Spec</span>
+                                <span class="text-[10px] font-mono text-white/20">1:50</span>
+                            </div>
+                            <div class="aspect-square border border-white/5 relative p-12 bg-black/40 mb-10 overflow-hidden">
+                                <svg id="blueprint-svg" viewBox="0 0 100 100" class="w-full h-full stroke-white/40 fill-none stroke-[1.2]">
+                                    <path id="blueprint-path" d="" />
+                                </svg>
+                            </div>
+                            <div class="grid grid-cols-2 gap-10" id="blueprint-data"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- DETALLES -->
+            <section id="section-details" class="page h-full grid grid-cols-12">
+                <div class="col-span-4 hud-glass p-24 pt-56 flex flex-col z-30 shadow-2xl">
+                    <button onclick="navigateTo('filter')" class="flex items-center gap-6 text-[11px] tracking-[0.5em] text-white/30 hover:text-white mb-28 transition-all group">
+                        <span class="group-hover:-translate-x-3 transition-transform">← VOLVER AL CATÁLOGO</span>
+                    </button>
+                    <div id="detail-info" class="mb-auto"></div>
+                    <div class="mt-20">
+                        <button class="w-full py-8 bg-white text-black text-[11px] font-black tracking-[0.6em] uppercase">DESCARGAR BROCHURE</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- AMENIDADES -->
+            <section id="section-features" class="page h-full flex items-center px-32">
+                <div class="w-[650px] p-24 flex flex-col z-30">
+                    <h2 class="text-[90px] font-light tracking-tighter leading-none mb-24 uppercase">
+                        BEYOND <br> <span class="text-white/30 italic font-serif lowercase">luxury</span>
+                    </h2>
+                    <div class="space-y-4" id="features-list"></div>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- Footer -->
+        <footer class="absolute bottom-0 w-full p-14 flex justify-between items-end z-[100] pointer-events-none">
+            <div class="flex gap-16 text-[10px] tracking-[0.5em] text-white/20 pointer-events-auto uppercase font-black">
+                <span class="hover:text-white cursor-pointer transition-colors">Instagram</span>
+                <span class="hover:text-white cursor-pointer transition-colors">Behance</span>
+            </div>
+            <div class="pointer-events-auto flex items-end gap-20">
+                <div class="text-right">
+                    <p class="text-[9px] text-white/20 tracking-[0.6em] mb-4 uppercase">Sales</p>
+                    <p class="text-3xl font-light italic text-white/80">+48 555 123 999</p>
+                </div>
+                <button class="px-20 py-8 bg-white text-black text-[11px] font-black tracking-[0.6em] uppercase hover:invert transition-all duration-700">SOLICITAR TOUR</button>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Datos
+        const data = {
+            apartments: [
+                { id: 345, floor: 5, rooms: 2, area: 53.75, price: '1,200,000 PLN', coords: { t: 34, l: 45, w: 16, h: 10 }, plan: "M10 10 H90 V90 H10 Z M10 50 H90 M50 10 V50", img: "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d" },
+                { id: 212, floor: 3, rooms: 1, area: 38.50, price: '850,000 PLN', coords: { t: 54, l: 30, w: 14, h: 10 }, plan: "M15 15 H85 V85 H15 Z M15 50 H85 M50 15 V50", img: "https://images.unsplash.com/photo-1600566753190-17f0bb2a6c3e" },
+                { id: 108, floor: 7, rooms: 3, area: 92.10, price: '2,100,000 PLN', coords: { t: 14, l: 52, w: 22, h: 10 }, plan: "M10 10 H90 V90 H10 Z M10 30 H90 M30 10 V90 M60 10 V30", img: "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0" }
+            ],
+            amenities: [
+                { name: 'Rooftop Lounge', cam: { scale: 2.8, x: 0, y: -25, r: 1 } },
+                { name: 'Infinity Pool', cam: { scale: 2.4, x: 15, y: -10, r: -0.5 } },
+                { name: 'Private Cinema', cam: { scale: 1.8, x: 5, y: 15, r: 0 } }
+            ]
+        };
+
+        // Estado
+        let currentSection = 'home';
+        let isMoving = false;
+
+        // Navegación principal
+        window.navigateTo = function(id) {
+            if (id === currentSection || isMoving) return;
+            isMoving = true;
+
+            // Transición Cámara GSAP
+            const rail = document.querySelector('#cam-rail');
+            gsap.to(rail, { duration: 1.5, filter: 'blur(40px) brightness(0.2)', ease: "power2.inOut" });
+
+            // Desactivar UI
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+
+            setTimeout(() => {
+                document.getElementById(`section-${id}`).classList.add('active');
+                document.getElementById(`btn-${id}`)?.classList.add('active');
+
+                // Layers
+                document.querySelectorAll('.layer').forEach(l => l.classList.remove('active'));
+                if (id === 'details') document.getElementById('img-int').classList.add('active');
+                else if (id === 'features') document.getElementById('img-feat').classList.add('active');
+                else document.getElementById('img-home').classList.add('active');
+
+                // Movimiento Drone GSAP
+                let props = { scale: 1, x: 0, y: 0, rotation: 0 };
+                if (id === 'filter') props = { scale: 1.2, x: -50, y: 30, rotation: 0.5 };
+                if (id === 'details') props = { scale: 1.5, x: 200, y: -100, rotation: -0.5 };
+                if (id === 'features') props = { scale: 1.25, x: 0, y: 100, rotation: 0 };
+
+                gsap.to(rail, { 
+                    duration: 3, 
+                    scale: props.scale, 
+                    x: props.x, 
+                    y: props.y, 
+                    rotation: props.rotation,
+                    filter: 'blur(0px) brightness(1)',
+                    ease: "power3.out",
+                    onComplete: () => { isMoving = false; }
+                });
+
+                currentSection = id;
+            }, 750);
+        };
+
+        // Hover en Apartamentos
+        function hoverUnit(apt, active) {
+            const hud = document.getElementById('blueprint-hud');
+            const path = document.getElementById('blueprint-path');
+            const marker = document.getElementById(`marker-${apt?.id}`);
+            const dataGrid = document.getElementById('blueprint-data');
+
+            if (active && apt) {
+                document.querySelectorAll('.apt-marker').forEach(m => m.classList.remove('highlight'));
+                marker?.classList.add('highlight');
+
+                hud.classList.add('visible');
+                path.setAttribute('d', apt.plan);
+                
+                // Animación de trazado manual GSAP
+                const length = path.getTotalLength();
+                gsap.set(path, { strokeDasharray: length, strokeDashoffset: length });
+                gsap.to(path, { duration: 2, strokeDashoffset: 0, ease: "power2.out" });
+
+                dataGrid.innerHTML = `
+                    <div class="flex flex-col gap-2"><span class="text-[9px] text-white/20 uppercase">Area</span><span class="text-2xl font-light">${apt.area} m²</span></div>
+                    <div class="flex flex-col gap-2"><span class="text-[9px] text-white/20 uppercase">Altura</span><span class="text-2xl font-light">3.10 m</span></div>
+                `;
+            } else {
+                hud.classList.remove('visible');
+                document.querySelectorAll('.apt-marker').forEach(m => m.classList.remove('highlight'));
+            }
+        }
+
+        // Abrir Detalle
+        function openDetails(apt) {
+            const info = document.getElementById('detail-info');
+            info.innerHTML = `
+                <span class="text-[10px] tracking-[0.6em] text-white/40 uppercase block mb-6">Especificaciones</span>
+                <h3 class="text-[110px] font-light tracking-tighter mb-16 italic text-white leading-none">U-${apt.id}</h3>
+                <div class="space-y-12">
+                    <div class="flex justify-between border-b border-white/5 pb-6">
+                        <span class="text-[10px] text-white/20 uppercase tracking-[0.4em]">Área Total</span>
+                        <span class="text-3xl font-light">${apt.area} m²</span>
+                    </div>
+                    <div class="flex justify-between border-b border-white/5 pb-6">
+                        <span class="text-[10px] text-white/20 uppercase tracking-[0.4em]">Inversión</span>
+                        <span class="text-3xl font-bold">${apt.price}</span>
+                    </div>
+                </div>
+            `;
+            navigateTo('details');
+        }
+
+        // Renderizado inicial
+        function render() {
+            // Lista Apt
+            const list = document.getElementById('apt-list');
+            const markers = document.getElementById('markers-layer');
+            data.apartments.forEach(apt => {
+                const el = document.createElement('div');
+                el.className = 'group p-10 border border-white/5 transition-all duration-700 cursor-pointer hover:bg-white';
+                el.innerHTML = `
+                    <div class="flex justify-between items-center group-hover:text-black transition-colors">
+                        <div><div class="text-[8px] tracking-[0.5em] uppercase mb-4 opacity-40">Unidad 0${apt.id}</div><div class="text-4xl font-light tracking-tighter">${apt.area} m²</div></div>
+                        <div class="text-right text-xl font-bold">${apt.price}</div>
+                    </div>
+                `;
+                el.onmouseenter = () => hoverUnit(apt, true);
+                el.onmouseleave = () => hoverUnit(null, false);
+                el.onclick = () => openDetails(apt);
+                list.appendChild(el);
+
+                // Marcador Fachada
+                const m = document.createElement('div');
+                m.id = `marker-${apt.id}`;
+                m.className = 'apt-marker';
+                m.style.cssText = `top:${apt.coords.t}%; left:${apt.coords.l}%; width:${apt.coords.w}%; height:${apt.coords.h}%;`;
+                markers.appendChild(m);
+            });
+
+            // Amenidades
+            const fList = document.getElementById('features-list');
+            data.amenities.forEach((item, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'w-full py-10 border-b border-white/5 flex items-center gap-12 group transition-all duration-700 hover:pl-10';
+                btn.innerHTML = `<span class="text-[11px] font-mono text-white/20 group-hover:text-white transition-colors">0${idx+1}</span><span class="text-4xl tracking-[0.1em] uppercase text-white/20 group-hover:text-white group-hover:scale-105 transition-all origin-left font-light">${item.name}</span>`;
+                btn.onmouseenter = () => {
+                    if (isMoving) return;
+                    gsap.to('#cam-rail', { duration: 3, scale: item.cam.scale, x: item.cam.x * 10, y: item.cam.y * 5, rotation: item.cam.r, ease: "power3.out" });
+                };
+                btn.onmouseleave = () => { if(currentSection === 'features') navigateTo('features'); };
+                fList.appendChild(btn);
+            });
+
+            // Parallax mouse sutil en Home
+            window.addEventListener('mousemove', (e) => {
+                if (currentSection !== 'home' || isMoving) return;
+                const x = (e.clientX / window.innerWidth - 0.5) * 40;
+                const y = (e.clientY / window.innerHeight - 0.5) * 40;
+                gsap.to('#cam-rail', { duration: 2, x: x, y: y, ease: "power1.out" });
+            });
+        }
+
+        window.onload = render;
+    </script>
+</body>
+</html>

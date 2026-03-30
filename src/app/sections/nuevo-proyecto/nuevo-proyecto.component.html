@@ -359,12 +359,12 @@
 
                         <div class="np-typology-card__actions">
                           <div>
-                            <p>Render o Plano (Full-screen)</p>
+                            <p>Render, video o plano/planta (Full-screen)</p>
                             <small>{{ typology.pendingFile?.name || typology.media?.name || 'Archivo cargado' }}</small>
                           </div>
                           <div class="np-typology-card__buttons">
                             <button type="button" class="np-typology-btn np-typology-btn--secondary" (click)="typologyMediaInput.click()">
-                              Cambiar
+                              Subir plano o planta
                             </button>
                             <button type="button" class="np-typology-btn np-typology-btn--danger" (click)="removeTypologyMedia(typology, typologyMediaInput)">
                               Eliminar
@@ -375,8 +375,8 @@
 
                       <ng-template #uploadTypologyMediaState>
                         <button type="button" class="np-typology-upload" (click)="typologyMediaInput.click()">
-                          <strong>Subir render o video por piso</strong>
-                          <small>PNG, JPG, WebP, MP4 o WebM</small>
+                          <strong>Subir plano o planta</strong>
+                          <small>Tambien puedes subir render o video: PNG, JPG, WebP, MP4 o WebM</small>
                         </button>
                       </ng-template>
                     </ng-container>
