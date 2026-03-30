@@ -76,6 +76,21 @@
             border-color: transparent;
         }
 
+        .param-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.85rem 1.1rem;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(12px);
+            font-size: 10px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+        }
+
         .amenity-row {
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
             padding: 1.5rem 0;
@@ -109,6 +124,11 @@
         .unit-card:hover {
             background: rgba(255, 255, 255, 0.06);
             border-color: var(--step2);
+        }
+
+        .unit-card.active {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(16, 185, 129, 0.7);
         }
 
         .step-indicator {
@@ -170,6 +190,60 @@
             background: rgba(0, 0, 0, 0.35);
             backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .apartments-section {
+            position: relative;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .apartment-bg {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: filter 0.5s ease, transform 0.6s ease;
+        }
+
+        .apartments-overlay {
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(90deg, rgba(2, 2, 5, 0.88) 0%, rgba(2, 2, 5, 0.72) 35%, rgba(2, 2, 5, 0.3) 100%),
+                linear-gradient(180deg, rgba(2, 2, 5, 0.16) 0%, rgba(2, 2, 5, 0.6) 100%);
+        }
+
+        .apartments-content {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            display: grid;
+            grid-template-columns: minmax(0, 420px) minmax(0, 1fr);
+            gap: 4rem;
+            padding: 8rem 3rem;
+            align-items: center;
+        }
+
+        .plan-details-card {
+            width: 340px;
+            padding: 2rem;
+            border-radius: 28px;
+            background: rgba(0, 0, 0, 0.32);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        @media (max-width: 1023px) {
+            .apartments-content {
+                grid-template-columns: 1fr;
+                padding: 6rem 1.5rem;
+            }
+
+            .plan-details-card {
+                width: 100%;
+            }
         }
 
         .scroll-column::-webkit-scrollbar {
@@ -248,101 +322,117 @@
     </nav>
 
     <header id="hero" class="relative w-full h-screen overflow-hidden flex items-center justify-center">
-        <div id="hero-img-container" class="absolute inset-0 w-full h-full scale-110">
+        <div id="hero-img-container" class="absolute inset-0 w-full h-full">
             <img id="view-cover" src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=2000" class="w-full h-full object-cover" alt="Portada proyecto">
         </div>
-        <div class="absolute inset-0 hero-gradient"></div>
+        <div class="absolute inset-0 bg-black/30"></div>
 
-        <div class="relative z-10 w-full px-12 lg:px-24 grid lg:grid-cols-2 items-center gap-20">
-            <div class="space-y-10" id="hero-text">
-                <div class="step-indicator text-indigo-400">Paso 4: Storytelling</div>
-                <div id="view-tag-type" class="text-[10px] font-black uppercase tracking-[0.3em] text-white/35 reveal">Property</div>
-                <h1 id="view-headline" class="hero-title reveal">
-                    YOUR PLACE<br>ON EARTH
-                </h1>
-                <p id="view-subheadline" class="max-w-md text-lg text-white/60 font-light leading-relaxed reveal">
-                    Creamos un complejo para quienes valoran vivir en una ciudad moderna con estandares de vanguardia tecnologica.
-                </p>
-                <div class="reveal">
-                    <button id="hero-cta" class="bg-white text-black px-10 py-4 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-indigo-600 hover:text-white transition-all shadow-2xl">
-                        Solicitar Visita
-                    </button>
+        <div class="relative z-10 w-full px-12 lg:px-20 flex flex-col items-center text-center space-y-10" id="hero-text">
+            <div class="flex flex-wrap justify-center gap-3 reveal">
+                <div class="param-badge text-indigo-400">
+                    <i id="view-type-icon" class="fa-solid fa-building"></i>
+                    <span id="view-tag-type">Departamento</span>
+                </div>
+                <div class="param-badge text-emerald-400">
+                    <i class="fa-solid fa-clock"></i>
+                    <span id="view-delivery-status">Entrega inmediata</span>
+                </div>
+                <div class="param-badge text-white/50">
+                    <i class="fa-solid fa-compass"></i>
+                    <span id="view-orientation">Norte</span>
                 </div>
             </div>
 
-            <div class="flex lg:justify-end gap-6 reveal">
-                <div class="video-stat">
-                    <span id="view-time-1" class="text-4xl font-bold">5</span>
-                    <span class="text-[8px] font-black uppercase text-white/40 text-center mt-1 px-4 leading-tight">min al<br><span id="view-point-1">Metro</span></span>
-                </div>
-                <div class="video-stat">
-                    <span id="view-time-2" class="text-4xl font-bold">17</span>
-                    <span class="text-[8px] font-black uppercase text-white/40 text-center mt-1 px-4 leading-tight">min al<br><span id="view-point-2">Shopping</span></span>
-                </div>
-                <div class="video-stat">
-                    <span id="view-time-pv" class="text-4xl font-bold">10</span>
-                    <span class="text-[8px] font-black uppercase text-white/40 text-center mt-1 px-4 leading-tight">min al<br>Centro</span>
-                </div>
+            <h1 id="view-headline" class="hero-title reveal">
+                    YOUR PLACE<br>ON EARTH
+            </div>
+            <p id="view-subheadline" class="max-w-xl text-lg text-white/60 font-light leading-relaxed reveal">
+                Creamos un complejo para quienes valoran vivir en una ciudad moderna con estandares de vanguardia tecnologica.
+            </p>
+            <div class="pt-6 reveal">
+                <button id="hero-cta" class="bg-white/10 backdrop-blur-md text-white border border-white/20 px-10 py-5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] hover:bg-white hover:text-black transition-all shadow-2xl">
+                    Solicitar Visita Guiada
+                </button>
+            </div>
+        </div>
+
+        <div class="absolute bottom-16 right-12 flex gap-4 reveal">
+            <div class="video-stat">
+                <span id="view-time-1" class="text-3xl font-bold">5</span>
+                <span class="text-[7px] font-black uppercase text-white/40 text-center px-4 leading-tight mt-1">min al<br><span id="view-point-1">Metro Manquehue</span></span>
+            </div>
+            <div class="video-stat">
+                <span id="view-time-2" class="text-3xl font-bold">17</span>
+                <span class="text-[7px] font-black uppercase text-white/40 text-center px-4 leading-tight mt-1">min al<br><span id="view-point-2">Parque Araucano</span></span>
+            </div>
+            <div class="video-stat">
+                <span id="view-time-pv" class="text-3xl font-bold">10</span>
+                <span class="text-[7px] font-black uppercase text-white/40 text-center px-4 leading-tight mt-1">min al<br>Centro</span>
             </div>
         </div>
 
         <div class="absolute bottom-12 left-12 reveal">
             <div class="flex items-center gap-3 bg-white/5 backdrop-blur-xl px-5 py-3 rounded-full border border-white/10">
                 <i class="fa-solid fa-location-dot text-indigo-500 text-xs"></i>
-                <span id="view-address-label" class="text-[10px] font-bold tracking-widest text-white/70 uppercase">-</span>
-            </div>
-        </div>
-
-        <div class="absolute bottom-12 right-12 reveal">
-            <div id="audio-module" class="audio-badge px-5 py-4 rounded-full flex items-center gap-4 cursor-pointer">
-                <div id="play-btn" class="w-12 h-12 rounded-full bg-indigo-600 text-white flex items-center justify-center shadow-xl">
-                    <i class="fa-solid fa-play"></i>
-                </div>
-                <div>
-                    <p class="text-[9px] font-black text-indigo-300 uppercase tracking-[0.3em] mb-1">Audio</p>
-                    <p id="audio-status" class="text-sm font-semibold text-white">Sonido Ambiental</p>
-                </div>
+                <span id="view-address-label" class="text-[9px] font-bold tracking-widest text-white/70 uppercase">-</span>
             </div>
         </div>
     </header>
 
-    <section id="apartments" class="px-12 lg:px-24 py-32 space-y-20">
-        <div class="flex flex-col md:flex-row justify-between items-end gap-10">
-            <div class="space-y-4">
-                <div class="step-indicator text-emerald-400">Paso 2: Unidades</div>
-                <h2 class="text-5xl lg:text-7xl font-bold tracking-tighter uppercase italic">Filter<br>Apartments</h2>
-            </div>
-            <div class="flex gap-10 border-b border-white/10 pb-4">
-                <div class="text-center">
-                    <p class="text-[9px] font-black text-white/30 uppercase mb-1">Disponibles</p>
-                    <span id="view-avail" class="text-3xl font-bold text-emerald-400">24</span>
-                </div>
-                <div class="text-center">
-                    <p class="text-[9px] font-black text-white/30 uppercase mb-1">Totales</p>
-                    <span id="view-units" class="text-3xl font-bold">120</span>
-                </div>
-            </div>
-        </div>
+    <section id="apartments" class="apartments-section">
+        <img id="view-apartment-img" src="https://images.unsplash.com/photo-1574362848149-11496d93a7c7?auto=format&fit=crop&q=80&w=1200" class="apartment-bg" alt="Apartment visual">
+        <video id="view-apartment-video" class="apartment-bg hidden" autoplay muted loop playsinline></video>
+        <div class="apartments-overlay"></div>
 
-        <div class="grid lg:grid-cols-12 gap-12">
-            <div class="lg:col-span-4 space-y-4 max-h-[800px] overflow-y-auto pr-4 scroll-column" id="unit-list"></div>
-
-            <div class="lg:col-span-8 relative h-[800px] glass-panel rounded-[50px] overflow-hidden group reveal">
-                <img id="view-gallery" src="https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&q=80&w=1400" class="w-full h-full object-cover" alt="Galeria principal">
-                <div class="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-all"></div>
-                <div class="absolute top-10 left-10 glass-panel p-6 rounded-3xl w-64 reveal">
-                    <p class="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-4">Apartment Plan</p>
-                    <div class="aspect-square bg-white/5 rounded-xl flex items-center justify-center">
-                        <i class="fa-solid fa-draw-polygon text-4xl text-white/20"></i>
+        <div class="apartments-content">
+            <div class="flex flex-col justify-center space-y-12">
+                <div class="space-y-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-2 h-2 rounded-full bg-emerald-500"></div>
+                        <span id="view-stage-badge" class="text-[10px] font-black text-emerald-400 uppercase tracking-widest">Stock Disponible</span>
                     </div>
-                    <div class="mt-6 flex justify-between items-center gap-4">
-                        <span id="view-tag-type-2" class="text-[10px] font-bold uppercase">Apartment</span>
-                        <span id="view-ratio" class="text-[10px] font-black text-emerald-400">1.2 RATIO</span>
+                    <h2 class="text-6xl font-bold tracking-tighter uppercase italic leading-none">Filter<br>Apartments</h2>
+                </div>
+
+                <div class="space-y-3 overflow-y-auto max-h-[500px] pr-4 scroll-column" id="unit-list"></div>
+
+                <div class="flex gap-10 items-center pt-8 border-t border-white/10">
+                    <div>
+                        <p class="text-[9px] font-black text-white/30 uppercase mb-1">Total Stock</p>
+                        <span id="view-units" class="text-3xl font-bold text-white">120</span>
+                    </div>
+                    <div>
+                        <p class="text-[9px] font-black text-white/30 uppercase mb-1">Disponible</p>
+                        <span id="view-avail" class="text-3xl font-bold text-emerald-400">2</span>
                     </div>
                 </div>
-                <div class="absolute bottom-10 right-10 flex gap-3">
-                    <span id="tag-pet" class="px-4 py-2 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full text-[10px] font-black uppercase">Pet Friendly</span>
-                    <span id="tag-bodega" class="px-4 py-2 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-full text-[10px] font-black uppercase">Bodega</span>
+            </div>
+
+            <div class="flex flex-col justify-between items-end gap-8">
+                <div class="plan-details-card reveal">
+                    <p class="text-[10px] font-black text-indigo-400 uppercase tracking-[0.2em] mb-6">Unit Specifications</p>
+                    <div class="space-y-4">
+                        <div class="flex justify-between border-b border-white/5 pb-2 gap-4">
+                            <span class="text-xs text-white/40">Model Name</span>
+                            <span id="active-unit-label" class="text-sm font-bold uppercase tracking-tight text-right">Unit 345</span>
+                        </div>
+                        <div class="flex justify-between border-b border-white/5 pb-2 gap-4">
+                            <span class="text-xs text-white/40">Total Area</span>
+                            <span id="active-unit-size" class="text-sm font-bold text-right">53.75 m²</span>
+                        </div>
+                        <div class="flex justify-between gap-4">
+                            <span class="text-xs text-white/40">Orientation</span>
+                            <span id="view-orientation-active" class="text-sm font-bold uppercase text-right">Norte</span>
+                        </div>
+                    </div>
+                    <a id="unit-plan-download" href="#" target="_blank" rel="noreferrer" class="doc-link block w-full mt-8 py-4 bg-white text-black rounded-2xl font-black uppercase text-[10px] tracking-widest hover:bg-emerald-500 transition-colors text-center">
+                        Download Floor Plan
+                    </a>
+                </div>
+
+                <div class="flex gap-4 flex-wrap justify-end">
+                    <span id="tag-pet" class="px-5 py-2 rounded-full bg-white/5 border border-white/10 text-[9px] font-black uppercase tracking-widest backdrop-blur-md">Pet Friendly</span>
+                    <span id="tag-bodega" class="px-5 py-2 rounded-full bg-white/5 border border-white/10 text-[9px] font-black uppercase tracking-widest backdrop-blur-md">Bodega Incluida</span>
                 </div>
             </div>
         </div>
@@ -508,6 +598,7 @@
         const apiProjectState = document.getElementById('api-project-state');
         const PROJECT_IDS_STORAGE_KEY = 'dm_landing_project_ids';
         let currentLandingData = null;
+        let activeUnitId = null;
         let isPlaying = false;
 
         function appendLog(title, payload) {
@@ -744,17 +835,28 @@
         function normalizeTypology(item) {
             if (!item) return null;
             if (typeof item === 'string') {
-                return { label: item, asociacion: 'Asociado', models: [] };
+                return { label: item, asociacion: 'Asociado', models: [], media: null, plan_url: '' };
             }
             const models = toArray(item.models).map((model) => ({
                 code: model.code || model.modelCode || model.model_code || '',
                 label: model.label || model.modelLabel || model.model_label || ''
             }));
+            const media = item.media && typeof item.media === 'object'
+                ? {
+                    id: item.media.id || null,
+                    url: item.media.url || item.media.file_url || item.media.path || '',
+                    type: item.media.type || 'image',
+                    name: item.media.name || item.media.original_name || ''
+                }
+                : null;
             return {
                 id: item.id || null,
                 label: item.label || item.typologyLabel || item.typology_code || 'Tipologia',
                 asociacion: item.asociacion || item.association || models[0]?.label || 'Disponible',
-                models
+                models,
+                media,
+                plan_url: item.plan_url || media?.url || item.image || '',
+                plan_type: item.plan_type || media?.type || 'image'
             };
         }
 
@@ -785,12 +887,15 @@
                 .map((item) => {
                     if (!item) return null;
                     if (typeof item === 'string') {
-                        return { label: item, detail: 'Unidad disponible', meta: 'Proyecto activo' };
+                        return { id: slugify(item), label: item, detail: 'Unidad disponible', meta: 'Proyecto activo', plan_url: '', plan_type: 'image' };
                     }
                     return {
+                        id: item.id || slugify(item.label || item.nombre || item.name || `unidad-${Math.random()}`),
                         label: item.label || item.nombre || item.name || 'Unidad',
                         detail: item.detail || item.size || item.price || item.descripcion || 'Unidad disponible',
-                        meta: item.meta || item.tag || item.modelo || 'Disponible'
+                        meta: item.meta || item.tag || item.modelo || 'Disponible',
+                        plan_url: item.plan_url || item.url || item.image || '',
+                        plan_type: item.plan_type || item.type || 'image'
                     };
                 })
                 .filter(Boolean);
@@ -799,11 +904,14 @@
 
             if (typologies.length) {
                 return typologies.map((item, index) => ({
+                    id: item.id || item.label || `tipologia-${index + 1}`,
                     label: item.label || `Tipologia ${index + 1}`,
                     detail: item.models?.length
                         ? item.models.map((model) => model.label || model.code).filter(Boolean).join(' · ')
                         : 'Tipologia activa',
-                    meta: item.asociacion || `Disponibles: ${availableUnits || totalUnits || 0}`
+                    meta: item.asociacion || `Disponibles: ${availableUnits || totalUnits || 0}`,
+                    plan_url: item.plan_url || item.media?.url || item.image || '',
+                    plan_type: item.plan_type || item.media?.type || 'image'
                 }));
             }
 
@@ -845,6 +953,8 @@
                     rawData?.ratio_estacionamientos === null || rawData?.ratio_estacionamientos === undefined || rawData?.ratio_estacionamientos === ''
                         ? null
                         : toNumber(rawData?.ratio_estacionamientos, 0),
+                orientacion_principal: rawData?.orientacion_principal || '',
+                estado_entrega: rawData?.estado_entrega || '',
                 pet_friendly: toBool(rawData?.pet_friendly),
                 bodega_incluida: toBool(rawData?.bodega_incluida),
                 tipologias_asociadas: tipologias,
@@ -879,6 +989,13 @@
             return escapeHtml(text);
         }
 
+        function resolvePropertyTypeIcon(value) {
+            const text = String(value || '').toLowerCase();
+            if (text.includes('casa')) return 'fa-house';
+            if (text.includes('town')) return 'fa-tree-city';
+            return 'fa-building';
+        }
+
         function setText(id, value) {
             const element = document.getElementById(id);
             if (element) {
@@ -899,21 +1016,90 @@
 
             if (!data.unidades_list.length) {
                 unitList.innerHTML = '<div class="empty-state rounded-[28px] p-6 text-sm text-white/45">Sin unidades visibles por ahora.</div>';
+                updateActiveUnit(null, data);
                 return;
             }
 
+            const nextActiveId = activeUnitId && data.unidades_list.some((item) => String(item.id) === String(activeUnitId))
+                ? activeUnitId
+                : data.unidades_list[0].id;
+            activeUnitId = nextActiveId;
+
             unitList.innerHTML = data.unidades_list.map((item) => `
-                <div class="unit-card flex justify-between items-center">
+                <button type="button" class="unit-card flex justify-between items-center w-full text-left ${String(item.id) === String(nextActiveId) ? 'active' : ''}" data-id="${escapeHtml(item.id)}">
                     <div>
                         <p class="text-[8px] font-black text-white/30 uppercase mb-1">${escapeHtml(item.meta)}</p>
-                        <h4 class="text-xl font-bold">${escapeHtml(item.label)}</h4>
-                        <span class="text-[10px] text-white/50">${escapeHtml(item.detail)}</span>
+                        <h4 class="text-base font-bold text-white">${escapeHtml(item.label)}</h4>
                     </div>
                     <div class="text-right">
-                        <i class="fa-solid fa-chevron-right text-[10px] text-white/20"></i>
+                        <p class="text-sm font-bold text-emerald-400">${escapeHtml(item.detail)}</p>
                     </div>
-                </div>
+                </button>
             `).join('');
+
+            unitList.querySelectorAll('.unit-card').forEach((element) => {
+                element.addEventListener('click', () => {
+                    updateActiveUnitById(element.getAttribute('data-id') || '');
+                });
+            });
+
+            const activeUnit = data.unidades_list.find((item) => String(item.id) === String(nextActiveId)) || data.unidades_list[0];
+            updateActiveUnit(activeUnit, data);
+        }
+
+        function updateActiveUnit(unit, data = currentLandingData) {
+            const visualUrl =
+                unit?.plan_url ||
+                data?.multimedia?.gallery?.[0]?.url ||
+                data?.multimedia?.portada_url ||
+                '';
+            const visualType = unit?.plan_type || 'image';
+
+            setText('active-unit-label', unit?.label || data?.nombre || 'Unidad');
+            setText('active-unit-size', unit?.detail || 'Unidad disponible');
+            setText('view-orientation-active', data?.orientacion_principal || 'Norte');
+
+            const apartmentImg = document.getElementById('view-apartment-img');
+            const apartmentVideo = document.getElementById('view-apartment-video');
+            if (visualType === 'video' && visualUrl) {
+                if (apartmentVideo) {
+                    apartmentVideo.src = visualUrl;
+                    apartmentVideo.classList.remove('hidden');
+                    apartmentVideo.play?.().catch(() => {});
+                }
+                if (apartmentImg) {
+                    apartmentImg.classList.add('hidden');
+                }
+            } else {
+                if (apartmentImg && visualUrl) {
+                    apartmentImg.src = visualUrl;
+                    apartmentImg.classList.remove('hidden');
+                }
+                if (apartmentVideo) {
+                    apartmentVideo.pause?.();
+                    apartmentVideo.removeAttribute('src');
+                    apartmentVideo.load?.();
+                    apartmentVideo.classList.add('hidden');
+                }
+            }
+
+            const planDownload = document.getElementById('unit-plan-download');
+            if (planDownload) {
+                const href = unit?.plan_url || data?.documentos?.masterplan_url || data?.documentos?.brochure_url || '#';
+                planDownload.href = href;
+                planDownload.setAttribute('aria-disabled', href === '#' ? 'true' : 'false');
+            }
+
+            document.querySelectorAll('#unit-list .unit-card').forEach((element) => {
+                element.classList.toggle('active', element.getAttribute('data-id') === String(unit?.id || ''));
+            });
+        }
+
+        function updateActiveUnitById(unitId) {
+            activeUnitId = unitId;
+            const units = currentLandingData?.unidades_list || [];
+            const unit = units.find((item) => String(item.id) === String(unitId)) || units[0] || null;
+            updateActiveUnit(unit, currentLandingData);
         }
 
         function renderAmenities(data) {
@@ -997,6 +1183,8 @@
                 setText('nav-cta', data.ctaLabel);
                 setText('view-tag-type', data.tipo_inmueble);
                 setText('view-tag-type-2', data.tipo_inmueble);
+                setText('view-delivery-status', data.estado_entrega || 'Estado pendiente');
+                setText('view-orientation', data.orientacion_principal || 'Orientacion pendiente');
                 setText('view-point-1', data.punto_cercano_1 || '-');
                 setText('view-point-2', data.punto_cercano_2 || '-');
                 setText('view-time-1', data.tiempo_visita_min ? String(data.tiempo_visita_min) : '-');
@@ -1008,16 +1196,27 @@
                 setText('view-units', data.unidades_totales ? String(data.unidades_totales) : '0');
                 setText('view-avail', data.unidades_disponibles ? String(data.unidades_disponibles) : '0');
                 setText('view-ratio', data.ratio_estacionamientos === null ? '-' : `${data.ratio_estacionamientos} RATIO`);
+                setText('view-stage-badge', data.unidades_disponibles > 0 ? (data.estado_entrega || 'Stock Disponible') : 'Sin stock disponible');
 
                 const coverEl = document.getElementById('view-cover');
                 if (coverEl && data.multimedia.portada_url) {
                     coverEl.src = data.multimedia.portada_url;
                 }
 
+                const typeIconEl = document.getElementById('view-type-icon');
+                if (typeIconEl) {
+                    typeIconEl.className = `fa-solid ${resolvePropertyTypeIcon(data.tipo_inmueble)}`;
+                }
+
                 const galleryEl = document.getElementById('view-gallery');
                 const visualUrl = data.multimedia.gallery[0]?.url || data.multimedia.portada_url;
                 if (galleryEl && visualUrl) {
                     galleryEl.src = visualUrl;
+                }
+
+                const apartmentImg = document.getElementById('view-apartment-img');
+                if (apartmentImg && visualUrl) {
+                    apartmentImg.src = visualUrl;
                 }
 
                 const amenityVisual = document.getElementById('amenity-visual');

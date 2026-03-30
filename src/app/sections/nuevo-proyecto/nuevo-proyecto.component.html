@@ -310,19 +310,77 @@
           <article class="np-card">
             <div class="np-card__head">
               <span>2</span>
-              <h3>Tipologías & Amenities</h3>
+              <h3>Tipologías, Media & Amenities</h3>
             </div>
             <div class="np-form">
               <div class="np-section">
-                <span class="np-label">Selecciona las tipologías disponibles</span>
-                <div class="np-grid np-grid--typologies">
-                  <label
-                    class="np-checkbox-pill"
+                <span class="np-label">Selecciona tipologías y sube su media principal</span>
+                <div class="np-typology-media-grid">
+                  <article
+                    class="np-typology-card"
                     *ngFor="let typology of typologyOptions"
-                    title="Asociar extras haciendo clic">
-                    <input type="checkbox" [(ngModel)]="typology.selected" />
-                    <span>{{ typology.label }}</span>
-                  </label>
+                    [class.is-active]="typology.selected"
+                    [class.is-inactive]="!typology.selected">
+                    <input
+                      #typologyMediaInput
+                      type="file"
+                      accept="image/*,video/*"
+                      hidden
+                      (change)="handleTypologyMediaChange($event, typology)" />
+
+                    <div class="np-typology-card__head">
+                      <label class="np-typology-card__toggle">
+                        <input type="checkbox" [(ngModel)]="typology.selected" />
+                        <span>{{ typology.label }}</span>
+                      </label>
+                      <span
+                        class="np-typology-card__badge"
+                        [class.is-warning]="typology.selected && !hasTypologyMedia(typology)"
+                        [class.is-neutral]="!typology.selected">
+                        {{ getTypologyStatusLabel(typology) }}
+                      </span>
+                    </div>
+
+                    <ng-container *ngIf="typology.selected">
+                      <div class="np-typology-card__media" *ngIf="hasTypologyMedia(typology); else uploadTypologyMediaState">
+                        <div class="np-typology-card__preview">
+                          <img
+                            *ngIf="getTypologyMediaType(typology) === 'image'"
+                            [src]="getTypologyMediaPreviewUrl(typology) || ''"
+                            [alt]="'Preview ' + typology.label" />
+                          <video
+                            *ngIf="getTypologyMediaType(typology) === 'video'"
+                            [src]="getTypologyMediaPreviewUrl(typology) || ''"
+                            muted
+                            playsinline
+                            controls
+                            preload="metadata"></video>
+                        </div>
+
+                        <div class="np-typology-card__actions">
+                          <div>
+                            <p>Render o Plano (Full-screen)</p>
+                            <small>{{ typology.pendingFile?.name || typology.media?.name || 'Archivo cargado' }}</small>
+                          </div>
+                          <div class="np-typology-card__buttons">
+                            <button type="button" class="np-typology-btn np-typology-btn--secondary" (click)="typologyMediaInput.click()">
+                              Cambiar
+                            </button>
+                            <button type="button" class="np-typology-btn np-typology-btn--danger" (click)="removeTypologyMedia(typology, typologyMediaInput)">
+                              Eliminar
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      <ng-template #uploadTypologyMediaState>
+                        <button type="button" class="np-typology-upload" (click)="typologyMediaInput.click()">
+                          <strong>Subir render o video por piso</strong>
+                          <small>PNG, JPG, WebP, MP4 o WebM</small>
+                        </button>
+                      </ng-template>
+                    </ng-container>
+                  </article>
                 </div>
                 <div class="np-association">
                   <p class="np-association__title">Modelos Asociados (Azotea, Jardín, Zócalo)</p>
@@ -393,8 +451,8 @@
                 <strong>{{ selectedAmenities.length }}/{{ amenityOptions.length }}</strong>
               </li>
               <li>
-                <span>Documentación comercial</span>
-                <strong>{{ mediaAssets.brochure ? 'Listo' : 'Pendiente' }}</strong>
+                <span>Media por tipología</span>
+                <strong>{{ selectedTypologiesWithMediaCount }}/{{ selectedTypologies.length || 0 }}</strong>
               </li>
             </ul>
           </article>

@@ -33,10 +33,23 @@ type AmenityOption = {
   selected: boolean;
   amenityId?: number | null;
 };
+type TypologyMediaType = 'image' | 'video';
+type TypologyMediaInfo = {
+  fileId: number | null;
+  url: string;
+  name: string;
+  mimeType: string;
+  type: TypologyMediaType;
+};
 type TypologyOption = {
   id: string;
   label: string;
   selected: boolean;
+  media?: TypologyMediaInfo | null;
+  pendingFile?: File | null;
+  pendingPreviewUrl?: string | null;
+  pendingMediaType?: TypologyMediaType | null;
+  removeMedia?: boolean;
 };
 
 @Component({
@@ -288,6 +301,62 @@ export class NuevoProyectoComponent implements OnDestroy {
     this.mediaGallery = this.mediaGallery.filter((_, i) => i !== index);
   }
 
+  handleTypologyMediaChange(event: Event, typology: TypologyOption) {
+    const input = event.target as HTMLInputElement;
+    if (!input?.files?.length) {
+      return;
+    }
+
+    const selectedFile = input.files[0];
+    const mediaType: TypologyMediaType = selectedFile.type.startsWith('video/') ? 'video' : 'image';
+    if (!selectedFile.type.startsWith('image/') && !selectedFile.type.startsWith('video/')) {
+      this.saveFeedback = 'La media por tipología debe ser imagen o video.';
+      input.value = '';
+      return;
+    }
+
+    this.revokeTypologyPreview(typology);
+    typology.pendingFile = selectedFile;
+    typology.pendingPreviewUrl = URL.createObjectURL(selectedFile);
+    typology.pendingMediaType = mediaType;
+    typology.removeMedia = false;
+    typology.selected = true;
+    this.saveFeedback = `Media preparada para ${typology.label}. Guarda el paso para subirla.`;
+  }
+
+  removeTypologyMedia(typology: TypologyOption, input?: HTMLInputElement | null): void {
+    this.revokeTypologyPreview(typology);
+    typology.pendingFile = null;
+    typology.pendingPreviewUrl = null;
+    typology.pendingMediaType = null;
+    typology.removeMedia = Boolean(typology.media);
+    if (input) {
+      input.value = '';
+    }
+  }
+
+  getTypologyMediaPreviewUrl(typology: TypologyOption): string | null {
+    return typology.pendingPreviewUrl || typology.media?.url || null;
+  }
+
+  getTypologyMediaType(typology: TypologyOption): TypologyMediaType | null {
+    if (typology.pendingMediaType) {
+      return typology.pendingMediaType;
+    }
+    return typology.removeMedia ? null : (typology.media?.type || null);
+  }
+
+  hasTypologyMedia(typology: TypologyOption): boolean {
+    return Boolean(this.getTypologyMediaPreviewUrl(typology) && this.getTypologyMediaType(typology));
+  }
+
+  getTypologyStatusLabel(typology: TypologyOption): string {
+    if (!typology.selected) {
+      return 'Inactivo';
+    }
+    return this.hasTypologyMedia(typology) ? 'Activo' : 'Falta Media';
+  }
+
   openAssociationModal() {
     this.isAssociationModalOpen = true;
     this.associationForm = {
@@ -482,6 +551,10 @@ export class NuevoProyectoComponent implements OnDestroy {
 
   get selectedAmenities(): string[] {
     return this.amenityOptions.filter(option => option.selected).map(option => option.label);
+  }
+
+  get selectedTypologiesWithMediaCount(): number {
+    return this.typologyOptions.filter((option) => option.selected && this.hasTypologyMedia(option)).length;
   }
 
   get landingManualUrl(): string {
@@ -757,6 +830,13 @@ export class NuevoProyectoComponent implements OnDestroy {
       return {
         unitConfig: this.unitConfig,
         selectedTypologies: this.selectedTypologies,
+        typologyMedia: this.typologyOptions
+          .filter((option) => option.selected)
+          .map((option) => ({
+            typology: option.label,
+            mediaName: option.pendingFile?.name || option.media?.name || null,
+            mediaType: option.pendingMediaType || option.media?.type || null
+          })),
         modelAssociations: this.modelAssociations,
         selectedAmenities: this.selectedAmenities,
         observation: this.unitConfig.observation || null
@@ -872,6 +952,8 @@ export class NuevoProyectoComponent implements OnDestroy {
         { headers: this.buildJsonHeaders(token) }
       )
     );
+
+    await this.syncTypologyMedia(projectId, token);
   }
 
   private async loadStep2Resources(projectId: number, token: string): Promise<void> {
@@ -933,6 +1015,13 @@ export class NuevoProyectoComponent implements OnDestroy {
 
       this.typologyOptions.forEach((option) => {
         option.selected = selectedLabels.has(option.label);
+        const row = typologyRows.find((item) => String(item['typology_code'] || '') === option.id);
+        option.media = this.mapTypologyMediaFromApi(row?.['media']);
+        option.removeMedia = false;
+        option.pendingFile = null;
+        this.revokeTypologyPreview(option);
+        option.pendingPreviewUrl = null;
+        option.pendingMediaType = null;
       });
       this.modelAssociations = modelAssociations;
 
@@ -978,6 +1067,59 @@ export class NuevoProyectoComponent implements OnDestroy {
     } catch (error) {
       console.error('[NuevoProyectoUI] loadStep2Resources error', error);
     }
+  }
+
+  private async syncTypologyMedia(projectId: number, token: string): Promise<void> {
+    const selectedTypologies = this.typologyOptions.filter((option) => option.selected);
+
+    for (const typology of selectedTypologies) {
+      if (typology.removeMedia && typology.media?.fileId) {
+        await firstValueFrom(
+          this.http.delete(
+            `${this.getApiBaseUrl()}/api/dash-manquehue/projects/${projectId}/typologies/${typology.id}/media`,
+            { headers: this.buildJsonHeaders(token) }
+          )
+        );
+        typology.media = null;
+        typology.removeMedia = false;
+      }
+
+      if (typology.pendingFile) {
+        const formData = new FormData();
+        formData.append('file', typology.pendingFile);
+        await firstValueFrom(
+          this.http.post(
+            `${this.getApiBaseUrl()}/api/dash-manquehue/projects/${projectId}/typologies/${typology.id}/media`,
+            formData,
+            { headers: new HttpHeaders({ Authorization: `Bearer ${token}` }) }
+          )
+        );
+        this.revokeTypologyPreview(typology);
+        typology.pendingFile = null;
+        typology.pendingPreviewUrl = null;
+        typology.pendingMediaType = null;
+      }
+    }
+
+    await this.loadStep2Resources(projectId, token);
+  }
+
+  private mapTypologyMediaFromApi(value: unknown): TypologyMediaInfo | null {
+    if (!value || typeof value !== 'object') {
+      return null;
+    }
+    const row = value as Record<string, unknown>;
+    const url = String(row['url'] || '');
+    if (!url) {
+      return null;
+    }
+    return {
+      fileId: Number(row['id'] || 0) || null,
+      url,
+      name: String(row['name'] || ''),
+      mimeType: String(row['mimeType'] || ''),
+      type: String(row['type'] || '').toLowerCase() === 'video' ? 'video' : 'image'
+    };
   }
 
   private async fetchAmenitiesCatalog(token: string): Promise<Array<{ id: number; code: string; label: string }>> {
@@ -1099,6 +1241,7 @@ export class NuevoProyectoComponent implements OnDestroy {
     if (this.coverImagePreviewUrl) {
       URL.revokeObjectURL(this.coverImagePreviewUrl);
     }
+    this.typologyOptions.forEach((option) => this.revokeTypologyPreview(option));
   }
 
   private normalizeText(value: string): string {
@@ -1215,6 +1358,12 @@ export class NuevoProyectoComponent implements OnDestroy {
     }
 
     return `No se pudo guardar (HTTP ${error.status || '0'}).`;
+  }
+
+  private revokeTypologyPreview(typology: TypologyOption): void {
+    if (typology.pendingPreviewUrl) {
+      URL.revokeObjectURL(typology.pendingPreviewUrl);
+    }
   }
 }
 
