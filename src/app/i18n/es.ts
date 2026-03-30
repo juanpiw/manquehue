@@ -243,6 +243,7 @@ export const ES = {
     nuevo_proyecto: 'Nuevo proyecto',
     usuario: 'Usuario',
     soporte_ayuda: 'Soporte y Ayuda',
+    cerrar_sesion: 'Cerrar sesión',
   },
   proyectos: {
     title: 'Mis Proyectos',

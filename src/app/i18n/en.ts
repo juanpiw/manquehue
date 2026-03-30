@@ -243,6 +243,7 @@ export const EN = {
     nuevo_proyecto: 'New Project',
     usuario: 'User',
     soporte_ayuda: 'Support & Help',
+    cerrar_sesion: 'Log out',
   },
   proyectos: {
     title: 'My Projects',

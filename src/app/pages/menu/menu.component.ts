@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { RouterOutlet, Router } from '@angular/router';
 import { MenuStateService } from '../../servicios/menuStateService';
+import { AuthService } from '../../servicios/authService.service';
 import { LangSwitcherComponent } from '../../shared/lang-switcher/lang-switcher.component';
 import { TranslatePipe } from '../../i18n/t.pipe';
 import { Subscription } from 'rxjs';
@@ -89,7 +90,8 @@ export class menuComponent implements OnInit, OnDestroy {
   
   constructor(
     private menuStateService: MenuStateService,
-    private router: Router
+    private router: Router,
+    private authService: AuthService
   ) {
     this.subscription = new Subscription();
     this.subscription.add(
@@ -135,5 +137,11 @@ export class menuComponent implements OnInit, OnDestroy {
   toggleCompact() {
     this.isCompact = !this.isCompact;
     this.menuStateService.setMenuCompact(this.isCompact);
+  }
+
+  logout() {
+    this.authService.logout();
+    this.menuStateService.changeComponent('resumen');
+    this.router.navigate(['/login']);
   }
 }

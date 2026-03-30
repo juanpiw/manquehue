@@ -294,6 +294,24 @@
         }
       }
     }
+
+    &--logout {
+      margin-top: 0.35rem;
+      color: #dc2626;
+
+      .menu__icon {
+        color: #dc2626;
+      }
+
+      &:hover {
+        background: #fef2f2;
+        color: #b91c1c;
+
+        .menu__icon {
+          color: #b91c1c;
+        }
+      }
+    }
   }
 
   &__indicator {
