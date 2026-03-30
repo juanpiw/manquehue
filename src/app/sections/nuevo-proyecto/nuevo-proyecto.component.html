@@ -314,7 +314,7 @@
             </div>
             <div class="np-form">
               <div class="np-section">
-                <span class="np-label">Selecciona tipologías y sube su media principal</span>
+                <span class="np-label">Selecciona tipologías y sube media principal mas plano/planta</span>
                 <div class="np-typology-media-grid">
                   <article
                     class="np-typology-card"
@@ -327,6 +327,12 @@
                       accept="image/*,video/*"
                       hidden
                       (change)="handleTypologyMediaChange($event, typology)" />
+                    <input
+                      #typologyBlueprintInput
+                      type="file"
+                      accept="image/*"
+                      hidden
+                      (change)="handleTypologyBlueprintChange($event, typology)" />
 
                     <div class="np-typology-card__head">
                       <label class="np-typology-card__toggle">
@@ -335,50 +341,82 @@
                       </label>
                       <span
                         class="np-typology-card__badge"
-                        [class.is-warning]="typology.selected && !hasTypologyMedia(typology)"
+                        [class.is-warning]="typology.selected && (!hasTypologyMedia(typology) || !hasTypologyBlueprint(typology))"
                         [class.is-neutral]="!typology.selected">
                         {{ getTypologyStatusLabel(typology) }}
                       </span>
                     </div>
 
                     <ng-container *ngIf="typology.selected">
-                      <div class="np-typology-card__media" *ngIf="hasTypologyMedia(typology); else uploadTypologyMediaState">
-                        <div class="np-typology-card__preview">
-                          <img
-                            *ngIf="getTypologyMediaType(typology) === 'image'"
-                            [src]="getTypologyMediaPreviewUrl(typology) || ''"
-                            [alt]="'Preview ' + typology.label" />
-                          <video
-                            *ngIf="getTypologyMediaType(typology) === 'video'"
-                            [src]="getTypologyMediaPreviewUrl(typology) || ''"
-                            muted
-                            playsinline
-                            controls
-                            preload="metadata"></video>
+                      <div class="np-typology-assets">
+                        <div class="np-typology-card__media" *ngIf="hasTypologyMedia(typology); else uploadTypologyMediaState">
+                          <div class="np-typology-card__preview">
+                            <img
+                              *ngIf="getTypologyMediaType(typology) === 'image'"
+                              [src]="getTypologyMediaPreviewUrl(typology) || ''"
+                              [alt]="'Preview ' + typology.label" />
+                            <video
+                              *ngIf="getTypologyMediaType(typology) === 'video'"
+                              [src]="getTypologyMediaPreviewUrl(typology) || ''"
+                              muted
+                              playsinline
+                              controls
+                              preload="metadata"></video>
+                          </div>
+
+                          <div class="np-typology-card__actions">
+                            <div>
+                              <p>Media principal para fondo</p>
+                              <small>{{ typology.pendingFile?.name || typology.media?.name || 'Archivo cargado' }}</small>
+                            </div>
+                            <div class="np-typology-card__buttons">
+                              <button type="button" class="np-typology-btn np-typology-btn--secondary" (click)="typologyMediaInput.click()">
+                                Subir fondo
+                              </button>
+                              <button type="button" class="np-typology-btn np-typology-btn--danger" (click)="removeTypologyMedia(typology, typologyMediaInput)">
+                                Eliminar
+                              </button>
+                            </div>
+                          </div>
                         </div>
 
-                        <div class="np-typology-card__actions">
-                          <div>
-                            <p>Render, video o plano/planta (Full-screen)</p>
-                            <small>{{ typology.pendingFile?.name || typology.media?.name || 'Archivo cargado' }}</small>
+                        <ng-template #uploadTypologyMediaState>
+                          <button type="button" class="np-typology-upload" (click)="typologyMediaInput.click()">
+                            <strong>Subir media principal</strong>
+                            <small>Render o video para el fondo: PNG, JPG, WebP, MP4 o WebM</small>
+                          </button>
+                        </ng-template>
+
+                        <div class="np-typology-card__media" *ngIf="hasTypologyBlueprint(typology); else uploadTypologyBlueprintState">
+                          <div class="np-typology-card__preview">
+                            <img
+                              [src]="getTypologyBlueprintPreviewUrl(typology) || ''"
+                              [alt]="'Plano ' + typology.label" />
                           </div>
-                          <div class="np-typology-card__buttons">
-                            <button type="button" class="np-typology-btn np-typology-btn--secondary" (click)="typologyMediaInput.click()">
-                              Subir plano o planta
-                            </button>
-                            <button type="button" class="np-typology-btn np-typology-btn--danger" (click)="removeTypologyMedia(typology, typologyMediaInput)">
-                              Eliminar
-                            </button>
+
+                          <div class="np-typology-card__actions">
+                            <div>
+                              <p>Plano / Planta blueprint</p>
+                              <small>{{ typology.pendingBlueprintFile?.name || typology.blueprint?.name || 'Archivo cargado' }}</small>
+                            </div>
+                            <div class="np-typology-card__buttons">
+                              <button type="button" class="np-typology-btn np-typology-btn--secondary" (click)="typologyBlueprintInput.click()">
+                                Subir planta
+                              </button>
+                              <button type="button" class="np-typology-btn np-typology-btn--danger" (click)="removeTypologyBlueprint(typology, typologyBlueprintInput)">
+                                Eliminar
+                              </button>
+                            </div>
                           </div>
                         </div>
+
+                        <ng-template #uploadTypologyBlueprintState>
+                          <button type="button" class="np-typology-upload np-typology-upload--blueprint" (click)="typologyBlueprintInput.click()">
+                            <strong>Subir plano o planta</strong>
+                            <small>Imagen para el blueprint de la landing: JPG, PNG o WebP</small>
+                          </button>
+                        </ng-template>
                       </div>
-
-                      <ng-template #uploadTypologyMediaState>
-                        <button type="button" class="np-typology-upload" (click)="typologyMediaInput.click()">
-                          <strong>Subir plano o planta</strong>
-                          <small>Tambien puedes subir render o video: PNG, JPG, WebP, MP4 o WebM</small>
-                        </button>
-                      </ng-template>
                     </ng-container>
                   </article>
                 </div>

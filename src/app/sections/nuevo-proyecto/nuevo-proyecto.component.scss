@@ -634,6 +634,12 @@
   align-items: center;
 }
 
+.np-typology-assets {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
 .np-typology-card__preview {
   width: 92px;
   height: 92px;
@@ -730,6 +736,16 @@
     border-color: #6366f1;
     background: #eef2ff;
     transform: translateY(-1px);
+  }
+}
+
+.np-typology-upload--blueprint {
+  border-color: rgba(251, 191, 36, 0.4);
+  background: #fffaf0;
+
+  &:hover {
+    border-color: #f59e0b;
+    background: #fff7ed;
   }
 }
 

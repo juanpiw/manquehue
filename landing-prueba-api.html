@@ -114,21 +114,65 @@
         }
 
         .unit-card {
-            background: rgba(255, 255, 255, 0.02);
+            background: transparent;
             border: 1px solid rgba(255, 255, 255, 0.05);
-            padding: 1.5rem;
-            border-radius: 20px;
-            transition: all 0.3s ease;
+            padding: 2.25rem 2rem;
+            border-radius: 0;
+            transition: background 0.45s ease, color 0.45s ease, border-color 0.45s ease, transform 0.3s ease;
+            color: #fff;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .unit-card:hover {
-            background: rgba(255, 255, 255, 0.06);
-            border-color: var(--step2);
+            background: rgba(255, 255, 255, 1);
+            border-color: rgba(255, 255, 255, 0.8);
+            color: #000;
+            transform: translateX(6px);
         }
 
         .unit-card.active {
-            background: rgba(255, 255, 255, 0.12);
-            border-color: rgba(16, 185, 129, 0.7);
+            background: rgba(255, 255, 255, 1);
+            border-color: rgba(255, 255, 255, 0.8);
+            color: #000;
+            transform: translateX(6px);
+        }
+
+        .unit-card-meta {
+            font-size: 8px;
+            letter-spacing: 0.5em;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+            color: rgba(255, 255, 255, 0.4);
+            transition: color 0.45s ease;
+        }
+
+        .unit-card-main {
+            font-size: clamp(1.5rem, 2vw, 2.25rem);
+            font-weight: 300;
+            line-height: 1;
+            letter-spacing: -0.04em;
+            color: #fff;
+            transition: color 0.45s ease;
+        }
+
+        .unit-card-price {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #fff;
+            transition: color 0.45s ease;
+        }
+
+        .unit-card:hover .unit-card-meta,
+        .unit-card.active .unit-card-meta {
+            color: rgba(0, 0, 0, 0.4);
+        }
+
+        .unit-card:hover .unit-card-main,
+        .unit-card.active .unit-card-main,
+        .unit-card:hover .unit-card-price,
+        .unit-card.active .unit-card-price {
+            color: #000;
         }
 
         .step-indicator {
@@ -198,20 +242,52 @@
             overflow: hidden;
         }
 
-        .apartment-bg {
+        .apartments-viewport {
             position: absolute;
             inset: 0;
+            perspective: 1000px;
+            overflow: hidden;
+        }
+
+        .apartments-cam-rail {
+            position: absolute;
+            inset: -20%;
+            width: 140%;
+            height: 140%;
+            will-change: transform, filter;
+            pointer-events: none;
+        }
+
+        .apartment-layer,
+        .apartment-video-layer {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+        }
+
+        .apartment-layer {
+            background-size: cover;
+            background-position: center;
+        }
+
+        .apartment-layer.active,
+        .apartment-video-layer.active {
+            opacity: 0.52;
+        }
+
+        .apartment-video-layer video {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            transition: filter 0.5s ease, transform 0.6s ease;
+            display: block;
         }
 
         .apartments-overlay {
             position: absolute;
             inset: 0;
             background:
-                linear-gradient(90deg, rgba(2, 2, 5, 0.88) 0%, rgba(2, 2, 5, 0.72) 35%, rgba(2, 2, 5, 0.3) 100%),
+                linear-gradient(90deg, rgba(2, 2, 5, 0.9) 0%, rgba(2, 2, 5, 0.72) 35%, rgba(2, 2, 5, 0.3) 100%),
                 linear-gradient(180deg, rgba(2, 2, 5, 0.16) 0%, rgba(2, 2, 5, 0.6) 100%);
         }
 
@@ -233,6 +309,58 @@
             background: rgba(0, 0, 0, 0.32);
             backdrop-filter: blur(16px);
             border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .blueprint-stage {
+            position: relative;
+            aspect-ratio: 1;
+            border-radius: 20px;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 1.5rem;
+        }
+
+        .blueprint-media,
+        .blueprint-svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .blueprint-media {
+            object-fit: contain;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .blueprint-svg {
+            stroke: rgba(255, 255, 255, 0.42);
+            fill: none;
+            stroke-width: 1.2;
+        }
+
+        .blueprint-stage .hidden {
+            display: none;
+        }
+
+        .blueprint-spec {
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+        }
+
+        .blueprint-spec span {
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 0.24em;
+            color: rgba(255, 255, 255, 0.28);
+        }
+
+        .blueprint-spec strong {
+            font-size: 1rem;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.92);
         }
 
         @media (max-width: 1023px) {
@@ -380,9 +508,17 @@
     </header>
 
     <section id="apartments" class="apartments-section">
-        <img id="view-apartment-img" src="https://images.unsplash.com/photo-1574362848149-11496d93a7c7?auto=format&fit=crop&q=80&w=1200" class="apartment-bg" alt="Apartment visual">
-        <video id="view-apartment-video" class="apartment-bg hidden" autoplay muted loop playsinline></video>
-        <div class="apartments-overlay"></div>
+        <div class="apartments-viewport">
+            <div id="apartments-cam-rail" class="apartments-cam-rail">
+                <div id="apartments-img-home" class="apartment-layer active"></div>
+                <div id="apartments-img-int" class="apartment-layer"></div>
+                <div id="apartments-img-feat" class="apartment-layer"></div>
+                <div id="apartments-video-layer" class="apartment-video-layer">
+                    <video id="view-apartment-video" autoplay muted loop playsinline></video>
+                </div>
+                <div class="apartments-overlay"></div>
+            </div>
+        </div>
 
         <div class="apartments-content">
             <div class="flex flex-col justify-center space-y-12">
@@ -411,6 +547,22 @@
             <div class="flex flex-col justify-between items-end gap-8">
                 <div class="plan-details-card reveal">
                     <p class="text-[10px] font-black text-indigo-400 uppercase tracking-[0.2em] mb-6">Unit Specifications</p>
+                    <div class="blueprint-stage mb-6">
+                        <img id="active-blueprint-image" class="blueprint-media hidden" alt="Plano unidad activa">
+                        <svg id="active-blueprint-svg" viewBox="0 0 100 100" class="blueprint-svg">
+                            <path id="active-blueprint-path" d=""></path>
+                        </svg>
+                    </div>
+                    <div id="active-blueprint-data" class="grid grid-cols-2 gap-4 mb-6">
+                        <div class="blueprint-spec">
+                            <span>Area</span>
+                            <strong id="active-blueprint-area">53.75 m²</strong>
+                        </div>
+                        <div class="blueprint-spec">
+                            <span>Referencia</span>
+                            <strong id="active-blueprint-meta">Unit 345</strong>
+                        </div>
+                    </div>
                     <div class="space-y-4">
                         <div class="flex justify-between border-b border-white/5 pb-2 gap-4">
                             <span class="text-xs text-white/40">Model Name</span>
@@ -835,7 +987,7 @@
         function normalizeTypology(item) {
             if (!item) return null;
             if (typeof item === 'string') {
-                return { label: item, asociacion: 'Asociado', models: [], media: null, plan_url: '' };
+                return { label: item, asociacion: 'Asociado', models: [], media: null, blueprint: null, plan_url: '', blueprint_url: '' };
             }
             const models = toArray(item.models).map((model) => ({
                 code: model.code || model.modelCode || model.model_code || '',
@@ -849,14 +1001,24 @@
                     name: item.media.name || item.media.original_name || ''
                 }
                 : null;
+            const blueprint = item.blueprint && typeof item.blueprint === 'object'
+                ? {
+                    id: item.blueprint.id || null,
+                    url: item.blueprint.url || item.blueprint.file_url || item.blueprint.path || '',
+                    type: item.blueprint.type || 'image',
+                    name: item.blueprint.name || item.blueprint.original_name || ''
+                }
+                : null;
             return {
                 id: item.id || null,
                 label: item.label || item.typologyLabel || item.typology_code || 'Tipologia',
                 asociacion: item.asociacion || item.association || models[0]?.label || 'Disponible',
                 models,
                 media,
+                blueprint,
                 plan_url: item.plan_url || media?.url || item.image || '',
-                plan_type: item.plan_type || media?.type || 'image'
+                plan_type: item.plan_type || media?.type || 'image',
+                blueprint_url: item.blueprint_url || blueprint?.url || ''
             };
         }
 
@@ -882,12 +1044,44 @@
             };
         }
 
+        function buildUnitCameraPreset(index) {
+            const presets = [
+                { scale: 1.12, x: -40, y: 24, rotation: 0.45 },
+                { scale: 1.5, x: 200, y: -100, rotation: -0.5 },
+                { scale: 1.28, x: 0, y: 96, rotation: 0 },
+                { scale: 1.22, x: 90, y: -32, rotation: 0.25 },
+                { scale: 1.36, x: -120, y: 68, rotation: -0.35 }
+            ];
+            return presets[index % presets.length];
+        }
+
+        function buildBlueprintPath(index) {
+            const presets = [
+                'M10 10 H90 V90 H10 Z M10 52 H90 M52 10 V52',
+                'M14 14 H86 V86 H14 Z M14 48 H86 M44 14 V86 M62 14 V48',
+                'M10 10 H90 V90 H10 Z M10 36 H90 M30 36 V90 M68 10 V60',
+                'M12 12 H88 V88 H12 Z M12 56 H88 M40 12 V88 M62 56 V88',
+                'M16 16 H84 V84 H16 Z M16 42 H84 M52 16 V84 M28 42 V84'
+            ];
+            return presets[index % presets.length];
+        }
+
         function buildUnitCards(rawUnits, typologies, availableUnits, totalUnits) {
             const provided = toArray(rawUnits)
-                .map((item) => {
+                .map((item, index) => {
                     if (!item) return null;
                     if (typeof item === 'string') {
-                        return { id: slugify(item), label: item, detail: 'Unidad disponible', meta: 'Proyecto activo', plan_url: '', plan_type: 'image' };
+                        return {
+                            id: slugify(item),
+                            label: item,
+                            detail: 'Unidad disponible',
+                            meta: 'Proyecto activo',
+                            plan_url: '',
+                            plan_type: 'image',
+                            blueprint_url: '',
+                            cam: buildUnitCameraPreset(index),
+                            blueprint_path: buildBlueprintPath(index)
+                        };
                     }
                     return {
                         id: item.id || slugify(item.label || item.nombre || item.name || `unidad-${Math.random()}`),
@@ -895,7 +1089,10 @@
                         detail: item.detail || item.size || item.price || item.descripcion || 'Unidad disponible',
                         meta: item.meta || item.tag || item.modelo || 'Disponible',
                         plan_url: item.plan_url || item.url || item.image || '',
-                        plan_type: item.plan_type || item.type || 'image'
+                        plan_type: item.plan_type || item.type || 'image',
+                        blueprint_url: item.blueprint_url || item.blueprint || '',
+                        cam: item.cam || buildUnitCameraPreset(index),
+                        blueprint_path: item.blueprint_path || item.plan || buildBlueprintPath(index)
                     };
                 })
                 .filter(Boolean);
@@ -911,7 +1108,10 @@
                         : 'Tipologia activa',
                     meta: item.asociacion || `Disponibles: ${availableUnits || totalUnits || 0}`,
                     plan_url: item.plan_url || item.media?.url || item.image || '',
-                    plan_type: item.plan_type || item.media?.type || 'image'
+                    plan_type: item.plan_type || item.media?.type || 'image',
+                    blueprint_url: item.blueprint_url || item.blueprint?.url || '',
+                    cam: item.cam || buildUnitCameraPreset(index),
+                    blueprint_path: item.blueprint_path || item.plan || buildBlueprintPath(index)
                 }));
             }
 
@@ -1028,11 +1228,11 @@
             unitList.innerHTML = data.unidades_list.map((item) => `
                 <button type="button" class="unit-card flex justify-between items-center w-full text-left ${String(item.id) === String(nextActiveId) ? 'active' : ''}" data-id="${escapeHtml(item.id)}">
                     <div>
-                        <p class="text-[8px] font-black text-white/30 uppercase mb-1">${escapeHtml(item.meta)}</p>
-                        <h4 class="text-base font-bold text-white">${escapeHtml(item.label)}</h4>
+                        <div class="unit-card-meta">${escapeHtml(item.meta)}</div>
+                        <div class="unit-card-main">${escapeHtml(item.label)}</div>
                     </div>
                     <div class="text-right">
-                        <p class="text-sm font-bold text-emerald-400">${escapeHtml(item.detail)}</p>
+                        <div class="unit-card-price">${escapeHtml(item.detail)}</div>
                     </div>
                 </button>
             `).join('');
@@ -1047,45 +1247,134 @@
             updateActiveUnit(activeUnit, data);
         }
 
+        function setApartmentLayerBackground(id, url) {
+            const layer = document.getElementById(id);
+            if (layer && url) {
+                layer.style.backgroundImage = `url("${String(url).replace(/"/g, '&quot;')}")`;
+            }
+        }
+
+        function toggleApartmentSceneLayer(layerId, isVideo = false) {
+            document.querySelectorAll('.apartment-layer, .apartment-video-layer').forEach((element) => {
+                element.classList.remove('active');
+            });
+            const target = document.getElementById(layerId);
+            if (target) {
+                target.classList.add('active');
+            }
+
+            const videoLayer = document.getElementById('apartments-video-layer');
+            if (videoLayer) {
+                videoLayer.classList.toggle('hidden', !isVideo);
+            }
+        }
+
+        function animateApartmentRail(unit) {
+            const rail = document.getElementById('apartments-cam-rail');
+            if (!rail || typeof gsap === 'undefined') return;
+            const cam = unit?.cam || buildUnitCameraPreset(0);
+            gsap.killTweensOf(rail);
+            gsap.timeline()
+                .to(rail, {
+                    duration: 0.35,
+                    filter: 'blur(18px) brightness(0.45)',
+                    ease: 'power2.inOut'
+                })
+                .to(rail, {
+                    duration: 1.8,
+                    scale: cam.scale,
+                    x: cam.x,
+                    y: cam.y,
+                    rotation: cam.rotation,
+                    filter: 'blur(0px) brightness(1)',
+                    ease: 'power3.out'
+                }, '-=0.08');
+        }
+
+        function renderActiveBlueprint(unit, data = currentLandingData) {
+            const blueprintImage = document.getElementById('active-blueprint-image');
+            const blueprintSvg = document.getElementById('active-blueprint-svg');
+            const blueprintPath = document.getElementById('active-blueprint-path');
+            const areaEl = document.getElementById('active-blueprint-area');
+            const metaEl = document.getElementById('active-blueprint-meta');
+            if (!blueprintImage || !blueprintSvg || !blueprintPath) return;
+
+            const blueprintUrl = unit?.blueprint_url || data?.documentos?.masterplan_url || '';
+            const planType = unit?.plan_type || 'image';
+            const blueprintValue = unit?.blueprint_path || buildBlueprintPath(0);
+
+            if (areaEl) areaEl.textContent = unit?.detail || 'Unidad disponible';
+            if (metaEl) metaEl.textContent = unit?.meta || unit?.label || data?.nombre || '-';
+
+            if (blueprintUrl) {
+                blueprintImage.src = blueprintUrl;
+                blueprintImage.classList.remove('hidden');
+                blueprintSvg.classList.add('hidden');
+                return;
+            }
+
+            blueprintImage.classList.add('hidden');
+            blueprintImage.removeAttribute('src');
+            blueprintSvg.classList.remove('hidden');
+            blueprintPath.setAttribute('d', blueprintValue);
+
+            try {
+                const length = blueprintPath.getTotalLength();
+                gsap.set(blueprintPath, { strokeDasharray: length, strokeDashoffset: length });
+                gsap.to(blueprintPath, { duration: 1.8, strokeDashoffset: 0, ease: 'power2.out' });
+            } catch (_error) {
+                // keep static path if SVG metrics are unavailable
+            }
+        }
+
         function updateActiveUnit(unit, data = currentLandingData) {
+            const planUrl = unit?.plan_url || '';
             const visualUrl =
-                unit?.plan_url ||
-                data?.multimedia?.gallery?.[0]?.url ||
+                data?.multimedia?.gallery?.find((item) => item.type === 'image')?.url ||
                 data?.multimedia?.portada_url ||
+                planUrl ||
                 '';
-            const visualType = unit?.plan_type || 'image';
+            const visualType =
+                data?.multimedia?.gallery?.find((item) => item.type === 'video')?.type ||
+                'image';
+            const visualVideoUrl = data?.multimedia?.gallery?.find((item) => item.type === 'video')?.url || '';
+            const homeUrl = data?.multimedia?.portada_url || data?.multimedia?.gallery?.find((item) => item.type === 'image')?.url || visualUrl;
+            const featureUrl =
+                data?.multimedia?.gallery?.find((item) => item.type === 'image' && item.url !== visualUrl)?.url ||
+                data?.multimedia?.gallery?.find((item) => item.type === 'image')?.url ||
+                homeUrl;
 
             setText('active-unit-label', unit?.label || data?.nombre || 'Unidad');
             setText('active-unit-size', unit?.detail || 'Unidad disponible');
             setText('view-orientation-active', data?.orientacion_principal || 'Norte');
+            renderActiveBlueprint(unit, data);
 
-            const apartmentImg = document.getElementById('view-apartment-img');
             const apartmentVideo = document.getElementById('view-apartment-video');
-            if (visualType === 'video' && visualUrl) {
+            setApartmentLayerBackground('apartments-img-home', homeUrl);
+            setApartmentLayerBackground('apartments-img-feat', featureUrl);
+
+            if (visualType === 'video' && visualVideoUrl) {
                 if (apartmentVideo) {
-                    apartmentVideo.src = visualUrl;
-                    apartmentVideo.classList.remove('hidden');
+                    apartmentVideo.src = visualVideoUrl;
                     apartmentVideo.play?.().catch(() => {});
                 }
-                if (apartmentImg) {
-                    apartmentImg.classList.add('hidden');
-                }
+                setApartmentLayerBackground('apartments-img-int', homeUrl);
+                toggleApartmentSceneLayer('apartments-video-layer', true);
             } else {
-                if (apartmentImg && visualUrl) {
-                    apartmentImg.src = visualUrl;
-                    apartmentImg.classList.remove('hidden');
-                }
+                setApartmentLayerBackground('apartments-img-int', visualUrl || homeUrl);
                 if (apartmentVideo) {
                     apartmentVideo.pause?.();
                     apartmentVideo.removeAttribute('src');
                     apartmentVideo.load?.();
-                    apartmentVideo.classList.add('hidden');
                 }
+                toggleApartmentSceneLayer('apartments-img-int', false);
             }
+
+            animateApartmentRail(unit);
 
             const planDownload = document.getElementById('unit-plan-download');
             if (planDownload) {
-                const href = unit?.plan_url || data?.documentos?.masterplan_url || data?.documentos?.brochure_url || '#';
+                const href = unit?.blueprint_url || unit?.plan_url || data?.documentos?.masterplan_url || data?.documentos?.brochure_url || '#';
                 planDownload.href = href;
                 planDownload.setAttribute('aria-disabled', href === '#' ? 'true' : 'false');
             }
@@ -1213,11 +1502,9 @@
                 if (galleryEl && visualUrl) {
                     galleryEl.src = visualUrl;
                 }
-
-                const apartmentImg = document.getElementById('view-apartment-img');
-                if (apartmentImg && visualUrl) {
-                    apartmentImg.src = visualUrl;
-                }
+                setApartmentLayerBackground('apartments-img-home', data.multimedia.portada_url || visualUrl);
+                setApartmentLayerBackground('apartments-img-int', visualUrl);
+                setApartmentLayerBackground('apartments-img-feat', data.multimedia.gallery[1]?.url || visualUrl);
 
                 const amenityVisual = document.getElementById('amenity-visual');
                 if (amenityVisual && visualUrl) {

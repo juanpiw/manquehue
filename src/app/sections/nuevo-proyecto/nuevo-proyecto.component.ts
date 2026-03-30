@@ -50,6 +50,10 @@ type TypologyOption = {
   pendingPreviewUrl?: string | null;
   pendingMediaType?: TypologyMediaType | null;
   removeMedia?: boolean;
+  blueprint?: TypologyMediaInfo | null;
+  pendingBlueprintFile?: File | null;
+  pendingBlueprintPreviewUrl?: string | null;
+  removeBlueprint?: boolean;
 };
 
 @Component({
@@ -310,7 +314,7 @@ export class NuevoProyectoComponent implements OnDestroy {
     const selectedFile = input.files[0];
     const mediaType: TypologyMediaType = selectedFile.type.startsWith('video/') ? 'video' : 'image';
     if (!selectedFile.type.startsWith('image/') && !selectedFile.type.startsWith('video/')) {
-      this.saveFeedback = 'La media por tipología debe ser un plano/planta en imagen o un video.';
+      this.saveFeedback = 'La media principal de la tipología debe ser una imagen o un video.';
       input.value = '';
       return;
     }
@@ -321,7 +325,7 @@ export class NuevoProyectoComponent implements OnDestroy {
     typology.pendingMediaType = mediaType;
     typology.removeMedia = false;
     typology.selected = true;
-    this.saveFeedback = `Media preparada para ${typology.label}. Guarda el paso para subirla.`;
+    this.saveFeedback = `Media principal preparada para ${typology.label}. Guarda el paso para subirla.`;
   }
 
   removeTypologyMedia(typology: TypologyOption, input?: HTMLInputElement | null): void {
@@ -330,6 +334,37 @@ export class NuevoProyectoComponent implements OnDestroy {
     typology.pendingPreviewUrl = null;
     typology.pendingMediaType = null;
     typology.removeMedia = Boolean(typology.media);
+    if (input) {
+      input.value = '';
+    }
+  }
+
+  handleTypologyBlueprintChange(event: Event, typology: TypologyOption) {
+    const input = event.target as HTMLInputElement;
+    if (!input?.files?.length) {
+      return;
+    }
+
+    const selectedFile = input.files[0];
+    if (!selectedFile.type.startsWith('image/')) {
+      this.saveFeedback = 'La planta/plano debe ser una imagen JPG, PNG o WebP.';
+      input.value = '';
+      return;
+    }
+
+    this.revokeTypologyBlueprintPreview(typology);
+    typology.pendingBlueprintFile = selectedFile;
+    typology.pendingBlueprintPreviewUrl = URL.createObjectURL(selectedFile);
+    typology.removeBlueprint = false;
+    typology.selected = true;
+    this.saveFeedback = `Plano/planta preparado para ${typology.label}. Guarda el paso para subirlo.`;
+  }
+
+  removeTypologyBlueprint(typology: TypologyOption, input?: HTMLInputElement | null): void {
+    this.revokeTypologyBlueprintPreview(typology);
+    typology.pendingBlueprintFile = null;
+    typology.pendingBlueprintPreviewUrl = null;
+    typology.removeBlueprint = Boolean(typology.blueprint);
     if (input) {
       input.value = '';
     }
@@ -350,11 +385,25 @@ export class NuevoProyectoComponent implements OnDestroy {
     return Boolean(this.getTypologyMediaPreviewUrl(typology) && this.getTypologyMediaType(typology));
   }
 
+  getTypologyBlueprintPreviewUrl(typology: TypologyOption): string | null {
+    return typology.pendingBlueprintPreviewUrl || typology.blueprint?.url || null;
+  }
+
+  hasTypologyBlueprint(typology: TypologyOption): boolean {
+    return Boolean(this.getTypologyBlueprintPreviewUrl(typology));
+  }
+
   getTypologyStatusLabel(typology: TypologyOption): string {
     if (!typology.selected) {
       return 'Inactivo';
     }
-    return this.hasTypologyMedia(typology) ? 'Activo' : 'Falta Media';
+    if (!this.hasTypologyMedia(typology)) {
+      return 'Falta Media';
+    }
+    if (!this.hasTypologyBlueprint(typology)) {
+      return 'Falta Planta';
+    }
+    return 'Completo';
   }
 
   openAssociationModal() {
@@ -554,7 +603,9 @@ export class NuevoProyectoComponent implements OnDestroy {
   }
 
   get selectedTypologiesWithMediaCount(): number {
-    return this.typologyOptions.filter((option) => option.selected && this.hasTypologyMedia(option)).length;
+    return this.typologyOptions.filter(
+      (option) => option.selected && this.hasTypologyMedia(option) && this.hasTypologyBlueprint(option)
+    ).length;
   }
 
   get landingManualUrl(): string {
@@ -835,7 +886,8 @@ export class NuevoProyectoComponent implements OnDestroy {
           .map((option) => ({
             typology: option.label,
             mediaName: option.pendingFile?.name || option.media?.name || null,
-            mediaType: option.pendingMediaType || option.media?.type || null
+            mediaType: option.pendingMediaType || option.media?.type || null,
+            blueprintName: option.pendingBlueprintFile?.name || option.blueprint?.name || null
           })),
         modelAssociations: this.modelAssociations,
         selectedAmenities: this.selectedAmenities,
@@ -1017,11 +1069,16 @@ export class NuevoProyectoComponent implements OnDestroy {
         option.selected = selectedLabels.has(option.label);
         const row = typologyRows.find((item) => String(item['typology_code'] || '') === option.id);
         option.media = this.mapTypologyMediaFromApi(row?.['media']);
+        option.blueprint = this.mapTypologyMediaFromApi(row?.['blueprint']);
         option.removeMedia = false;
+        option.removeBlueprint = false;
         option.pendingFile = null;
         this.revokeTypologyPreview(option);
         option.pendingPreviewUrl = null;
         option.pendingMediaType = null;
+        option.pendingBlueprintFile = null;
+        this.revokeTypologyBlueprintPreview(option);
+        option.pendingBlueprintPreviewUrl = null;
       });
       this.modelAssociations = modelAssociations;
 
@@ -1084,6 +1141,17 @@ export class NuevoProyectoComponent implements OnDestroy {
         typology.removeMedia = false;
       }
 
+      if (typology.removeBlueprint && typology.blueprint?.fileId) {
+        await firstValueFrom(
+          this.http.delete(
+            `${this.getApiBaseUrl()}/api/dash-manquehue/projects/${projectId}/typologies/${typology.id}/blueprint`,
+            { headers: this.buildJsonHeaders(token) }
+          )
+        );
+        typology.blueprint = null;
+        typology.removeBlueprint = false;
+      }
+
       if (typology.pendingFile) {
         const formData = new FormData();
         formData.append('file', typology.pendingFile);
@@ -1098,6 +1166,21 @@ export class NuevoProyectoComponent implements OnDestroy {
         typology.pendingFile = null;
         typology.pendingPreviewUrl = null;
         typology.pendingMediaType = null;
+      }
+
+      if (typology.pendingBlueprintFile) {
+        const blueprintData = new FormData();
+        blueprintData.append('file', typology.pendingBlueprintFile);
+        await firstValueFrom(
+          this.http.post(
+            `${this.getApiBaseUrl()}/api/dash-manquehue/projects/${projectId}/typologies/${typology.id}/blueprint`,
+            blueprintData,
+            { headers: new HttpHeaders({ Authorization: `Bearer ${token}` }) }
+          )
+        );
+        this.revokeTypologyBlueprintPreview(typology);
+        typology.pendingBlueprintFile = null;
+        typology.pendingBlueprintPreviewUrl = null;
       }
     }
 
@@ -1241,7 +1324,10 @@ export class NuevoProyectoComponent implements OnDestroy {
     if (this.coverImagePreviewUrl) {
       URL.revokeObjectURL(this.coverImagePreviewUrl);
     }
-    this.typologyOptions.forEach((option) => this.revokeTypologyPreview(option));
+    this.typologyOptions.forEach((option) => {
+      this.revokeTypologyPreview(option);
+      this.revokeTypologyBlueprintPreview(option);
+    });
   }
 
   private normalizeText(value: string): string {
@@ -1363,6 +1449,12 @@ export class NuevoProyectoComponent implements OnDestroy {
   private revokeTypologyPreview(typology: TypologyOption): void {
     if (typology.pendingPreviewUrl) {
       URL.revokeObjectURL(typology.pendingPreviewUrl);
+    }
+  }
+
+  private revokeTypologyBlueprintPreview(typology: TypologyOption): void {
+    if (typology.pendingBlueprintPreviewUrl) {
+      URL.revokeObjectURL(typology.pendingBlueprintPreviewUrl);
     }
   }
 }
