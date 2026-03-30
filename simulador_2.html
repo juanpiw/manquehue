@@ -1,0 +1,1531 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IRIS | Multi-Object AI Placement</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Outfit:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    },
+                    colors: {
+                        background: '#050505',
+                        accent: '#d4af7a',
+                        tech: '#3b82f6',
+                    },
+                    animation: {
+                        'attention-pulse': 'attentionPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        attentionPulse: {
+                            '0%, 100%': { opacity: 1, transform: 'scale(1)', boxShadow: '0 0 0px rgba(212, 175, 122, 0)' },
+                            '50%': { opacity: 0.8, transform: 'scale(1.02)', boxShadow: '0 0 20px rgba(212, 175, 122, 0.4)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { 
+            background-color: #000; 
+            color: #fff; 
+            overflow: hidden; 
+            height: 100vh;
+            font-family: 'Outfit', sans-serif;
+            user-select: none;
+        }
+
+        .viewport-container {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+        }
+
+        .bg-layer {
+            position: absolute;
+            inset: 0;
+            background-size: cover;
+            background-position: center;
+            transition: opacity 1s ease-in-out, filter 0.5s ease;
+        }
+
+        #paint-canvas {
+            position: absolute;
+            inset: 0;
+            z-index: 10;
+            cursor: crosshair;
+            opacity: 0.7;
+            pointer-events: none;
+        }
+        #paint-canvas.active {
+            pointer-events: auto;
+        }
+
+        .vignette {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle, transparent 20%, rgba(0,0,0,0.6) 100%);
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        /* --- SIDE PANEL --- */
+        .side-panel {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 400px;
+            height: 100%;
+            background: rgba(10, 10, 10, 0.9);
+            backdrop-filter: blur(50px);
+            border-left: 1px solid rgba(255,255,255,0.1);
+            z-index: 100;
+            transform: translateX(100%);
+            transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+            display: flex;
+            flex-direction: column;
+        }
+        .side-panel.open { transform: translateX(0); }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+            padding: 24px;
+            overflow-y: auto;
+        }
+
+        .furniture-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 20px;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            position: relative;
+        }
+        .furniture-card.selected {
+            background: rgba(212, 175, 122, 0.1);
+            border-color: #d4af7a;
+            transform: scale(1.02);
+        }
+        .furniture-thumb {
+            width: 80px;
+            height: 80px;
+            border-radius: 12px;
+            object-fit: cover;
+        }
+
+        .color-indicator {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.2);
+        }
+
+        /* --- TOOLBAR --- */
+        .editor-toolbar {
+            position: fixed;
+            left: 40px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            z-index: 100;
+        }
+
+        .tool-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 20px;
+            background: rgba(20, 20, 20, 0.8);
+            border: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .tool-btn:hover { border-color: #d4af7a; }
+        .tool-btn.active { background: #d4af7a; color: #000; }
+
+        .apply-btn {
+            background: #fff;
+            color: #000;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            padding: 18px 40px;
+            border-radius: 99px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            transition: all 0.4s ease;
+            display: none;
+        }
+        .apply-btn:hover { transform: scale(1.05); }
+
+        .ai-loader {
+            position: fixed;
+            inset: 0;
+            z-index: 500;
+            background: #000;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        /* Custom brush preview */
+        #brush-preview {
+            position: fixed;
+            pointer-events: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid white;
+            z-index: 1000;
+            display: none;
+            transform: translate(-50%, -50%);
+            mix-blend-mode: difference;
+        }
+
+        .project-switcher {
+            position: fixed;
+            top: 6.6rem;
+            left: 2.5rem;
+            z-index: 120;
+        }
+
+        .project-explorer {
+            position: fixed;
+            inset: 0;
+            z-index: 220;
+            background: #000;
+            display: flex;
+            transform: translateY(-100%);
+            transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .project-explorer.open { transform: translateY(0); }
+
+        .project-column {
+            position: relative;
+            flex: 1;
+            overflow: hidden;
+            cursor: pointer;
+            border-right: 1px solid rgba(255,255,255,0.05);
+            transition: flex 0.7s cubic-bezier(0.25, 1, 0.3, 1);
+        }
+        .project-column:hover { flex: 2.2; }
+        .project-column img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 1.4s ease;
+        }
+        .project-column:hover img { transform: scale(1.05); }
+
+        .project-info-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 2.5rem;
+            background: linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0.05));
+        }
+        .project-tagline {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.3em;
+            color: rgba(255,255,255,0.65);
+            margin-bottom: 0.75rem;
+        }
+        .project-title {
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            font-size: clamp(2rem, 3vw, 3.4rem);
+            line-height: 1;
+            color: #fff;
+        }
+
+        .chat-dock {
+            position: fixed;
+            bottom: 1.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            width: min(94vw, 760px);
+            background: rgba(8, 8, 8, 0.92);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 2.25rem;
+            z-index: 110;
+            padding: 1.25rem 1.5rem;
+            box-shadow: 0 40px 100px rgba(0,0,0,0.8);
+            display: flex;
+            flex-direction: column;
+            gap: 0.9rem;
+        }
+
+        .chat-input-wrapper {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 999px;
+            padding: 4px 6px 4px 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        #user-input {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #fff;
+            font-size: 13px;
+            width: 100%;
+            padding: 10px 0;
+        }
+
+        .send-btn {
+            width: 42px;
+            height: 42px;
+            border-radius: 999px;
+            border: 1px solid rgba(212, 175, 122, 0.3);
+            background: rgba(212, 175, 122, 0.12);
+            color: #d4af7a;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.25s ease;
+        }
+        .send-btn:hover {
+            background: #d4af7a;
+            color: #000;
+            transform: scale(1.04);
+        }
+
+        .option-pill {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(212, 175, 122, 0.2);
+            color: #d4af7a;
+            padding: 0.5rem 1.1rem;
+            border-radius: 999px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .option-pill:hover {
+            background: rgba(212, 175, 122, 0.14);
+            border-color: rgba(212, 175, 122, 0.55);
+        }
+
+        .avatar-projection {
+            position: absolute;
+            bottom: 22%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: min(240px, 28vw);
+            height: auto;
+            z-index: 15;
+            filter: drop-shadow(0 0 20px rgba(212, 175, 122, 0.4)) contrast(1.05);
+            opacity: 0;
+            transition: opacity 1s ease;
+            pointer-events: none;
+        }
+
+        .intel-badge {
+            font-size: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.3em;
+            color: rgba(255,255,255,0.4);
+            border-bottom: 1px solid rgba(212, 175, 122, 0.15);
+            padding-bottom: 2px;
+            margin-bottom: 4px;
+        }
+
+        .chat-mobile-actions {
+            display: none;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.15rem;
+        }
+
+        .chat-mobile-actions .mini-fab {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            border-radius: 999px;
+            font-size: 9px;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            padding: 0.45rem 0.7rem;
+            text-decoration: none;
+            border: 1px solid transparent;
+        }
+        .chat-mobile-actions .mini-fab.ai {
+            color: #3b82f6;
+            border-color: rgba(59, 130, 246, 0.45);
+            background: rgba(59, 130, 246, 0.12);
+        }
+        .chat-mobile-actions .mini-fab.demo {
+            color: #d4af7a;
+            border-color: rgba(212, 175, 122, 0.45);
+            background: rgba(212, 175, 122, 0.12);
+        }
+
+        .demo-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 400;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(15px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        .demo-modal.visible { display: flex; }
+        .demo-card {
+            background: #0a0a0a;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 2.5rem;
+            width: 100%;
+            max-width: 500px;
+            padding: 3rem;
+            position: relative;
+            box-shadow: 0 50px 100px rgba(0,0,0,0.9);
+            animation: slideUp 0.45s ease;
+        }
+        .input-group {
+            margin-bottom: 1rem;
+        }
+        .input-group label {
+            display: block;
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            color: #666;
+            margin-bottom: 8px;
+        }
+        .input-group input {
+            width: 100%;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 12px 16px;
+            border-radius: 12px;
+            color: #fff;
+            outline: none;
+            transition: border 0.3s;
+        }
+        .input-group input:focus { border-color: #d4af7a; }
+
+        .voice-indicator {
+            display: none;
+            align-items: center;
+            gap: 3px;
+            height: 24px;
+            margin-left: 8px;
+        }
+        .voice-indicator.active { display: flex; }
+        .voice-indicator span {
+            width: 3px;
+            background: #d4af7a;
+            border-radius: 10px;
+            animation: wave 1.2s ease-in-out infinite;
+        }
+        .voice-indicator span:nth-child(2) { animation-delay: 0.1s; }
+        .voice-indicator span:nth-child(3) { animation-delay: 0.2s; }
+        .voice-indicator span:nth-child(4) { animation-delay: 0.3s; }
+
+        .animate-fade-in {
+            animation: fadeIn 0.35s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes wave {
+            0%, 100% { height: 6px; opacity: 0.55; }
+            50% { height: 18px; opacity: 1; }
+        }
+
+        @media (max-width: 1024px) {
+            .project-switcher {
+                top: auto;
+                bottom: 12.5rem;
+                left: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .chat-dock {
+                width: calc(100vw - 1.5rem);
+                bottom: 0.75rem;
+                padding: 1rem;
+                border-radius: 1.75rem;
+            }
+
+            .chat-mobile-actions {
+                display: flex;
+            }
+
+            .project-switcher {
+                left: 1rem;
+                bottom: 11.75rem;
+            }
+
+            .project-explorer {
+                flex-direction: column;
+            }
+        }
+
+    </style>
+</head>
+<body class="antialiased">
+
+    <div id="brush-preview"></div>
+
+    <div class="viewport-container">
+        <div id="bg-main" class="bg-layer" style="background-image: url('https://images.unsplash.com/photo-1600607687920-4e2a09c15468?q=80&w=2000');"></div>
+        <canvas id="paint-canvas"></canvas>
+        <div class="vignette"></div>
+    </div>
+
+    <img id="user-avatar-projection" class="avatar-projection" src="" alt="Avatar">
+
+    <!-- HUD SUPERIOR -->
+    <div class="fixed top-10 left-10 z-50 flex items-center gap-6">
+        <img src="https://impactrenderstudios.com/images/logo.png" class="h-6 opacity-80">
+        <div class="h-4 w-px bg-white/20"></div>
+        <div class="flex flex-col mr-4">
+            <span class="text-[10px] uppercase tracking-[0.3em] font-bold text-accent">Smart Placement Mode</span>
+            <span id="active-item-label" class="text-[9px] text-gray-500 uppercase mt-0.5">Selecciona un mueble para ubicarlo</span>
+        </div>
+        
+        <!-- BOTÓN SUBIR BASE DEL RENDER CON ANIMACIÓN DE PARPADEO -->
+        <button onclick="document.getElementById('base-upload').click()" class="animate-attention-pulse bg-accent/10 border border-accent/40 px-5 py-2.5 rounded-full hover:bg-accent hover:text-black transition-all flex items-center gap-2 group">
+            <i class="ph-fill ph-image-square text-accent group-hover:text-black transition-colors"></i>
+            <span class="text-[9px] uppercase font-bold tracking-widest transition-colors">Subir base del render</span>
+            <input type="file" id="base-upload" class="hidden" accept="image/*" onchange="uploadBaseRender(event)">
+        </button>
+    </div>
+
+    <div class="fixed top-10 right-10 z-50 flex gap-4">
+        <button onclick="toggleGallery()" class="bg-white/5 border border-white/10 px-6 py-3 rounded-full hover:bg-white/10 transition-all flex items-center gap-3">
+            <i class="ph ph-armchair text-accent"></i>
+            <span class="text-[10px] uppercase font-bold tracking-widest">Mis Muebles</span>
+        </button>
+    </div>
+
+    <div class="project-switcher">
+        <button onclick="toggleExplorer(true)" class="flex items-center gap-3 bg-white/5 border border-white/10 px-4 py-2 rounded-full hover:bg-white/10 transition-all group">
+            <span id="current-project-name" class="text-[10px] uppercase tracking-[0.3em] font-bold text-accent">Selecciona Proyecto</span>
+            <i class="ph ph-caret-down text-accent group-hover:translate-y-0.5 transition-transform"></i>
+        </button>
+    </div>
+
+    <div class="fixed top-28 right-10 z-[120] text-right flex flex-col items-end gap-4">
+        <button id="toggle-voice" class="w-11 h-11 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-all">
+            <i id="voice-icon" class="ph ph-speaker-high text-accent text-xl"></i>
+        </button>
+        <div>
+            <p class="intel-badge">Closing Probability</p>
+            <p id="ui-score" class="font-serif italic text-4xl text-white">--</p>
+        </div>
+    </div>
+
+    <!-- TOOLBAR -->
+    <div class="editor-toolbar">
+        <div id="tool-pan" class="tool-btn active" onclick="setTool('pan')">
+            <i class="ph ph-arrows-out-cardinal text-xl"></i>
+        </div>
+        <div id="tool-paint" class="tool-btn" onclick="setTool('paint')">
+            <i class="ph ph-paint-brush-broad text-xl"></i>
+        </div>
+        <div class="tool-btn" onclick="clearCanvas()">
+            <i class="ph ph-trash text-xl"></i>
+        </div>
+        <div class="h-px bg-white/10 my-2"></div>
+        <div class="tool-btn text-accent" onclick="document.getElementById('file-upload').click()">
+            <i class="ph ph-plus-circle text-2xl"></i>
+            <input type="file" id="file-upload" class="hidden" accept="image/*" multiple onchange="uploadFurniture(event)">
+        </div>
+    </div>
+
+    <!-- BOTÓN APLICAR -->
+    <div id="apply-ia-wrap" class="fixed bottom-[13rem] left-1/2 -translate-x-1/2 z-[130]">
+        <button id="apply-ia-btn" onclick="processIA()" class="apply-btn flex items-center gap-3">
+            <i class="ph-fill ph-sparkle text-xl"></i>
+            Generar Espacio con IA
+        </button>
+    </div>
+
+    <!-- SIDE PANEL GALERIA -->
+    <div id="side-gallery" class="side-panel">
+        <div class="p-8 border-b border-white/10">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="font-serif italic text-3xl text-white">Muebles</h3>
+                <button onclick="toggleGallery()" class="text-gray-500 hover:text-white transition-colors">
+                    <i class="ph ph-x text-2xl"></i>
+                </button>
+            </div>
+            <button onclick="document.getElementById('file-upload').click()" class="w-full py-4 bg-accent/10 border border-accent/30 rounded-2xl text-accent hover:bg-accent hover:text-black transition-all text-[10px] font-bold uppercase tracking-[0.2em]">
+                + Subir tus muebles o elementos
+            </button>
+        </div>
+        
+        <div id="furniture-list" class="gallery-grid">
+            <!-- Items se cargan dinámicamente -->
+        </div>
+
+        <div class="mt-auto p-8 border-t border-white/5 bg-black/20">
+            <p class="text-[10px] text-gray-500 leading-relaxed italic">
+                Tip: Selecciona un mueble y pinta la zona exacta del render donde quieres que la IA lo posicione.
+            </p>
+        </div>
+    </div>
+
+    <!-- LOADER IA -->
+    <div id="ai-loader" class="ai-loader">
+        <div class="w-20 h-20 border-t-2 border-accent rounded-full animate-spin mb-8"></div>
+        <h2 class="font-serif italic text-4xl text-white">Procesando Mapas de Color...</h2>
+        <p class="text-gray-500 text-xs uppercase tracking-[0.4em] mt-4">La IA está posicionando cada elemento en su zona pintada</p>
+    </div>
+
+    <div id="demo-modal" class="demo-modal">
+        <div class="demo-card">
+            <button onclick="toggleDemoModal(false)" class="absolute top-6 right-6 text-gray-500 hover:text-white transition-colors">
+                <i class="ph ph-x text-2xl"></i>
+            </button>
+            <h2 class="font-serif italic text-3xl text-white mb-2">Solicita tu Demo</h2>
+            <p class="text-gray-500 text-sm mb-8 font-light">Lleva la inteligencia de Iris a tu próximo proyecto inmobiliario.</p>
+
+            <form onsubmit="handleDemoSubmit(event)" id="demo-form" class="space-y-4">
+                <div class="input-group">
+                    <label>Nombre Completo</label>
+                    <input type="text" id="demo-name" required placeholder="Tu nombre...">
+                </div>
+                <div class="input-group">
+                    <label>Email Corporativo</label>
+                    <input type="email" id="demo-email" required placeholder="tu@empresa.com">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 pt-4">
+                    <button type="submit" class="bg-accent text-black font-bold py-4 rounded-xl uppercase tracking-widest text-[10px] hover:bg-white transition-all shadow-lg">
+                        Enviar Formulario
+                    </button>
+                    <button type="button" onclick="openWspDemo()" class="bg-green-500/10 border border-green-500/30 text-green-400 font-bold py-4 rounded-xl uppercase tracking-widest text-[10px] hover:bg-green-500 hover:text-black transition-all">
+                        WhatsApp Directo
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="entry-choice-modal" class="demo-modal">
+        <div class="demo-card">
+            <div class="absolute top-6 left-6 inline-flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-2 py-1">
+                <button id="entry-lang-en" type="button" class="text-[10px] font-bold tracking-widest text-white">EN</button>
+                <span class="text-white/20 text-[10px]">|</span>
+                <button id="entry-lang-es" type="button" class="text-[10px] font-bold tracking-widest text-white/40 hover:text-white/80 transition-colors">ES</button>
+            </div>
+            <button onclick="toggleEntryModal(false)" class="absolute top-6 right-6 text-gray-500 hover:text-white transition-colors">
+                <i class="ph ph-x text-2xl"></i>
+            </button>
+            <h2 id="entry-title" class="font-serif italic text-3xl text-white mb-2">How would you like to continue?</h2>
+            <p id="entry-subtitle" class="text-gray-500 text-sm mb-8 font-light">Choose between a guided demo with our team or generating your own AI renders right now.</p>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                <button id="entry-demo-btn" type="button" onclick="chooseEntryPath('demo')" class="bg-accent text-black font-bold py-4 rounded-xl uppercase tracking-widest text-[10px] hover:bg-white transition-all shadow-lg">
+                    Request Demo
+                </button>
+                <button id="entry-render-btn" type="button" onclick="chooseEntryPath('render')" class="bg-tech/10 border border-tech/40 text-tech font-bold py-4 rounded-xl uppercase tracking-widest text-[10px] hover:bg-tech hover:text-white transition-all">
+                    Generate Renders
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="project-explorer" class="project-explorer">
+        <div class="project-column" onclick="selectProject('mirador')">
+            <img src="https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?q=80&w=2000" alt="Mirador">
+            <div class="project-info-overlay">
+                <p class="project-tagline">Santiago, Chile</p>
+                <h3 class="project-title">Mirador Suite</h3>
+            </div>
+        </div>
+
+        <div class="project-column" onclick="selectProject('ocean')">
+            <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=2000" alt="Ocean">
+            <div class="project-info-overlay">
+                <p class="project-tagline">Gold Coast, Australia</p>
+                <h3 class="project-title">Ocean Front</h3>
+            </div>
+        </div>
+
+        <div class="project-column" onclick="selectProject('sky')">
+            <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2000" alt="Sky">
+            <div class="project-info-overlay">
+                <p class="project-tagline">Delaware, USA</p>
+                <h3 class="project-title">Sky Tower</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="chat-dock">
+        <div class="chat-mobile-actions">
+            <a href="https://impactrenderstudios.com/simulador-ia-render-con-ia.html" target="_blank" class="mini-fab ai">
+                <i class="ph-fill ph-magic-wand text-sm"></i>
+                <span>Genera con IA</span>
+            </a>
+            <button type="button" class="mini-fab demo" onclick="toggleDemoModal(true)">
+                <i class="ph-fill ph-rocket-launch text-sm"></i>
+                <span>Pide Demo</span>
+            </button>
+        </div>
+
+        <div class="flex items-center justify-between border-b border-white/5 pb-3">
+            <div class="flex items-center gap-2">
+                <div id="status-pulse" class="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"></div>
+                <span class="text-[9px] font-bold uppercase tracking-widest text-gray-500">IRIS: Guided Sales Intelligence</span>
+                <div id="voice-waves" class="voice-indicator">
+                    <span></span><span></span><span></span><span></span>
+                </div>
+            </div>
+            <span id="ui-location" class="text-[8px] uppercase tracking-tighter text-gray-400 font-mono">Modo Libre</span>
+        </div>
+
+        <div id="iris-message">
+            <p class="font-serif italic text-lg md:text-xl text-white/95 leading-tight transition-opacity duration-500" style="opacity: 1;">
+                Sube tu render base o selecciona un proyecto para empezar.
+            </p>
+        </div>
+
+        <div id="options-grid" class="flex gap-2 flex-wrap mb-1"></div>
+
+        <div class="chat-input-wrapper mt-1">
+            <input type="text" id="user-input" placeholder="Pregunta a Iris o solicita verte ahí..." autocomplete="off">
+            <input type="file" id="avatar-upload" class="hidden" accept="image/*">
+            <button onclick="document.getElementById('avatar-upload').click()" class="mr-2 text-gray-500 hover:text-accent transition-colors" type="button">
+                <i class="ph ph-camera text-xl"></i>
+            </button>
+            <button onclick="handleUserInput()" class="send-btn" type="button">
+                <i class="ph-bold ph-paper-plane-right"></i>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const runtimeParams = new URLSearchParams(window.location.search || '');
+        const API_BASE = (runtimeParams.get('apiBase') || 'https://www.api.thefutureagencyai.com').replace(/\/$/, '');
+        const PLACEMENT_PROJECT_KEY = 'placement_public_project_id';
+        const PLACEMENT_GUEST_FP_KEY = 'placement_public_guest_fp';
+        const DEFAULT_BASE_IMAGE_URL = 'https://images.unsplash.com/photo-1600607687920-4e2a09c15468?q=80&w=2000';
+
+        const canvas = document.getElementById('paint-canvas');
+        const ctx = canvas.getContext('2d');
+        const brushPreview = document.getElementById('brush-preview');
+        const bgMain = document.getElementById('bg-main');
+        const applyBtn = document.getElementById('apply-ia-btn');
+        const activeItemLabel = document.getElementById('active-item-label');
+        const gallery = document.getElementById('side-gallery');
+        const loader = document.getElementById('ai-loader');
+        const avatarProj = document.getElementById('user-avatar-projection');
+        const messageEl = document.querySelector('#iris-message p');
+        const optionsGrid = document.getElementById('options-grid');
+        const userInput = document.getElementById('user-input');
+        const explorer = document.getElementById('project-explorer');
+        const voiceIcon = document.getElementById('voice-icon');
+        const voiceWaves = document.getElementById('voice-waves');
+        const demoModal = document.getElementById('demo-modal');
+        const entryChoiceModal = document.getElementById('entry-choice-modal');
+        const entryLangEn = document.getElementById('entry-lang-en');
+        const entryLangEs = document.getElementById('entry-lang-es');
+        const entryTitle = document.getElementById('entry-title');
+        const entrySubtitle = document.getElementById('entry-subtitle');
+        const entryDemoBtn = document.getElementById('entry-demo-btn');
+        const entryRenderBtn = document.getElementById('entry-render-btn');
+
+        let painting = false;
+        let currentTool = 'pan';
+        let furnitureItems = [];
+        let selectedItemIndex = -1;
+        let currentProjectId = Number(localStorage.getItem(PLACEMENT_PROJECT_KEY) || 0) || null;
+        let placementGuestFp = localStorage.getItem(PLACEMENT_GUEST_FP_KEY) || '';
+        let accessGrant = { token: '', nonce: '', expiresAt: 0 };
+        let baseRenderDataUrl = '';
+        let currentBaseImageUrl = DEFAULT_BASE_IMAGE_URL;
+        let isGenerating = false;
+        let voiceEnabled = true;
+        let selectedProjKey = '';
+        let isReplying = false;
+        let entryModalLang = 'en';
+        const apiKey = '';
+
+        const projects = {
+            mirador: {
+                name: "Mirador Suite",
+                scenes: {
+                    start: {
+                        img: "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?q=80&w=2000",
+                        text: "Mirador Suite. Un desarrollo de lujo. ¿Deseas ver el Living o el Master Bedroom?",
+                        options: [{ label: "Living Social", next: "living" }, { label: "Master Bedroom", next: "bedroom" }],
+                        score: "15%", location: "Penthouse / View A"
+                    },
+                    living: {
+                        img: "https://images.unsplash.com/photo-1600607687920-4e2a09c15468?q=80&w=2000",
+                        text: "Diseno abierto y luz natural. ¿Te gustaria ver como te verias habitando este espacio?",
+                        options: [{ label: "Si, quiero verme ahi", next: "upload" }, { label: "Pide una Demo Real", next: "demo" }],
+                        score: "45%", location: "Living Room / Organic"
+                    },
+                    bedroom: {
+                        img: "https://images.unsplash.com/photo-1540518614846-7eded433c457?q=80&w=2000",
+                        text: "Master Bedroom de alto nivel. ¿Hablamos de rentabilidad y precios?",
+                        options: [{ label: "Ver ROI", next: "roi" }, { label: "Pide tu Demo", next: "demo" }],
+                        score: "70%", location: "Bedroom / View B"
+                    },
+                    roi: {
+                        img: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?q=80&w=2000",
+                        text: "Mirador Suite proyecta una narrativa premium ideal para acelerar cierres y elevar ticket promedio.",
+                        options: [{ label: "Pide tu Demo", next: "demo" }, { label: "Volver al Living", next: "living" }],
+                        score: "82%", location: "ROI / Premium Lead"
+                    }
+                }
+            },
+            ocean: {
+                name: "Ocean Front",
+                scenes: {
+                    start: {
+                        img: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=2000",
+                        text: "Ocean Front. Vistas al Pacifico. ¿Vemos la terraza infinita o la cocina?",
+                        options: [{ label: "Terraza", next: "terrace" }, { label: "Cocina", next: "kitchen" }],
+                        score: "20%", location: "Sea Level / High"
+                    },
+                    terrace: {
+                        img: "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?q=80&w=2000",
+                        text: "La terraza funciona como pieza de venta emocional. ¿Quieres verte ahi o revisar amenities?",
+                        options: [{ label: "Quiero verme ahi", next: "upload" }, { label: "Amenities", next: "amenities" }],
+                        score: "52%", location: "Terrace / Ocean Deck"
+                    },
+                    kitchen: {
+                        img: "https://images.unsplash.com/photo-1484154218962-a197022b5858?q=80&w=2000",
+                        text: "La cocina integra terminaciones premium y vista abierta. ¿Profundizamos en materiales o agenda demo?",
+                        options: [{ label: "Materiales", next: "materials" }, { label: "Pide Demo", next: "demo" }],
+                        score: "49%", location: "Kitchen / Signature Finish"
+                    },
+                    amenities: {
+                        img: "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?q=80&w=2000",
+                        text: "El proyecto combina lifestyle costero con una propuesta comercial de alta conversion.",
+                        options: [{ label: "Pide Demo", next: "demo" }, { label: "Volver", next: "start" }],
+                        score: "68%", location: "Amenities / Lifestyle"
+                    },
+                    materials: {
+                        img: "https://images.unsplash.com/photo-1484154218962-a197022b5858?q=80&w=2000",
+                        text: "Las terminaciones aportan una percepcion de lujo consistente para el cierre comercial.",
+                        options: [{ label: "Ver Terraza", next: "terrace" }, { label: "Pide Demo", next: "demo" }],
+                        score: "64%", location: "Kitchen / Materiality"
+                    }
+                }
+            },
+            sky: {
+                name: "Sky Tower",
+                scenes: {
+                    start: {
+                        img: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2000",
+                        text: "Sky Tower. Una experiencia vertical premium en entorno urbano. ¿Quieres revisar amenities o propuesta de inversion?",
+                        options: [{ label: "Amenities", next: "amenities" }, { label: "Inversion", next: "investment" }],
+                        score: "24%", location: "Skyline / High Rise"
+                    },
+                    amenities: {
+                        img: "https://images.unsplash.com/photo-1494526585095-c41746248156?q=80&w=2000",
+                        text: "El proyecto prioriza bienestar, vistas y experiencia integral para residentes.",
+                        options: [{ label: "Pide tu Demo", next: "demo" }, { label: "Ver Inversion", next: "investment" }],
+                        score: "58%", location: "Amenities / Lifestyle"
+                    },
+                    investment: {
+                        img: "https://images.unsplash.com/photo-1460317442991-0ec209397118?q=80&w=2000",
+                        text: "Sky Tower combina ubicacion estrategica y ticket premium para perfil de inversionista.",
+                        options: [{ label: "Pide tu Demo", next: "demo" }, { label: "Amenities", next: "amenities" }],
+                        score: "74%", location: "Investment / Urban Core"
+                    }
+                }
+            }
+        };
+
+        if (!placementGuestFp) {
+            placementGuestFp = (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function')
+                ? crypto.randomUUID()
+                : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+            localStorage.setItem(PLACEMENT_GUEST_FP_KEY, placementGuestFp);
+        }
+
+        const colorPalette = ['#FF3B30', '#34C759', '#007AFF', '#FF9500', '#AF52DE', '#5AC8FA', '#FFCC00'];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        function isAccessGrantValid() {
+            return !!accessGrant.token && !!accessGrant.nonce && Number(accessGrant.expiresAt || 0) > (Date.now() + 10 * 1000);
+        }
+
+        async function ensureAccessGrant(forceRefresh = false) {
+            if (!forceRefresh && isAccessGrantValid()) {
+                return accessGrant;
+            }
+
+            const response = await fetch(`${API_BASE}/api/public/simulator/init`, {
+                method: 'GET',
+                headers: {
+                    'x-guest-fp': placementGuestFp
+                }
+            });
+            const payload = await response.json().catch(() => ({}));
+            if (!response.ok || payload.success === false) {
+                throw new Error(payload?.error?.message || payload?.message || `HTTP ${response.status}`);
+            }
+            const data = payload?.data ?? payload;
+            accessGrant = {
+                token: String(data?.accessToken || ''),
+                nonce: String(data?.nonce || ''),
+                expiresAt: Number(data?.expiresAt || 0)
+            };
+            if (!accessGrant.token || !accessGrant.nonce || !accessGrant.expiresAt) {
+                throw new Error('Respuesta de token incompleta.');
+            }
+            return accessGrant;
+        }
+
+        async function apiRequest(path, options = {}) {
+            const endpointUrl = `${API_BASE}${path}`;
+            const send = async (retry = false) => {
+                let accessHeaders = {};
+                if (options.requireAccess) {
+                    const grant = await ensureAccessGrant(retry);
+                    accessHeaders = {
+                        'x-sim-access-token': grant.token,
+                        'x-sim-access-nonce': grant.nonce
+                    };
+                }
+
+                const response = await fetch(endpointUrl, {
+                    method: options.method || 'GET',
+                    headers: {
+                        ...(options.body ? { 'Content-Type': 'application/json' } : {}),
+                        'x-guest-fp': placementGuestFp,
+                        ...accessHeaders,
+                        ...(options.headers || {})
+                    },
+                    body: options.body ? JSON.stringify(options.body) : undefined
+                });
+                const payload = await response.json().catch(() => ({}));
+                if ((response.status === 401 || response.status === 403 || response.status === 409) && options.requireAccess && !retry) {
+                    accessGrant = { token: '', nonce: '', expiresAt: 0 };
+                    return send(true);
+                }
+                if (!response.ok || payload.success === false) {
+                    throw new Error(payload?.error?.message || payload?.message || `HTTP ${response.status}`);
+                }
+                return payload?.data ?? payload;
+            };
+
+            return send(false);
+        }
+
+        async function ensurePlacementProject() {
+            if (currentProjectId && Number.isInteger(currentProjectId) && currentProjectId > 0) {
+                return currentProjectId;
+            }
+            const created = await apiRequest('/api/public/simulator/projects', {
+                method: 'POST',
+                body: {
+                    source: 'simulador_2.html',
+                    name: 'Placement Session'
+                }
+            });
+            currentProjectId = Number(created?.projectId || 0) || null;
+            if (!currentProjectId) {
+                throw new Error('No se pudo crear projectId publico.');
+            }
+            localStorage.setItem(PLACEMENT_PROJECT_KEY, String(currentProjectId));
+            return currentProjectId;
+        }
+
+        function resizeAndResetInput(input) {
+            if (input) {
+                input.value = '';
+            }
+        }
+
+        function pcmToWav(pcmBase64, sampleRate = 24000) {
+            const byteCharacters = atob(pcmBase64);
+            const dataSize = byteCharacters.length;
+            const buffer = new ArrayBuffer(44 + dataSize);
+            const view = new DataView(buffer);
+            const writeString = (offset, string) => {
+                for (let i = 0; i < string.length; i += 1) view.setUint8(offset + i, string.charCodeAt(i));
+            };
+            writeString(0, 'RIFF');
+            view.setUint32(4, 36 + dataSize, true);
+            writeString(8, 'WAVE');
+            writeString(12, 'fmt ');
+            view.setUint32(16, 16, true);
+            view.setUint16(20, 1, true);
+            view.setUint16(22, 1, true);
+            view.setUint32(24, sampleRate, true);
+            view.setUint32(28, sampleRate * 2, true);
+            view.setUint16(32, 2, true);
+            view.setUint16(34, 16, true);
+            writeString(36, 'data');
+            view.setUint32(40, dataSize, true);
+            for (let i = 0; i < dataSize; i += 1) view.setUint8(44 + i, byteCharacters.charCodeAt(i));
+            return new Blob([buffer], { type: 'audio/wav' });
+        }
+
+        async function speakText(text) {
+            if (!voiceEnabled || !apiKey) return;
+            voiceWaves.classList.add('active');
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: `Di de forma elegante y sofisticada: ${text}` }] }],
+                        generationConfig: {
+                            responseModalities: ['AUDIO'],
+                            speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Kore' } } }
+                        },
+                        model: 'gemini-2.5-flash-preview-tts'
+                    })
+                });
+                const result = await response.json();
+                const audioPart = result?.candidates?.[0]?.content?.parts?.[0]?.inlineData;
+                if (!audioPart?.data) {
+                    throw new Error('Respuesta de audio vacia');
+                }
+                const sampleRate = parseInt(audioPart.mimeType?.match(/rate=(\d+)/)?.[1] || '24000', 10);
+                const audioBlob = pcmToWav(audioPart.data, sampleRate);
+                const audioUrl = URL.createObjectURL(audioBlob);
+                const audioPlayer = new Audio(audioUrl);
+                audioPlayer.onended = () => {
+                    voiceWaves.classList.remove('active');
+                    URL.revokeObjectURL(audioUrl);
+                };
+                await audioPlayer.play();
+            } catch (error) {
+                console.warn('[IRIS Chat UI] TTS disabled', { message: error?.message || 'tts_error' });
+                voiceWaves.classList.remove('active');
+            }
+        }
+
+        function toggleExplorer(open) {
+            explorer.classList.toggle('open', open);
+        }
+
+        function toggleDemoModal(show) {
+            demoModal.classList.toggle('visible', show);
+        }
+
+        function toggleEntryModal(show) {
+            entryChoiceModal.classList.toggle('visible', show);
+        }
+
+        function applyEntryModalLang(lang) {
+            entryModalLang = lang === 'es' ? 'es' : 'en';
+            const isEs = entryModalLang === 'es';
+            entryTitle.textContent = isEs ? '¿Como quieres continuar?' : 'How would you like to continue?';
+            entrySubtitle.textContent = isEs
+                ? 'Elige si quieres una demo guiada con el equipo o generar tus propios renders con IA ahora mismo.'
+                : 'Choose between a guided demo with our team or generating your own AI renders right now.';
+            entryDemoBtn.textContent = isEs ? 'Pide tu Demo' : 'Request Demo';
+            entryRenderBtn.textContent = isEs ? 'Genera tus renders' : 'Generate Renders';
+            entryLangEn.classList.toggle('text-white', !isEs);
+            entryLangEn.classList.toggle('text-white/40', isEs);
+            entryLangEs.classList.toggle('text-white', isEs);
+            entryLangEs.classList.toggle('text-white/40', !isEs);
+        }
+
+        function chooseEntryPath(path) {
+            toggleEntryModal(false);
+            if (path === 'demo') {
+                toggleDemoModal(true);
+                return;
+            }
+            if (path === 'render') {
+                window.open('https://impactrenderstudios.com/simulador-ia-render-con-ia.html', '_blank');
+            }
+        }
+
+        function handleDemoSubmit(event) {
+            event.preventDefault();
+            const name = document.getElementById('demo-name').value;
+            alert(`Gracias ${name}. Hemos recibido tu solicitud. Te contactaremos en breve.`);
+            toggleDemoModal(false);
+            event.target.reset();
+        }
+
+        function openWspDemo() {
+            const project = projects[selectedProjKey]?.name || 'vuestro proyecto';
+            const text = encodeURIComponent(`Hola Impact Studios, me gustaria solicitar una demo personalizada para el proyecto ${project}.`);
+            window.open(`https://wa.me/56945254948?text=${text}`, '_blank');
+        }
+
+        async function notifyIrisUsage(eventType, extra = {}) {
+            try {
+                await fetch(`${API_BASE}/api/public/simulator/usage-notify`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        eventType,
+                        source: 'simulador_2.html',
+                        email: null,
+                        ...extra
+                    })
+                });
+            } catch (_error) {
+                // no-op
+            }
+        }
+
+        async function fetchProjectReply(projectId, message) {
+            const params = new URLSearchParams({
+                projectId: String(projectId || '').trim().toLowerCase(),
+                message: String(message || '').trim()
+            });
+            const response = await fetch(`${API_BASE}/api/public/iris-chat/reply?${params.toString()}`);
+            const payload = await response.json().catch(() => null);
+            if (!response.ok || !payload?.success) {
+                throw new Error(payload?.error?.message || `HTTP ${response.status}`);
+            }
+            return payload.data || {};
+        }
+
+        function resetAvatar() {
+            avatarProj.style.opacity = '0';
+            setTimeout(() => { avatarProj.src = ''; }, 600);
+        }
+
+        function initializeLandingState() {
+            selectedProjKey = '';
+            currentBaseImageUrl = DEFAULT_BASE_IMAGE_URL;
+            baseRenderDataUrl = '';
+            bgMain.style.backgroundImage = `url('${DEFAULT_BASE_IMAGE_URL}')`;
+            document.getElementById('current-project-name').textContent = 'Selecciona Proyecto';
+            document.getElementById('ui-score').textContent = '--';
+            document.getElementById('ui-location').textContent = 'Modo Libre';
+            messageEl.style.opacity = '1';
+            messageEl.textContent = 'Sube tu render base o selecciona un proyecto para empezar.';
+            optionsGrid.innerHTML = '';
+            resetAvatar();
+            clearCanvas();
+        }
+
+        function changeEnvironment(key) {
+            const project = projects[selectedProjKey];
+            if (!project) return;
+            const scene = project.scenes[key] || project.scenes.start;
+            currentBaseImageUrl = scene.img;
+            baseRenderDataUrl = '';
+            bgMain.style.backgroundImage = `url('${scene.img}')`;
+            document.getElementById('ui-score').textContent = scene.score;
+            document.getElementById('ui-location').textContent = scene.location;
+
+            messageEl.style.opacity = '0';
+            setTimeout(() => {
+                messageEl.textContent = scene.text;
+                messageEl.style.opacity = '1';
+                speakText(scene.text);
+            }, 250);
+
+            optionsGrid.innerHTML = '';
+            scene.options.forEach((opt) => {
+                const button = document.createElement('button');
+                button.className = 'option-pill animate-fade-in';
+                button.textContent = opt.label;
+                button.onclick = () => {
+                    if (opt.next === 'upload') {
+                        document.getElementById('avatar-upload').click();
+                    } else if (opt.next === 'demo') {
+                        toggleDemoModal(true);
+                    } else {
+                        changeEnvironment(opt.next);
+                    }
+                };
+                optionsGrid.appendChild(button);
+            });
+            clearCanvas();
+        }
+
+        function selectProject(id) {
+            if (!projects[id]) return;
+            selectedProjKey = id;
+            document.getElementById('current-project-name').textContent = projects[id].name;
+            resetAvatar();
+            changeEnvironment('start');
+            toggleExplorer(false);
+        }
+
+        async function handleUserInput() {
+            const text = userInput.value.trim();
+            if (!text || isReplying) return;
+            if (!selectedProjKey) {
+                messageEl.textContent = 'Primero selecciona un proyecto para activar el chat guiado.';
+                toggleExplorer(true);
+                return;
+            }
+            userInput.value = '';
+            isReplying = true;
+            optionsGrid.innerHTML = '';
+            messageEl.style.opacity = '0.5';
+
+            try {
+                await notifyIrisUsage('iris_chat_message', {
+                    mode: 'chat',
+                    status: 'requested',
+                    project: selectedProjKey
+                });
+                const data = await fetchProjectReply(selectedProjKey, text);
+                const reply = String(data?.reply || '').trim() || 'Puedo ayudarte con este proyecto. Si quieres, te explico su propuesta de valor y siguiente paso comercial.';
+                messageEl.textContent = reply;
+                messageEl.style.opacity = '1';
+                speakText(reply);
+                await notifyIrisUsage('iris_chat_message', {
+                    mode: 'chat',
+                    status: 'success',
+                    project: selectedProjKey
+                });
+            } catch (error) {
+                const fallbackReply = 'Ahora mismo no puedo responder con el motor de proyecto. Si quieres, puedo derivarte a una demo comercial.';
+                messageEl.textContent = fallbackReply;
+                messageEl.style.opacity = '1';
+                console.warn('[IRIS Chat UI] backend reply failed', { message: error?.message || 'unknown_error' });
+                await notifyIrisUsage('iris_chat_error', {
+                    mode: 'chat',
+                    status: 'error',
+                    project: selectedProjKey
+                });
+            } finally {
+                isReplying = false;
+            }
+        }
+
+        function setTool(tool) {
+            currentTool = tool;
+            document.querySelectorAll('.tool-btn').forEach((button) => button.classList.remove('active'));
+            const btn = document.getElementById(`tool-${tool}`);
+            if (btn) btn.classList.add('active');
+
+            if (tool === 'paint') {
+                canvas.classList.add('active');
+                brushPreview.style.display = 'block';
+            } else {
+                canvas.classList.remove('active');
+                brushPreview.style.display = 'none';
+            }
+        }
+
+        canvas.addEventListener('mousedown', (event) => {
+            if (currentTool !== 'paint' || selectedItemIndex === -1) return;
+            painting = true;
+            draw(event);
+        });
+        canvas.addEventListener('mouseup', () => {
+            painting = false;
+            ctx.beginPath();
+            checkState();
+        });
+        canvas.addEventListener('mouseleave', () => {
+            painting = false;
+            ctx.beginPath();
+        });
+        canvas.addEventListener('mousemove', (event) => {
+            brushPreview.style.left = `${event.clientX}px`;
+            brushPreview.style.top = `${event.clientY}px`;
+            if (!painting) return;
+            draw(event);
+        });
+
+        function draw(event) {
+            const currentItem = furnitureItems[selectedItemIndex];
+            if (!currentItem) return;
+            ctx.lineWidth = 50;
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = currentItem.color;
+            ctx.lineTo(event.clientX, event.clientY);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(event.clientX, event.clientY);
+        }
+
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            checkState();
+        }
+
+        function uploadBaseRender(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (loadEvent) => {
+                baseRenderDataUrl = String(loadEvent.target?.result || '');
+                currentBaseImageUrl = '';
+                bgMain.style.backgroundImage = `url('${baseRenderDataUrl}')`;
+                const triggerButton = event.target.closest('button');
+                if (triggerButton) {
+                    triggerButton.classList.remove('animate-attention-pulse');
+                }
+                clearCanvas();
+                resizeAndResetInput(event.target);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function uploadFurniture(event) {
+            const files = Array.from(event.target.files || []);
+            if (!files.length) return;
+            files.forEach((file) => {
+                const reader = new FileReader();
+                reader.onload = (loadEvent) => {
+                    const color = colorPalette[furnitureItems.length % colorPalette.length];
+                    furnitureItems.push({
+                        id: `${Date.now()}-${Math.random()}`,
+                        src: String(loadEvent.target?.result || ''),
+                        name: file.name.split('.')[0],
+                        color
+                    });
+                    renderFurnitureList();
+                    selectFurniture(furnitureItems.length - 1);
+                };
+                reader.readAsDataURL(file);
+            });
+            if (!gallery.classList.contains('open')) {
+                toggleGallery();
+            }
+            resizeAndResetInput(event.target);
+        }
+
+        function renderFurnitureList() {
+            const list = document.getElementById('furniture-list');
+            list.innerHTML = '';
+            furnitureItems.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = `furniture-card ${selectedItemIndex === index ? 'selected' : ''}`;
+                card.onclick = () => selectFurniture(index);
+                card.innerHTML = `
+                    <img src="${item.src}" class="furniture-thumb" alt="${item.name}">
+                    <div class="flex-1">
+                        <p class="text-[11px] font-bold uppercase tracking-wider text-white mb-1">${item.name}</p>
+                        <div class="flex items-center gap-2">
+                            <div class="color-indicator" style="background-color: ${item.color}"></div>
+                            <span class="text-[9px] text-gray-500 uppercase font-bold">Asignado a este color</span>
+                        </div>
+                    </div>
+                `;
+                list.appendChild(card);
+            });
+        }
+
+        function selectFurniture(index) {
+            selectedItemIndex = index;
+            const item = furnitureItems[index];
+            if (!item) return;
+            activeItemLabel.textContent = `Ubicando: ${item.name}`;
+            activeItemLabel.style.color = item.color;
+            brushPreview.style.borderColor = item.color;
+            renderFurnitureList();
+            setTool('paint');
+        }
+
+        function toggleGallery() {
+            gallery.classList.toggle('open');
+        }
+
+        function checkState() {
+            const hasDrawing = ctx.getImageData(0, 0, canvas.width, canvas.height).data.some((channel) => channel !== 0);
+            applyBtn.style.display = hasDrawing ? 'flex' : 'none';
+            return hasDrawing;
+        }
+
+        function hexToRgb(color) {
+            const normalized = String(color || '').trim().replace('#', '');
+            if (!/^[0-9a-fA-F]{6}$/.test(normalized)) return null;
+            return {
+                r: parseInt(normalized.slice(0, 2), 16),
+                g: parseInt(normalized.slice(2, 4), 16),
+                b: parseInt(normalized.slice(4, 6), 16)
+            };
+        }
+
+        function countPixelsForColor(color, tolerance = 42) {
+            const target = hexToRgb(color);
+            if (!target) return 0;
+            const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+            let count = 0;
+            for (let i = 0; i < data.length; i += 4) {
+                const r = data[i] || 0;
+                const g = data[i + 1] || 0;
+                const b = data[i + 2] || 0;
+                const a = data[i + 3] || 0;
+                const matches =
+                    a > 0 &&
+                    Math.abs(r - target.r) <= tolerance &&
+                    Math.abs(g - target.g) <= tolerance &&
+                    Math.abs(b - target.b) <= tolerance;
+                if (matches) count += 1;
+            }
+            return count;
+        }
+
+        async function processIA() {
+            if (isGenerating) return;
+            if (!furnitureItems.length) {
+                alert('Sube al menos un mueble antes de generar.');
+                return;
+            }
+            const hasPaint = checkState();
+            if (!hasPaint) {
+                alert('Pinta una zona del render para ubicar los muebles.');
+                return;
+            }
+            const maskImageDataUrl = canvas.toDataURL('image/png');
+            const paintedObjects = furnitureItems
+                .map((item) => ({
+                    ...item,
+                    pixelCount: countPixelsForColor(item.color)
+                }))
+                .filter((item) => item.pixelCount > 0);
+
+            if (!paintedObjects.length) {
+                alert('No detectamos zonas pintadas asociadas a tus muebles.');
+                return;
+            }
+
+            isGenerating = true;
+            loader.style.display = 'flex';
+            applyBtn.disabled = true;
+
+            try {
+                const projectId = await ensurePlacementProject();
+                const body = {
+                    projectId,
+                    source: 'simulador_2.html',
+                    language: 'es',
+                    style: 'placement_photoreal',
+                    format: '16/9',
+                    maskImageDataUrl,
+                    placementObjects: paintedObjects.map((item) => ({
+                        name: item.name,
+                        color: item.color,
+                        imageDataUrl: item.src
+                    }))
+                };
+
+                if (baseRenderDataUrl) {
+                    body.baseImageDataUrl = baseRenderDataUrl;
+                } else {
+                    body.baseImageUrl = currentBaseImageUrl;
+                }
+
+                const response = await apiRequest('/api/public/simulator/placement', {
+                    method: 'POST',
+                    requireAccess: true,
+                    body
+                });
+
+                const generatedImage = String(response?.imageDataUrl || response?.imageUrl || '').trim();
+                if (!generatedImage) {
+                    throw new Error('La API no devolvio imagen final.');
+                }
+
+                bgMain.style.backgroundImage = `url('${generatedImage}')`;
+                baseRenderDataUrl = generatedImage.startsWith('data:image/') ? generatedImage : '';
+                currentBaseImageUrl = generatedImage.startsWith('data:image/') ? '' : generatedImage;
+                clearCanvas();
+            } catch (error) {
+                console.error('[PlacementUI] generation error', {
+                    message: error?.message || 'placement_generation_failed'
+                });
+                alert(`No se pudo generar el espacio: ${error.message}`);
+            } finally {
+                loader.style.display = 'none';
+                applyBtn.disabled = false;
+                isGenerating = false;
+            }
+        }
+
+        document.getElementById('toggle-voice').onclick = () => {
+            voiceEnabled = !voiceEnabled;
+            voiceIcon.className = voiceEnabled ? 'ph ph-speaker-high text-accent text-xl' : 'ph ph-speaker-x text-gray-500 text-xl';
+            if (!voiceEnabled) {
+                voiceWaves.classList.remove('active');
+            }
+        };
+
+        document.getElementById('avatar-upload').onchange = function avatarUploadChange() {
+            if (this.files && this.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    messageEl.textContent = 'Integrando tu imagen mediante proyeccion neural...';
+                    speakText(messageEl.textContent);
+                    setTimeout(() => {
+                        avatarProj.src = String(event.target?.result || '');
+                        avatarProj.style.opacity = '1';
+                        messageEl.textContent = 'Te ves increible habitando este espacio. ¿Solicitamos una demo real ahora?';
+                        document.getElementById('ui-score').textContent = '98%';
+                        optionsGrid.innerHTML = '<button onclick="toggleDemoModal(true)" class="option-pill animate-fade-in bg-accent text-black border-none font-bold">Pide tu Demo</button>';
+                        speakText(messageEl.textContent);
+                    }, 1500);
+                };
+                reader.readAsDataURL(this.files[0]);
+            }
+            resizeAndResetInput(this);
+        };
+
+        userInput.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                handleUserInput();
+            }
+        });
+
+        entryLangEn.onclick = () => applyEntryModalLang('en');
+        entryLangEs.onclick = () => applyEntryModalLang('es');
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+        setTool('pan');
+        applyEntryModalLang('en');
+        initializeLandingState();
+    </script>
+</body>
+</html>

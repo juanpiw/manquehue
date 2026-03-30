@@ -1,0 +1,1482 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Impact Studios | IRIS Human Experience</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Outfit -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: {
+                        render: { dark: '#0a0a0a', accent: '#d4af7a' },
+                        technology: { dark: '#020617', accent: '#3b82f6' }
+                    },
+                    animation: {
+                        'scan': 'scan 3s ease-in-out infinite',
+                        'fade-in-up': 'fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                        'spin-slow': 'spin 8s linear infinite',
+                        'gradient-x': 'gradientX 6s ease infinite',
+                    },
+                    keyframes: {
+                        scan: { '0%, 100%': { top: '0%' }, '50%': { top: '100%' } },
+                        fadeInUp: { '0%': { opacity: '0', transform: 'translateY(20px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+                        gradientX: {
+                            '0%, 100%': { 'background-size': '200% 200%', 'background-position': 'left center' },
+                            '50%': { 'background-size': '200% 200%', 'background-position': 'right center' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body, a, button { cursor: none !important; }
+        
+        body { background-color: #050505; color: #f8fafc; overflow-x: hidden; }
+
+        /* Custom Cursor */
+        .cursor-dot {
+            width: 8px; height: 8px; background: #fff; border-radius: 50%;
+            position: fixed; pointer-events: none; z-index: 9999; transform: translate(-50%, -50%);
+            transition: transform 0.1s ease, background 0.3s ease;
+        }
+        .cursor-outline {
+            width: 40px; height: 40px; border: 1px solid rgba(255,255,255,0.3); border-radius: 50%;
+            position: fixed; pointer-events: none; z-index: 9998; transform: translate(-50%, -50%);
+            transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        body.hovering-button .cursor-dot { background: #d4af7a; transform: translate(-50%, -50%) scale(1.5); }
+        body.hovering-button .cursor-outline { border-color: #d4af7a; width: 60px; height: 60px; background: rgba(212, 175, 122, 0.1); }
+
+        /* Noise Effect */
+        .noise {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+            opacity: 0.04; pointer-events: none; z-index: 50;
+        }
+
+        .glass-panel {
+            background: rgba(15, 15, 15, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-logo-text {
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: 700;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            font-size: 0.65rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 999px;
+            padding: 0.5rem 1rem;
+            transition: all 0.25s ease;
+            pointer-events: auto;
+        }
+        .nav-logo-text:hover {
+            color: #d4af7a;
+            border-color: rgba(212, 175, 122, 0.6);
+            background: rgba(212, 175, 122, 0.14);
+        }
+
+        .composition-container {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            background: #000;
+            border-radius: 2rem;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .parallax-bg {
+            transition: transform 0.1s linear;
+            will-change: transform;
+        }
+
+        #person-overlay {
+            position: absolute;
+            bottom: 5%;
+            left: 50%;
+            transform: translateX(-50%);
+            height: 75%;
+            z-index: 20;
+            filter: drop-shadow(0 20px 40px rgba(0,0,0,0.7));
+            pointer-events: none;
+            transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .loader-line {
+            height: 1px;
+            width: 100%;
+            background: rgba(255,255,255,0.05);
+            position: relative;
+            overflow: hidden;
+        }
+        .loader-line::after {
+            content: '';
+            position: absolute;
+            left: -50%;
+            height: 100%;
+            width: 50%;
+            background: #d4af7a;
+            animation: loading 2s infinite linear;
+        }
+        @keyframes loading {
+            0% { left: -50%; }
+            100% { left: 100%; }
+        }
+
+        .wsp-button {
+            background: #25D366;
+            box-shadow: 0 10px 30px rgba(37, 211, 102, 0.2);
+        }
+
+        .lang-switch-btn {
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            transition: all 0.3s ease;
+        }
+
+        .step-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .step-card:hover {
+            background: rgba(212, 175, 122, 0.05);
+            border-color: rgba(212, 175, 122, 0.2);
+            transform: translateY(-5px);
+        }
+
+        .step-number {
+            font-size: 4rem;
+            font-weight: 900;
+            line-height: 1;
+            opacity: 0.05;
+            position: absolute;
+            right: 1.5rem;
+            top: 1rem;
+            color: white;
+        }
+
+        @media (max-width: 1023px) {
+            body, a, button { cursor: auto !important; }
+            .cursor-dot, .cursor-outline { display: none; }
+        }
+    </style>
+</head>
+<body class="antialiased select-none">
+
+    <div class="cursor-dot"></div>
+    <div class="cursor-outline"></div>
+    <div class="noise"></div>
+
+    <!-- BANNER PROMOCIONAL AGENCIA DEL FUTURO -->
+    <div class="fixed top-0 left-0 right-0 z-[200] bg-gradient-to-r from-render-dark via-technology-accent to-purple-900 animate-gradient-x border-b border-white/10 shadow-2xl">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col sm:flex-row items-center justify-center gap-3 md:gap-6">
+            <div class="flex items-center gap-2">
+                <span class="flex h-2 w-2 relative">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-render-accent opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-render-accent"></span>
+                </span>
+                <p class="text-white text-[11px] md:text-sm font-bold tracking-wide uppercase italic">
+                    <span data-en="Elevate your projects to the next level" data-es="Eleva tus proyectos al siguiente nivel">Eleva tus proyectos al siguiente nivel</span>
+                </p>
+            </div>
+            <a href="https://www.thefutureagencyai.com/landing-promocional-03" target="_blank" rel="noopener noreferrer" class="interactive-el bg-white text-black px-5 py-1.5 rounded-full text-[10px] md:text-xs font-black uppercase tracking-widest hover:bg-render-accent transition-all transform hover:scale-105 shadow-xl flex items-center gap-2">
+                <span data-en="Visit the Future Agency" data-es="Visitar Agencia del Futuro">Visitar Agencia del Futuro</span>
+                <i class="ph-bold ph-arrow-square-out text-sm"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- Impact Navigation -->
+    <header class="fixed top-[52px] left-0 w-full z-[100] p-6 md:p-10 flex justify-between items-center mix-blend-difference">
+        <a href="https://impactrenderstudios.com/impact-render.html" target="_blank" rel="noopener noreferrer" class="flex items-center gap-4 interactive-el">
+            <img src="https://impactrenderstudios.com/images/logo.png" alt="Logo" class="w-10 invert brightness-0">
+            <div class="hidden md:flex flex-col">
+                <span class="text-white font-bold tracking-[0.3em] uppercase text-xs">Impact Studios</span>
+                <span class="text-white/40 text-[9px] uppercase tracking-[0.4em] font-medium" data-i18n="nav-subtitle">Visual AI Ecosystem</span>
+            </div>
+        </a>
+        <div class="flex items-center gap-3">
+            <!-- Language Switcher -->
+            <div class="flex items-center bg-white/5 border border-white/10 rounded-full px-1 py-1 mr-2 pointer-events-auto interactive-el">
+                <button id="lang-es" class="lang-switch-btn px-3 py-1 rounded-full text-white bg-white/10">ES</button>
+                <button id="lang-en" class="lang-switch-btn px-3 py-1 rounded-full text-white/40 hover:text-white">EN</button>
+            </div>
+
+            <a href="https://impactrenderstudios.com/iris-chat-ai.html" target="_blank" rel="noopener noreferrer" class="nav-logo-text interactive-el">IRIS HUMAN IA</a>
+            <a href="https://api.whatsapp.com/send/?phone=56945254948&text&type=phone_number&app_absent=0" target="_blank" rel="noopener noreferrer" class="wsp-button text-white px-5 py-2.5 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-2 interactive-el">
+                <i class="ph-fill ph-whatsapp-logo text-base"></i>
+                <span data-i18n="wsp-btn">WhatsApp B2B</span>
+            </a>
+        </div>
+    </header>
+
+    <main class="pt-40 pb-20 px-6 max-w-7xl mx-auto relative z-10">
+        
+        <!-- Hero Section -->
+        <div class="text-center mb-20 animate-fade-in-up">
+            <div class="inline-block px-4 py-1.5 border border-white/10 rounded-full mb-6 bg-white/5 backdrop-blur-md">
+                <span class="text-[9px] font-black uppercase tracking-[0.4em] text-render-accent" data-i18n="hero-tag">Iniciativa Marketing Directo</span>
+            </div>
+            <h1 class="text-5xl md:text-7xl font-bold mb-8 leading-[1.1] tracking-tight">
+                <span data-i18n="hero-title-1">Tus Clientes en tus</span> <br> <span class="text-transparent bg-clip-text bg-gradient-to-r from-render-accent to-white" data-i18n="hero-title-2">Maravillosos Pilotos</span>
+            </h1>
+            <p class="text-gray-400 text-lg md:text-xl max-w-2xl mx-auto font-light leading-relaxed" data-i18n="hero-desc">
+                ¿Sabes cómo se verían tus futuros clientes habitando tus espacios? 
+                Compruébalo ahora y acelera la venta emocional.
+            </p>
+        </div>
+
+        <div class="grid lg:grid-cols-12 gap-10 items-start">
+            
+            <!-- Left Side: Controls -->
+            <div class="lg:col-span-4 space-y-8">
+                <div class="glass-panel rounded-[2.5rem] p-8 space-y-10 border border-white/5">
+                    
+                    <!-- Upload Render -->
+                    <div class="group">
+                        <div class="relative mb-4">
+                            <label class="text-[10px] font-black text-render-accent uppercase tracking-[0.3em] block flex items-center gap-2">
+                                <span class="w-1 h-1 bg-render-accent rounded-full"></span>
+                                <span data-i18n="label-render">01. Proyecto Architectural</span>
+                                <button
+                                    id="render-help-toggle"
+                                    type="button"
+                                    class="interactive-el ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full border border-render-accent/60 text-render-accent text-[11px] font-black animate-pulse hover:bg-render-accent/20 transition-colors"
+                                    aria-label="Mostrar ayuda"
+                                    title="Ayuda"
+                                >?</button>
+                            </label>
+                            <div
+                                id="render-help-legend"
+                                class="hidden absolute left-0 top-full mt-2 z-30 max-w-xs rounded-xl border border-white/20 bg-black/90 px-3 py-2 text-[11px] leading-relaxed text-white shadow-xl"
+                            >
+                                <span data-i18n="render-help-person-legend">aqui deberia subir el render de tu piolot</span>
+                            </div>
+                        </div>
+                        <div id="drop-render" class="relative overflow-hidden rounded-2xl border border-white/10 p-10 text-center transition-all hover:border-render-accent/50 bg-white/[0.02] interactive-el">
+                            <input type="file" id="file-render" class="hidden" accept="image/*">
+                            <i class="ph-light ph-layout text-3xl text-gray-500 group-hover:text-render-accent transition-colors"></i>
+                            <p class="text-[10px] text-gray-500 mt-4 uppercase tracking-widest font-bold" id="render-status" data-i18n="status-render">Drop Render</p>
+                            <div id="render-preview" class="hidden mt-5 space-y-3">
+                                <img id="render-preview-img" class="w-full max-h-40 object-cover rounded-xl border border-white/10" alt="Render preview">
+                                <button id="render-remove-btn" type="button" class="w-full bg-red-500/15 text-red-300 border border-red-500/30 rounded-xl py-2 text-[10px] font-black uppercase tracking-[0.2em] hover:bg-red-500/25 transition-colors interactive-el" data-i18n="remove-render">
+                                    Eliminar Render
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Upload Client -->
+                    <div class="group">
+                        <label class="text-[10px] font-black text-technology-accent uppercase tracking-[0.3em] mb-4 block flex items-center gap-2">
+                            <span class="w-1 h-1 bg-technology-accent rounded-full"></span> <span data-i18n="label-person">02. Experiencia Humana</span>
+                        </label>
+
+                        <div class="grid grid-cols-2 gap-2 mb-3 bg-black/40 p-1 rounded-2xl border border-white/10">
+                            <button id="person-mode-single-tab" type="button" class="person-mode-tab bg-white/10 text-white rounded-xl py-2 text-[10px] font-black uppercase tracking-[0.2em] interactive-el" data-person-mode="single" data-i18n="person-mode-single">
+                                1 Persona
+                            </button>
+                            <button id="person-mode-multiple-tab" type="button" class="person-mode-tab text-white/60 rounded-xl py-2 text-[10px] font-black uppercase tracking-[0.2em] interactive-el" data-person-mode="multiple" data-i18n="person-mode-multiple">
+                                Multiples Personas
+                            </button>
+                        </div>
+
+                        <div id="person-single-panel">
+                            <div id="drop-person" class="relative overflow-hidden rounded-2xl border border-white/10 p-10 text-center transition-all hover:border-technology-accent/50 bg-white/[0.02] interactive-el">
+                                <input type="file" id="file-person" class="hidden" accept="image/*">
+                                <i class="ph-light ph-user-focus text-3xl text-gray-500 group-hover:text-technology-accent transition-colors"></i>
+                                <p class="text-[10px] text-gray-500 mt-4 uppercase tracking-widest font-bold" id="person-status" data-i18n="status-person">Drop Client Photo</p>
+                                <div id="person-preview" class="hidden mt-5 space-y-3">
+                                    <img id="person-preview-img" class="w-full max-h-40 object-cover rounded-xl border border-white/10" alt="Person preview">
+                                    <button id="person-remove-btn" type="button" class="w-full bg-red-500/15 text-red-300 border border-red-500/30 rounded-xl py-2 text-[10px] font-black uppercase tracking-[0.2em] hover:bg-red-500/25 transition-colors interactive-el" data-i18n="remove-person">
+                                        Eliminar Persona
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="person-multiple-panel" class="hidden space-y-3">
+                            <div id="drop-person-multi" class="relative overflow-hidden rounded-2xl border border-white/10 p-10 text-center transition-all hover:border-technology-accent/50 bg-white/[0.02] interactive-el">
+                                <input type="file" id="file-person-multi" class="hidden" accept="image/*" multiple>
+                                <i class="ph-light ph-users-three text-3xl text-gray-500 group-hover:text-technology-accent transition-colors"></i>
+                                <p class="text-[10px] text-gray-500 mt-4 uppercase tracking-widest font-bold" id="person-multi-status" data-i18n="status-person-multi-empty">Sube varias fotos cliente</p>
+                            </div>
+                            <div id="person-multi-list" class="grid grid-cols-2 gap-3"></div>
+                            <button id="person-multi-clear-btn" type="button" class="hidden w-full bg-red-500/15 text-red-300 border border-red-500/30 rounded-xl py-2 text-[10px] font-black uppercase tracking-[0.2em] hover:bg-red-500/25 transition-colors interactive-el" data-i18n="clear-all-persons">
+                                Limpiar Personas
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="group">
+                        <label class="text-[10px] font-black text-white/80 uppercase tracking-[0.3em] mb-4 block flex items-center gap-2">
+                            <span class="w-1 h-1 bg-white/60 rounded-full"></span> <span data-i18n="label-scene">03. Escena de Integración</span>
+                        </label>
+                        <select id="scene-select" class="w-full bg-black border border-white/20 rounded-2xl py-4 px-5 text-sm text-white outline-none focus:border-render-accent transition-colors interactive-el"></select>
+                        <div id="scene-custom-wrap" class="hidden mt-3">
+                            <input
+                                id="scene-custom-concept"
+                                type="text"
+                                maxlength="220"
+                                class="w-full bg-black border border-white/20 rounded-2xl py-3 px-4 text-sm text-white outline-none focus:border-render-accent transition-colors interactive-el"
+                                placeholder="Escribe un pequeño concepto para la escena"
+                                data-i18n-placeholder="scene-custom-placeholder"
+                            >
+                        </div>
+                    </div>
+
+                    <!-- Main CTA -->
+                    <button id="btn-process-trigger" class="w-full bg-white text-black font-black py-5 rounded-2xl text-[11px] uppercase tracking-[0.3em] disabled:opacity-20 disabled:cursor-not-allowed hover:bg-render-accent transition-all shadow-2xl interactive-el" disabled data-i18n="cta-main">
+                        Integrar IRIS Human
+                    </button>
+                </div>
+
+                <!-- Footer B2B -->
+                <div class="p-6 text-center border-t border-white/5">
+                    <p class="text-[10px] text-gray-500 font-bold uppercase tracking-[0.2em] mb-4" data-i18n="footer-b2b-text">¿Quieres esta herramienta para tu inmobiliaria?</p>
+                    <a href="https://api.whatsapp.com/send/?phone=56945254948&text&type=phone_number&app_absent=0" target="_blank" rel="noopener noreferrer" class="nav-logo-text inline-flex interactive-el" data-i18n="footer-b2b-btn">Contactar con Ventas</a>
+                </div>
+            </div>
+
+            <!-- Right Side: Visualization -->
+            <div class="lg:col-span-8">
+                <div class="composition-container glass-panel shadow-[0_40px_100px_rgba(0,0,0,0.6)]" id="main-stage">
+                    
+                    <!-- Background Layers -->
+                    <div id="empty-state" class="absolute inset-0 flex flex-col items-center justify-center text-gray-700 z-10 transition-opacity">
+                        <i class="ph-light ph-aperture text-6xl mb-6 animate-spin-slow"></i>
+                        <p class="text-xs font-black uppercase tracking-[0.5em]" data-i18n="waiting-assets">Waiting for Assets</p>
+                    </div>
+
+                    <img id="bg-render-img" class="parallax-bg absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-1000" data-speed="1.2">
+                    <img id="person-overlay" class="opacity-0">
+
+                    <!-- Scan line (The IRIS Magic) -->
+                    <div id="scan-line" class="absolute top-0 left-0 w-full h-1 bg-render-accent shadow-[0_0_30px_#d4af7a] z-40 hidden animate-scan"></div>
+                </div>
+
+                <div id="how-it-works" class="mt-12 animate-fade-in-up">
+                    <div class="flex items-center gap-4 mb-8">
+                        <div class="h-px flex-1 bg-white/10"></div>
+                        <h2 class="text-[10px] font-black uppercase tracking-[0.5em] text-render-accent" data-i18n="how-it-works-title">¿CÓMO FUNCIONA?</h2>
+                        <div class="h-px flex-1 bg-white/10"></div>
+                    </div>
+
+                    <div class="grid md:grid-cols-3 gap-6">
+                        <div class="step-card relative p-8 rounded-[2rem] overflow-hidden">
+                            <span class="step-number">01</span>
+                            <div class="relative z-10 space-y-4">
+                                <div class="w-12 h-12 bg-render-accent/10 rounded-2xl flex items-center justify-center text-render-accent border border-render-accent/20">
+                                    <i class="ph-fill ph-house-line text-2xl"></i>
+                                </div>
+                                <h3 class="font-bold text-lg" data-i18n="step-1-title">Sube tu Piloto</h3>
+                                <p class="text-sm text-gray-500 leading-relaxed" data-i18n="step-1-desc">Carga el render arquitectonico de tu proyecto inmobiliario con la mejor resolucion disponible.</p>
+                                <div class="pt-2">
+                                    <p class="text-[11px] text-white/80 mb-2" data-i18n="step-1-cta-label">No tienes? Crealo aqui</p>
+                                    <a
+                                        href="./simulador-ia-render-con-ia.html"
+                                        class="inline-flex items-center gap-2 bg-render-accent/15 text-render-accent border border-render-accent/35 rounded-xl px-4 py-2 text-[10px] font-black uppercase tracking-[0.2em] hover:bg-render-accent/25 transition-colors interactive-el"
+                                        data-i18n="step-1-cta-btn"
+                                    >
+                                        Crear Piloto
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="step-card relative p-8 rounded-[2rem] overflow-hidden">
+                            <span class="step-number">02</span>
+                            <div class="relative z-10 space-y-4">
+                                <div class="w-12 h-12 bg-technology-accent/10 rounded-2xl flex items-center justify-center text-technology-accent border border-technology-accent/20">
+                                    <i class="ph-fill ph-user-circle-plus text-2xl"></i>
+                                </div>
+                                <h3 class="font-bold text-lg" data-i18n="step-2-title">Sube al Cliente</h3>
+                                <p class="text-sm text-gray-500 leading-relaxed" data-i18n="step-2-desc">Anade una foto de la persona o familia. Nuestra IA se encarga de extraerla e integrarla.</p>
+                            </div>
+                        </div>
+
+                        <div class="step-card relative p-8 rounded-[2rem] overflow-hidden">
+                            <span class="step-number">03</span>
+                            <div class="relative z-10 space-y-4">
+                                <div class="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center text-white border border-white/20">
+                                    <i class="ph-fill ph-magic-wand text-2xl"></i>
+                                </div>
+                                <h3 class="font-bold text-lg" data-i18n="step-3-title">Genera e Impacta</h3>
+                                <p class="text-sm text-gray-500 leading-relaxed" data-i18n="step-3-desc">IRIS ajusta automaticamente iluminacion, sombras y perspectiva para un resultado real.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Share Section -->
+                <div id="share-section" class="hidden mt-8 animate-fade-in-up">
+                    <div class="glass-panel rounded-[2.5rem] p-8 flex flex-col md:flex-row items-center justify-between gap-8">
+                        <div class="space-y-2 text-center md:text-left">
+                            <h3 class="text-xl font-bold tracking-tight" data-i18n="share-title">Venta Emocional Lista</h3>
+                            <p class="text-xs text-gray-500 uppercase tracking-widest" data-i18n="share-subtitle">Compártelo ahora con tu gerente de marketing.</p>
+                        </div>
+                        <div class="flex items-center gap-4 w-full md:w-auto">
+                            <button id="btn-download-render" class="bg-white/10 border border-white/20 text-white font-black px-8 py-4 rounded-full text-[10px] uppercase tracking-widest hover:bg-white/20 transition-all interactive-el whitespace-nowrap" data-i18n="download-btn">
+                                Descargar
+                            </button>
+                            <input id="share-email" type="email" placeholder="Email destino..." class="flex-1 md:w-64 bg-white/5 border border-white/10 rounded-full py-4 px-6 text-sm outline-none focus:border-render-accent transition-colors interactive-el" data-i18n-placeholder="share-placeholder">
+                            <button id="btn-share-email" class="bg-render-accent text-black font-black px-10 py-4 rounded-full text-[10px] uppercase tracking-widest hover:scale-105 transition-transform interactive-el whitespace-nowrap" data-i18n="share-btn">
+                                Enviar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal Lead & Loading -->
+    <div id="lead-modal" class="fixed inset-0 z-[200] hidden items-center justify-center p-6">
+        <div class="absolute inset-0 bg-black/95 backdrop-blur-3xl"></div>
+        <div class="relative glass-panel rounded-[3rem] p-12 max-w-lg w-full border border-white/10 shadow-2xl">
+            
+            <div id="modal-content-form" class="text-center space-y-8">
+                <button id="close-modal" class="absolute top-8 right-8 text-gray-500 hover:text-white interactive-el">
+                    <i class="ph ph-x text-2xl"></i>
+                </button>
+                <div class="w-24 h-24 bg-render-accent/10 rounded-[2rem] flex items-center justify-center mx-auto text-render-accent border border-render-accent/20">
+                    <i class="ph-fill ph-fingerprint text-5xl"></i>
+                </div>
+                <div class="space-y-3">
+                    <h2 class="text-3xl font-bold" data-i18n="modal-title">Identidad Corporativa</h2>
+                    <p class="text-sm text-gray-500 px-6" data-i18n="modal-desc">Para generar el render humanizado necesitamos registrar tu perfil profesional.</p>
+                </div>
+                <form id="lead-form" class="space-y-5 text-left pt-4">
+                    <div class="space-y-2">
+                        <label class="text-[9px] font-black uppercase text-gray-500 ml-4 tracking-[0.3em]" data-i18n="modal-label">Email Profesional</label>
+                        <input type="email" required placeholder="tu@empresa.com" class="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-8 text-sm outline-none focus:border-render-accent transition-colors text-white text-center interactive-el" data-i18n-placeholder="modal-placeholder">
+                    </div>
+                    <label class="flex items-center gap-3 bg-black/40 border border-white/10 rounded-2xl px-4 py-3 text-white interactive-el">
+                        <input id="captcha-not-robot" type="checkbox" required class="w-4 h-4 accent-render-accent">
+                        <span class="text-xs tracking-wide" data-i18n="captcha-not-robot">No soy un robot</span>
+                    </label>
+                    <button type="submit" class="w-full bg-white text-black font-black py-5 rounded-2xl text-[10px] uppercase tracking-[0.3em] hover:bg-render-accent transition-all interactive-el" data-i18n="modal-btn">
+                        PROCESAR INTEGRACIÓN AI
+                    </button>
+                </form>
+            </div>
+
+            <!-- Loading State -->
+            <div id="modal-content-loading" class="hidden text-center space-y-10 py-10">
+                <div class="relative w-32 h-32 mx-auto">
+                    <div class="absolute inset-0 border-t-2 border-render-accent rounded-full animate-spin"></div>
+                    <div class="absolute inset-0 flex items-center justify-center text-render-accent">
+                        <img src="https://impactrenderstudios.com/images/logo.png" class="w-12 invert">
+                    </div>
+                </div>
+                <div class="space-y-4">
+                    <h2 class="text-2xl font-bold tracking-widest uppercase">IRIS <span class="text-render-accent" data-i18n="loading-title">Humanizing</span></h2>
+                    <div class="loader-line mx-auto max-w-[200px]"></div>
+                    <p class="text-[10px] text-gray-500 uppercase tracking-[0.5em] font-mono mt-8" data-i18n="loading-desc">Generando capas de luz y sombras</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function initializeClarity() {
+            const params = new URLSearchParams(window.location.search || '');
+            const clarityId = String(params.get('clarityId') || window.CLARITY_PROJECT_ID || '').trim();
+            if (!clarityId) return;
+            (function(c,l,a,r,i,t,y){
+                c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments);};
+                t=l.createElement(r);t.async=1;t.src=`https://www.clarity.ms/tag/${i}`;
+                y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+            })(window, document, 'clarity', 'script', clarityId);
+        })();
+
+        const translations = {
+            es: {
+                'nav-subtitle': 'Ecosistema de IA Visual',
+                'wsp-btn': 'WhatsApp B2B',
+                'hero-tag': 'Iniciativa Marketing Directo',
+                'hero-title-1': 'Tus Clientes en tus',
+                'hero-title-2': 'Maravillosos Pilotos',
+                'hero-desc': '¿Sabes cómo se verían tus futuros clientes habitando tus espacios? Compruébalo ahora y acelera la venta emocional.',
+                'label-render': '01. Proyecto Architectural',
+                'render-help-person-legend': 'aqui deberia subir el render de tu piolot',
+                'status-render': 'Subir Render',
+                'label-person': '02. Experiencia Humana',
+                'label-scene': '03. Escena de Integración',
+                'scene-custom-placeholder': 'Escribe un pequeño concepto para la escena',
+                'status-person': 'Subir Foto Cliente',
+                'person-mode-single': '1 Persona',
+                'person-mode-multiple': 'Multiples Personas',
+                'status-person-multi-empty': 'Sube varias fotos cliente',
+                'status-person-multi-ready': 'Personas listas',
+                'cta-main': 'Integrar IRIS Human',
+                'footer-b2b-text': '¿Quieres esta herramienta para tu inmobiliaria?',
+                'footer-b2b-btn': 'Contactar con Ventas',
+                'waiting-assets': 'Esperando Archivos',
+                'share-title': 'Venta Emocional Lista',
+                'share-subtitle': 'Compártelo ahora con tu gerente de marketing.',
+                'download-btn': 'Descargar',
+                'share-placeholder': 'Email destino...',
+                'share-btn': 'Enviar',
+                'modal-title': 'Identidad Corporativa',
+                'modal-desc': 'Para generar el render humanizado necesitamos registrar tu perfil profesional.',
+                'modal-label': 'Email Profesional',
+                'captcha-not-robot': 'No soy un robot',
+                'modal-placeholder': 'tu@empresa.com',
+                'modal-btn': 'PROCESAR INTEGRACIÓN AI',
+                'loading-title': 'Humanizando',
+                'loading-desc': 'Generando capas de luz y sombras',
+                'how-it-works-title': '¿COMO FUNCIONA?',
+                'step-1-title': 'Sube tu Piloto',
+                'step-1-desc': 'Carga el render arquitectonico de tu proyecto inmobiliario con la mejor resolucion disponible.',
+                'step-1-cta-label': 'No tienes? Crealo aqui',
+                'step-1-cta-btn': 'Crear Piloto',
+                'step-2-title': 'Sube al Cliente',
+                'step-2-desc': 'Anade una foto de la persona o familia. Nuestra IA se encarga de extraerla e integrarla.',
+                'step-3-title': 'Genera e Impacta',
+                'step-3-desc': 'IRIS ajusta automaticamente iluminacion, sombras y perspectiva para un resultado real.',
+                'share-success': 'ENVIADO ✓',
+                'share-loading': 'ENVIANDO...',
+                'remove-render': 'Eliminar Render',
+                'remove-person': 'Eliminar Persona',
+                'clear-all-persons': 'Limpiar Personas'
+            },
+            en: {
+                'nav-subtitle': 'Visual AI Ecosystem',
+                'wsp-btn': 'B2B WhatsApp',
+                'hero-tag': 'Direct Marketing Initiative',
+                'hero-title-1': 'Your Clients in your',
+                'hero-title-2': 'Dream Model Homes',
+                'hero-desc': 'Do you know what your future clients would look like living in your spaces? Try it now and accelerate the emotional sale.',
+                'label-render': '01. Architectural Project',
+                'render-help-person-legend': 'Upload the client person photo here so it can be integrated into the final image.',
+                'status-render': 'Drop Render',
+                'label-person': '02. Human Experience',
+                'label-scene': '03. Integration Scene',
+                'scene-custom-placeholder': 'Write a short concept for the scene',
+                'status-person': 'Drop Client Photo',
+                'person-mode-single': '1 Person',
+                'person-mode-multiple': 'Multiple Persons',
+                'status-person-multi-empty': 'Drop multiple client photos',
+                'status-person-multi-ready': 'Persons ready',
+                'cta-main': 'Integrate IRIS Human',
+                'footer-b2b-text': 'Want this tool for your real estate company?',
+                'footer-b2b-btn': 'Contact Sales',
+                'waiting-assets': 'Waiting for Assets',
+                'share-title': 'Emotional Sale Ready',
+                'share-subtitle': 'Share it now with your marketing manager.',
+                'download-btn': 'Download',
+                'share-placeholder': 'Target email...',
+                'share-btn': 'Send',
+                'modal-title': 'Corporate Identity',
+                'modal-desc': 'To generate the humanized render we need to register your professional profile.',
+                'modal-label': 'Professional Email',
+                'captcha-not-robot': "I'm not a robot",
+                'modal-placeholder': 'you@company.com',
+                'modal-btn': 'PROCESS AI INTEGRATION',
+                'loading-title': 'Humanizing',
+                'loading-desc': 'Generating light and shadow layers',
+                'how-it-works-title': 'HOW IT WORKS?',
+                'step-1-title': 'Upload your Model',
+                'step-1-desc': 'Upload the architectural render of your real estate project in high resolution.',
+                'step-1-cta-label': "Don't have one? Create it here",
+                'step-1-cta-btn': 'Create Model',
+                'step-2-title': 'Add the Client',
+                'step-2-desc': 'Add a photo of the person or family. Our AI handles extraction and integration.',
+                'step-3-title': 'Generate and Impact',
+                'step-3-desc': 'IRIS automatically adjusts lighting, shadows and perspective for a realistic result.',
+                'share-success': 'SENT ✓',
+                'share-loading': 'SENDING...',
+                'remove-render': 'Remove Render',
+                'remove-person': 'Remove Person',
+                'clear-all-persons': 'Clear Persons'
+            }
+        };
+
+        let currentLang = 'es';
+        let sceneCatalog = [
+            { id: 'living_seated', nameEs: 'Living - Persona sentada', nameEn: 'Living - Seated person' },
+            { id: 'terrace_relax', nameEs: 'Terraza - Persona relajada', nameEn: 'Terrace - Relaxed person' },
+            { id: 'balcony_view', nameEs: 'Balcon - Persona mirando vista', nameEn: 'Balcony - Looking at view' },
+            { id: 'walkthrough', nameEs: 'Recorrido - Persona caminando', nameEn: 'Walkthrough - Person walking' },
+            { id: 'family_moment', nameEs: 'Familiar - Momento cotidiano', nameEn: 'Family - Everyday moment' },
+            { id: 'custom_concept', nameEs: 'Otro (concepto personalizado)', nameEn: 'Other (custom concept)' }
+        ];
+
+        function ensureCustomSceneOption() {
+            const hasCustomOption = sceneCatalog.some((scene) => scene.id === 'custom_concept');
+            if (!hasCustomOption) {
+                sceneCatalog.push({
+                    id: 'custom_concept',
+                    nameEs: 'Otro (concepto personalizado)',
+                    nameEn: 'Other (custom concept)'
+                });
+            }
+        }
+
+        function syncCustomSceneInputVisibility() {
+            const sceneSelect = document.getElementById('scene-select');
+            const customWrap = document.getElementById('scene-custom-wrap');
+            if (!sceneSelect || !customWrap) return;
+            const isCustom = sceneSelect.value === 'custom_concept';
+            customWrap.classList.toggle('hidden', !isCustom);
+        }
+
+        function renderSceneOptions() {
+            const sceneSelect = document.getElementById('scene-select');
+            if (!sceneSelect) return;
+            ensureCustomSceneOption();
+            const currentValue = sceneSelect.value || 'living_seated';
+            sceneSelect.innerHTML = '';
+            sceneCatalog.forEach((scene) => {
+                const option = document.createElement('option');
+                option.value = scene.id;
+                option.textContent = currentLang === 'en'
+                    ? (scene.nameEn || scene.nameEs || scene.id)
+                    : (scene.nameEs || scene.nameEn || scene.id);
+                sceneSelect.appendChild(option);
+            });
+            const hasCurrent = sceneCatalog.some((scene) => scene.id === currentValue);
+            sceneSelect.value = hasCurrent ? currentValue : (sceneCatalog[0]?.id || 'living_seated');
+            syncCustomSceneInputVisibility();
+        }
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[lang][key]) {
+                    el.textContent = translations[lang][key];
+                }
+            });
+
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                const key = el.getAttribute('data-i18n-placeholder');
+                if (translations[lang][key]) {
+                    el.placeholder = translations[lang][key];
+                }
+            });
+
+            // Update button styles
+            const btnEs = document.getElementById('lang-es');
+            const btnEn = document.getElementById('lang-en');
+            
+            if (lang === 'es') {
+                btnEs.classList.replace('text-white/40', 'bg-white/10');
+                btnEs.classList.add('text-white');
+                btnEn.classList.replace('bg-white/10', 'text-white/40');
+                btnEn.classList.remove('text-white');
+            } else {
+                btnEn.classList.replace('text-white/40', 'bg-white/10');
+                btnEn.classList.add('text-white');
+                btnEs.classList.replace('bg-white/10', 'text-white/40');
+                btnEs.classList.remove('text-white');
+            }
+            renderSceneOptions();
+            document.querySelectorAll('.person-multi-remove-btn').forEach((btn) => {
+                btn.textContent = translations[lang]['remove-person'];
+            });
+            const personMultiStatus = document.getElementById('person-multi-status');
+            if (personMultiStatus) {
+                const currentText = personMultiStatus.textContent || '';
+                if (currentText.includes('✓') && /\(\d+\)/.test(currentText)) {
+                    const countMatch = currentText.match(/\((\d+)\)/);
+                    const count = Number(countMatch?.[1] || 0);
+                    if (count > 0) {
+                        personMultiStatus.textContent = `${translations[lang]['status-person-multi-ready']} (${count}) ✓`;
+                    }
+                } else {
+                    personMultiStatus.textContent = translations[lang]['status-person-multi-empty'];
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const runtimeParams = new URLSearchParams(window.location.search || '');
+            const API_BASE = (runtimeParams.get('apiBase') || 'https://www.api.thefutureagencyai.com').replace(/\/$/, '');
+            const PROMO_PROJECT_KEY = 'promo_public_project_id';
+            const PROMO_GUEST_FP_KEY = 'promo_public_guest_fp';
+            let promoProjectId = Number(localStorage.getItem(PROMO_PROJECT_KEY) || 0) || null;
+            let promoGuestFp = localStorage.getItem(PROMO_GUEST_FP_KEY) || '';
+            if (!promoGuestFp) {
+                promoGuestFp = (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function')
+                    ? crypto.randomUUID()
+                    : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+                localStorage.setItem(PROMO_GUEST_FP_KEY, promoGuestFp);
+            }
+            let accessGrant = {
+                token: '',
+                nonce: '',
+                expiresAt: 0
+            };
+            console.log('[PromoHumanizeUI] boot', {
+                apiBase: API_BASE,
+                cachedProjectId: promoProjectId || null,
+                hasGuestFingerprint: !!promoGuestFp
+            });
+
+            const cursorDot = document.querySelector('.cursor-dot');
+            const cursorOutline = document.querySelector('.cursor-outline');
+            const bodies = document.body;
+
+            // Language Switcher Events
+            document.getElementById('lang-es').onclick = () => setLanguage('es');
+            document.getElementById('lang-en').onclick = () => setLanguage('en');
+
+            // Cursor Logic
+            window.addEventListener('mousemove', (e) => {
+                const posX = e.clientX;
+                const posY = e.clientY;
+                cursorDot.style.left = `${posX}px`;
+                cursorDot.style.top = `${posY}px`;
+                cursorOutline.animate({ left: `${posX}px`, top: `${posY}px` }, { duration: 400, fill: "forwards" });
+            });
+
+            document.querySelectorAll('.interactive-el').forEach(el => {
+                el.addEventListener('mouseenter', () => bodies.classList.add('hovering-button'));
+                el.addEventListener('mouseleave', () => bodies.classList.remove('hovering-button'));
+            });
+
+            // Parallax Logic
+            document.addEventListener('mousemove', (e) => {
+                const x = (window.innerWidth - e.pageX * 2) / 100;
+                const y = (window.innerHeight - e.pageY * 2) / 100;
+                document.querySelectorAll('.parallax-bg').forEach(bg => {
+                    const speed = bg.dataset.speed;
+                    bg.style.transform = `translate(${x * speed}px, ${y * speed}px) scale(1.1)`;
+                });
+            });
+
+            // UI Elements
+            const dropRender = document.getElementById('drop-render');
+            const dropPerson = document.getElementById('drop-person');
+            const dropPersonMulti = document.getElementById('drop-person-multi');
+            const fileRender = document.getElementById('file-render');
+            const filePerson = document.getElementById('file-person');
+            const filePersonMulti = document.getElementById('file-person-multi');
+            const renderStatus = document.getElementById('render-status');
+            const personStatus = document.getElementById('person-status');
+            const personMultiStatus = document.getElementById('person-multi-status');
+            const renderPreview = document.getElementById('render-preview');
+            const personPreview = document.getElementById('person-preview');
+            const renderPreviewImg = document.getElementById('render-preview-img');
+            const personPreviewImg = document.getElementById('person-preview-img');
+            const renderRemoveBtn = document.getElementById('render-remove-btn');
+            const personRemoveBtn = document.getElementById('person-remove-btn');
+            const personModeSingleTab = document.getElementById('person-mode-single-tab');
+            const personModeMultipleTab = document.getElementById('person-mode-multiple-tab');
+            const personSinglePanel = document.getElementById('person-single-panel');
+            const personMultiplePanel = document.getElementById('person-multiple-panel');
+            const personMultiList = document.getElementById('person-multi-list');
+            const personMultiClearBtn = document.getElementById('person-multi-clear-btn');
+            const sceneSelect = document.getElementById('scene-select');
+            const sceneCustomConcept = document.getElementById('scene-custom-concept');
+            const btnProcessTrigger = document.getElementById('btn-process-trigger');
+            const renderHelpToggle = document.getElementById('render-help-toggle');
+            const renderHelpLegend = document.getElementById('render-help-legend');
+            
+            const renderImg = document.getElementById('bg-render-img');
+            const personImg = document.getElementById('person-overlay');
+            const emptyState = document.getElementById('empty-state');
+            const scanLine = document.getElementById('scan-line');
+            const shareSection = document.getElementById('share-section');
+            const shareEmailInput = document.getElementById('share-email');
+            const btnDownloadRender = document.getElementById('btn-download-render');
+            
+            const leadModal = document.getElementById('lead-modal');
+            const closeModal = document.getElementById('close-modal');
+            const modalFormContent = document.getElementById('modal-content-form');
+            const modalLoadingContent = document.getElementById('modal-content-loading');
+            const leadForm = document.getElementById('lead-form');
+
+            let renderLoaded = false;
+            let personLoaded = false;
+            let renderDataUrl = '';
+            let personDataUrl = '';
+            let lastLeadEmail = '';
+            let lastGeneratedImageUrl = '';
+            let lastGeneratedRenderId = null;
+            let personMode = 'single';
+            let personMultiDataUrls = [];
+            const MAX_PERSON_MULTI = 8;
+
+            function resetRenderSelection() {
+                renderLoaded = false;
+                renderDataUrl = '';
+                fileRender.value = '';
+                renderPreview.classList.add('hidden');
+                renderPreviewImg.removeAttribute('src');
+                renderStatus.textContent = translations[currentLang]['status-render'];
+                renderStatus.classList.remove('text-render-accent');
+                renderStatus.classList.add('text-gray-500');
+                renderImg.classList.remove('opacity-30', 'opacity-100');
+                renderImg.classList.add('opacity-0');
+                renderImg.style.filter = '';
+                if (!personLoaded) {
+                    emptyState.classList.remove('opacity-0');
+                }
+            }
+
+            function resetPersonSelection() {
+                personLoaded = false;
+                personDataUrl = '';
+                filePerson.value = '';
+                personPreview.classList.add('hidden');
+                personPreviewImg.removeAttribute('src');
+                personStatus.textContent = translations[currentLang]['status-person'];
+                personStatus.classList.remove('text-technology-accent');
+                personStatus.classList.add('text-gray-500');
+                personImg.classList.remove('opacity-100');
+                personImg.classList.add('opacity-0');
+                if (!renderLoaded) {
+                    emptyState.classList.remove('opacity-0');
+                }
+            }
+
+            function updatePersonMultiStatus() {
+                const count = personMultiDataUrls.length;
+                if (count > 0) {
+                    const label = translations[currentLang]['status-person-multi-ready'] || 'Persons ready';
+                    personMultiStatus.textContent = `${label} (${count}) ✓`;
+                    personMultiStatus.classList.remove('text-gray-500');
+                    personMultiStatus.classList.add('text-technology-accent');
+                } else {
+                    personMultiStatus.textContent = translations[currentLang]['status-person-multi-empty'];
+                    personMultiStatus.classList.remove('text-technology-accent');
+                    personMultiStatus.classList.add('text-gray-500');
+                }
+            }
+
+            function renderPersonMultiList() {
+                personMultiList.innerHTML = '';
+                personMultiDataUrls.forEach((dataUrl, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'bg-white/[0.03] border border-white/10 rounded-xl p-2 space-y-2';
+                    card.innerHTML = `
+                        <img src="${dataUrl}" class="w-full h-24 object-cover rounded-lg border border-white/10" alt="Person ${index + 1}">
+                        <button type="button" class="w-full bg-red-500/15 text-red-300 border border-red-500/30 rounded-lg py-1.5 text-[9px] font-black uppercase tracking-[0.2em] hover:bg-red-500/25 transition-colors interactive-el person-multi-remove-btn" data-index="${index}">
+                            ${translations[currentLang]['remove-person']}
+                        </button>
+                    `;
+                    personMultiList.appendChild(card);
+                });
+                personMultiClearBtn.classList.toggle('hidden', personMultiDataUrls.length === 0);
+                updatePersonMultiStatus();
+            }
+
+            function resetPersonMultiSelection() {
+                personMultiDataUrls = [];
+                filePersonMulti.value = '';
+                renderPersonMultiList();
+                if (!renderLoaded && !personLoaded) {
+                    emptyState.classList.remove('opacity-0');
+                }
+            }
+
+            function setPersonMode(mode) {
+                personMode = mode === 'multiple' ? 'multiple' : 'single';
+                const isSingle = personMode === 'single';
+                personSinglePanel.classList.toggle('hidden', !isSingle);
+                personMultiplePanel.classList.toggle('hidden', isSingle);
+                personModeSingleTab.classList.toggle('bg-white/10', isSingle);
+                personModeSingleTab.classList.toggle('text-white', isSingle);
+                personModeSingleTab.classList.toggle('text-white/60', !isSingle);
+                personModeMultipleTab.classList.toggle('bg-white/10', !isSingle);
+                personModeMultipleTab.classList.toggle('text-white', !isSingle);
+                personModeMultipleTab.classList.toggle('text-white/60', isSingle);
+
+                if (isSingle) {
+                    if (personDataUrl) {
+                        personImg.src = personDataUrl;
+                        personImg.classList.remove('opacity-0');
+                        personImg.classList.add('opacity-100');
+                    }
+                } else {
+                    personImg.classList.remove('opacity-100');
+                    personImg.classList.add('opacity-0');
+                }
+                checkReady();
+            }
+
+            function buildRequestSummary(body) {
+                if (!body) return null;
+                return {
+                    ...body,
+                    renderImageDataUrl: body.renderImageDataUrl ? `[base64:${String(body.renderImageDataUrl).length}]` : null,
+                    personImageDataUrl: body.personImageDataUrl ? `[base64:${String(body.personImageDataUrl).length}]` : null,
+                    personImageDataUrls: Array.isArray(body.personImageDataUrls)
+                        ? `[base64_list:${body.personImageDataUrls.length}]`
+                        : null
+                };
+            }
+
+            function isAccessGrantValid() {
+                return !!accessGrant.token && !!accessGrant.nonce && Number(accessGrant.expiresAt || 0) > (Date.now() + 10 * 1000);
+            }
+
+            async function ensureAccessGrant(forceRefresh = false) {
+                if (!forceRefresh && isAccessGrantValid()) {
+                    return accessGrant;
+                }
+                const endpointUrl = `${API_BASE}/api/public/simulator/init`;
+                const headers = {
+                    'x-guest-fp': promoGuestFp
+                };
+                let response;
+                try {
+                    response = await fetch(endpointUrl, {
+                        method: 'GET',
+                        headers
+                    });
+                } catch (networkError) {
+                    throw new Error(`Error al solicitar token de acceso (${endpointUrl}): ${networkError?.message || 'Failed to fetch'}`);
+                }
+                let payload = {};
+                try {
+                    payload = await response.json();
+                } catch (_error) {
+                    payload = {};
+                }
+                if (!response.ok || payload.success === false) {
+                    const message = payload?.error?.message || payload?.message || `HTTP ${response.status}`;
+                    throw new Error(`No se pudo iniciar acceso seguro: ${message}`);
+                }
+                const data = payload?.data ?? payload;
+                accessGrant = {
+                    token: String(data?.accessToken || ''),
+                    nonce: String(data?.nonce || ''),
+                    expiresAt: Number(data?.expiresAt || 0)
+                };
+                if (!accessGrant.token || !accessGrant.nonce || !accessGrant.expiresAt) {
+                    throw new Error('Respuesta de token incompleta.');
+                }
+                console.log('[PromoHumanizeUI] access token granted', {
+                    expiresAt: accessGrant.expiresAt,
+                    tokenType: data?.tokenType || null
+                });
+                return accessGrant;
+            }
+
+            async function apiRequest(path, options = {}) {
+                const endpointUrl = `${API_BASE}${path}`;
+                const payloadSummary = buildRequestSummary(options.body);
+                console.log('[PromoHumanizeUI] api request', {
+                    method: options.method || 'GET',
+                    endpointUrl,
+                    requireAccess: !!options.requireAccess,
+                    payload: payloadSummary
+                });
+
+                const send = async (retry = false) => {
+                    let accessHeaders = {};
+                    if (options.requireAccess) {
+                        const grant = await ensureAccessGrant(retry);
+                        accessHeaders = {
+                            'x-sim-access-token': grant.token,
+                            'x-sim-access-nonce': grant.nonce
+                        };
+                    }
+                    let response;
+                    try {
+                        response = await fetch(endpointUrl, {
+                            method: options.method || 'GET',
+                            headers: {
+                                ...(options.body ? { 'Content-Type': 'application/json' } : {}),
+                                'x-guest-fp': promoGuestFp,
+                                ...accessHeaders,
+                                ...(options.headers || {})
+                            },
+                            body: options.body ? JSON.stringify(options.body) : undefined
+                        });
+                    } catch (networkError) {
+                        console.error('[PromoHumanizeUI] network/fetch error', {
+                            endpointUrl,
+                            message: networkError?.message || 'Failed to fetch',
+                            hint: 'Revisar CORS, SSL o conectividad al API.'
+                        });
+                        throw new Error(`Error de red al llamar API (${endpointUrl}): ${networkError?.message || 'Failed to fetch'}`);
+                    }
+                    let payload = {};
+                    try {
+                        payload = await response.json();
+                    } catch (_e) {
+                        payload = {};
+                    }
+                    if ((response.status === 401 || response.status === 403 || response.status === 409) && options.requireAccess && !retry) {
+                        console.warn('[PromoHumanizeUI] secure access refresh required', {
+                            endpointUrl,
+                            status: response.status
+                        });
+                        accessGrant = { token: '', nonce: '', expiresAt: 0 };
+                        return send(true);
+                    }
+                    console.log('[PromoHumanizeUI] api response', {
+                        endpointUrl,
+                        status: response.status,
+                        ok: response.ok,
+                        payload
+                    });
+                    if (!response.ok || payload.success === false) {
+                        throw new Error(payload?.error?.message || payload?.message || `HTTP ${response.status}`);
+                    }
+                    return payload?.data ?? payload;
+                };
+
+                return send(false);
+            }
+
+            function trackPromoAnalytics(eventName, payload = {}) {
+                try {
+                    if (typeof window.clarity === 'function') {
+                        window.clarity('event', eventName);
+                    }
+                    window.dataLayer = window.dataLayer || [];
+                    window.dataLayer.push({
+                        event: eventName,
+                        ...payload,
+                        source: 'promo.html',
+                        ts: Date.now()
+                    });
+                } catch (_error) {
+                    // analytics must never block UX
+                }
+            }
+
+            async function notifyPromoUsage(eventType, email = '', projectId = null) {
+                try {
+                    await apiRequest('/api/public/simulator/usage-notify', {
+                        method: 'POST',
+                        body: {
+                            eventType,
+                            email: String(email || '').trim().toLowerCase(),
+                            source: 'promo.html',
+                            projectId: projectId || promoProjectId || null
+                        }
+                    });
+                } catch (error) {
+                    console.warn('[PromoHumanizeUI] usage notify failed', {
+                        eventType,
+                        message: error?.message || 'notify_failed'
+                    });
+                }
+            }
+
+            async function ensurePromoProject() {
+                if (promoProjectId && Number.isInteger(promoProjectId) && promoProjectId > 0) {
+                    return promoProjectId;
+                }
+                const created = await apiRequest('/api/public/simulator/projects', {
+                    method: 'POST',
+                    body: {
+                        source: 'promo.html',
+                        name: 'Promo Humanize Session'
+                    }
+                });
+                promoProjectId = Number(created?.projectId || 0) || null;
+                if (promoProjectId) {
+                    localStorage.setItem(PROMO_PROJECT_KEY, String(promoProjectId));
+                }
+                console.log('[PromoHumanizeUI] ensure project', {
+                    createdProjectId: promoProjectId || null
+                });
+                return promoProjectId;
+            }
+
+            async function loadSimulatorConfig() {
+                try {
+                    const config = await apiRequest('/api/public/simulator/config');
+                    const scenes = Array.isArray(config?.humanizeScenes) ? config.humanizeScenes : [];
+                    if (scenes.length > 0) {
+                        sceneCatalog = scenes.map((scene) => ({
+                            id: String(scene.id || ''),
+                            nameEs: String(scene.name || scene.nameEs || scene.id || ''),
+                            nameEn: String(scene.nameEn || scene.name || scene.id || '')
+                        })).filter((scene) => scene.id);
+                        ensureCustomSceneOption();
+                        renderSceneOptions();
+                    }
+                    console.log('[PromoHumanizeUI] config loaded', {
+                        sceneCount: sceneCatalog.length
+                    });
+                } catch (error) {
+                    console.warn('[PromoHumanizeUI] config fallback', {
+                        message: error?.message || 'config_error',
+                        sceneCount: sceneCatalog.length
+                    });
+                    renderSceneOptions();
+                }
+            }
+
+            dropRender.onclick = () => fileRender.click();
+            dropPerson.onclick = () => filePerson.click();
+            dropPersonMulti.onclick = () => filePersonMulti.click();
+
+            fileRender.onchange = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (ev) => {
+                        renderDataUrl = ev.target.result;
+                        console.log('[PromoHumanizeUI] render selected', {
+                            sizeBase64: String(renderDataUrl || '').length
+                        });
+                        renderPreviewImg.src = ev.target.result;
+                        renderPreview.classList.remove('hidden');
+                        renderImg.src = ev.target.result;
+                        renderImg.classList.replace('opacity-0', 'opacity-30');
+                        renderStatus.textContent = currentLang === 'es' ? 'Render Listo ✓' : 'Render Ready ✓';
+                        renderStatus.classList.replace('text-gray-500', 'text-render-accent');
+                        renderLoaded = true;
+                        checkReady();
+                        emptyState.classList.add('opacity-0');
+                    };
+                    reader.readAsDataURL(file);
+                }
+            };
+
+            filePerson.onchange = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (ev) => {
+                        personDataUrl = ev.target.result;
+                        console.log('[PromoHumanizeUI] person selected', {
+                            sizeBase64: String(personDataUrl || '').length
+                        });
+                        personPreviewImg.src = ev.target.result;
+                        personPreview.classList.remove('hidden');
+                        personImg.src = ev.target.result;
+                        personStatus.textContent = currentLang === 'es' ? 'Cliente Listo ✓' : 'Client Ready ✓';
+                        personStatus.classList.replace('text-gray-500', 'text-technology-accent');
+                        personLoaded = true;
+                        checkReady();
+                    };
+                    reader.readAsDataURL(file);
+                }
+            };
+
+            filePersonMulti.onchange = async (e) => {
+                const files = Array.from(e.target.files || []);
+                if (!files.length) return;
+                const availableSlots = Math.max(0, MAX_PERSON_MULTI - personMultiDataUrls.length);
+                const acceptedFiles = files.slice(0, availableSlots);
+                if (acceptedFiles.length < files.length) {
+                    alert(currentLang === 'es'
+                        ? `Solo se permiten ${MAX_PERSON_MULTI} personas por solicitud.`
+                        : `Only ${MAX_PERSON_MULTI} persons are allowed per request.`);
+                }
+                const readPromises = acceptedFiles.map((file) => new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = (ev) => resolve(String(ev.target?.result || ''));
+                    reader.onerror = () => reject(new Error('No se pudo leer una imagen.'));
+                    reader.readAsDataURL(file);
+                }));
+                try {
+                    const dataUrls = (await Promise.all(readPromises)).filter(Boolean);
+                    personMultiDataUrls = [...personMultiDataUrls, ...dataUrls];
+                    console.log('[PromoHumanizeUI] multiple persons selected', {
+                        count: personMultiDataUrls.length
+                    });
+                    renderPersonMultiList();
+                    checkReady();
+                } catch (_error) {
+                    alert(currentLang === 'es'
+                        ? 'No se pudieron cargar todas las imagenes.'
+                        : 'Could not load all images.');
+                } finally {
+                    filePersonMulti.value = '';
+                }
+            };
+
+            function checkReady() {
+                const hasPersonInput = personMode === 'multiple'
+                    ? personMultiDataUrls.length > 0
+                    : personLoaded;
+                const isReady = renderLoaded && hasPersonInput;
+                btnProcessTrigger.disabled = !isReady;
+                btnProcessTrigger.classList.toggle('animate-pulse', isReady);
+            }
+
+            renderRemoveBtn.onclick = (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                console.log('[PromoHumanizeUI] render removed');
+                resetRenderSelection();
+                checkReady();
+            };
+
+            personRemoveBtn.onclick = (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                console.log('[PromoHumanizeUI] person removed');
+                resetPersonSelection();
+                checkReady();
+            };
+
+            personMultiList.onclick = (event) => {
+                const button = event.target.closest('.person-multi-remove-btn');
+                if (!button) return;
+                event.preventDefault();
+                event.stopPropagation();
+                const index = Number(button.getAttribute('data-index'));
+                if (!Number.isInteger(index) || index < 0 || index >= personMultiDataUrls.length) return;
+                personMultiDataUrls.splice(index, 1);
+                console.log('[PromoHumanizeUI] multi person removed', { index, count: personMultiDataUrls.length });
+                renderPersonMultiList();
+                checkReady();
+            };
+
+            personMultiClearBtn.onclick = (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                console.log('[PromoHumanizeUI] multi persons cleared');
+                resetPersonMultiSelection();
+                checkReady();
+            };
+
+            personModeSingleTab.onclick = () => setPersonMode('single');
+            personModeMultipleTab.onclick = () => setPersonMode('multiple');
+
+            if (renderHelpToggle && renderHelpLegend) {
+                renderHelpToggle.onclick = (event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    renderHelpLegend.classList.toggle('hidden');
+                };
+                document.addEventListener('click', (event) => {
+                    if (!renderHelpLegend.contains(event.target) && !renderHelpToggle.contains(event.target)) {
+                        renderHelpLegend.classList.add('hidden');
+                    }
+                });
+            }
+
+            sceneSelect.onchange = () => {
+                syncCustomSceneInputVisibility();
+            };
+
+            btnProcessTrigger.onclick = () => {
+                modalFormContent.classList.remove('hidden');
+                modalLoadingContent.classList.add('hidden');
+                leadModal.style.display = 'flex';
+                trackPromoAnalytics('promo_modal_open', {
+                    personMode,
+                    hasRender: !!renderDataUrl
+                });
+                notifyPromoUsage('modal_open', '', promoProjectId);
+            };
+
+            closeModal.onclick = () => leadModal.style.display = 'none';
+
+            leadForm.onsubmit = (e) => {
+                e.preventDefault();
+                const userEmail = e.target.querySelector('input[type="email"]').value;
+                console.log('[PromoHumanizeUI] lead submit', {
+                    email: userEmail,
+                    hasRender: !!renderDataUrl,
+                    personMode,
+                    hasPerson: personMode === 'multiple' ? personMultiDataUrls.length > 0 : !!personDataUrl
+                });
+                shareEmailInput.value = userEmail;
+                lastLeadEmail = userEmail;
+                trackPromoAnalytics('promo_email_submitted', {
+                    hasEmail: !!userEmail,
+                    personMode
+                });
+                notifyPromoUsage('email_submitted', userEmail, promoProjectId);
+                modalFormContent.classList.add('hidden');
+                modalLoadingContent.classList.remove('hidden');
+                startProcessing(userEmail);
+            };
+
+            async function startProcessing(userEmail) {
+                scanLine.classList.remove('hidden');
+                try {
+                    const sceneCode = sceneSelect?.value || 'living_seated';
+                    const customConcept = sceneCode === 'custom_concept'
+                        ? String(sceneCustomConcept?.value || '').trim()
+                        : '';
+                    if (sceneCode === 'custom_concept' && !customConcept) {
+                        throw new Error(currentLang === 'es'
+                            ? 'Escribe un pequeño concepto para la escena personalizada.'
+                            : 'Please write a short concept for the custom scene.');
+                    }
+                    console.log('[PromoHumanizeUI] start processing', {
+                        email: userEmail,
+                        currentLang,
+                        existingProjectId: promoProjectId || null,
+                        sceneCode,
+                        hasCustomConcept: !!customConcept,
+                        personMode,
+                        personCount: personMode === 'multiple' ? personMultiDataUrls.length : (personDataUrl ? 1 : 0)
+                    });
+                    const projectId = await ensurePromoProject();
+                    console.log('[PromoHumanizeUI] processing with project', { projectId });
+                    const requestBody = {
+                        projectId,
+                        email: userEmail,
+                        language: currentLang,
+                        style: 'human_real_estate',
+                        format: '16/9',
+                        sceneCode,
+                        customConcept,
+                        personMode,
+                        renderImageDataUrl: renderDataUrl
+                    };
+                    if (personMode === 'multiple') {
+                        requestBody.personImageDataUrls = personMultiDataUrls.slice();
+                    } else {
+                        requestBody.personImageDataUrl = personDataUrl;
+                    }
+                    const response = await apiRequest('/api/public/simulator/humanize', {
+                        method: 'POST',
+                        requireAccess: true,
+                        body: requestBody
+                    });
+                    console.log('[PromoHumanizeUI] humanize success', response);
+                    lastGeneratedImageUrl = String(response?.imageUrl || response?.imageDataUrl || '').trim();
+                    lastGeneratedRenderId = Number(response?.renderId || 0) || null;
+                    leadModal.style.display = 'none';
+                    scanLine.classList.add('hidden');
+                    renderImg.src = response?.imageUrl || response?.imageDataUrl || renderImg.src;
+                    renderImg.classList.replace('opacity-30', 'opacity-100');
+                    renderImg.style.filter = "contrast(1.05) saturate(1.1)";
+                    personImg.classList.add('opacity-0');
+                    shareSection.classList.remove('hidden');
+                    btnProcessTrigger.textContent = currentLang === 'es' ? "GENERAR OTRA VERSIÓN" : "GENERATE ANOTHER VERSION";
+                    btnProcessTrigger.classList.replace('bg-white', 'bg-technology-accent');
+                    btnProcessTrigger.classList.add('text-white');
+                    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+                } catch (error) {
+                    console.error('[PromoHumanizeUI] humanize error', {
+                        message: error?.message || 'unknown_error',
+                        projectId: promoProjectId || null
+                    });
+                    modalLoadingContent.classList.add('hidden');
+                    modalFormContent.classList.remove('hidden');
+                    scanLine.classList.add('hidden');
+                    alert(`No se pudo procesar la integración IA: ${error.message}`);
+                }
+            }
+
+            document.getElementById('btn-share-email').onclick = function() {
+                const button = this;
+                const targetEmail = String(shareEmailInput?.value || '').trim().toLowerCase();
+                if (!targetEmail) {
+                    alert(currentLang === 'es' ? 'Escribe un email destino.' : 'Please enter a target email.');
+                    return;
+                }
+                if (!lastGeneratedImageUrl) {
+                    alert(currentLang === 'es'
+                        ? 'Primero genera un render para poder compartirlo.'
+                        : 'Generate a render first so you can share it.');
+                    return;
+                }
+                const originalText = button.textContent;
+                button.textContent = translations[currentLang]['share-loading'];
+                button.disabled = true;
+                apiRequest('/api/public/simulator/share-email', {
+                    method: 'POST',
+                    body: {
+                        targetEmail,
+                        requesterEmail: lastLeadEmail,
+                        imageUrl: lastGeneratedImageUrl,
+                        projectId: promoProjectId || null,
+                        renderId: lastGeneratedRenderId || null,
+                        source: 'promo.html'
+                    }
+                })
+                    .then(() => {
+                        button.textContent = translations[currentLang]['share-success'];
+                        button.classList.replace('bg-render-accent', 'bg-green-600');
+                        button.classList.replace('text-black', 'text-white');
+                    })
+                    .catch((error) => {
+                        console.error('[PromoHumanizeUI] share email error', {
+                            message: error?.message || 'share_email_failed'
+                        });
+                        button.textContent = originalText;
+                        alert(currentLang === 'es'
+                            ? `No se pudo enviar el correo: ${error.message}`
+                            : `Could not send email: ${error.message}`);
+                    })
+                    .finally(() => {
+                        button.disabled = false;
+                    });
+            };
+
+            if (btnDownloadRender) {
+                btnDownloadRender.onclick = async function() {
+                    const imageToDownload = String(lastGeneratedImageUrl || renderImg?.src || '').trim();
+                    if (!imageToDownload) {
+                        alert(currentLang === 'es'
+                            ? 'Aún no hay imagen para descargar.'
+                            : 'There is no image to download yet.');
+                        return;
+                    }
+                    try {
+                        const fileName = `iris-human-render-${Date.now()}.png`;
+                        if (imageToDownload.startsWith('data:image/')) {
+                            const anchor = document.createElement('a');
+                            anchor.href = imageToDownload;
+                            anchor.download = fileName;
+                            document.body.appendChild(anchor);
+                            anchor.click();
+                            anchor.remove();
+                            return;
+                        }
+
+                        const response = await fetch(imageToDownload);
+                        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                        const blob = await response.blob();
+                        const blobUrl = URL.createObjectURL(blob);
+                        const anchor = document.createElement('a');
+                        anchor.href = blobUrl;
+                        anchor.download = fileName;
+                        document.body.appendChild(anchor);
+                        anchor.click();
+                        anchor.remove();
+                        URL.revokeObjectURL(blobUrl);
+                    } catch (error) {
+                        console.error('[PromoHumanizeUI] download render error', {
+                            message: error?.message || 'download_failed'
+                        });
+                        alert(currentLang === 'es'
+                            ? 'No se pudo descargar la imagen.'
+                            : 'Could not download the image.');
+                    }
+                };
+            }
+
+            renderSceneOptions();
+            loadSimulatorConfig();
+            syncCustomSceneInputVisibility();
+            renderPersonMultiList();
+            setPersonMode('single');
+        });
+    </script>
+
+</body>
+</html>

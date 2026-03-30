@@ -3,389 +3,498 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dash Manquehue | Experience 360</title>
+    <title>Dash Manquehue | Real Estate Cinematic Experience</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <!-- Bibliotecas de Animación -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
     <script src="https://unpkg.com/@studio-freight/lenis@1.0.34/dist/lenis.min.js"></script>
-    
+
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
-        
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700;800&display=swap');
+
         :root {
-            --primary: #4f46e5;
-            --accent: #10b981;
+            --step1: #6366f1;
+            --step2: #10b981;
+            --step3: #f59e0b;
+            --step4: #ec4899;
+            --step5: #64748b;
+            --glass: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
         }
 
-        body { 
-            font-family: 'Plus Jakarta Sans', sans-serif; 
-            background-color: #020617; /* Fondo oscuro para mayor contraste wow */
-            color: #f8fafc;
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background:
+                radial-gradient(circle at top center, rgba(99, 102, 241, 0.18), transparent 26%),
+                radial-gradient(circle at bottom left, rgba(236, 72, 153, 0.08), transparent 25%),
+                #020205;
+            color: #fff;
             overflow-x: hidden;
         }
 
-        /* Smooth Scroll Config */
-        html.lenis { height: auto; }
-        .lenis.lenis-smooth { scroll-behavior: auto; }
-        .lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
-        .lenis.lenis-stopped { overflow: hidden; }
+        html.lenis {
+            height: auto;
+        }
 
-        .bento-card {
-            background: rgba(15, 23, 42, 0.6);
+        .lenis.lenis-smooth {
+            scroll-behavior: auto;
+        }
+
+        .glass-panel {
+            background: var(--glass);
+            backdrop-filter: blur(25px);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 30px 90px rgba(0, 0, 0, 0.2);
+        }
+
+        .hero-title {
+            font-size: clamp(2.5rem, 10vw, 8.5rem);
+            line-height: 0.9;
+            letter-spacing: -0.05em;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .video-stat {
+            width: 130px;
+            height: 130px;
+            border-radius: 999px;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        .video-stat:hover {
+            background: var(--step1);
+            transform: translateY(-10px) scale(1.05);
+            border-color: transparent;
+        }
+
+        .amenity-row {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 1.5rem 0;
+            transition: all 0.4s ease;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .amenity-row:hover {
+            padding-left: 1.5rem;
+            background: linear-gradient(90deg, rgba(16, 185, 129, 0.1) 0%, transparent 100%);
+        }
+
+        .amenity-row span:first-child {
+            font-size: 10px;
+            font-weight: 900;
+            color: rgba(255, 255, 255, 0.3);
+            letter-spacing: 0.2em;
+        }
+
+        .unit-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 1.5rem;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .unit-card:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: var(--step2);
+        }
+
+        .step-indicator {
+            font-size: 8px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            padding: 4px 12px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.05);
+            width: fit-content;
+        }
+
+        .debug-input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            color: #d5e4ff;
+            font-family: monospace;
+            font-size: 11px;
+            padding: 0.85rem 1rem;
+            border-radius: 18px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            outline: none;
+        }
+
+        .debug-input:focus {
+            border-color: rgba(99, 102, 241, 0.8);
+        }
+
+        .debug-button {
+            border-radius: 18px;
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            transition: 0.25s ease;
+        }
+
+        .doc-link[aria-disabled="true"] {
+            opacity: 0.45;
+            pointer-events: none;
+        }
+
+        .empty-state {
+            border: 1px dashed rgba(255, 255, 255, 0.12);
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        .hero-gradient {
+            background: linear-gradient(to top, rgba(2, 2, 5, 1) 0%, rgba(2, 2, 5, 0.45) 35%, rgba(2, 2, 5, 0.12) 100%);
+        }
+
+        .audio-badge {
+            background: rgba(0, 0, 0, 0.35);
             backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 32px;
-            overflow: hidden;
-            will-change: transform, opacity;
         }
 
-        .hero-overlay {
-            background: linear-gradient(to top, #020617 0%, rgba(2, 6, 23, 0.4) 50%, transparent 100%);
+        .scroll-column::-webkit-scrollbar {
+            width: 5px;
         }
 
-        .debug-glass {
-            background: rgba(15, 23, 42, 0.9);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+        .scroll-column::-webkit-scrollbar-track {
+            background: transparent;
         }
 
-        .map-mesh {
-            background-image: radial-gradient(circle at 2px 2px, rgba(255,255,255,0.05) 1px, transparent 0);
-            background-size: 32px 32px;
+        .scroll-column::-webkit-scrollbar-thumb {
+            background: #1e1e2d;
+            border-radius: 10px;
         }
 
-        .text-glow {
-            text-shadow: 0 0 30px rgba(79, 70, 229, 0.4);
+        ::-webkit-scrollbar {
+            width: 5px;
         }
 
-        /* Clase para el efecto de revelado inicial */
-        .reveal { opacity: 0; transform: translateY(40px) scale(0.95); }
+        ::-webkit-scrollbar-track {
+            background: #020205;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #1e1e2d;
+            border-radius: 10px;
+        }
     </style>
 </head>
 <body class="antialiased">
-
-    <!-- PANEL DE CONTROL / API DEBUGGER -->
-    <div id="debug-panel" class="fixed bottom-8 right-8 z-[100] w-96 debug-glass text-white rounded-[32px] shadow-2xl overflow-hidden transition-all duration-500">
-        <div class="p-5 bg-white/5 flex justify-between items-center cursor-pointer border-b border-white/10" onclick="toggleDebug()">
+    <div id="debug-panel" class="fixed bottom-8 right-8 z-[100] w-96 glass-panel text-white rounded-[40px] overflow-hidden transition-all duration-500 max-h-[90vh] flex flex-col">
+        <div class="p-6 bg-white/5 flex justify-between items-center cursor-pointer border-b border-white/10" onclick="toggleDebug()">
             <div class="flex items-center gap-3">
-                <div class="w-2 h-2 rounded-full bg-indigo-400 animate-pulse"></div>
-                <span class="text-[10px] font-black uppercase tracking-[0.2em]">Configurador en Vivo</span>
+                <div class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></div>
+                <span class="text-[10px] font-black uppercase tracking-[0.2em]">Sync Controller</span>
             </div>
-            <i id="debug-icon" class="fa-solid fa-chevron-up text-xs opacity-50"></i>
+            <i id="debug-icon" class="fa-solid fa-chevron-up text-xs opacity-50 transition-transform duration-300"></i>
         </div>
-        <div id="debug-content" class="p-6 space-y-4">
-            <div class="grid grid-cols-1 gap-2">
-                <input id="api-base-url" class="w-full bg-black/40 text-emerald-300 font-mono text-[11px] p-3 rounded-xl border border-white/5 outline-none focus:border-emerald-500" placeholder="API Base URL (ej: http://localhost:4000)" />
-                <input id="api-project-id" class="w-full bg-black/40 text-indigo-300 font-mono text-[11px] p-3 rounded-xl border border-white/5 outline-none focus:border-indigo-500" placeholder="Project ID (manual)" />
-                <div class="grid grid-cols-[1fr_auto] gap-2 items-center">
-                    <select id="api-project-select" class="w-full bg-black/40 text-cyan-300 font-mono text-[11px] p-3 rounded-xl border border-white/5 outline-none focus:border-cyan-500">
-                        <option value="">Selecciona ID guardado</option>
-                    </select>
-                    <button onclick="refreshProjectIdsDropdown()" class="px-3 py-3 bg-cyan-700 hover:bg-cyan-600 text-white text-[10px] font-extrabold uppercase tracking-widest rounded-xl transition-all shadow-lg active:scale-95">Refrescar</button>
-                </div>
+        <div id="debug-content" class="p-8 space-y-4 overflow-y-auto hidden">
+            <input id="api-base-url" class="debug-input" placeholder="API Base URL (ej: http://localhost:4000)">
+            <input id="api-project-id" class="debug-input" placeholder="Project ID manual">
+            <div class="grid grid-cols-[1fr_auto] gap-2 items-center">
+                <select id="api-project-select" class="debug-input">
+                    <option value="">Selecciona ID guardado</option>
+                </select>
+                <button onclick="refreshProjectIdsDropdown()" class="debug-button px-4 py-3 bg-cyan-700 hover:bg-cyan-600 text-white">Refresh</button>
             </div>
-            <div class="rounded-xl border border-white/10 bg-black/30 p-3 space-y-1">
-                <p class="text-[9px] uppercase tracking-[0.18em] text-slate-400 font-bold">Modo</p>
-                <p id="api-mode-state" class="text-[11px] font-black text-emerald-300">PUBLICO (sin token)</p>
+            <div class="rounded-[24px] border border-white/10 bg-black/30 p-4 space-y-1">
+                <p class="text-[9px] uppercase tracking-[0.18em] text-white/30 font-bold">Modo</p>
+                <p id="api-mode-state" class="text-[11px] font-black text-emerald-300">PUBLICO / LANDING</p>
                 <p id="api-endpoint-state" class="text-[10px] font-mono text-slate-300 break-all">Endpoint: -</p>
                 <p id="api-project-state" class="text-[10px] font-mono text-indigo-300">Project ID: -</p>
             </div>
-            <textarea id="api-json" class="w-full h-64 bg-black/40 text-indigo-300 font-mono text-[11px] p-4 rounded-2xl border border-white/5 outline-none focus:border-indigo-500 transition-colors"></textarea>
-            <div class="grid grid-cols-1 gap-2">
-                <button onclick="fetchProjectById()" class="py-3 bg-emerald-700 hover:bg-emerald-600 text-white text-[10px] font-extrabold uppercase tracking-widest rounded-xl transition-all shadow-lg active:scale-95">Cargar por ID</button>
+            <textarea id="api-json" class="w-full h-72 bg-black/40 text-indigo-300 font-mono text-[10px] p-5 rounded-3xl border border-white/5 outline-none focus:border-indigo-500"></textarea>
+            <div class="grid grid-cols-2 gap-2">
+                <button onclick="fetchProjectById()" class="debug-button py-4 bg-emerald-700 hover:bg-emerald-600 text-white">Cargar ID</button>
+                <button onclick="updateFromAPI()" class="debug-button py-4 bg-indigo-600 hover:bg-indigo-500 text-white">Actualizar</button>
             </div>
-            <button onclick="updateFromAPI()" class="w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-extrabold uppercase tracking-widest rounded-2xl transition-all shadow-lg active:scale-95">Aplicar JSON a Vista</button>
             <pre id="api-log" class="w-full h-40 bg-black/50 text-slate-200 font-mono text-[10px] p-3 rounded-2xl border border-white/5 overflow-auto"></pre>
         </div>
     </div>
 
-    <!-- NAVEGACIÓN -->
-    <nav class="fixed top-0 w-full z-50 px-6 py-6 pointer-events-none">
-        <div class="max-w-7xl mx-auto flex justify-between items-center bg-black/20 backdrop-blur-xl px-8 py-4 rounded-[24px] border border-white/10 shadow-2xl pointer-events-auto">
-            <div class="flex items-center gap-4">
-                <div class="bg-indigo-600 p-2.5 rounded-xl shadow-lg shadow-indigo-500/40">
-                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-10V4m0 10V4m0 10h1m-1 4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
-                </div>
-                <span class="font-extrabold tracking-tighter text-2xl text-white">DASH<span class="text-indigo-500">MANQUEHUE</span></span>
-            </div>
-            <div class="flex items-center gap-6">
-                <div class="hidden md:flex gap-8 text-[10px] font-black uppercase tracking-[0.2em] text-white/50">
-                    <a href="#" class="hover:text-white transition">Inmuebles</a>
-                    <a href="#" class="hover:text-white transition">Entorno</a>
-                    <a href="#" class="hover:text-white transition">Soporte</a>
-                </div>
-                <div class="h-8 w-px bg-white/10 hidden md:block"></div>
-                <button class="bg-white text-black px-6 py-2.5 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-indigo-500 hover:text-white transition-all shadow-xl">
-                    Solicitar Visita
-                </button>
+    <nav class="fixed top-0 w-full z-50 px-10 py-10 flex justify-between items-center pointer-events-none">
+        <div class="flex items-center gap-12 pointer-events-auto">
+            <span class="font-extrabold tracking-tighter text-2xl">DASH<span class="text-indigo-500">MANQUEHUE</span></span>
+            <div class="hidden lg:flex gap-10 text-[10px] font-black uppercase tracking-widest text-white/40">
+                <a href="#hero" class="hover:text-white transition">Home</a>
+                <a href="#apartments" class="hover:text-white transition">Apartments</a>
+                <a href="#features" class="hover:text-white transition">Features</a>
+                <a href="#contact" class="hover:text-white transition">Contact</a>
             </div>
         </div>
+        <button id="nav-cta" class="pointer-events-auto bg-white text-black px-10 py-4 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-indigo-600 hover:text-white transition-all shadow-2xl">
+            Solicitar Visita
+        </button>
     </nav>
 
-    <!-- HERO CON PARALLAX -->
-    <header class="relative w-full h-screen overflow-hidden">
+    <header id="hero" class="relative w-full h-screen overflow-hidden flex items-center justify-center">
         <div id="hero-img-container" class="absolute inset-0 w-full h-full scale-110">
-            <img id="view-cover" src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=2000" class="w-full h-full object-cover" alt="Main Cover">
+            <img id="view-cover" src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=2000" class="w-full h-full object-cover" alt="Portada proyecto">
         </div>
-        <div class="absolute inset-0 hero-overlay"></div>
-        
-        <div class="absolute inset-0 flex items-center justify-center p-8">
-            <div class="max-w-7xl w-full text-center space-y-8" id="hero-text">
-                <div class="inline-flex items-center gap-3 px-6 py-2 bg-indigo-500/10 border border-indigo-500/30 backdrop-blur-md rounded-full reveal">
-                    <span id="view-tag-type" class="text-indigo-400 text-[10px] font-black uppercase tracking-[0.3em]">Departamento Premium</span>
-                </div>
-                <h1 id="view-name" class="text-6xl md:text-[120px] font-black text-white leading-[0.85] tracking-tighter text-glow reveal">
-                    Mirador de<br>Manquehue
+        <div class="absolute inset-0 hero-gradient"></div>
+
+        <div class="relative z-10 w-full px-12 lg:px-24 grid lg:grid-cols-2 items-center gap-20">
+            <div class="space-y-10" id="hero-text">
+                <div class="step-indicator text-indigo-400">Paso 4: Storytelling</div>
+                <div id="view-tag-type" class="text-[10px] font-black uppercase tracking-[0.3em] text-white/35 reveal">Property</div>
+                <h1 id="view-headline" class="hero-title reveal">
+                    YOUR PLACE<br>ON EARTH
                 </h1>
-                <p id="view-address-label" class="text-xl md:text-2xl text-slate-400 font-medium reveal">Av. Manquehue 1234, Las Condes</p>
-                
-                <div class="pt-12 reveal">
-                    <div class="animate-bounce inline-block p-4 rounded-full border border-white/10">
-                        <i class="fa-solid fa-chevron-down text-white/20"></i>
-                    </div>
+                <p id="view-subheadline" class="max-w-md text-lg text-white/60 font-light leading-relaxed reveal">
+                    Creamos un complejo para quienes valoran vivir en una ciudad moderna con estandares de vanguardia tecnologica.
+                </p>
+                <div class="reveal">
+                    <button id="hero-cta" class="bg-white text-black px-10 py-4 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-indigo-600 hover:text-white transition-all shadow-2xl">
+                        Solicitar Visita
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex lg:justify-end gap-6 reveal">
+                <div class="video-stat">
+                    <span id="view-time-1" class="text-4xl font-bold">5</span>
+                    <span class="text-[8px] font-black uppercase text-white/40 text-center mt-1 px-4 leading-tight">min al<br><span id="view-point-1">Metro</span></span>
+                </div>
+                <div class="video-stat">
+                    <span id="view-time-2" class="text-4xl font-bold">17</span>
+                    <span class="text-[8px] font-black uppercase text-white/40 text-center mt-1 px-4 leading-tight">min al<br><span id="view-point-2">Shopping</span></span>
+                </div>
+                <div class="video-stat">
+                    <span id="view-time-pv" class="text-4xl font-bold">10</span>
+                    <span class="text-[8px] font-black uppercase text-white/40 text-center mt-1 px-4 leading-tight">min al<br>Centro</span>
                 </div>
             </div>
         </div>
 
-        <!-- AUDIO FLOTANTE EN HERO -->
-        <div class="absolute bottom-12 right-12 z-20 reveal" id="hero-audio">
-            <div id="audio-module" class="bg-black/40 backdrop-blur-2xl border border-white/10 p-6 rounded-[32px] flex items-center gap-6 group hover:bg-indigo-600/20 transition-all cursor-pointer">
-                <button id="play-btn" class="w-14 h-14 bg-indigo-600 text-white rounded-2xl flex items-center justify-center text-xl shadow-2xl transition-transform active:scale-90">
+        <div class="absolute bottom-12 left-12 reveal">
+            <div class="flex items-center gap-3 bg-white/5 backdrop-blur-xl px-5 py-3 rounded-full border border-white/10">
+                <i class="fa-solid fa-location-dot text-indigo-500 text-xs"></i>
+                <span id="view-address-label" class="text-[10px] font-bold tracking-widest text-white/70 uppercase">-</span>
+            </div>
+        </div>
+
+        <div class="absolute bottom-12 right-12 reveal">
+            <div id="audio-module" class="audio-badge px-5 py-4 rounded-full flex items-center gap-4 cursor-pointer">
+                <div id="play-btn" class="w-12 h-12 rounded-full bg-indigo-600 text-white flex items-center justify-center shadow-xl">
                     <i class="fa-solid fa-play"></i>
-                </button>
-                <div class="hidden md:block">
-                    <p class="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-1">Inmersive Experience</p>
-                    <p id="audio-status" class="text-white font-bold">Sonido Ambiental</p>
+                </div>
+                <div>
+                    <p class="text-[9px] font-black text-indigo-300 uppercase tracking-[0.3em] mb-1">Audio</p>
+                    <p id="audio-status" class="text-sm font-semibold text-white">Sonido Ambiental</p>
                 </div>
             </div>
         </div>
     </header>
 
-    <!-- BENTO GRID EXPERIENTIAL -->
-    <main class="max-w-7xl mx-auto px-6 py-32 space-y-24 relative z-10">
-        
-        <div class="grid grid-cols-1 md:grid-cols-12 gap-8">
-            
-            <!-- TARJETA CONCEPTO (PARALLAX ELEMENT) -->
-            <div class="md:col-span-8 bento-card p-12 md:p-20 relative group reveal" data-speed="1.1">
-                <div class="space-y-12 relative z-10">
-                    <div class="flex items-center gap-6">
-                        <span class="text-[10px] font-black uppercase tracking-[0.4em] text-indigo-500">Filosofía de Vida</span>
-                        <div class="h-px flex-1 bg-white/5"></div>
-                    </div>
-                    <p id="view-desc" class="text-4xl md:text-5xl font-extrabold text-white leading-tight tracking-tight text-balance">
-                        "Proyecto residencial con alta conectividad, vista despejada y equipamiento premium."
-                    </p>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-12 pt-12 border-t border-white/5">
-                        <div class="space-y-1">
-                            <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Entrega</p>
-                            <p id="side-status" class="font-black text-indigo-400 text-lg">Inmediata</p>
-                        </div>
-                        <div class="space-y-1">
-                            <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Tipología</p>
-                            <p id="side-type" class="font-black text-white text-lg">Depto.</p>
-                        </div>
-                        <div class="space-y-1">
-                            <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Vista</p>
-                            <p id="side-orient" class="font-black text-white text-lg">Norte</p>
-                        </div>
-                        <div class="space-y-1">
-                            <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Comuna</p>
-                            <p id="side-loc" class="font-black text-white text-lg">Las Condes</p>
-                        </div>
-                    </div>
-                </div>
-                <!-- Decoración fondo -->
-                <div class="absolute -right-20 -top-20 w-64 h-64 bg-indigo-600/10 blur-[100px] rounded-full group-hover:bg-indigo-600/20 transition-colors"></div>
+    <section id="apartments" class="px-12 lg:px-24 py-32 space-y-20">
+        <div class="flex flex-col md:flex-row justify-between items-end gap-10">
+            <div class="space-y-4">
+                <div class="step-indicator text-emerald-400">Paso 2: Unidades</div>
+                <h2 class="text-5xl lg:text-7xl font-bold tracking-tighter uppercase italic">Filter<br>Apartments</h2>
             </div>
-
-            <!-- TARJETA CTA SHINY -->
-            <div class="md:col-span-4 bento-card bg-indigo-600 p-12 flex flex-col justify-between text-white reveal shadow-2xl shadow-indigo-500/20" data-speed="0.9">
-                <div class="space-y-6">
-                    <div class="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center">
-                        <i class="fa-solid fa-key text-2xl"></i>
-                    </div>
-                    <h3 class="text-4xl font-black tracking-tighter leading-none">Invierta en el futuro.</h3>
-                    <p class="text-indigo-100/70 text-sm leading-relaxed font-medium">Sincronización en tiempo real con nuestra central de ventas.</p>
+            <div class="flex gap-10 border-b border-white/10 pb-4">
+                <div class="text-center">
+                    <p class="text-[9px] font-black text-white/30 uppercase mb-1">Disponibles</p>
+                    <span id="view-avail" class="text-3xl font-bold text-emerald-400">24</span>
                 </div>
-                <button class="w-full py-5 bg-white text-indigo-700 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] hover:scale-[1.02] transition-transform active:scale-95 shadow-xl">
-                    Solicitar Cotización
-                </button>
-            </div>
-
-            <!-- CONNECTIVITY BLOCKS WITH HOVER PARALLAX -->
-            <div class="md:col-span-3 bento-card p-10 space-y-8 reveal group" data-speed="1.2">
-                <div class="w-14 h-14 bg-white/5 rounded-2xl flex items-center justify-center text-indigo-500 group-hover:scale-110 transition-transform">
-                    <i class="fa-solid fa-person-walking text-2xl"></i>
-                </div>
-                <div class="space-y-2">
-                    <h4 id="view-point-1" class="font-bold text-slate-500 uppercase text-[9px] tracking-[0.3em]">Metro Manquehue</h4>
-                    <p class="text-5xl font-black tracking-tighter text-white"><span id="view-time-1">5</span><span class="text-sm font-normal text-indigo-500/50 ml-2 italic">min</span></p>
+                <div class="text-center">
+                    <p class="text-[9px] font-black text-white/30 uppercase mb-1">Totales</p>
+                    <span id="view-units" class="text-3xl font-bold">120</span>
                 </div>
             </div>
-
-            <div class="md:col-span-3 bento-card p-10 space-y-8 reveal group" data-speed="1.05">
-                <div class="w-14 h-14 bg-white/5 rounded-2xl flex items-center justify-center text-indigo-500 group-hover:scale-110 transition-transform">
-                    <i class="fa-solid fa-tree-city text-2xl"></i>
-                </div>
-                <div class="space-y-2">
-                    <h4 id="view-point-2" class="font-bold text-slate-500 uppercase text-[9px] tracking-[0.3em]">Parque Araucano</h4>
-                    <p class="text-5xl font-black tracking-tighter text-white"><span id="view-time-2">10</span><span class="text-sm font-normal text-indigo-500/50 ml-2 italic">min</span></p>
-                </div>
-            </div>
-
-            <div class="md:col-span-6 bento-card bg-slate-900/40 p-10 flex flex-col md:flex-row justify-between items-center gap-8 relative overflow-hidden reveal">
-                <div class="relative z-10 space-y-2 text-center md:text-left">
-                    <p id="view-orientation" class="text-4xl font-black text-white tracking-tighter uppercase">Nor-Oriente</p>
-                    <p class="text-indigo-400 text-[9px] font-black uppercase tracking-[0.4em]">Orientación Principal</p>
-                </div>
-                <div class="relative z-10 text-center md:text-right">
-                    <p id="view-post-venta" class="text-white font-black text-3xl tracking-tighter">15 min <span class="text-xs font-normal text-slate-500 tracking-normal">avg.</span></p>
-                    <p class="text-slate-500 text-[9px] font-black uppercase tracking-[0.4em]">Velocidad Post-Venta</p>
-                </div>
-                <!-- Luz ambiental interna -->
-                <div class="absolute inset-0 bg-gradient-to-r from-indigo-500/5 to-emerald-500/5"></div>
-            </div>
-
-            <!-- ENTORNO Y MAPA (FULL SECTION) -->
-            <div class="md:col-span-4 bento-card p-12 flex flex-col justify-center gap-8 bg-indigo-900/10 border-indigo-500/20 reveal">
-                <div class="w-16 h-16 bg-indigo-600 text-white rounded-3xl flex items-center justify-center shadow-2xl shadow-indigo-600/40">
-                    <i class="fa-solid fa-earth-americas text-2xl"></i>
-                </div>
-                <div class="space-y-4">
-                    <h3 class="text-3xl font-black tracking-tighter text-white uppercase italic">Barrio Consolidado</h3>
-                    <p id="view-env-desc" class="text-slate-400 leading-relaxed font-medium text-lg">
-                        Sector exclusivo, cercano a servicios de primer nivel, gastronomía y áreas verdes protegidas.
-                    </p>
-                </div>
-                <button class="text-indigo-400 text-left font-black text-[10px] uppercase tracking-widest hover:text-white transition">Explorar áreas comunes <i class="fa-solid fa-arrow-right ml-2"></i></button>
-            </div>
-
-            <div class="md:col-span-8 bento-card h-[500px] overflow-hidden relative map-mesh reveal">
-                <div class="absolute inset-0 flex items-center justify-center">
-                    <!-- Radar animado -->
-                    <div class="absolute w-[400px] h-[400px] border border-indigo-500/20 rounded-full scale-0 animate-ping opacity-20"></div>
-                    <div class="absolute w-[600px] h-[600px] border border-indigo-500/10 rounded-full scale-0 animate-ping opacity-10" style="animation-delay: 1s"></div>
-                    
-                    <div class="relative flex flex-col items-center group">
-                        <div class="w-16 h-16 bg-white rounded-[24px] shadow-[0_0_50px_rgba(255,255,255,0.3)] flex items-center justify-center border border-slate-100 scale-110 group-hover:scale-125 transition-transform duration-700">
-                            <i class="fa-solid fa-location-dot text-indigo-600 text-2xl"></i>
-                        </div>
-                        <div class="mt-6 px-8 py-4 bg-indigo-600 text-white rounded-[20px] shadow-2xl">
-                            <p id="view-address-pin" class="text-xs font-black tracking-widest uppercase">Av. Manquehue 1234</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="absolute bottom-8 left-8">
-                     <span class="px-5 py-2.5 bg-black/40 backdrop-blur-xl rounded-full text-[9px] font-black uppercase tracking-[0.3em] text-white/60 border border-white/5">Radio Operativo: 2.5km</span>
-                </div>
-            </div>
-
         </div>
 
-        <footer class="pt-32 pb-12 text-center space-y-8 reveal">
-            <div class="flex justify-center gap-12 text-slate-500">
-                <i class="fa-brands fa-instagram text-2xl hover:text-indigo-500 cursor-pointer transition"></i>
-                <i class="fa-brands fa-vimeo-v text-2xl hover:text-indigo-500 cursor-pointer transition"></i>
-                <i class="fa-brands fa-linkedin-in text-2xl hover:text-indigo-500 cursor-pointer transition"></i>
+        <div class="grid lg:grid-cols-12 gap-12">
+            <div class="lg:col-span-4 space-y-4 max-h-[800px] overflow-y-auto pr-4 scroll-column" id="unit-list"></div>
+
+            <div class="lg:col-span-8 relative h-[800px] glass-panel rounded-[50px] overflow-hidden group reveal">
+                <img id="view-gallery" src="https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&q=80&w=1400" class="w-full h-full object-cover" alt="Galeria principal">
+                <div class="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-all"></div>
+                <div class="absolute top-10 left-10 glass-panel p-6 rounded-3xl w-64 reveal">
+                    <p class="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-4">Apartment Plan</p>
+                    <div class="aspect-square bg-white/5 rounded-xl flex items-center justify-center">
+                        <i class="fa-solid fa-draw-polygon text-4xl text-white/20"></i>
+                    </div>
+                    <div class="mt-6 flex justify-between items-center gap-4">
+                        <span id="view-tag-type-2" class="text-[10px] font-bold uppercase">Apartment</span>
+                        <span id="view-ratio" class="text-[10px] font-black text-emerald-400">1.2 RATIO</span>
+                    </div>
+                </div>
+                <div class="absolute bottom-10 right-10 flex gap-3">
+                    <span id="tag-pet" class="px-4 py-2 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full text-[10px] font-black uppercase">Pet Friendly</span>
+                    <span id="tag-bodega" class="px-4 py-2 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-full text-[10px] font-black uppercase">Bodega</span>
+                </div>
             </div>
-            <p class="text-[9px] font-black uppercase tracking-[0.8em] text-white/20">Experience by Dash Manquehue 2024</p>
-        </footer>
-    </main>
+        </div>
+    </section>
+
+    <section id="features" class="px-12 lg:px-24 py-32 grid lg:grid-cols-12 gap-24 items-start bg-white/[0.01]">
+        <div class="lg:col-span-5 space-y-12">
+            <div class="space-y-6">
+                <div class="step-indicator text-fuchsia-400">Paso 4: Diferenciadores</div>
+                <h2 class="text-6xl lg:text-8xl font-bold tracking-tighter uppercase italic leading-none">Features<br><span class="text-white/20">We give more</span></h2>
+                <p id="view-narrative" class="text-white/50 text-lg leading-relaxed max-w-sm">
+                    "Disenado para quienes buscan el equilibrio perfecto entre tecnologia, confort y las mejores vistas."
+                </p>
+            </div>
+            <div id="amenities-list-vertical"></div>
+        </div>
+
+        <div class="lg:col-span-7 h-[800px] rounded-[60px] overflow-hidden sticky top-32 glass-panel">
+            <img id="amenity-visual" src="https://images.unsplash.com/photo-1600566752355-35792bedcfea?auto=format&fit=crop&q=80&w=1400" class="w-full h-full object-cover transition-all duration-1000" alt="Feature visual">
+            <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
+            <div class="absolute bottom-12 left-12 max-w-md">
+                <p class="text-[9px] font-black uppercase tracking-[0.4em] text-white/35 mb-4">Project Summary</p>
+                <p id="view-desc" class="text-white/80 text-xl leading-relaxed">Descripcion comercial del proyecto.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="px-12 lg:px-24 py-32 grid lg:grid-cols-2 gap-12">
+        <div class="glass-panel p-16 flex flex-col justify-between rounded-[50px] bg-amber-500/[0.03] border-amber-500/10">
+            <div class="space-y-8">
+                <div class="step-indicator text-amber-500">Paso 3: Archivos</div>
+                <h3 class="text-4xl lg:text-5xl font-bold uppercase italic leading-none">Brochure &<br>Masterplan</h3>
+                <p id="docs-summary" class="text-white/40 max-w-sm">Accede a toda la documentacion tecnica y legal del proyecto.</p>
+            </div>
+            <a id="docs-download" href="#" target="_blank" rel="noreferrer" class="doc-link w-full py-6 mt-12 bg-amber-600 text-black font-black uppercase text-[10px] tracking-[0.3em] rounded-full hover:bg-amber-500 transition-all text-center">
+                Descargar Todo (PDF)
+            </a>
+        </div>
+
+        <div class="glass-panel h-[500px] overflow-hidden rounded-[50px] relative group reveal">
+            <img id="tour-visual" src="https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=1200" class="w-full h-full object-cover opacity-60 group-hover:scale-110 transition-transform duration-1000" alt="Cinematic tour">
+            <div class="absolute inset-0 flex items-center justify-center">
+                <div class="w-24 h-24 rounded-full bg-white text-black flex items-center justify-center text-3xl shadow-2xl group-hover:scale-110 transition-transform">
+                    <i class="fa-solid fa-play ml-2"></i>
+                </div>
+            </div>
+            <div class="absolute bottom-10 left-10">
+                <p class="text-[9px] font-black uppercase tracking-[0.4em] text-white/40">Watch cinematic tour</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="contact" class="px-12 lg:px-24 py-32 space-y-12">
+        <div class="flex items-center gap-8">
+            <h2 class="text-4xl font-bold uppercase italic tracking-tighter">Puntos de Venta</h2>
+            <div class="h-px flex-1 bg-white/10"></div>
+        </div>
+        <div id="sucursales-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"></div>
+    </section>
+
+    <footer class="py-20 text-center opacity-30">
+        <p class="text-[8px] font-black uppercase tracking-[1em]">Dash Manquehue Cinematic 2024</p>
+    </footer>
 
     <script>
-        // CONFIGURACIÓN DE ANIMACIÓN (GSAP + LENIS)
         gsap.registerPlugin(ScrollTrigger);
 
-        // 1. Inicializar Lenis (Smooth Scroll)
-        const lenis = new Lenis({
-            duration: 1.2,
-            easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-            smoothWheel: true
-        });
+        const lenis = new Lenis({ duration: 1.5, smoothWheel: true });
 
         function raf(time) {
             lenis.raf(time);
             requestAnimationFrame(raf);
         }
+
         requestAnimationFrame(raf);
 
-        // 2. Animaciones de Revelado (Entrada suave)
-        gsap.utils.toArray(".reveal").forEach((elem) => {
-            gsap.to(elem, {
+        function initAnimations() {
+            gsap.to('#hero-img-container img', {
+                scale: 1.4,
                 scrollTrigger: {
-                    trigger: elem,
-                    start: "top 90%",
-                    toggleActions: "play none none none"
-                },
-                opacity: 1,
-                y: 0,
-                scale: 1,
-                duration: 1,
-                ease: "power4.out",
-                stagger: 0.1
-            });
-        });
-
-        // 3. Parallax en el Hero
-        gsap.to("#hero-img-container", {
-            yPercent: 30,
-            ease: "none",
-            scrollTrigger: {
-                trigger: "header",
-                start: "top top",
-                end: "bottom top",
-                scrub: true
-            }
-        });
-
-        gsap.to("#hero-text", {
-            yPercent: -20,
-            opacity: 0,
-            ease: "none",
-            scrollTrigger: {
-                trigger: "header",
-                start: "top top",
-                end: "bottom 20%",
-                scrub: true
-            }
-        });
-
-        // 4. Parallax Diferencial en Tarjetas (data-speed)
-        gsap.utils.toArray("[data-speed]").forEach((elem) => {
-            const speed = parseFloat(elem.getAttribute("data-speed"));
-            gsap.to(elem, {
-                y: (i, target) => -100 * (speed - 1),
-                ease: "none",
-                scrollTrigger: {
-                    trigger: elem,
-                    start: "top bottom",
-                    end: "bottom top",
+                    trigger: 'header',
+                    start: 'top top',
+                    end: 'bottom top',
                     scrub: true
                 }
             });
-        });
 
-        // LÓGICA DE DATOS (Mantenida de la versión anterior)
+            gsap.to('#hero-text', {
+                yPercent: -14,
+                opacity: 0.2,
+                scrollTrigger: {
+                    trigger: 'header',
+                    start: 'top top',
+                    end: 'bottom top',
+                    scrub: true
+                }
+            });
+
+            gsap.utils.toArray('.reveal').forEach((elem) => {
+                gsap.to(elem, {
+                    scrollTrigger: { trigger: elem, start: 'top 90%' },
+                    opacity: 1,
+                    y: 0,
+                    duration: 1.2,
+                    ease: 'power4.out'
+                });
+            });
+        }
+
         const initialData = {
-            nombre: "Mirador de Manquehue",
-            descripcion_comercial: "Proyecto residencial con alta conectividad, vista despejada y equipamiento premium.",
-            punto_cercano_1: "Metro Manquehue",
+            nombre: 'Mirador de Manquehue',
+            headline: 'YOUR PLACE ON EARTH',
+            subHeadline: 'Departamentos inteligentes con vistas infinitas disenados para una vida cosmopolita.',
+            ctaLabel: 'Solicitar visita guiada',
+            descripcion_comercial: 'Una propuesta arquitectonica que integra el skyline de Manquehue con tecnologia de punta y una experiencia de venta inmersiva.',
+            narrativa: 'Una propuesta arquitectonica que integra el skyline de Manquehue con tecnologia de punta.',
+            direccion_pin: 'Av. Manquehue 1234, Las Condes',
+            punto_cercano_1: 'Metro Manquehue',
             tiempo_visita_min: 5,
-            punto_cercano_2: "Parque Araucano",
-            tiempo_recorrido_min: 10,
-            orientacion_principal: "Nor-Oriente",
-            tiempo_post_venta: 15,
-            descripcion_entorno: "Sector exclusivo, cercano a servicios de primer nivel, gastronomía y áreas verdes protegidas.",
-            direccion_pin: "Av. Manquehue 1234, Las Condes",
-            tipo_inmueble: "Departamento",
-            estado_entrega: "Inmediata",
-            ubicacion_label: "Las Condes",
+            punto_cercano_2: 'Parque Araucano',
+            tiempo_recorrido_min: 17,
+            tiempo_post_venta: 10,
+            unidades_totales: 120,
+            unidades_disponibles: 24,
+            ratio_estacionamientos: 1.2,
+            tipo_inmueble: 'Apartments',
+            pet_friendly: true,
+            bodega_incluida: true,
+            amenities: [
+                { nombre: 'Playground', code: '01' },
+                { nombre: 'Roof Garden', code: '02' },
+                { nombre: 'Sports Ground', code: '03' },
+                { nombre: 'Shopping Center', code: '04' },
+                { nombre: 'Multiple Parkings', code: '05' },
+                { nombre: 'Cinema', code: '06' }
+            ],
+            unidades_list: [
+                { label: 'Unit 345', detail: '53.75 m2', meta: 'Floor 5' },
+                { label: 'Unit 122', detail: '42.10 m2', meta: 'Floor 2' },
+                { label: 'Unit 567', detail: '68.20 m2', meta: 'Penthouse' }
+            ],
+            sucursales: ['Las Condes', 'Providencia', 'Maipu', 'Nunoa'],
             multimedia: {
-                portada_url: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=2000",
-                audio_url: ""
+                portada_url: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=2000',
+                audio_url: '',
+                gallery: [
+                    { url: 'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&q=80&w=1400', type: 'image' }
+                ]
+            },
+            documentos: {
+                brochure_url: null,
+                masterplan_url: null
             }
         };
 
@@ -398,11 +507,13 @@
         const apiEndpointState = document.getElementById('api-endpoint-state');
         const apiProjectState = document.getElementById('api-project-state');
         const PROJECT_IDS_STORAGE_KEY = 'dm_landing_project_ids';
+        let currentLandingData = null;
+        let isPlaying = false;
 
         function appendLog(title, payload) {
             const stamp = new Date().toLocaleTimeString();
-            const line = `[${stamp}] ${title}\n${typeof payload === 'string' ? payload : JSON.stringify(payload, null, 2)}\n\n`;
-            apiLog.textContent = line + apiLog.textContent;
+            const text = typeof payload === 'string' ? payload : JSON.stringify(payload, null, 2);
+            apiLog.textContent = `[${stamp}] ${title}\n${text}\n\n${apiLog.textContent}`;
         }
 
         function resolveDefaultApiBaseUrl() {
@@ -415,6 +526,7 @@
             const projectId =
                 (params.get('projectId') || params.get('id') || params.get('project') || '').trim() ||
                 (hash.get('projectId') || hash.get('id') || hash.get('project') || '').trim();
+
             return {
                 apiBase: (params.get('apiBase') || '').trim(),
                 projectId
@@ -422,9 +534,7 @@
         }
 
         function getApiBaseUrl() {
-            const base = (apiBaseInput.value || resolveDefaultApiBaseUrl()).replace(/\/$/, '');
-            console.log('[LandingAPI] baseUrl resolved', { base });
-            return base;
+            return (apiBaseInput.value || resolveDefaultApiBaseUrl()).replace(/\/$/, '');
         }
 
         function getProjectId() {
@@ -432,19 +542,23 @@
             if (Number.isInteger(inputId) && inputId > 0) {
                 return inputId;
             }
-            let jsonId = NaN;
+
             try {
                 const parsed = JSON.parse(jsonArea.value || '{}');
-                jsonId = Number(parsed?.projectId || parsed?.id || parsed?.project_id);
-            } catch (e) {
-                // Ignore JSON parse errors here; validation below handles missing ID.
+                const jsonId = Number(parsed?.projectId || parsed?.id || parsed?.project_id);
+                if (Number.isInteger(jsonId) && jsonId > 0) {
+                    apiProjectIdInput.value = String(jsonId);
+                    return jsonId;
+                }
+            } catch (_error) {
+                // ignore malformed json
             }
-            const id = jsonId;
-            if (!Number.isInteger(id) || id <= 0) {
-                throw new Error('Project ID invalido (usa input o JSON: projectId/id/project_id)');
-            }
-            apiProjectIdInput.value = String(id);
-            return id;
+
+            throw new Error('Project ID invalido (usa input o JSON: projectId/id/project_id)');
+        }
+
+        function getPublicLandingPath(projectId) {
+            return `/api/dash-manquehue/public/projects/${projectId}/landing`;
         }
 
         function getPublicStep1Path(projectId) {
@@ -464,8 +578,7 @@
                     .map((value) => Number(value))
                     .filter((value) => Number.isInteger(value) && value > 0)
                     .sort((a, b) => a - b);
-            } catch (error) {
-                console.warn('[LandingAPI] readStoredProjectIds failed', error);
+            } catch (_error) {
                 return [];
             }
         }
@@ -489,48 +602,50 @@
 
         async function fetchPublicProjectsList() {
             const url = `${getApiBaseUrl()}${getPublicProjectsPath()}`;
-            console.log('[LandingAPI] fetching public projects list', { url });
             appendLog('PUBLIC API CALL', { method: 'GET', endpoint: url });
             const res = await fetch(url, { method: 'GET' });
             const text = await res.text();
             let parsed = text;
-            try { parsed = JSON.parse(text); } catch (e) {}
-            console.log('[LandingAPI] public projects list response', { status: res.status, ok: res.ok, parsed });
+            try {
+                parsed = JSON.parse(text);
+            } catch (_error) {
+                // keep raw
+            }
             if (!res.ok) {
-                throw new Error(`HTTP ${res.status} al listar proyectos públicos`);
+                throw new Error(`HTTP ${res.status} al listar proyectos publicos`);
             }
             return Array.isArray(parsed?.data) ? parsed.data : [];
         }
 
         async function renderProjectIdsDropdown() {
-            if (!apiProjectSelect) return;
             const storedIds = readStoredProjectIds();
             let apiItems = [];
+
             try {
                 apiItems = await fetchPublicProjectsList();
             } catch (error) {
-                console.warn('[LandingAPI] fallback to stored IDs only', error);
                 appendLog('WARN public list fallback', error?.message || String(error));
             }
+
             const apiIds = apiItems
                 .map((item) => Number(item?.projectId))
                 .filter((value) => Number.isInteger(value) && value > 0);
+
             const ids = Array.from(new Set([...apiIds, ...storedIds])).sort((a, b) => b - a);
             const selected = String((apiProjectIdInput.value || '').trim());
+
             apiProjectSelect.innerHTML = '<option value="">Selecciona ID guardado</option>';
             ids.forEach((id) => {
                 const option = document.createElement('option');
                 option.value = String(id);
                 const apiMatch = apiItems.find((item) => Number(item?.projectId) === id);
-                option.textContent = apiMatch?.nombre
-                    ? `#${id} - ${apiMatch.nombre}`
-                    : `Proyecto #${id}`;
+                option.textContent = apiMatch?.nombre ? `#${id} - ${apiMatch.nombre}` : `Proyecto #${id}`;
                 apiProjectSelect.appendChild(option);
             });
+
             if (selected && ids.includes(Number(selected))) {
                 apiProjectSelect.value = selected;
             }
-            console.log('[LandingAPI] dropdown IDs', { ids, apiCount: apiItems.length, storedCount: storedIds.length });
         }
 
         async function refreshProjectIdsDropdown() {
@@ -538,10 +653,10 @@
             appendLog('PROJECT IDS', { ids: readStoredProjectIds(), source: 'api+local' });
         }
 
-        function updateRuntimeStatus(projectId = null) {
+        function updateRuntimeStatus(projectId = null, mode = 'PUBLICO / LANDING', endpointPath = null) {
             const currentId = projectId || (apiProjectIdInput.value || '').trim() || '-';
-            const endpoint = currentId !== '-' ? `${getApiBaseUrl()}${getPublicStep1Path(currentId)}` : '-';
-            apiModeState.textContent = 'PUBLICO (sin token)';
+            const endpoint = endpointPath || (currentId !== '-' ? `${getApiBaseUrl()}${getPublicLandingPath(currentId)}` : '-');
+            apiModeState.textContent = mode;
             apiEndpointState.textContent = `Endpoint: ${endpoint}`;
             apiProjectState.textContent = `Project ID: ${currentId}`;
         }
@@ -550,210 +665,506 @@
             const url = `${getApiBaseUrl()}${path}`;
             const headers = isFormData ? {} : { 'Content-Type': 'application/json' };
             const options = { method, headers };
-            console.log('[LandingAPI] request start', {
-                method,
-                path,
-                url,
-                mode: 'public',
-                isFormData,
-                bodyPreview: isFormData ? '[FormData]' : body
-            });
+
             if (body !== null) {
                 options.body = isFormData ? body : JSON.stringify(body);
             }
+
             const res = await fetch(url, options);
             const text = await res.text();
             let parsed = text;
-            try { parsed = JSON.parse(text); } catch (e) {}
-            console.log('[LandingAPI] response', {
-                method,
-                path,
-                status: res.status,
-                ok: res.ok,
-                parsed
-            });
+
+            try {
+                parsed = JSON.parse(text);
+            } catch (_error) {
+                // keep raw
+            }
+
             appendLog(`${method} ${path} -> ${res.status}`, parsed);
+
             if (!res.ok) {
-                console.error('[LandingAPI] request error', {
-                    method,
-                    path,
-                    url,
-                    status: res.status,
-                    parsed
-                });
                 throw new Error(`HTTP ${res.status}`);
             }
+
             return parsed;
         }
 
-        function renderLanding(data) {
-            document.body.style.opacity = '0.5';
-            setTimeout(() => {
-                document.getElementById('view-name').innerHTML = data.nombre.replace(' ', '<br>');
-                document.getElementById('view-desc').innerText = `"${data.descripcion_comercial}"`;
-                document.getElementById('view-point-1').innerText = data.punto_cercano_1;
-                document.getElementById('view-time-1').innerText = data.tiempo_visita_min;
-                document.getElementById('view-point-2').innerText = data.punto_cercano_2;
-                document.getElementById('view-time-2').innerText = data.tiempo_recorrido_min;
-                document.getElementById('view-orientation').innerText = data.orientacion_principal;
-                document.getElementById('view-post-venta').innerHTML = `${data.tiempo_post_venta} min <span class="text-xs font-normal text-slate-500 tracking-normal">avg.</span>`;
-                document.getElementById('view-env-desc').innerText = data.descripcion_entorno;
-                document.getElementById('view-address-pin').innerText = data.direccion_pin;
-                document.getElementById('view-address-label').innerText = data.direccion_pin;
-                document.getElementById('view-tag-type').innerText = data.tipo_inmueble;
-                document.getElementById('side-type').innerText = data.tipo_inmueble;
-                document.getElementById('side-loc').innerText = data.ubicacion_label;
-                document.getElementById('side-orient').innerText = data.orientacion_principal;
-                document.getElementById('side-status').innerText = data.estado_entrega;
-                
-                if (data.multimedia.portada_url) {
-                    document.getElementById('view-cover').src = data.multimedia.portada_url;
+        function escapeHtml(value) {
+            return String(value || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        function toArray(value) {
+            return Array.isArray(value) ? value : [];
+        }
+
+        function toNumber(value, fallback = 0) {
+            if (value === null || value === undefined || value === '') return fallback;
+            const numericValue = Number(value);
+            return Number.isFinite(numericValue) ? numericValue : fallback;
+        }
+
+        function toBool(value, fallback = false) {
+            if (value === undefined || value === null) return fallback;
+            if (typeof value === 'boolean') return value;
+            if (typeof value === 'number') return value === 1;
+            return ['true', '1', 'yes', 'on'].includes(String(value).toLowerCase());
+        }
+
+        function slugify(value) {
+            return String(value || '')
+                .toLowerCase()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/(^-|-$)/g, '');
+        }
+
+        function normalizeAmenity(item, index = 0) {
+            if (!item) return null;
+            if (typeof item === 'string') {
+                return {
+                    nombre: item,
+                    code: String(index + 1).padStart(2, '0')
+                };
+            }
+            const rawCode = item.code || slugify(item.nombre || item.label || item.name || '');
+            const displayCode = /^\d+$/.test(String(rawCode)) ? String(rawCode).padStart(2, '0') : String(index + 1).padStart(2, '0');
+            return {
+                id: item.id || item.amenity_id || null,
+                nombre: item.nombre || item.label || item.name || '',
+                code: displayCode
+            };
+        }
+
+        function normalizeTypology(item) {
+            if (!item) return null;
+            if (typeof item === 'string') {
+                return { label: item, asociacion: 'Asociado', models: [] };
+            }
+            const models = toArray(item.models).map((model) => ({
+                code: model.code || model.modelCode || model.model_code || '',
+                label: model.label || model.modelLabel || model.model_label || ''
+            }));
+            return {
+                id: item.id || null,
+                label: item.label || item.typologyLabel || item.typology_code || 'Tipologia',
+                asociacion: item.asociacion || item.association || models[0]?.label || 'Disponible',
+                models
+            };
+        }
+
+        function normalizeBranch(item) {
+            if (!item) return '';
+            if (typeof item === 'string') return item;
+            return item.name || item.label || '';
+        }
+
+        function normalizeGalleryItem(item) {
+            if (!item) return null;
+            if (typeof item === 'string') {
+                return { url: item, type: 'image', name: '' };
+            }
+            const url = item.url || item.file_url || item.path || item.file_path || '';
+            if (!url) return null;
+            const mimeType = String(item.mime_type || '');
+            return {
+                id: item.id || null,
+                url,
+                type: item.type || (mimeType.startsWith('video/') ? 'video' : 'image'),
+                name: item.name || item.original_name || ''
+            };
+        }
+
+        function buildUnitCards(rawUnits, typologies, availableUnits, totalUnits) {
+            const provided = toArray(rawUnits)
+                .map((item) => {
+                    if (!item) return null;
+                    if (typeof item === 'string') {
+                        return { label: item, detail: 'Unidad disponible', meta: 'Proyecto activo' };
+                    }
+                    return {
+                        label: item.label || item.nombre || item.name || 'Unidad',
+                        detail: item.detail || item.size || item.price || item.descripcion || 'Unidad disponible',
+                        meta: item.meta || item.tag || item.modelo || 'Disponible'
+                    };
+                })
+                .filter(Boolean);
+
+            if (provided.length) return provided;
+
+            if (typologies.length) {
+                return typologies.map((item, index) => ({
+                    label: item.label || `Tipologia ${index + 1}`,
+                    detail: item.models?.length
+                        ? item.models.map((model) => model.label || model.code).filter(Boolean).join(' · ')
+                        : 'Tipologia activa',
+                    meta: item.asociacion || `Disponibles: ${availableUnits || totalUnits || 0}`
+                }));
+            }
+
+            return [];
+        }
+
+        function normalizeLandingData(rawData) {
+            const multimedia = rawData?.multimedia || {};
+            const documents = rawData?.documentos || {};
+            const tipologias = toArray(rawData?.tipologias_asociadas).map(normalizeTypology).filter(Boolean);
+            const amenities = toArray(rawData?.amenities).map((item, index) => normalizeAmenity(item, index)).filter(Boolean);
+            const gallery = toArray(multimedia.gallery).map(normalizeGalleryItem).filter(Boolean);
+            const unidadesDisponibles = toNumber(rawData?.unidades_disponibles, 0);
+            const unidadesTotales = toNumber(rawData?.unidades_totales, 0);
+
+            return {
+                projectId: rawData?.projectId || rawData?.id || rawData?.project_id || null,
+                nombre: rawData?.nombre || 'Nuevo Proyecto',
+                headline: rawData?.headline || rawData?.nombre || 'Nuevo Proyecto',
+                subHeadline:
+                    rawData?.subHeadline ||
+                    rawData?.subheadline ||
+                    rawData?.subtitle ||
+                    rawData?.descripcion_comercial ||
+                    'Proyecto en desarrollo inteligente.',
+                ctaLabel: rawData?.ctaLabel || rawData?.cta || rawData?.cta_principal || 'Solicitar visita guiada',
+                narrativa: rawData?.narrativa || rawData?.narrativa_comercial || rawData?.descripcion_comercial || '',
+                descripcion_comercial: rawData?.descripcion_comercial || rawData?.narrativa || rawData?.nombre || '',
+                direccion_pin: rawData?.direccion_pin || '',
+                punto_cercano_1: rawData?.punto_cercano_1 || '',
+                punto_cercano_2: rawData?.punto_cercano_2 || '',
+                tiempo_visita_min: toNumber(rawData?.tiempo_visita_min, 0),
+                tiempo_recorrido_min: toNumber(rawData?.tiempo_recorrido_min, 0),
+                tiempo_post_venta: toNumber(rawData?.tiempo_post_venta || rawData?.tiempo_postventa_min, 0),
+                tipo_inmueble: rawData?.tipo_inmueble || 'Property',
+                unidades_totales: unidadesTotales,
+                unidades_disponibles: unidadesDisponibles,
+                ratio_estacionamientos:
+                    rawData?.ratio_estacionamientos === null || rawData?.ratio_estacionamientos === undefined || rawData?.ratio_estacionamientos === ''
+                        ? null
+                        : toNumber(rawData?.ratio_estacionamientos, 0),
+                pet_friendly: toBool(rawData?.pet_friendly),
+                bodega_incluida: toBool(rawData?.bodega_incluida),
+                tipologias_asociadas: tipologias,
+                amenities,
+                unidades_list: buildUnitCards(rawData?.unidades_list, tipologias, unidadesDisponibles, unidadesTotales),
+                sucursales: toArray(rawData?.sucursales).map(normalizeBranch).filter(Boolean),
+                multimedia: {
+                    portada_url: multimedia.portada_url || initialData.multimedia.portada_url,
+                    audio_url: multimedia.audio_url || '',
+                    gallery
+                },
+                documentos: {
+                    brochure_url: documents.brochure_url || rawData?.brochure_url || null,
+                    masterplan_url: documents.masterplan_url || rawData?.masterplan_url || null
                 }
+            };
+        }
+
+        function formatHeadline(value) {
+            const text = String(value || 'YOUR PLACE ON EARTH').trim();
+            if (!text) return 'YOUR PLACE<br>ON EARTH';
+            if (text.includes('\n')) return text.split('\n').map(escapeHtml).join('<br>');
+            if (text.includes(' ON ')) {
+                const parts = text.split(' ON ');
+                return `${escapeHtml(parts.shift())}<br>ON ${escapeHtml(parts.join(' ON '))}`;
+            }
+            const words = text.split(' ');
+            if (words.length > 2) {
+                const mid = Math.ceil(words.length / 2);
+                return `${escapeHtml(words.slice(0, mid).join(' '))}<br>${escapeHtml(words.slice(mid).join(' '))}`;
+            }
+            return escapeHtml(text);
+        }
+
+        function setText(id, value) {
+            const element = document.getElementById(id);
+            if (element) {
+                element.textContent = value || '';
+            }
+        }
+
+        function setHtml(id, value) {
+            const element = document.getElementById(id);
+            if (element) {
+                element.innerHTML = value || '';
+            }
+        }
+
+        function renderUnitList(data) {
+            const unitList = document.getElementById('unit-list');
+            if (!unitList) return;
+
+            if (!data.unidades_list.length) {
+                unitList.innerHTML = '<div class="empty-state rounded-[28px] p-6 text-sm text-white/45">Sin unidades visibles por ahora.</div>';
+                return;
+            }
+
+            unitList.innerHTML = data.unidades_list.map((item) => `
+                <div class="unit-card flex justify-between items-center">
+                    <div>
+                        <p class="text-[8px] font-black text-white/30 uppercase mb-1">${escapeHtml(item.meta)}</p>
+                        <h4 class="text-xl font-bold">${escapeHtml(item.label)}</h4>
+                        <span class="text-[10px] text-white/50">${escapeHtml(item.detail)}</span>
+                    </div>
+                    <div class="text-right">
+                        <i class="fa-solid fa-chevron-right text-[10px] text-white/20"></i>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderAmenities(data) {
+            const amenityList = document.getElementById('amenities-list-vertical');
+            if (!amenityList) return;
+
+            if (!data.amenities.length) {
+                amenityList.innerHTML = '<div class="empty-state rounded-[28px] p-6 text-sm text-white/45">Sin amenities destacados aun.</div>';
+                return;
+            }
+
+            amenityList.innerHTML = data.amenities.map((item) => `
+                <div class="amenity-row">
+                    <span>${escapeHtml(item.code)}</span>
+                    <span class="text-2xl font-bold uppercase tracking-tighter">${escapeHtml(item.nombre)}</span>
+                </div>
+            `).join('');
+        }
+
+        function renderSucursales(data) {
+            const sucGrid = document.getElementById('sucursales-grid');
+            if (!sucGrid) return;
+
+            if (!data.sucursales.length) {
+                sucGrid.innerHTML = '<div class="empty-state col-span-full rounded-[36px] p-6 text-sm text-white/45">Sin puntos de venta configurados aun.</div>';
+                return;
+            }
+
+            sucGrid.innerHTML = data.sucursales.map((item) => `
+                <div class="glass-panel p-10 rounded-[40px]">
+                    <p class="text-[8px] font-black text-indigo-400 uppercase tracking-widest mb-2">Canal de Venta</p>
+                    <p class="font-bold text-lg">${escapeHtml(item)}</p>
+                </div>
+            `).join('');
+        }
+
+        function renderDocuments(data) {
+            const docsLink = document.getElementById('docs-download');
+            const docsSummary = document.getElementById('docs-summary');
+            const brochureUrl = data.documentos.brochure_url;
+            const masterplanUrl = data.documentos.masterplan_url;
+            const primaryDocument = brochureUrl || masterplanUrl || '#';
+
+            if (docsSummary) {
+                if (brochureUrl && masterplanUrl) {
+                    docsSummary.textContent = 'Accede al brochure comercial y al masterplan tecnico del proyecto.';
+                } else if (brochureUrl) {
+                    docsSummary.textContent = 'Brochure comercial disponible para descarga.';
+                } else if (masterplanUrl) {
+                    docsSummary.textContent = 'Masterplan tecnico disponible para descarga.';
+                } else {
+                    docsSummary.textContent = 'La documentacion se habilitara cuando el proyecto tenga archivos publicos.';
+                }
+            }
+
+            if (docsLink) {
+                docsLink.href = primaryDocument;
+                docsLink.setAttribute('aria-disabled', primaryDocument === '#' ? 'true' : 'false');
+            }
+        }
+
+        function renderAudioState(data) {
+            const audioStatus = document.getElementById('audio-status');
+            const audioModule = document.getElementById('audio-module');
+            if (!audioStatus || !audioModule) return;
+            audioModule.dataset.audioUrl = data.multimedia.audio_url || '';
+            if (!isPlaying) {
+                audioStatus.textContent = data.multimedia.audio_url ? 'Sonido Ambiental Disponible' : 'Sonido Ambiental';
+            }
+        }
+
+        function renderLanding(rawData) {
+            const data = normalizeLandingData(rawData);
+            currentLandingData = data;
+            document.body.style.opacity = '0.7';
+
+            setTimeout(() => {
+                setHtml('view-headline', formatHeadline(data.headline));
+                setText('view-subheadline', data.subHeadline);
+                setText('hero-cta', data.ctaLabel);
+                setText('nav-cta', data.ctaLabel);
+                setText('view-tag-type', data.tipo_inmueble);
+                setText('view-tag-type-2', data.tipo_inmueble);
+                setText('view-point-1', data.punto_cercano_1 || '-');
+                setText('view-point-2', data.punto_cercano_2 || '-');
+                setText('view-time-1', data.tiempo_visita_min ? String(data.tiempo_visita_min) : '-');
+                setText('view-time-2', data.tiempo_recorrido_min ? String(data.tiempo_recorrido_min) : '-');
+                setText('view-time-pv', data.tiempo_post_venta ? String(data.tiempo_post_venta) : '-');
+                setText('view-address-label', data.direccion_pin || 'Ubicacion pendiente');
+                setText('view-narrative', `"${data.narrativa || data.descripcion_comercial || 'Narrativa pendiente.'}"`);
+                setText('view-desc', data.descripcion_comercial || data.narrativa || data.nombre);
+                setText('view-units', data.unidades_totales ? String(data.unidades_totales) : '0');
+                setText('view-avail', data.unidades_disponibles ? String(data.unidades_disponibles) : '0');
+                setText('view-ratio', data.ratio_estacionamientos === null ? '-' : `${data.ratio_estacionamientos} RATIO`);
+
+                const coverEl = document.getElementById('view-cover');
+                if (coverEl && data.multimedia.portada_url) {
+                    coverEl.src = data.multimedia.portada_url;
+                }
+
+                const galleryEl = document.getElementById('view-gallery');
+                const visualUrl = data.multimedia.gallery[0]?.url || data.multimedia.portada_url;
+                if (galleryEl && visualUrl) {
+                    galleryEl.src = visualUrl;
+                }
+
+                const amenityVisual = document.getElementById('amenity-visual');
+                if (amenityVisual && visualUrl) {
+                    amenityVisual.src = visualUrl;
+                }
+
+                const petTag = document.getElementById('tag-pet');
+                const bodegaTag = document.getElementById('tag-bodega');
+                if (petTag) petTag.style.opacity = data.pet_friendly ? '1' : '0.25';
+                if (bodegaTag) bodegaTag.style.opacity = data.bodega_incluida ? '1' : '0.25';
+
+                renderUnitList(data);
+                renderAmenities(data);
+                renderSucursales(data);
+                renderDocuments(data);
+                renderAudioState(data);
+                updateRuntimeStatus(data.projectId || null);
+
                 document.body.style.opacity = '1';
                 ScrollTrigger.refresh();
-            }, 400);
+            }, 300);
+        }
+
+        function toggleDebug() {
+            const content = document.getElementById('debug-content');
+            const icon = document.getElementById('debug-icon');
+            if (content) content.classList.toggle('hidden');
+            if (icon) icon.classList.toggle('rotate-180');
+        }
+
+        function showNotification(message) {
+            const element = document.createElement('div');
+            element.className = 'fixed top-12 left-1/2 -translate-x-1/2 bg-white text-black px-10 py-5 rounded-full text-[10px] font-black uppercase tracking-[0.4em] shadow-2xl z-[110] border border-indigo-500';
+            element.textContent = message;
+            document.body.appendChild(element);
+            setTimeout(() => element.remove(), 2500);
         }
 
         function updateFromAPI() {
             try {
-                const newData = JSON.parse(jsonArea.value);
-                renderLanding(newData);
-                showNotification("Sync en tiempo real");
-            } catch (e) {
-                alert("JSON Error");
+                const parsed = JSON.parse(jsonArea.value);
+                const normalized = normalizeLandingData(parsed);
+                jsonArea.value = JSON.stringify(normalized, null, 2);
+                renderLanding(normalized);
+                showNotification('Sync en tiempo real');
+            } catch (_error) {
+                alert('JSON Error');
             }
         }
 
         async function fetchProjectById() {
             try {
                 const projectId = getProjectId();
-                const endpointPath = getPublicStep1Path(projectId);
-                const endpointUrl = `${getApiBaseUrl()}${endpointPath}`;
-                updateRuntimeStatus(String(projectId));
-                console.log('[LandingAPI] fetchProjectById', {
-                    projectId,
-                    mode: 'public',
-                    endpointPath,
-                    endpointUrl
-                });
-                console.log(`[LandingAPI] calling public API -> GET ${endpointUrl}`);
-                appendLog('PUBLIC API CALL', { method: 'GET', endpoint: endpointUrl, projectId });
-                const publicRes = await apiRequest('GET', endpointPath);
-                console.log('[LandingAPI] public API raw response', publicRes);
+                const landingPath = getPublicLandingPath(projectId);
+                const landingUrl = `${getApiBaseUrl()}${landingPath}`;
+                const step1Path = getPublicStep1Path(projectId);
+                let source = 'landing';
+                let response = null;
+
+                updateRuntimeStatus(String(projectId), 'PUBLICO / LANDING', landingUrl);
+                appendLog('PUBLIC API CALL', { method: 'GET', endpoint: landingUrl, projectId });
+
                 try {
-                    console.log('[LandingAPI] public API raw response JSON', JSON.stringify(publicRes, null, 2));
-                } catch (e) {}
-                const mapped = publicRes?.data || null;
-                if (!mapped) {
-                    throw new Error('No se recibieron datos publicos del proyecto');
+                    response = await apiRequest('GET', landingPath);
+                } catch (landingError) {
+                    source = 'step1-fallback';
+                    const step1Url = `${getApiBaseUrl()}${step1Path}`;
+                    appendLog('WARN landing fallback', {
+                        message: landingError?.message || String(landingError),
+                        fallbackEndpoint: step1Url
+                    });
+                    updateRuntimeStatus(String(projectId), 'PUBLICO / STEP1 FALLBACK', step1Url);
+                    response = await apiRequest('GET', step1Path);
                 }
+
+                const payload = normalizeLandingData(response?.data || {});
                 rememberProjectId(projectId);
                 await renderProjectIdsDropdown();
-                console.log('[LandingAPI] public API mapped data', mapped);
-                console.table({
-                    projectId: mapped.projectId || projectId,
-                    nombre: mapped.nombre || '',
-                    tipo_inmueble: mapped.tipo_inmueble || '',
-                    estado_entrega: mapped.estado_entrega || '',
-                    direccion_pin: mapped.direccion_pin || '',
-                    portada_url: mapped?.multimedia?.portada_url || '',
-                    audio_url: mapped?.multimedia?.audio_url || ''
-                });
-                jsonArea.value = JSON.stringify(mapped, null, 2);
-                renderLanding(mapped);
-                showNotification('Proyecto cargado (publico)');
-            } catch (e) {
-                console.error('[LandingAPI] fetchProjectById failed', {
-                    message: e?.message || e
-                });
-                alert(`Error obteniendo proyecto: ${e.message}`);
+                jsonArea.value = JSON.stringify(payload, null, 2);
+                renderLanding(payload);
+                showNotification(`Proyecto cargado (${source})`);
+            } catch (error) {
+                appendLog('ERROR fetchProjectById', error?.message || String(error));
+                alert(`Error obteniendo proyecto: ${error.message}`);
             }
         }
 
-        function toggleDebug() {
-            const content = document.getElementById('debug-content');
-            const icon = document.getElementById('debug-icon');
-            content.classList.toggle('hidden');
-            icon.classList.toggle('rotate-180');
-        }
+        function bindAudioModule() {
+            const audioModule = document.getElementById('audio-module');
+            const playBtn = document.getElementById('play-btn');
+            const audioStatus = document.getElementById('audio-status');
 
-        function showNotification(msg) {
-            const n = document.createElement('div');
-            n.className = "fixed top-12 left-1/2 -translate-x-1/2 bg-white text-black px-10 py-5 rounded-full text-[10px] font-black uppercase tracking-[0.4em] shadow-2xl z-[110] animate-pulse border border-indigo-500";
-            n.innerText = msg;
-            document.body.appendChild(n);
-            setTimeout(() => n.remove(), 2500);
-        }
+            if (!audioModule || !playBtn || !audioStatus) return;
 
-        // Init Audio
-        let isPlaying = false;
-        document.getElementById('audio-module').addEventListener('click', () => {
-            isPlaying = !isPlaying;
-            const btn = document.getElementById('play-btn');
-            const status = document.getElementById('audio-status');
-            btn.innerHTML = isPlaying ? '<i class="fa-solid fa-pause"></i>' : '<i class="fa-solid fa-play"></i>';
-            status.innerText = isPlaying ? "Reproduciendo Ambiente..." : "Sonido Ambiental";
-        });
+            audioModule.addEventListener('click', () => {
+                isPlaying = !isPlaying;
+                playBtn.innerHTML = isPlaying ? '<i class="fa-solid fa-pause"></i>' : '<i class="fa-solid fa-play"></i>';
+                if (isPlaying) {
+                    audioStatus.textContent = currentLandingData?.multimedia?.audio_url ? 'Sonido Ambiente Activo' : 'Modo Ambiente Activo';
+                } else {
+                    audioStatus.textContent = currentLandingData?.multimedia?.audio_url ? 'Sonido Ambiental Disponible' : 'Sonido Ambiental';
+                }
+            });
+        }
 
         window.onload = () => {
             const runtime = getRuntimeConfigFromUrl();
-            console.log('[LandingAPI] onload runtime', runtime);
             apiBaseInput.value = runtime.apiBase || resolveDefaultApiBaseUrl();
-            console.log('[LandingAPI] public APIs enabled', {
-                listProjects: `${apiBaseInput.value}/api/dash-manquehue/public/projects`,
-                step1ById: `${apiBaseInput.value}/api/dash-manquehue/public/projects/:id/step1`
-            });
+
             if (runtime.projectId) {
                 apiProjectIdInput.value = runtime.projectId;
                 rememberProjectId(Number(runtime.projectId));
             }
-            updateRuntimeStatus(runtime.projectId || null);
+
             apiBaseInput.addEventListener('input', () => updateRuntimeStatus());
-            apiProjectIdInput.addEventListener('input', () => updateRuntimeStatus());
             apiProjectIdInput.addEventListener('input', () => {
+                updateRuntimeStatus();
                 const id = Number(apiProjectIdInput.value || 0);
                 if (Number.isInteger(id) && id > 0) {
                     rememberProjectId(id);
                     renderProjectIdsDropdown();
                 }
             });
-            apiProjectSelect?.addEventListener('change', () => {
+            apiProjectSelect.addEventListener('change', () => {
                 const selectedId = String(apiProjectSelect.value || '').trim();
-                if (!selectedId) {
-                    return;
-                }
+                if (!selectedId) return;
                 apiProjectIdInput.value = selectedId;
                 updateRuntimeStatus(selectedId);
-                console.log('[LandingAPI] selected ID from dropdown', { projectId: selectedId });
             });
-            jsonArea.value = JSON.stringify(initialData, null, 2);
-            try {
-                const parsed = JSON.parse(jsonArea.value);
-                const jsonProjectId = parsed?.projectId || parsed?.id || parsed?.project_id || '';
-                if (!apiProjectIdInput.value && jsonProjectId) {
-                    apiProjectIdInput.value = String(jsonProjectId);
-                    rememberProjectId(Number(jsonProjectId));
-                    console.log('[LandingAPI] projectId loaded from JSON', { projectId: apiProjectIdInput.value });
-                }
-            } catch (e) {}
+
+            jsonArea.value = JSON.stringify(normalizeLandingData(initialData), null, 4);
+            updateRuntimeStatus(runtime.projectId || null);
             renderProjectIdsDropdown();
             renderLanding(initialData);
-            setTimeout(() => toggleDebug(), 1000); // Abrir después de carga inicial
+            initAnimations();
+            bindAudioModule();
+
             if (window.location.protocol === 'file:') {
-                appendLog(
-                    'WARN file:// origin',
-                    'Abre esta landing en http(s), no en file://'
-                );
+                appendLog('WARN file:// origin', 'Abre esta landing en http(s), no en file://');
                 showNotification('Abre la landing en http(s), no file://');
             }
+
             if (apiProjectIdInput.value) {
-                console.log('[LandingAPI] auto-fetching project', { projectId: apiProjectIdInput.value });
                 fetchProjectById();
             } else {
-                appendLog(
-                    'INFO projectId requerido',
-                    'Define ?projectId=123 en la URL o escribe Project ID en el panel para cargar datos por GET publico.'
-                );
+                appendLog('INFO projectId requerido', 'Define ?projectId=123 en la URL o escribe Project ID en el panel para cargar datos publicos.');
             }
         };
     </script>

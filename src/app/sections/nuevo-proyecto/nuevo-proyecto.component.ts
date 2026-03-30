@@ -27,6 +27,17 @@ type SavedProjectItem = {
   status: string;
   updatedAt: string | null;
 };
+type AmenityOption = {
+  id: string;
+  label: string;
+  selected: boolean;
+  amenityId?: number | null;
+};
+type TypologyOption = {
+  id: string;
+  label: string;
+  selected: boolean;
+};
 
 @Component({
   selector: 'app-nuevo-proyecto',
@@ -93,7 +104,7 @@ export class NuevoProyectoComponent implements OnDestroy {
     { id: 'pronta', label: 'Pronta' },
     { id: 'futura', label: 'Futura' }
   ];
-  readonly typologyOptions = [
+  readonly typologyOptions: TypologyOption[] = [
     { id: '1d1b', label: '1D / 1B', selected: false },
     { id: '2d1b', label: '2D / 1B', selected: true },
     { id: '2d2b', label: '2D / 2B', selected: true },
@@ -107,7 +118,7 @@ export class NuevoProyectoComponent implements OnDestroy {
     { typology: '2D / 2B', model: 'Azotea' },
     { typology: '3D / 3B', model: 'Jardín' }
   ];
-  amenityOptions = [
+  amenityOptions: AmenityOption[] = [
     { id: 'cowork', label: 'Cowork panorámico', selected: true },
     { id: 'gourmet', label: 'Salón gourmet', selected: true },
     { id: 'gym', label: 'Gimnasio', selected: true },
@@ -159,9 +170,9 @@ export class NuevoProyectoComponent implements OnDestroy {
   };
   unitConfig = {
     totalUnits: 120,
-    towers: 2,
+    availableUnits: 2,
     deliveryQuarter: 'Q4 · 2025',
-    defaultTypology: '2D / 2B',
+    stage: '2D / 2B',
     parkingRatio: 1.2,
     storageIncluded: true,
     petFriendly: true,
@@ -586,6 +597,7 @@ export class NuevoProyectoComponent implements OnDestroy {
       this.project.entornoDescripcion = String(data['entorno_descripcion'] || '');
       this.project.mapAddress = String(data['direccion_pin'] || '');
       this.currentStep = Number(data['current_step'] || 1) || 1;
+      await this.loadStep2Resources(projectId, token);
       this.saveFeedback = `Proyecto #${projectId} cargado correctamente.`;
       console.log('[NuevoProyectoUI] saved project selected', { projectId, data });
       this.closeSavedProjectsModal();
@@ -655,6 +667,10 @@ export class NuevoProyectoComponent implements OnDestroy {
           this.ambientAudioFile = null;
           console.log('[NuevoProyectoUI] upload ambient ok', { projectId });
         }
+      }
+
+      if (this.currentStep === 2) {
+        await this.saveStep2Resources(projectId, token);
       }
 
       const stepPayload = this.buildCurrentStepPayload();
@@ -782,6 +798,250 @@ export class NuevoProyectoComponent implements OnDestroy {
         { headers: new HttpHeaders({ Authorization: `Bearer ${token}` }) }
       )
     );
+  }
+
+  private async saveStep2Resources(projectId: number, token: string): Promise<void> {
+    const configPayload = {
+      unidadesTotales: this.toNullableNumber(this.unitConfig.totalUnits),
+      unidadesDisponibles: this.toNullableNumber(this.unitConfig.availableUnits),
+      entregaEstimadaTexto: this.unitConfig.deliveryQuarter?.trim() || null,
+      etapaTexto: this.unitConfig.stage?.trim() || null,
+      ratioEstacionamientos: this.toNullableNumber(this.unitConfig.parkingRatio),
+      bodegaIncluida: this.unitConfig.storageIncluded,
+      petFriendly: this.unitConfig.petFriendly,
+      notasOperacionales: this.unitConfig.observation?.trim() || null
+    };
+
+    const typologiesPayload = {
+      typologies: this.typologyOptions
+        .filter((option) => option.selected)
+        .map((option, index) => {
+          const parsed = this.parseTypologyLabel(option.label);
+          const models = this.modelAssociations
+            .filter((association) => association.typology === option.label)
+            .map((association) => ({
+              modelCode: this.slugifyValue(association.model),
+              modelLabel: association.model
+            }));
+
+          return {
+            typologyCode: option.id,
+            dormitorios: parsed.dormitorios,
+            banos: parsed.banos,
+            isActive: true,
+            sortOrder: index,
+            models
+          };
+        })
+    };
+
+    const catalog = await this.fetchAmenitiesCatalog(token);
+    const selectedAmenities = this.amenityOptions.filter((option) => option.selected);
+    const amenityIds: number[] = [];
+    const customLabels: string[] = [];
+
+    selectedAmenities.forEach((option) => {
+      const match = catalog.find((item) => this.catalogMatchesAmenity(item, option));
+      if (match?.id) {
+        amenityIds.push(match.id);
+      } else {
+        customLabels.push(option.label);
+      }
+    });
+
+    await firstValueFrom(
+      this.http.patch(
+        `${this.getApiBaseUrl()}/api/dash-manquehue/projects/${projectId}/config`,
+        configPayload,
+        { headers: this.buildJsonHeaders(token) }
+      )
+    );
+
+    await firstValueFrom(
+      this.http.put(
+        `${this.getApiBaseUrl()}/api/dash-manquehue/projects/${projectId}/typologies`,
+        typologiesPayload,
+        { headers: this.buildJsonHeaders(token) }
+      )
+    );
+
+    await firstValueFrom(
+      this.http.put(
+        `${this.getApiBaseUrl()}/api/dash-manquehue/projects/${projectId}/amenities`,
+        { amenityIds, customLabels },
+        { headers: this.buildJsonHeaders(token) }
+      )
+    );
+  }
+
+  private async loadStep2Resources(projectId: number, token: string): Promise<void> {
+    try {
+      const [configResponse, typologiesResponse, amenitiesResponse, catalogResponse] = await Promise.all([
+        firstValueFrom(
+          this.http.get<{ data?: Record<string, unknown> | null }>(
+            `${this.getApiBaseUrl()}/api/dash-manquehue/projects/${projectId}/config`,
+            { headers: this.buildJsonHeaders(token) }
+          )
+        ),
+        firstValueFrom(
+          this.http.get<{ data?: Array<Record<string, unknown>> }>(
+            `${this.getApiBaseUrl()}/api/dash-manquehue/projects/${projectId}/typologies`,
+            { headers: this.buildJsonHeaders(token) }
+          )
+        ),
+        firstValueFrom(
+          this.http.get<{ data?: Array<Record<string, unknown>> }>(
+            `${this.getApiBaseUrl()}/api/dash-manquehue/projects/${projectId}/amenities`,
+            { headers: this.buildJsonHeaders(token) }
+          )
+        ),
+        firstValueFrom(
+          this.http.get<{ data?: Array<Record<string, unknown>> }>(
+            `${this.getApiBaseUrl()}/api/dash-manquehue/projects/amenities/catalog`,
+            { headers: this.buildJsonHeaders(token) }
+          )
+        )
+      ]);
+
+      const config = configResponse?.data || null;
+      if (config) {
+        this.unitConfig.totalUnits = Number(config['unidades_totales'] || 0) || 0;
+        this.unitConfig.availableUnits = Number(config['unidades_disponibles'] || 0) || 0;
+        this.unitConfig.deliveryQuarter = String(config['entrega_estimada_texto'] || '');
+        this.unitConfig.stage = String(config['etapa_texto'] || '');
+        this.unitConfig.parkingRatio = Number(config['ratio_estacionamientos'] || 0) || 0;
+        this.unitConfig.storageIncluded = Boolean(config['bodega_incluida']);
+        this.unitConfig.petFriendly = Boolean(config['pet_friendly']);
+        this.unitConfig.observation = String(config['notas_operacionales'] || '');
+      }
+
+      const typologyRows = Array.isArray(typologiesResponse?.data) ? typologiesResponse.data : [];
+      const selectedLabels = new Set<string>();
+      const modelAssociations = typologyRows.flatMap((row) => {
+        const label = this.buildTypologyLabel(
+          String(row['typology_code'] || ''),
+          Number(row['dormitorios'] || 0),
+          Number(row['banos'] || 0)
+        );
+        selectedLabels.add(label);
+        const models = Array.isArray(row['models']) ? (row['models'] as Array<Record<string, unknown>>) : [];
+        return models.map((model) => ({
+          typology: label,
+          model: String(model['model_label'] || model['model_code'] || '')
+        })).filter((item) => item.model);
+      });
+
+      this.typologyOptions.forEach((option) => {
+        option.selected = selectedLabels.has(option.label);
+      });
+      this.modelAssociations = modelAssociations;
+
+      const catalogRows = Array.isArray(catalogResponse?.data) ? catalogResponse.data : [];
+      const selectedAmenityRows = Array.isArray(amenitiesResponse?.data) ? amenitiesResponse.data : [];
+      const selectedAmenityKeys = new Set(
+        selectedAmenityRows.map((row) => this.normalizeKey(String(row['label'] || row['code'] || ''))).filter(Boolean)
+      );
+
+      const mergedAmenities = new Map<string, AmenityOption>();
+
+      this.amenityOptions.forEach((option) => {
+        mergedAmenities.set(this.normalizeKey(option.label || option.id), {
+          ...option,
+          selected: false
+        });
+      });
+
+      catalogRows.forEach((row) => {
+        const option: AmenityOption = {
+          id: String(row['code'] || ''),
+          label: String(row['label'] || row['code'] || ''),
+          selected: false,
+          amenityId: Number(row['id'] || 0) || null
+        };
+        mergedAmenities.set(this.normalizeKey(option.label || option.id), option);
+      });
+
+      selectedAmenityRows.forEach((row) => {
+        const option: AmenityOption = {
+          id: String(row['code'] || this.slugifyValue(String(row['label'] || ''))),
+          label: String(row['label'] || row['code'] || ''),
+          selected: true,
+          amenityId: Number(row['amenity_id'] || 0) || null
+        };
+        mergedAmenities.set(this.normalizeKey(option.label || option.id), option);
+      });
+
+      this.amenityOptions = Array.from(mergedAmenities.values()).map((option) => ({
+        ...option,
+        selected: selectedAmenityKeys.has(this.normalizeKey(option.label || option.id))
+      }));
+    } catch (error) {
+      console.error('[NuevoProyectoUI] loadStep2Resources error', error);
+    }
+  }
+
+  private async fetchAmenitiesCatalog(token: string): Promise<Array<{ id: number; code: string; label: string }>> {
+    const response = await firstValueFrom(
+      this.http.get<{ data?: Array<Record<string, unknown>> }>(
+        `${this.getApiBaseUrl()}/api/dash-manquehue/projects/amenities/catalog`,
+        { headers: this.buildJsonHeaders(token) }
+      )
+    );
+
+    const rows = Array.isArray(response?.data) ? response.data : [];
+    return rows
+      .map((row) => ({
+        id: Number(row['id'] || 0),
+        code: String(row['code'] || ''),
+        label: String(row['label'] || '')
+      }))
+      .filter((row) => row.id > 0);
+  }
+
+  private catalogMatchesAmenity(
+    catalogItem: { id: number; code: string; label: string },
+    amenity: AmenityOption
+  ): boolean {
+    return (
+      this.normalizeKey(catalogItem.code) === this.normalizeKey(amenity.id) ||
+      this.normalizeKey(catalogItem.label) === this.normalizeKey(amenity.label)
+    );
+  }
+
+  private parseTypologyLabel(label: string): { dormitorios: number; banos: number } {
+    const match = String(label || '').match(/(\d+)\s*D\s*\/\s*(\d+)\s*B/i);
+    return {
+      dormitorios: match ? Number(match[1]) : 0,
+      banos: match ? Number(match[2]) : 0
+    };
+  }
+
+  private buildTypologyLabel(code: string, dormitorios: number, banos: number): string {
+    if (dormitorios > 0 || banos > 0) {
+      return `${dormitorios}D / ${banos}B`;
+    }
+    return code || 'Tipología';
+  }
+
+  private slugifyValue(value: string): string {
+    return String(value || '')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '');
+  }
+
+  private normalizeKey(value: string): string {
+    return this.slugifyValue(value);
+  }
+
+  private toNullableNumber(value: unknown): number | null {
+    if (value === '' || value === null || value === undefined) {
+      return null;
+    }
+    const numericValue = Number(value);
+    return Number.isFinite(numericValue) ? numericValue : null;
   }
 
   private getApiBaseUrl(): string {

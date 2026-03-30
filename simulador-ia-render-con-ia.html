@@ -1,0 +1,3203 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IRIS AI Sandbox | Impact Studios</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Outfit -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fflate@0.8.2/umd/index.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/FBXLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                        mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', "Liberation Mono", "Courier New", 'monospace'],
+                    },
+                    colors: {
+                        background: '#090909',
+                        surface: '#141414',
+                        accent: '#d4af7a', // Dorado de Impact Render
+                        tech: '#3b82f6',   // Azul de Impact Tech
+                    },
+                    animation: {
+                        'scan': 'scan 2.5s ease-in-out infinite',
+                        'pulse-fast': 'pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'fade-in-up': 'fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                        'glow-pulse': 'glowPulse 3s infinite alternate',
+                        'gradient-x': 'gradientX 6s ease infinite',
+                    },
+                    keyframes: {
+                        scan: {
+                            '0%, 100%': { top: '0%' },
+                            '50%': { top: '100%' },
+                        },
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        glowPulse: {
+                            '0%': { boxShadow: '0 0 20px rgba(37, 211, 102, 0.2)' },
+                            '100%': { boxShadow: '0 0 40px rgba(37, 211, 102, 0.6)' },
+                        },
+                        gradientX: {
+                            '0%, 100%': { 'background-size': '200% 200%', 'background-position': 'left center' },
+                            '50%': { 'background-size': '200% 200%', 'background-position': 'right center' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #090909;
+            color: #f8fafc;
+        }
+
+        /* --- Utilidades de Animación --- */
+        .delay-100 { animation-delay: 100ms; }
+        .delay-200 { animation-delay: 200ms; }
+        .delay-300 { animation-delay: 300ms; }
+        .delay-400 { animation-delay: 400ms; }
+        .delay-500 { animation-delay: 500ms; }
+
+        /* --- Borde Mágico (WOW Factor) --- */
+        .magic-border {
+            position: absolute;
+            inset: 0;
+            border-radius: 2rem;
+            padding: 2px;
+            background: linear-gradient(90deg, #3b82f6, #d4af7a, #9333ea, #3b82f6);
+            background-size: 300% 300%;
+            animation: gradient-move 4s linear infinite;
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+            opacity: 0.15;
+            transition: opacity 0.5s ease;
+            z-index: 50;
+        }
+        .is-generating .magic-border {
+            opacity: 1;
+            animation: gradient-move 1.5s linear infinite; /* Se acelera cuando procesa */
+            box-shadow: inset 0 0 20px rgba(59, 130, 246, 0.5);
+        }
+        @keyframes gradient-move {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 100% 50%; }
+        }
+
+        /* --- Slider y Comparación --- */
+        .comparison-slider {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            border-radius: 0.75rem;
+        }
+        .comparison-slider img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            display: block;
+        }
+        .comparison-image-after {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            clip-path: polygon(0 0, 0 0, 0 100%, 0 100%); 
+        }
+        .slider-handle {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            width: 4px;
+            background-color: #d4af7a;
+            z-index: 20;
+            transform: translateX(-50%);
+            cursor: ew-resize;
+            display: none;
+        }
+        .slider-handle::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 36px;
+            height: 36px;
+            background-color: #090909;
+            border: 2px solid #d4af7a;
+            border-radius: 50%;
+            box-shadow: 0 0 15px rgba(212, 175, 122, 0.5);
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="%23d4af7a" viewBox="0 0 256 256"><path d="M136,40V216a8,8,0,0,1-16,0V40a8,8,0,0,1,16,0ZM96,120H35.31l18.35-18.34A8,8,0,0,0,42.34,90.34l-32,32a8,8,0,0,0,0,11.32l32,32a8,8,0,0,0,11.32-11.32L35.31,136H96a8,8,0,0,0,0-16Zm149.66-8.34-32-32a8,8,0,0,0-11.32,11.32L220.69,120H160a8,8,0,0,0,0,16h60.69l-18.35,18.34a8,8,0,0,0,11.32,11.32l32-32A8,8,0,0,0,245.66,111.66Z"></path></svg>');
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: 60%;
+        }
+
+        .scanning-line {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #3b82f6, #d4af7a, #3b82f6, transparent);
+            box-shadow: 0 0 30px 10px rgba(59, 130, 246, 0.4);
+            z-index: 15;
+            display: none;
+        }
+
+        .terminal-overlay {
+            background: rgba(9, 9, 9, 0.85);
+            backdrop-filter: blur(8px);
+        }
+        .generation-feedback {
+            background: linear-gradient(180deg, rgba(3, 7, 18, 0.82), rgba(0, 0, 0, 0.92));
+            backdrop-filter: blur(10px);
+        }
+        .generation-progress-track {
+            width: 100%;
+            height: 8px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.08);
+            overflow: hidden;
+        }
+        .generation-progress-fill {
+            height: 100%;
+            width: 0%;
+            border-radius: 999px;
+            background: linear-gradient(90deg, #3b82f6 0%, #d4af7a 100%);
+            transition: width 0.35s ease;
+        }
+        .sim-toast {
+            position: fixed;
+            right: 1.25rem;
+            bottom: 1.25rem;
+            z-index: 120;
+            max-width: min(92vw, 420px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 1rem;
+            background: rgba(8, 8, 8, 0.92);
+            color: #fff;
+            padding: 0.95rem 1rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            gap: 0.6rem;
+        }
+        .sim-toast.show {
+            display: flex;
+        }
+        .sim-toast-success {
+            border-color: rgba(34, 197, 94, 0.35);
+        }
+        .sim-toast-error {
+            border-color: rgba(239, 68, 68, 0.35);
+        }
+        .terminal-scroll::-webkit-scrollbar { width: 4px; }
+        .terminal-scroll::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+        .dropzone-active { border-color: #d4af7a !important; background-color: rgba(212, 175, 122, 0.1) !important; }
+        .filter-transition { transition: filter 0.5s ease; }
+        
+        select.pro-select {
+            background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3E%3C/svg%3E");
+            background-position: right 0.5rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            padding-right: 2.5rem;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+
+        /* Drag & Drop Builder Styles */
+        .concept-tag { cursor: grab; user-select: none; transition: all 0.2s ease; }
+        .concept-tag:active { cursor: grabbing; }
+        .concept-tag.dragging { opacity: 0.5; transform: scale(0.95); }
+        .zone-highlight { border-color: #d4af7a !important; background-color: rgba(212, 175, 122, 0.05) !important; }
+        
+        /* Ocultar barra de scroll en el desplegable para mayor limpieza */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .prompt-editor {
+            width: 100%;
+            margin-top: 0.4rem;
+            background: transparent;
+            border: 0;
+            color: #9ca3af;
+            line-height: 1.5;
+            resize: vertical;
+            min-height: 76px;
+            outline: none;
+        }
+
+        .prompt-editor::placeholder {
+            color: #6b7280;
+        }
+
+        .prompt-flash {
+            animation: promptFlash 0.45s ease;
+        }
+
+        @keyframes promptFlash {
+            0% { box-shadow: 0 0 0 rgba(59, 130, 246, 0), inset 0 0 0 rgba(59, 130, 246, 0); }
+            50% { box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.6), 0 0 24px rgba(59, 130, 246, 0.35); }
+            100% { box-shadow: 0 0 0 rgba(59, 130, 246, 0), inset 0 0 0 rgba(59, 130, 246, 0); }
+        }
+
+        .intelligence-drawer {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: min(100%, 450px);
+            height: 100%;
+            background: #0f0f0f;
+            z-index: 260;
+            transform: translateX(100%);
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            border-left: 1px solid rgba(212, 175, 122, 0.2);
+            box-shadow: -20px 0 50px rgba(0, 0, 0, 0.8);
+            padding: 2.5rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .intelligence-drawer.open {
+            transform: translateX(0);
+        }
+
+        .intelligence-close {
+            margin-left: auto;
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            background: transparent;
+            border: 0;
+            color: #9ca3af;
+            cursor: pointer;
+            font-size: 2rem;
+            line-height: 1;
+            padding: 0.3rem;
+        }
+
+        .intelligence-close:hover {
+            color: #fff;
+        }
+
+        .ai-pill-original {
+            position: fixed;
+            right: 1.2rem;
+            bottom: 1.2rem;
+            z-index: 90;
+            border: 0;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.85rem;
+            padding: 0.88rem 1.35rem;
+            background: rgba(212, 175, 122, 0.92);
+            color: #000;
+            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.42);
+            cursor: pointer;
+            transition: transform 0.25s ease, background-color 0.25s ease;
+        }
+
+        .ai-pill-original:hover {
+            transform: translateY(-2px) scale(1.02);
+            background: #fff;
+        }
+
+        @media (max-width: 768px) {
+            .ai-pill-original {
+                right: 0.9rem;
+                bottom: 0.9rem;
+                padding: 0.76rem 1.05rem;
+            }
+        }
+
+        /* FBX Lab (módulo adicional) */
+        .fbx-lab .fbx-viewer {
+            min-height: 320px;
+        }
+
+        #fbx-three-canvas-container canvas {
+            border-radius: 1.2rem;
+            width: 100% !important;
+            height: 100% !important;
+            touch-action: none;
+            outline: none;
+        }
+
+        .fbx-snapshot-preview {
+            border: 2px solid #3b82f6;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+            animation: fbxPulseBorder 2s infinite ease-in-out;
+        }
+
+        @keyframes fbxPulseBorder {
+            0%, 100% { border-color: rgba(59, 130, 246, 1); }
+            50% { border-color: rgba(59, 130, 246, 0.3); }
+        }
+
+        .fbx-slider-handle {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            width: 4px;
+            background-color: #d4af7a;
+            z-index: 25;
+            transform: translateX(-50%);
+            cursor: ew-resize;
+            display: none;
+        }
+
+        .fbx-slider-handle::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            border: 2px solid #d4af7a;
+            background: #090909;
+            box-shadow: 0 0 14px rgba(212, 175, 122, 0.45);
+        }
+    </style>
+</head>
+<body class="pt-0 pb-12 px-4 md:px-8">
+
+    <!-- BANNER PROMOCIONAL AGENCIA DEL FUTURO -->
+    <div class="fixed top-0 left-0 right-0 z-[200] bg-gradient-to-r from-background via-tech to-purple-900 animate-gradient-x border-b border-white/10 shadow-2xl">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col sm:flex-row items-center justify-center gap-3 md:gap-6">
+            <div class="flex items-center gap-2">
+                <span class="flex h-2 w-2 relative">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-accent"></span>
+                </span>
+                <p class="text-white text-[11px] md:text-sm font-bold tracking-wide uppercase italic">
+                    <span data-en="Elevate your projects to the next level" data-es="Eleva tus proyectos al siguiente nivel">Eleva tus proyectos al siguiente nivel</span>
+                </p>
+            </div>
+            <a href="https://www.thefutureagencyai.com/landing-promocional-03" target="_blank" rel="noopener noreferrer" class="bg-white text-black px-5 py-1.5 rounded-full text-[10px] md:text-xs font-black uppercase tracking-widest hover:bg-accent transition-all transform hover:scale-105 shadow-xl flex items-center gap-2">
+                <span data-en="Visit the Future Agency" data-es="Visitar Agencia del Futuro">Visitar Agencia del Futuro</span>
+                <i class="ph-bold ph-arrow-square-out text-sm"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- Ajuste de padding para compensar el banner fixed -->
+    <div class="pt-20"></div>
+
+    <header class="max-w-7xl mx-auto mb-8">
+        <div class="flex items-center justify-between bg-[#0c0c0c]/85 backdrop-blur-xl border border-white/10 rounded-full px-4 py-3 shadow-[0_10px_30px_rgba(0,0,0,0.45)]">
+            <a href="index.html" class="inline-flex items-center gap-3 group">
+                <img src="https://impactrenderstudios.com/images/logo.png" alt="Impact Render Studios" class="w-9 h-9 object-contain opacity-90">
+                <span class="text-white font-bold tracking-wide text-sm md:text-base group-hover:text-accent transition-colors">IMPACT RENDER</span>
+            </a>
+            <div class="inline-flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-3 py-1.5">
+                <button id="lang-es" class="text-xs font-bold tracking-wider text-white">ES</button>
+                <span class="text-white/30 text-xs">|</span>
+                <button id="lang-en" class="text-xs font-bold tracking-wider text-white/45 hover:text-white/80 transition-colors">EN</button>
+            </div>
+        </div>
+    </header>
+
+    <section class="max-w-7xl mx-auto">
+        
+        <!-- BANNER B2B - TEXTO LIMPIO Y BOTÓN -->
+        <div class="mb-16 text-center max-w-3xl mx-auto animate-fade-in-up">
+            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-tech/10 border border-tech/20 text-[10px] font-bold uppercase tracking-widest text-tech mb-6 shadow-inner">
+                <i class="ph-fill ph-rocket-launch text-sm"></i> <span data-en="Enterprise Integration" data-es="Integración Enterprise">Integración Enterprise</span>
+            </div>
+            <h2 class="text-3xl md:text-5xl font-extrabold text-white mb-5 tracking-tight leading-tight">
+                <span data-en="Do you want this technology on" data-es="¿Quieres esta tecnología en">¿Quieres esta tecnología en</span> <span class="text-transparent bg-clip-text bg-gradient-to-r from-accent to-yellow-200" data-en="your own website?" data-es="tu propia web?">tu propia web?</span>
+            </h2>
+            <p class="text-gray-400 text-sm md:text-base leading-relaxed mb-8 font-light" data-en="We design and integrate custom AI simulators for real estate, developers and architecture studios. Increase conversion by letting clients visualize project potential in real time." data-es="Desarrollamos e integramos Simuladores IA a medida para inmobiliarias, desarrolladoras y estudios de arquitectura. Multiplica la conversión dejando que tus clientes visualicen el potencial de tus proyectos en tiempo real.">
+                Desarrollamos e integramos Simuladores IA a medida para inmobiliarias, desarrolladoras y estudios de arquitectura. Multiplica la conversión dejando que tus clientes visualicen el potencial de tus proyectos en tiempo real.
+            </p>
+            <button type="button" id="btn-open-upsell" class="bg-accent hover:bg-[#b89565] text-black font-extrabold py-4 px-10 rounded-full transition-transform hover:scale-105 shadow-[0_0_30px_rgba(212,175,122,0.25)] text-sm tracking-wide" data-en="Yes, I want it" data-es="Sí, la quiero">
+                Sí, la quiero
+            </button>
+        </div>
+
+        <!-- ENCABEZADO DEL SIMULADOR -->
+        <div class="mb-12 text-center md:text-left opacity-0 animate-fade-in-up delay-100">
+            <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs font-bold uppercase tracking-widest mb-5 backdrop-blur-md shadow-lg">
+                <span class="w-2 h-2 rounded-full bg-accent animate-pulse"></span>
+                <span class="text-gray-300" data-en="Interactive Demo" data-es="Demostración Interactiva">Demostración Interactiva</span>
+            </div>
+            <h2 class="text-4xl md:text-6xl font-extrabold mb-5 tracking-tight">
+                <span data-en="Algorithmic" data-es="Algorítmico">Algorítmico</span> <span data-en="Render in Real Time" data-es="Render en Tiempo Real">Render en Tiempo Real</span>
+            </h2>
+            <p class="text-gray-400 max-w-2xl text-lg font-light leading-relaxed mx-auto md:mx-0" data-en="Integrate base geometry with diffusion models for rapid concept iteration. Try it for free." data-es="Integra geometría base con modelos de difusión para iteración rápida de conceptos. Pruébalo gratis.">
+                Integra geometría base con modelos de difusión para iteración rápida de conceptos. Pruébalo gratis.
+            </p>
+        </div>
+
+        <div class="grid lg:grid-cols-12 gap-8 md:gap-10 items-start">
+            
+            <!-- Controles (Izquierda) -->
+            <div class="lg:col-span-5 bg-[#0a0a0a]/80 backdrop-blur-2xl border border-white/5 rounded-[2.5rem] p-7 md:p-9 shadow-[0_20px_60px_rgba(0,0,0,0.6)] relative overflow-hidden opacity-0 animate-fade-in-up delay-200">
+                <div class="absolute inset-0 bg-gradient-to-br from-tech/5 via-transparent to-accent/5 pointer-events-none"></div>
+                <div class="absolute top-0 right-0 w-72 h-72 bg-tech/10 rounded-full blur-[80px] -mr-32 -mt-32 pointer-events-none"></div>
+
+                <form id="ai-simulator-form" class="relative z-10 space-y-6">
+                    
+                    <!-- Paso 1: Base -->
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <label class="font-bold text-white flex items-center gap-3 text-[1.05rem]">
+                                <span class="flex items-center justify-center w-8 h-8 rounded-full bg-white/10 border border-white/10 text-xs text-accent shadow-inner">1</span>
+                                Geometría Base
+                            </label>
+                            <span class="text-[10px] text-gray-500 font-mono bg-black/50 px-3 py-1.5 rounded-full border border-white/5 shadow-inner">ControlNet</span>
+                        </div>
+
+                        <div class="mb-3 inline-flex items-center gap-2 bg-black/40 border border-white/10 rounded-full p-1">
+                            <button type="button" id="input-tab-image" class="px-4 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wide bg-accent text-black">Imagen</button>
+                            <button type="button" id="input-tab-fbx" class="px-4 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wide text-gray-300 hover:text-white">FBX</button>
+                        </div>
+
+                        <div id="dropzone" class="relative w-full border border-dashed border-white/20 rounded-[2rem] p-6 text-center hover:border-accent hover:bg-accent/5 transition-all duration-300 cursor-pointer bg-black/20 mb-4 group shadow-inner min-h-[220px] flex flex-col items-center justify-center overflow-hidden">
+                            <input type="file" id="file-upload" accept=".fbx,image/jpeg,image/png,image/webp" class="hidden">
+                            <div id="dropzone-content" class="flex flex-col items-center gap-2">
+                                <div class="w-12 h-12 rounded-full bg-white/5 border border-white/5 flex items-center justify-center text-gray-400 group-hover:text-accent group-hover:scale-110 transition-all duration-300 shadow-lg">
+                                    <i class="ph ph-upload-simple text-xl"></i>
+                                </div>
+                                <p id="dropzone-title" class="text-sm text-gray-300 font-medium">Sube tu modelo base</p>
+                                <p id="dropzone-subtitle" class="text-[10px] text-gray-500 uppercase tracking-tighter text-center px-4 hidden">Click izq rota · click der desplaza</p>
+                            </div>
+                            <div id="upload-preview-container" class="hidden absolute inset-0 bg-surface rounded-[2rem] overflow-hidden border border-accent shadow-[0_0_20px_rgba(212,175,122,0.15)]">
+                                <img id="upload-preview-img" src="" class="w-full h-full object-cover opacity-70">
+                                <div class="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm opacity-0 hover:opacity-100 transition-opacity duration-300">
+                                    <button type="button" id="remove-upload-btn" class="bg-red-500/20 text-red-400 px-6 py-3 rounded-full text-sm font-bold border border-red-500/30 hover:bg-red-500/40 transition-colors flex items-center gap-2 backdrop-blur-md shadow-lg">
+                                        <i class="ph ph-trash"></i> Quitar
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div id="three-canvas-container" class="hidden absolute inset-0 rounded-[2rem] overflow-hidden bg-black/40 z-10"></div>
+                            <div id="fbx-load-overlay" class="hidden absolute left-4 right-4 bottom-4 z-30 pointer-events-none">
+                                <div class="rounded-2xl border border-tech/30 bg-black/75 backdrop-blur-md px-4 py-3 shadow-[0_0_24px_rgba(59,130,246,0.2)]">
+                                    <div class="flex items-center justify-between text-[10px] uppercase tracking-[0.2em] text-gray-300 mb-2">
+                                        <span id="fbx-load-label">Subiendo FBX...</span>
+                                        <span id="fbx-load-percent">0%</span>
+                                    </div>
+                                    <div class="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
+                                        <div id="fbx-load-fill" class="h-full bg-tech transition-all duration-200 ease-out" style="width: 0%;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="three-controls-overlay" class="hidden absolute bottom-4 left-0 right-0 z-20 px-6 flex justify-between items-center">
+                                <button type="button" id="btn-capture-scene" class="bg-tech/90 hover:bg-tech text-white px-4 py-2.5 rounded-full text-[11px] font-bold uppercase tracking-widest flex items-center gap-2 shadow-2xl transition-all hover:scale-105 active:scale-95">
+                                    <i class="ph-bold ph-camera"></i> Capturar Vista
+                                </button>
+                                <button type="button" id="remove-file-btn" class="bg-red-500/80 text-white w-9 h-9 rounded-full flex items-center justify-center hover:bg-red-600 transition-colors shadow-lg">
+                                    <i class="ph ph-trash text-lg"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="captured-snapshot-container" class="hidden mb-4">
+                            <div class="flex items-center justify-between mb-2">
+                                <p class="text-[10px] uppercase font-bold text-tech tracking-widest flex items-center gap-2">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-tech animate-pulse"></span> Referencia Capturada
+                                </p>
+                                <button type="button" id="btn-delete-snapshot" class="text-[10px] text-gray-500 hover:text-red-400 uppercase font-bold transition-colors">Eliminar</button>
+                            </div>
+                            <div class="relative w-28 aspect-video rounded-xl overflow-hidden fbx-snapshot-preview">
+                                <img id="snapshot-img" src="" class="w-full h-full object-cover" alt="Snapshot">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4" id="example-scenes">
+                            <label class="cursor-pointer relative group">
+                                <input type="radio" name="base-scene" value="living" class="peer sr-only" checked>
+                                <div class="rounded-2xl overflow-hidden border-2 border-transparent peer-checked:border-accent peer-checked:shadow-[0_0_20px_rgba(212,175,122,0.25)] transition-all duration-300 relative shadow-lg">
+                                    <div class="absolute inset-0 bg-black/40 peer-checked:bg-transparent transition-all duration-300"></div>
+                                    <img src="https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=400&auto=format&fit=crop" alt="Living Room Base" class="w-full h-16 object-cover grayscale">
+                                </div>
+                                <div class="absolute bottom-1 left-1.5 bg-black/60 backdrop-blur-md text-[9px] uppercase tracking-wider px-2 py-0.5 rounded text-white font-bold">Clay Living</div>
+                                <div class="absolute top-1 right-1.5 opacity-0 peer-checked:opacity-100 text-accent transition-all duration-300 drop-shadow-md scale-75 peer-checked:scale-100">
+                                    <i class="ph-fill ph-check-circle text-lg"></i>
+                                </div>
+                            </label>
+
+                            <label class="cursor-pointer relative group">
+                                <input type="radio" name="base-scene" value="bedroom" class="peer sr-only">
+                                <div class="rounded-2xl overflow-hidden border-2 border-transparent peer-checked:border-accent peer-checked:shadow-[0_0_20px_rgba(212,175,122,0.25)] transition-all duration-300 relative shadow-lg">
+                                    <div class="absolute inset-0 bg-black/40 peer-checked:bg-transparent transition-all duration-300"></div>
+                                    <img src="https://images.unsplash.com/photo-1540518614846-7eded433c457?q=80&w=400&auto=format&fit=crop" alt="Bedroom Base" class="w-full h-16 object-cover grayscale">
+                                </div>
+                                <div class="absolute bottom-1 left-1.5 bg-black/60 backdrop-blur-md text-[9px] uppercase tracking-wider px-2 py-0.5 rounded text-white font-bold">Clay Dormitorio</div>
+                                <div class="absolute top-1 right-1.5 opacity-0 peer-checked:opacity-100 text-accent transition-all duration-300 drop-shadow-md scale-75 peer-checked:scale-100">
+                                    <i class="ph-fill ph-check-circle text-lg"></i>
+                                </div>
+                            </label>
+                        </div>
+
+                        <div class="mt-4 rounded-2xl border border-white/10 bg-black/30 p-3.5">
+                            <div class="flex items-center justify-between gap-3">
+                                <p class="text-[10px] uppercase tracking-widest font-bold text-gray-300">Sube tu estilo de imagen (opcional)</p>
+                                <input type="file" id="style-reference-upload" class="hidden" accept="image/jpeg,image/png,image/webp">
+                                <button type="button" id="btn-style-reference-upload" class="text-[10px] uppercase tracking-widest font-bold px-3 py-1.5 rounded-full border border-tech/40 text-tech hover:bg-tech/10 transition-colors">
+                                    Subir estilo
+                                </button>
+                            </div>
+                            <div id="style-reference-preview-wrap" class="hidden mt-3 items-center gap-3">
+                                <img id="style-reference-preview-img" src="" alt="Style reference preview" class="w-14 h-14 rounded-xl object-cover border border-white/10">
+                                <div class="flex-1 min-w-0">
+                                    <p id="style-reference-name" class="text-xs text-white truncate font-semibold"></p>
+                                    <p class="text-[10px] text-gray-500 uppercase tracking-wider">Se usará como guía visual de materiales y mood.</p>
+                                </div>
+                                <button type="button" id="btn-style-reference-remove" class="text-[10px] uppercase tracking-widest font-bold text-red-400 hover:text-red-300 transition-colors">
+                                    Quitar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Paso 2: Dirección de Arte (Minimalista UI) -->
+                    <div class="pt-4 border-t border-white/5">
+                        <div class="flex items-center justify-between mb-4">
+                            <label class="font-bold text-white flex items-center gap-3 text-[1.05rem]">
+                                <span class="flex items-center justify-center w-8 h-8 rounded-full bg-white/10 border border-white/10 text-xs text-tech shadow-inner">2</span>
+                                Dirección de Arte
+                            </label>
+                            <span class="text-[10px] text-gray-500 font-mono bg-black/50 px-3 py-1.5 rounded-full border border-white/5 shadow-inner">LoRA_Weights</span>
+                        </div>
+                        
+                        <div class="relative">
+                            <!-- Botón Trigger del Menú (Minimalista) -->
+                            <button type="button" id="style-dropdown-trigger" class="w-full bg-black/40 border border-white/10 rounded-2xl p-4 flex justify-between items-center hover:border-tech/50 transition-all duration-300 shadow-inner group">
+                                <div class="flex items-center gap-4">
+                                    <div class="p-2.5 rounded-xl bg-white/5 text-tech group-hover:scale-110 transition-transform"><i class="ph ph-palette text-xl"></i></div>
+                                    <div class="text-left">
+                                        <p class="text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-0.5">Estilo Activo</p>
+                                        <p id="current-style-label" class="text-sm font-bold text-white">Nórdico Mínimo</p>
+                                    </div>
+                                </div>
+                                <div class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center">
+                                    <i class="ph ph-caret-down text-gray-400 transition-transform duration-300" id="style-dropdown-icon"></i>
+                                </div>
+                            </button>
+
+                            <!-- Menú Desplegable Oculto -->
+                            <div id="style-dropdown-content" class="absolute z-30 top-full left-0 right-0 mt-2 p-2 bg-[#121212]/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-[0_20px_40px_rgba(0,0,0,0.8)] opacity-0 pointer-events-none transform -translate-y-2 transition-all duration-300">
+                                <div class="flex flex-col gap-1 max-h-[220px] overflow-y-auto no-scrollbar">
+                                    <button type="button" class="style-btn flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold border border-tech bg-tech/10 text-white transition-all duration-300" data-style="nordic" data-name="Nórdico Mínimo">
+                                        <span class="w-2 h-2 rounded-full bg-tech"></span> Nórdico Mínimo
+                                    </button>
+                                    <button type="button" class="style-btn flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold border border-transparent hover:bg-white/5 text-gray-400 hover:text-white transition-all duration-300" data-style="industrial" data-name="Industrial / Loft">
+                                        <span class="w-2 h-2 rounded-full bg-gray-600"></span> Industrial / Loft
+                                    </button>
+                                    <button type="button" class="style-btn flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold border border-transparent hover:bg-white/5 text-gray-400 hover:text-white transition-all duration-300" data-style="luxury" data-name="Lujo Contemporáneo">
+                                        <span class="w-2 h-2 rounded-full bg-gray-600"></span> Lujo Contemporáneo
+                                    </button>
+                                    <button type="button" class="style-btn flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold border border-transparent hover:bg-white/5 text-gray-400 hover:text-white transition-all duration-300" data-style="brutalist" data-name="Brutalismo">
+                                        <span class="w-2 h-2 rounded-full bg-gray-600"></span> Brutalismo
+                                    </button>
+                                    
+                                    <div class="h-px w-full bg-white/10 my-1"></div>
+
+                                    <!-- Botón Arma tu estilo (Abre el Modal) -->
+                                    <button type="button" id="btn-open-builder" class="w-full px-4 py-3.5 rounded-xl text-sm font-bold border border-dashed border-accent text-accent hover:bg-accent/10 transition-all duration-300 flex items-center justify-center gap-2 mt-1">
+                                        <i class="ph ph-magic-wand text-lg"></i> Creador Personalizado
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Redimensión y Formatos -->
+                    <div class="pt-4 border-t border-white/5 relative z-10">
+                        <div class="flex items-center justify-between mb-4">
+                            <label class="font-bold text-white flex items-center gap-3 text-[1.05rem]">
+                                <span class="flex items-center justify-center w-8 h-8 rounded-full bg-white/10 border border-white/10 text-xs text-accent shadow-inner">3</span>
+                                Formato (Ads/Social)
+                            </label>
+                            <span class="text-[10px] text-gray-500 font-mono bg-black/50 px-3 py-1.5 rounded-full border border-white/5 shadow-inner">Auto_Crop</span>
+                        </div>
+                        
+                        <select id="setting-format" class="pro-select w-full bg-black/40 border border-white/10 rounded-2xl text-[14px] text-white p-4 focus:border-tech focus:ring-1 focus:ring-tech transition-all outline-none shadow-inner cursor-pointer font-medium">
+                            <optgroup label="Instagram & Facebook">
+                                <option value="1/1">Post Cuadrado (1:1) - 1080x1080</option>
+                                <option value="4/5">Post Vertical (4:5) - 1080x1350</option>
+                                <option value="9/16">Story / Reel (9:16) - 1080x1920</option>
+                            </optgroup>
+                            <optgroup label="LinkedIn & Web">
+                                <option value="1.91/1">Post Link (1.91:1) - 1200x628</option>
+                                <option value="16/9">Display (16:9) - 1920x1080</option>
+                                <option value="4/3" selected>Presentación (4:3)</option>
+                            </optgroup>
+                        </select>
+                    </div>
+
+                    <!-- Prompt visible para sensación "Tech" -->
+                    <div id="prompt-box" class="bg-[#050505] border border-white/5 rounded-2xl p-4 font-mono text-[10px] md:text-[11px] text-gray-500 relative shadow-inner">
+                        <span class="text-tech font-bold">> prompt_compilado: </span>
+                        <textarea id="prompt-display" class="prompt-editor leading-relaxed text-gray-400" rows="3" placeholder="Escribe o ajusta tu prompt aquí...">"ArchViz, nordic minimalist interior, highly detailed 8k, aspect ratio 4:3"</textarea>
+                        <button type="button" id="improve-prompt-btn" class="mt-3 text-xs font-bold uppercase tracking-wider text-tech hover:text-white transition-colors inline-flex items-center gap-1.5">
+                            <i class="ph ph-sparkle text-sm"></i> Mejora mi prompt
+                        </button>
+                    </div>
+
+                    <!-- Botón de Acción y Status -->
+                    <div class="pt-2">
+                        <div class="flex justify-between items-center px-2 mb-3">
+                            <span class="text-xs text-gray-400 bg-white/5 border border-white/5 px-3 py-1 rounded-full shadow-inner flex items-center gap-1.5">
+                                Créditos: <span id="credit-counter" class="text-accent font-bold">3</span>
+                            </span>
+                            <span class="text-[10px] text-gray-500 uppercase tracking-widest font-bold flex items-center gap-1">
+                                <i class="ph-fill ph-lock-key text-tech"></i> Encriptado
+                            </span>
+                        </div>
+
+                        <button type="submit" id="generate-btn" class="w-full relative group overflow-hidden rounded-full bg-[#0a0a0a] border border-tech/30 transition-all duration-300 p-[3px] shadow-[0_0_20px_rgba(59,130,246,0.15)] hover:shadow-[0_0_40px_rgba(59,130,246,0.3)] hover:scale-[1.02]">
+                            <div class="absolute inset-0 bg-gradient-to-r from-tech via-purple-500 to-tech opacity-40 group-hover:opacity-80 transition-opacity duration-500"></div>
+                            <div class="relative flex items-center justify-center gap-2 bg-[#0c0c0c] px-6 py-4 rounded-full transition-colors duration-300">
+                                <i class="ph-fill ph-cpu text-tech text-xl group-hover:text-white transition-colors duration-300"></i>
+                                <span class="font-extrabold text-white tracking-widest uppercase text-sm">Compilar Render</span>
+                            </div>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Panel de Visualización (Derecha) -->
+            <div class="lg:col-span-7 bg-[#0a0a0a]/60 backdrop-blur-2xl border border-white/5 rounded-[2.5rem] p-4 md:p-6 shadow-[0_20px_60px_rgba(0,0,0,0.6)] flex flex-col h-full relative overflow-hidden opacity-0 animate-fade-in-up delay-300" id="viewer-panel">
+                <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-tl from-accent/5 via-transparent to-tech/5 pointer-events-none z-0"></div>
+                
+                <div class="flex items-center justify-between px-3 pb-5 mb-4 border-b border-white/5 relative z-10">
+                    <div class="flex gap-2.5">
+                        <div class="w-3.5 h-3.5 rounded-full bg-white/10 hover:bg-red-500 transition-colors cursor-pointer shadow-inner"></div>
+                        <div class="w-3.5 h-3.5 rounded-full bg-white/10 hover:bg-yellow-500 transition-colors cursor-pointer shadow-inner"></div>
+                        <div class="w-3.5 h-3.5 rounded-full bg-white/10 hover:bg-green-500 transition-colors cursor-pointer shadow-inner"></div>
+                    </div>
+                    <div class="text-[11px] font-mono uppercase tracking-widest text-gray-400 flex items-center gap-2 bg-black/40 border border-white/5 px-4 py-1.5 rounded-full shadow-inner">
+                        <i class="ph ph-cpu text-tech animate-pulse-fast hidden text-sm" id="processing-icon"></i>
+                        <span id="status-text" class="font-medium">Esperando Input...</span>
+                    </div>
+                </div>
+
+                <div class="relative w-full flex-grow rounded-[2rem] bg-[#050505] border border-white/5 min-h-[350px] flex items-center justify-center p-3 overflow-hidden shadow-inner z-10">
+                    
+                    <!-- Borde Mágico Animado -->
+                    <div class="magic-border"></div>
+
+                    <!-- Contenedor con Aspect Ratio dinámico -->
+                    <div id="render-aspect-container" class="relative w-full transition-all duration-700 ease-[cubic-bezier(0.4,0,0.2,1)] shadow-[0_20px_50px_rgba(0,0,0,0.8)] rounded-2xl overflow-hidden z-20 bg-black" style="aspect-ratio: 4/3;">
+                        <div class="comparison-slider h-full" id="comparison-slider">
+                            <img id="image-base" src="https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=1200&auto=format&fit=crop" alt="Base Model" class="grayscale brightness-75 w-full h-full object-cover">
+                            <img id="image-generated" src="" alt="AI Generated Render" class="comparison-image-after hidden w-full h-full object-cover">
+                            <div class="slider-handle" id="slider-handle"></div>
+                        </div>
+
+                        <div class="scanning-line animate-scan rounded-2xl" id="scanning-line"></div>
+
+                        <div id="terminal-overlay" class="absolute inset-0 terminal-overlay hidden flex-col justify-end p-6 rounded-2xl">
+                            <div class="font-mono text-[11px] md:text-sm text-green-400 h-40 overflow-y-auto terminal-scroll space-y-2" id="terminal-logs"></div>
+                        </div>
+                        <div id="generation-feedback" class="generation-feedback absolute inset-0 hidden flex-col justify-center items-center p-6 rounded-2xl z-30">
+                            <div class="w-full max-w-md space-y-4">
+                                <div class="flex items-center justify-between text-[10px] uppercase tracking-[0.25em] text-gray-400">
+                                    <span id="generation-stage-label">Inicializando</span>
+                                    <span id="generation-progress-label">0%</span>
+                                </div>
+                                <div class="generation-progress-track">
+                                    <div id="generation-progress-fill" class="generation-progress-fill"></div>
+                                </div>
+                                <p id="generation-stage-hint" class="text-xs text-gray-300 leading-relaxed">Preparando solicitud segura para generar tu render.</p>
+                                <button id="generation-retry-btn" type="button" class="hidden mt-1 w-full bg-red-500/15 text-red-300 border border-red-500/35 rounded-xl py-2.5 text-[10px] font-black uppercase tracking-[0.2em] hover:bg-red-500/25 transition-colors interactive-el">
+                                    Reintentar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-400 relative z-10 px-2">
+                    <div class="flex items-center gap-6">
+                        <span class="flex items-center gap-2 text-xs font-semibold tracking-wide" title="ControlNet Depth + Canny"><i class="ph ph-intersect text-tech text-lg"></i> Topology Sync</span>
+                        <span class="flex items-center gap-2 text-xs font-semibold tracking-wide" title="Denoiser passes"><i class="ph ph-aperture text-accent text-lg"></i> 30 Steps</span>
+                    </div>
+                    <a href="https://impactrenderstudios.com/lumiere.html" class="text-white hover:text-tech transition-colors font-bold flex items-center gap-2 border border-white/10 px-5 py-2 rounded-full bg-white/5 hover:bg-white/10 shadow-lg text-xs uppercase tracking-wider">
+                        Ver Lumiere <i class="ph-bold ph-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Módulo adicional: FBX Perspective Control -->
+    <section class="max-w-7xl mx-auto mt-12 fbx-lab hidden">
+        <div class="mb-10 text-center max-w-3xl mx-auto">
+            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-tech/10 border border-tech/20 text-[10px] font-bold uppercase tracking-widest text-tech mb-5 shadow-inner">
+                <i class="ph-fill ph-cube text-sm"></i>
+                <span data-en="3D View-to-Render" data-es="Vista-3D-a-Render">Vista-3D-a-Render</span>
+            </div>
+            <h3 class="text-2xl md:text-4xl font-extrabold text-white mb-4 tracking-tight leading-tight">
+                <span data-en="FBX Perspective Control" data-es="Control de Perspectiva FBX">Control de Perspectiva FBX</span>
+            </h3>
+            <p class="text-gray-400 text-sm md:text-base font-light" data-en="Upload FBX, adjust camera with orbit controls, capture a view, and use it as a render reference." data-es="Sube FBX, ajusta cámara con controles orbit, captura una vista y úsala como referencia de render.">
+                Sube FBX, ajusta cámara con controles orbit, captura una vista y úsala como referencia de render.
+            </p>
+        </div>
+
+        <div class="grid lg:grid-cols-12 gap-8 md:gap-10 items-start">
+            <div class="lg:col-span-5 bg-[#0a0a0a]/80 backdrop-blur-2xl border border-white/5 rounded-[2.2rem] p-6 md:p-8 shadow-[0_20px_60px_rgba(0,0,0,0.6)] relative overflow-hidden">
+                <form id="fbx-ai-form" class="space-y-6">
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <label class="font-bold text-white flex items-center gap-3 text-[1rem]">
+                                <span class="flex items-center justify-center w-8 h-8 rounded-full bg-white/10 border border-white/10 text-xs text-accent">A</span>
+                                <span data-en="Upload 3D Model" data-es="Carga Modelo 3D">Carga Modelo 3D</span>
+                            </label>
+                            <span class="text-[10px] text-gray-500 font-mono bg-black/50 px-3 py-1.5 rounded-full border border-white/5">FBX_REF</span>
+                        </div>
+
+                        <div id="fbx-dropzone" class="relative w-full border border-dashed border-white/20 rounded-[1.6rem] p-5 text-center hover:border-accent hover:bg-accent/5 transition-all cursor-pointer bg-black/20 mb-4 shadow-inner min-h-[210px] flex flex-col items-center justify-center overflow-hidden">
+                            <input type="file" id="fbx-file-upload" accept=".fbx,image/*" class="hidden">
+
+                            <div id="fbx-dropzone-content" class="flex flex-col items-center gap-2">
+                                <i class="ph ph-cube-transparent text-3xl text-gray-500 mb-2"></i>
+                                <p class="text-sm text-gray-300 font-medium" data-en="Upload FBX or image" data-es="Sube FBX o imagen">Sube FBX o imagen</p>
+                                <p class="text-[10px] text-gray-500 uppercase tracking-tighter text-center px-4" data-en="Left click rotate · Right click pan" data-es="Click izq rota · click der desplaza">Click izq rota · click der desplaza</p>
+                            </div>
+
+                            <div id="fbx-three-canvas-container" class="hidden absolute inset-0 rounded-[1.6rem] overflow-hidden bg-black/50 z-10"></div>
+                            <div id="fbx-image-preview-container" class="hidden absolute inset-0 rounded-[1.6rem] overflow-hidden bg-black/60 z-10">
+                                <img id="fbx-upload-preview-img" src="" class="w-full h-full object-cover opacity-80" alt="FBX preview">
+                            </div>
+
+                            <div id="fbx-controls-overlay" class="hidden absolute bottom-3 left-0 right-0 z-20 px-4 flex justify-between items-center">
+                                <button type="button" id="fbx-btn-capture-scene" class="bg-tech/90 hover:bg-tech text-white px-4 py-2 rounded-full text-[11px] font-bold uppercase tracking-widest flex items-center gap-2 shadow-xl transition-all hover:scale-105">
+                                    <i class="ph-bold ph-camera"></i>
+                                    <span data-en="Capture View" data-es="Capturar Vista">Capturar Vista</span>
+                                </button>
+                                <button type="button" id="fbx-remove-file-btn" class="bg-red-500/85 text-white w-9 h-9 rounded-full flex items-center justify-center hover:bg-red-600 transition-colors shadow-lg">
+                                    <i class="ph ph-trash text-lg"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="fbx-captured-snapshot-container" class="hidden mb-4">
+                            <div class="flex items-center justify-between mb-2">
+                                <p class="text-[10px] uppercase font-bold text-tech tracking-widest" data-en="Captured Reference" data-es="Referencia Capturada">Referencia Capturada</p>
+                                <button type="button" id="fbx-btn-delete-snapshot" class="text-[10px] text-gray-500 hover:text-red-400 uppercase font-bold">Eliminar</button>
+                            </div>
+                            <div class="relative w-28 aspect-video rounded-xl overflow-hidden fbx-snapshot-preview">
+                                <img id="fbx-snapshot-img" src="" class="w-full h-full object-cover" alt="Captured viewpoint">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <label class="cursor-pointer">
+                                <input type="radio" name="fbx-base-scene" value="living" class="peer sr-only" checked>
+                                <div class="rounded-xl overflow-hidden border-2 border-transparent peer-checked:border-accent transition-all">
+                                    <img src="https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=400" class="w-full h-12 object-cover grayscale opacity-60 peer-checked:opacity-100" alt="Living base">
+                                </div>
+                            </label>
+                            <label class="cursor-pointer">
+                                <input type="radio" name="fbx-base-scene" value="bedroom" class="peer sr-only">
+                                <div class="rounded-xl overflow-hidden border-2 border-transparent peer-checked:border-accent transition-all">
+                                    <img src="https://images.unsplash.com/photo-1540518614846-7eded433c457?q=80&w=400" class="w-full h-12 object-cover grayscale opacity-60 peer-checked:opacity-100" alt="Bedroom base">
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="pt-4 border-t border-white/10">
+                        <div class="flex items-center justify-between mb-4">
+                            <label class="font-bold text-white flex items-center gap-3 text-[1rem]">
+                                <span class="flex items-center justify-center w-8 h-8 rounded-full bg-white/10 border border-white/10 text-xs text-tech">B</span>
+                                <span data-en="Style" data-es="Estilo">Estilo</span>
+                            </label>
+                            <span id="fbx-current-style-label" class="text-[10px] text-gray-500 font-mono bg-black/50 px-3 py-1.5 rounded-full border border-white/5">Nórdico</span>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2">
+                            <button type="button" class="fbx-style-btn border border-tech bg-tech/10 text-white rounded-xl px-3 py-2 text-xs font-semibold" data-style="nordic">Nórdico</button>
+                            <button type="button" class="fbx-style-btn border border-white/10 text-gray-400 rounded-xl px-3 py-2 text-xs font-semibold" data-style="industrial">Industrial</button>
+                            <button type="button" class="fbx-style-btn border border-white/10 text-gray-400 rounded-xl px-3 py-2 text-xs font-semibold" data-style="luxury">Luxury</button>
+                        </div>
+                    </div>
+
+                    <div class="pt-2">
+                        <div class="flex justify-between items-center px-1 mb-3">
+                            <span class="text-xs text-gray-400 bg-white/5 px-3 py-1 rounded-full">Créditos: <span id="fbx-credit-counter" class="text-accent font-bold">3</span></span>
+                            <span id="fbx-status-inline" class="text-[10px] text-gray-500 uppercase tracking-widest">Ready</span>
+                        </div>
+                        <button type="submit" id="fbx-generate-btn" class="w-full relative group overflow-hidden rounded-full bg-tech p-[2px] transition-all hover:scale-[1.02]">
+                            <div class="relative flex items-center justify-center gap-2 bg-[#0c0c0c] px-6 py-4 rounded-full">
+                                <i class="ph-fill ph-sparkle text-tech text-xl"></i>
+                                <span class="font-extrabold text-white tracking-widest uppercase text-xs" data-en="Compile Final Render" data-es="Compilar Render Final">Compilar Render Final</span>
+                            </div>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="lg:col-span-7 bg-[#0a0a0a]/60 border border-white/5 rounded-[2.2rem] p-4 md:p-6 shadow-2xl flex flex-col h-full relative overflow-hidden" id="fbx-viewer-panel">
+                <div class="flex items-center justify-between px-3 pb-4 mb-3 border-b border-white/5">
+                    <div class="text-[11px] font-mono uppercase text-gray-400 flex items-center gap-2">
+                        <i class="ph ph-cpu text-tech animate-pulse-fast hidden" id="fbx-processing-icon"></i>
+                        <span id="fbx-status-text">ESPERANDO MODELO...</span>
+                    </div>
+                </div>
+
+                <div class="relative w-full flex-grow fbx-viewer rounded-[1.6rem] bg-black border border-white/5 overflow-hidden">
+                    <div class="magic-border"></div>
+                    <div class="comparison-slider h-full" id="fbx-comparison-slider">
+                        <img id="fbx-image-base" src="https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=1200&auto=format&fit=crop" alt="FBX base image" class="w-full h-full object-cover grayscale brightness-75">
+                        <img id="fbx-image-generated" src="" alt="Generated FBX render" class="comparison-image-after hidden w-full h-full object-cover">
+                        <div class="fbx-slider-handle" id="fbx-slider-handle"></div>
+                        <div class="scanning-line animate-scan rounded-2xl" id="fbx-scanning-line"></div>
+                        <div id="fbx-terminal-overlay" class="absolute inset-0 terminal-overlay hidden flex-col justify-end p-5">
+                            <div class="font-mono text-[11px] text-green-400 h-28 overflow-y-auto no-scrollbar space-y-1" id="fbx-terminal-logs"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Modales de Lead Gen y Límites -->
+    
+    <!-- Modal Drag & Drop Style Builder -->
+    <div id="style-builder-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/60 backdrop-blur-md p-4">
+        <div class="bg-[#0c0c0c]/95 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] p-8 md:p-10 max-w-3xl w-full shadow-[0_30px_80px_rgba(0,0,0,0.8)] relative flex flex-col h-[85vh] max-h-[750px] animate-fade-in-up">
+            <button type="button" id="close-builder-modal" class="absolute top-6 right-6 w-10 h-10 flex items-center justify-center rounded-full bg-white/5 border border-white/5 text-gray-400 hover:text-white hover:bg-white/10 hover:scale-110 transition-all duration-300"><i class="ph ph-x text-xl"></i></button>
+            
+            <div class="mb-8">
+                <h3 class="text-3xl font-extrabold text-white flex items-center gap-3">
+                    <div class="p-2.5 rounded-2xl bg-accent/10 text-accent border border-accent/20 shadow-inner"><i class="ph ph-bezier-curve"></i></div>
+                    Constructor de Conceptos
+                </h3>
+                <p class="text-gray-400 text-sm mt-3 leading-relaxed font-light">Agrega conceptos creativos a tu prompt maestro (Haz clic o arrástralos).</p>
+            </div>
+
+            <!-- Dropzone Superior (Seleccionados) -->
+            <div class="flex-shrink-0 mb-6">
+                <div class="text-[10px] text-accent font-bold uppercase tracking-widest mb-3 flex items-center gap-1.5 bg-accent/10 inline-flex px-3.5 py-1.5 rounded-full border border-accent/20">
+                    <i class="ph-fill ph-check-circle text-sm"></i> Prompt Activo
+                </div>
+                <div id="zone-selected" class="min-h-[140px] border-2 border-dashed border-white/20 rounded-[2rem] p-5 flex flex-wrap gap-2.5 items-start content-start bg-[#050505] transition-colors shadow-inner">
+                    <!-- Conceptos soltados irán aquí -->
+                </div>
+            </div>
+
+            <!-- Zona Inferior (Disponibles) -->
+            <div class="flex-grow flex flex-col min-h-0">
+                <div class="mb-4 flex items-center gap-2.5">
+                    <input type="text" id="builder-new-concept" maxlength="64" placeholder="Escribe un concepto..." class="flex-1 bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-gray-500 focus:border-tech focus:ring-1 focus:ring-tech focus:outline-none transition-all shadow-inner">
+                    <button type="button" id="btn-add-concept" class="px-5 py-3 rounded-xl text-[11px] font-extrabold uppercase tracking-wider border border-tech/40 text-tech hover:bg-tech/10 transition-colors">
+                        Agregar
+                    </button>
+                </div>
+                <div class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-3 pl-2">
+                    Conceptos Disponibles
+                </div>
+                <div id="zone-available" class="flex-grow overflow-y-auto terminal-scroll border border-white/5 rounded-[2rem] p-6 flex flex-wrap gap-3 content-start bg-white/5 transition-colors shadow-inner">
+                    <div draggable="true" class="concept-tag bg-[#141414] border border-white/5 px-5 py-2.5 rounded-full text-[13px] font-medium text-gray-300 hover:border-tech hover:text-white hover:shadow-[0_0_20px_rgba(59,130,246,0.2)]" data-value="Hormigón Visto">Hormigón Visto</div>
+                    <div draggable="true" class="concept-tag bg-[#141414] border border-white/5 px-5 py-2.5 rounded-full text-[13px] font-medium text-gray-300 hover:border-tech hover:text-white hover:shadow-[0_0_20px_rgba(59,130,246,0.2)]" data-value="Madera de Roble Clara">Madera de Roble</div>
+                    <div draggable="true" class="concept-tag bg-[#141414] border border-white/5 px-5 py-2.5 rounded-full text-[13px] font-medium text-gray-300 hover:border-tech hover:text-white hover:shadow-[0_0_20px_rgba(59,130,246,0.2)]" data-value="Mármol Calacatta">Mármol Calacatta</div>
+                    <div draggable="true" class="concept-tag bg-[#141414] border border-white/5 px-5 py-2.5 rounded-full text-[13px] font-medium text-gray-300 hover:border-tech hover:text-white hover:shadow-[0_0_20px_rgba(59,130,246,0.2)]" data-value="Acero Inoxidable">Acero Inoxidable</div>
+                    <div draggable="true" class="concept-tag bg-[#141414] border border-white/5 px-5 py-2.5 rounded-full text-[13px] font-medium text-gray-300 hover:border-tech hover:text-white hover:shadow-[0_0_20px_rgba(59,130,246,0.2)]" data-value="Diseño Biofílico">Diseño Biofílico</div>
+                    <div draggable="true" class="concept-tag bg-[#141414] border border-white/5 px-5 py-2.5 rounded-full text-[13px] font-medium text-gray-300 hover:border-tech hover:text-white hover:shadow-[0_0_20px_rgba(59,130,246,0.2)]" data-value="Japandi style">Japandi</div>
+                    <div draggable="true" class="concept-tag bg-[#141414] border border-white/5 px-5 py-2.5 rounded-full text-[13px] font-medium text-gray-300 hover:border-tech hover:text-white hover:shadow-[0_0_20px_rgba(59,130,246,0.2)]" data-value="Iluminación Cálida IES">Luces IES (Noche)</div>
+                    <div draggable="true" class="concept-tag bg-[#141414] border border-white/5 px-5 py-2.5 rounded-full text-[13px] font-medium text-gray-300 hover:border-tech hover:text-white hover:shadow-[0_0_20px_rgba(59,130,246,0.2)]" data-value="Grandes ventanales de piso a techo">Grandes Ventanales</div>
+                </div>
+            </div>
+
+            <!-- Footer Modal -->
+            <div class="mt-8 pt-5 border-t border-white/10 flex justify-end gap-4 flex-shrink-0">
+                <button type="button" id="btn-cancel-builder" class="px-8 py-3.5 rounded-full text-sm font-bold text-gray-400 hover:text-white hover:bg-white/5 transition-colors">
+                    Cancelar
+                </button>
+                <button type="button" id="btn-apply-builder" class="bg-accent hover:bg-[#b89565] text-black px-10 py-3.5 rounded-full text-sm font-extrabold transition-transform hover:scale-105 shadow-[0_0_30px_rgba(212,175,122,0.3)]">
+                    Aplicar Conceptos
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Captura de Email -->
+    <div id="email-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/60 backdrop-blur-md px-4">
+        <div class="bg-[#0c0c0c]/95 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] p-10 max-w-md w-full shadow-[0_30px_80px_rgba(0,0,0,0.8)] relative animate-fade-in-up">
+            <button type="button" id="close-email-modal" class="absolute top-6 right-6 w-10 h-10 flex items-center justify-center rounded-full bg-white/5 border border-white/5 text-gray-400 hover:text-white hover:bg-white/10 hover:scale-110 transition-all duration-300"><i class="ph ph-x text-xl"></i></button>
+            <div class="text-center mb-8">
+                <div class="w-24 h-24 bg-tech/10 text-tech rounded-full flex items-center justify-center mx-auto mb-6 border border-tech/20 shadow-[0_0_40px_rgba(59,130,246,0.2)]">
+                    <i class="ph ph-envelope-simple-open text-5xl"></i>
+                </div>
+                <h3 class="text-3xl font-extrabold text-white mb-3 tracking-tight">Desbloquea tu Render</h3>
+                <p class="text-gray-400 text-sm font-light leading-relaxed">Déjanos tu email corporativo para procesar tu imagen en alta calidad y enviarte los detalles de nuestra API.</p>
+            </div>
+            <form id="email-capture-form" class="space-y-6">
+                <div>
+                    <input type="email" id="user-email-input" required placeholder="tu@empresa.com" class="w-full bg-black/50 border border-white/10 rounded-2xl px-6 py-4 text-white focus:border-tech focus:ring-1 focus:ring-tech focus:outline-none transition-all shadow-inner text-base">
+                </div>
+                <label class="flex items-start gap-2.5 text-xs text-gray-300 bg-white/5 border border-white/10 rounded-xl px-3 py-2.5">
+                    <input id="email-robot-check" type="checkbox" class="mt-0.5 accent-[#3b82f6]">
+                    <span>No soy un robot</span>
+                </label>
+                <p id="email-modal-error" class="hidden text-xs text-red-400 text-center font-semibold"></p>
+                <button type="submit" class="w-full bg-tech hover:bg-tech-glow text-white font-extrabold py-4 rounded-full transition-all hover:scale-[1.02] shadow-[0_0_30px_rgba(59,130,246,0.3)] tracking-wide">
+                    Continuar y Renderizar
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Límite Alcanzado -->
+    <div id="limit-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/60 backdrop-blur-md px-4">
+        <div class="bg-[#0c0c0c]/95 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] p-10 max-w-md w-full shadow-[0_30px_80px_rgba(0,0,0,0.8)] relative text-center animate-fade-in-up">
+            <div class="w-24 h-24 bg-accent/10 text-accent rounded-full flex items-center justify-center mx-auto mb-6 border border-accent/20 shadow-[0_0_40px_rgba(212,175,122,0.2)]">
+                <i class="ph ph-warning-circle text-5xl"></i>
+            </div>
+            <h3 class="text-3xl font-extrabold text-white mb-3 tracking-tight">Límite Alcanzado</h3>
+            <p id="limit-modal-message" class="text-gray-400 text-sm mb-8 font-light leading-relaxed">Has consumido tus créditos gratuitos. Contáctanos para implementar nuestra arquitectura API sin límites en tus proyectos.</p>
+            <div class="flex flex-col gap-4">
+                <a href="#contacto" onclick="document.getElementById('limit-modal').classList.add('hidden')" class="w-full bg-accent hover:bg-[#b89565] text-black font-extrabold py-4 rounded-full transition-all hover:scale-[1.02] shadow-[0_0_30px_rgba(212,175,122,0.3)] tracking-wide">
+                    Hablar con Ventas
+                </a>
+                <button type="button" id="close-limit-modal" class="text-gray-400 hover:text-white text-sm font-bold py-2 hover:underline">
+                    Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Upsell Cotizador (WhatsApp) -->
+    <div id="upsell-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/60 backdrop-blur-md px-4">
+        <div class="bg-[#0c0c0c]/95 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] p-10 max-w-md w-full shadow-[0_30px_80px_rgba(0,0,0,0.8)] relative animate-fade-in-up">
+            <button type="button" id="close-upsell-modal" class="absolute top-6 right-6 w-10 h-10 flex items-center justify-center rounded-full bg-white/5 border border-white/5 text-gray-400 hover:text-white hover:bg-white/10 hover:scale-110 transition-all duration-300"><i class="ph ph-x text-xl"></i></button>
+            <div class="text-center mb-8">
+                <div class="w-20 h-20 bg-accent/10 text-accent rounded-full flex items-center justify-center mx-auto mb-5 border border-accent/20 shadow-[0_0_40px_rgba(212,175,122,0.2)]">
+                    <i class="ph ph-rocket-launch text-4xl"></i>
+                </div>
+                <h3 class="text-3xl font-extrabold text-white mb-2 tracking-tight">Cotiza tu Simulador</h3>
+                <p class="text-gray-400 text-sm font-light leading-relaxed">Ingresa tu correo corporativo y te contactaremos directo por WhatsApp para armar una propuesta a medida.</p>
+            </div>
+            <form id="custom-simulator-form" class="space-y-4">
+                <div>
+                    <input type="email" id="upsell-email" required placeholder="tu@empresa.com" class="w-full bg-black/50 border border-white/10 rounded-2xl px-6 py-4 text-white focus:border-[#25D366] focus:ring-1 focus:ring-[#25D366] focus:outline-none transition-all shadow-inner text-base">
+                </div>
+                <button type="submit" class="w-full bg-accent hover:bg-[#b89565] text-black font-extrabold py-4 rounded-full transition-all hover:scale-[1.02] shadow-[0_0_30px_rgba(212,175,122,0.3)] tracking-wide flex items-center justify-center gap-2">
+                    <i class="ph ph-paper-plane-tilt text-xl"></i> Enviar
+                </button>
+                <div class="pt-1 text-center">
+                    <p class="text-gray-400 text-xs mb-3 tracking-wide">o consulta por wsp</p>
+                    <button type="button" id="upsell-whatsapp-btn" class="w-full bg-[#25D366] hover:bg-[#20bd5a] text-black font-extrabold py-4 rounded-full transition-all hover:scale-[1.02] shadow-[0_0_30px_rgba(37,211,102,0.25)] tracking-wide flex items-center justify-center gap-2">
+                        <i class="ph-fill ph-whatsapp-logo text-2xl"></i> Iniciar Chat en WhatsApp
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Servicio No Disponible -->
+    <div id="service-access-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/60 backdrop-blur-md px-4">
+        <div class="bg-[#0c0c0c]/95 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] p-10 max-w-md w-full shadow-[0_30px_80px_rgba(0,0,0,0.8)] relative animate-fade-in-up">
+            <button type="button" id="close-service-access-modal" class="absolute top-6 right-6 w-10 h-10 flex items-center justify-center rounded-full bg-white/5 border border-white/5 text-gray-400 hover:text-white hover:bg-white/10 hover:scale-110 transition-all duration-300"><i class="ph ph-x text-xl"></i></button>
+            <div class="text-center mb-8">
+                <div class="w-20 h-20 bg-red-500/10 text-red-300 rounded-full flex items-center justify-center mx-auto mb-5 border border-red-500/30 shadow-[0_0_40px_rgba(239,68,68,0.2)]">
+                    <i class="ph ph-warning-octagon text-4xl"></i>
+                </div>
+                <h3 class="text-3xl font-extrabold text-white mb-2 tracking-tight">Servicio no disponible</h3>
+                <p id="service-access-error-msg" class="text-gray-400 text-sm font-light leading-relaxed">Parece que el servicio está caído temporalmente.</p>
+            </div>
+            <form id="service-access-form" class="space-y-4">
+                <div>
+                    <input type="email" id="service-access-email" required placeholder="tu@empresa.com" class="w-full bg-black/50 border border-white/10 rounded-2xl px-6 py-4 text-white focus:border-tech focus:ring-1 focus:ring-tech focus:outline-none transition-all shadow-inner text-base">
+                </div>
+                <button type="submit" class="w-full bg-accent hover:bg-[#b89565] text-black font-extrabold py-4 rounded-full transition-all hover:scale-[1.02] shadow-[0_0_30px_rgba(212,175,122,0.3)] tracking-wide">
+                    Pide acceso a los administradores
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Intro GIF -->
+    <div id="intro-gif-modal" class="fixed inset-0 z-[300] hidden items-center justify-center bg-black/75 backdrop-blur-md px-4">
+        <div class="bg-[#0c0c0c]/95 backdrop-blur-2xl border border-white/10 rounded-[2rem] p-4 md:p-5 max-w-2xl w-full shadow-[0_30px_80px_rgba(0,0,0,0.8)] relative animate-fade-in-up">
+            <button type="button" id="close-intro-gif-modal" class="absolute top-3 right-3 w-9 h-9 flex items-center justify-center rounded-full bg-white/10 border border-white/10 text-gray-300 hover:text-white hover:bg-white/20 transition-all duration-300">
+                <i class="ph ph-x text-lg"></i>
+            </button>
+            <div class="rounded-[1.2rem] overflow-hidden border border-white/10 bg-black">
+                <img src="https://impactrenderstudios.com/simulate.gif" alt="Simulate intro" class="w-full h-auto object-cover">
+            </div>
+            <div class="pt-3 flex justify-end">
+                <button type="button" id="btn-intro-gif-enter" class="bg-accent hover:bg-[#b89565] text-black px-6 py-2.5 rounded-full text-[11px] font-black uppercase tracking-widest transition-transform hover:scale-105">
+                    Entrar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="intelligence-drawer" class="intelligence-drawer" aria-hidden="true">
+        <button id="close-drawer" class="intelligence-close" type="button" aria-label="Close intelligence panel" data-en-aria-label="Close intelligence panel" data-es-aria-label="Cerrar panel de inteligencia">
+            <i class="ph ph-x"></i>
+        </button>
+
+        <div class="mt-12 flex-1">
+            <div class="inline-block px-3 py-1 border border-accent/30 rounded-full text-[10px] font-bold text-accent uppercase tracking-widest mb-6" data-en="Strategy Suite" data-es="Suite Estrategica">Strategy Suite</div>
+            <h2 class="text-3xl font-bold mb-8 leading-tight"><span data-en="Sales Acceleration" data-es="Motor de Aceleracion">Sales Acceleration</span> <span class="text-accent" data-en="Engine" data-es="de Ventas">Engine</span></h2>
+
+            <div class="space-y-12">
+                <div class="flex gap-4">
+                    <div class="text-3xl font-black text-accent">45%</div>
+                    <div>
+                        <h4 class="font-bold text-sm uppercase tracking-wider" data-en="Conversion Boost" data-es="Aumento de Conversion">Conversion Boost</h4>
+                        <p class="text-xs text-gray-500 mt-2 leading-relaxed" data-en="Our interactive assets increase off-plan purchase intent by generating immediate buyer confidence in premium developments." data-es="Nuestros activos interactivos elevan la intencion de compra en verde al generar confianza inmediata en desarrollos premium.">Our interactive assets increase off-plan purchase intent by generating immediate buyer confidence in premium developments.</p>
+                    </div>
+                </div>
+
+                <div class="flex gap-4">
+                    <div class="text-3xl font-black text-accent">3x</div>
+                    <div>
+                        <h4 class="font-bold text-sm uppercase tracking-wider" data-en="Iris AI: Lead Scoring" data-es="Iris IA: Calificacion de Leads">Iris AI: Lead Scoring</h4>
+                        <p class="text-xs text-gray-500 mt-2 leading-relaxed" data-en="Our AI agent Iris qualifies leads via WhatsApp using custom renders as high-converting bait." data-es="Nuestro agente IA Iris califica leads por WhatsApp usando renders personalizados como gancho de alta conversion.">Our AI agent Iris qualifies leads via WhatsApp using custom renders as high-converting bait.</p>
+                    </div>
+                </div>
+
+                <div class="pt-10 border-t border-white/10">
+                    <p class="text-xs text-gray-400 mb-8 italic" data-en='"Renders are art. Our intelligence engine makes them your most profitable investment."' data-es='"Los renders son arte. Nuestro motor de inteligencia los convierte en tu inversion mas rentable."'>"Renders are art. Our intelligence engine makes them your most profitable investment."</p>
+                    <a href="https://impactrenderstudios.com/iris-chat-ai.html" target="_blank" rel="noopener noreferrer" class="block w-full bg-accent text-black text-center font-black py-5 rounded-xl uppercase text-[10px] tracking-widest no-underline hover:bg-white transition-all" data-en="Explore Iris AI Technology" data-es="Explorar tecnologia Iris IA">Explore Iris AI Technology</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <button id="iris-trigger" class="ai-pill-original" type="button">
+        <i class="ph-fill ph-lightning text-xl"></i>
+        <span class="font-bold text-[10px] uppercase tracking-widest" data-en="Intelligence Suite" data-es="Suite de Inteligencia">Intelligence Suite</span>
+    </button>
+
+    <div id="sim-toast" class="sim-toast" role="status" aria-live="polite">
+        <i id="sim-toast-icon" class="ph ph-info text-lg text-tech"></i>
+        <span id="sim-toast-text" class="text-sm leading-relaxed">Estado</span>
+        <button id="sim-toast-close" type="button" class="ml-auto text-gray-400 hover:text-white transition-colors interactive-el">
+            <i class="ph ph-x"></i>
+        </button>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            const imageDatabase = {
+                custom: { base: null, isCustom: true },
+                living: {
+                    base: "https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=1200&auto=format&fit=crop",
+                    styles: {
+                        nordic: "https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?q=80&w=1200&auto=format&fit=crop",
+                        industrial: "https://images.unsplash.com/photo-1600607687920-4e2a09c15468?q=80&w=1200&auto=format&fit=crop",
+                        luxury: "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?q=80&w=1200&auto=format&fit=crop",
+                        brutalist: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1200&auto=format&fit=crop"
+                    }
+                },
+                bedroom: {
+                    base: "https://images.unsplash.com/photo-1540518614846-7eded433c457?q=80&w=1200&auto=format&fit=crop",
+                    styles: {
+                        nordic: "https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?q=80&w=1200&auto=format&fit=crop",
+                        industrial: "https://images.unsplash.com/photo-1522771731478-44fb9f826620?q=80&w=1200&auto=format&fit=crop",
+                        luxury: "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?q=80&w=1200&auto=format&fit=crop",
+                        brutalist: "https://images.unsplash.com/photo-1536843403337-2ee0f69a99ea?q=80&w=1200&auto=format&fit=crop"
+                    }
+                }
+            };
+
+            const promptDictionary = {
+                styles: {
+                    nordic: "nordic minimalist interior, clean geometry, light oak wood",
+                    industrial: "industrial loft interior, exposed concrete, raw steel materials",
+                    luxury: "modern luxury interior, marble finishes, elegant warm textures",
+                    brutalist: "brutalist architecture interior, raw concrete walls, monumental scale"
+                }
+            };
+
+            const form = document.getElementById('ai-simulator-form');
+            const promptDisplay = document.getElementById('prompt-display');
+            const promptBox = document.getElementById('prompt-box');
+            const improvePromptBtn = document.getElementById('improve-prompt-btn');
+            const langEsBtn = document.getElementById('lang-es');
+            const langEnBtn = document.getElementById('lang-en');
+            const radioInputs = document.querySelectorAll('input[name="base-scene"]');
+            
+            const selectFormat = document.getElementById('setting-format');
+            const aspectContainer = document.getElementById('render-aspect-container');
+            const styleReferenceUpload = document.getElementById('style-reference-upload');
+            const btnStyleReferenceUpload = document.getElementById('btn-style-reference-upload');
+            const styleReferencePreviewWrap = document.getElementById('style-reference-preview-wrap');
+            const styleReferencePreviewImg = document.getElementById('style-reference-preview-img');
+            const styleReferenceName = document.getElementById('style-reference-name');
+            const btnStyleReferenceRemove = document.getElementById('btn-style-reference-remove');
+
+            const dropzone = document.getElementById('dropzone');
+            const fileInput = document.getElementById('file-upload');
+            const dropzoneContent = document.getElementById('dropzone-content');
+            const uploadPreviewContainer = document.getElementById('upload-preview-container');
+            const uploadPreviewImg = document.getElementById('upload-preview-img');
+            const removeUploadBtn = document.getElementById('remove-upload-btn');
+            const inputTabImage = document.getElementById('input-tab-image');
+            const inputTabFbx = document.getElementById('input-tab-fbx');
+            const dropzoneTitle = document.getElementById('dropzone-title');
+            const dropzoneSubtitle = document.getElementById('dropzone-subtitle');
+            const threeCanvasContainer = document.getElementById('three-canvas-container');
+            const fbxLoadOverlay = document.getElementById('fbx-load-overlay');
+            const fbxLoadLabel = document.getElementById('fbx-load-label');
+            const fbxLoadPercent = document.getElementById('fbx-load-percent');
+            const fbxLoadFill = document.getElementById('fbx-load-fill');
+            const threeControlsOverlay = document.getElementById('three-controls-overlay');
+            const btnCaptureScene = document.getElementById('btn-capture-scene');
+            const removeFileBtn = document.getElementById('remove-file-btn');
+            const capturedSnapshotContainer = document.getElementById('captured-snapshot-container');
+            const snapshotImg = document.getElementById('snapshot-img');
+            const btnDeleteSnapshot = document.getElementById('btn-delete-snapshot');
+
+            const imageBase = document.getElementById('image-base');
+            const imageGenerated = document.getElementById('image-generated');
+            const sliderHandle = document.getElementById('slider-handle');
+            const comparisonSlider = document.getElementById('comparison-slider');
+            
+            const scanningLine = document.getElementById('scanning-line');
+            const terminalOverlay = document.getElementById('terminal-overlay');
+            const terminalLogs = document.getElementById('terminal-logs');
+            const statusText = document.getElementById('status-text');
+            const processingIcon = document.getElementById('processing-icon');
+            const generateBtn = document.getElementById('generate-btn');
+            const viewerPanel = document.getElementById('viewer-panel');
+            const generationFeedback = document.getElementById('generation-feedback');
+            const generationStageLabel = document.getElementById('generation-stage-label');
+            const generationProgressLabel = document.getElementById('generation-progress-label');
+            const generationProgressFill = document.getElementById('generation-progress-fill');
+            const generationStageHint = document.getElementById('generation-stage-hint');
+            const generationRetryBtn = document.getElementById('generation-retry-btn');
+            const simToast = document.getElementById('sim-toast');
+            const simToastIcon = document.getElementById('sim-toast-icon');
+            const simToastText = document.getElementById('sim-toast-text');
+            const simToastClose = document.getElementById('sim-toast-close');
+
+            // --- Elementos Dropdown de Estilo ---
+            const styleDropdownTrigger = document.getElementById('style-dropdown-trigger');
+            const styleDropdownContent = document.getElementById('style-dropdown-content');
+            const styleDropdownIcon = document.getElementById('style-dropdown-icon');
+            const currentStyleLabel = document.getElementById('current-style-label');
+            const styleButtons = document.querySelectorAll('.style-btn');
+
+            // --- Elementos Modal Style Builder ---
+            const btnOpenBuilder = document.getElementById('btn-open-builder');
+            const builderModal = document.getElementById('style-builder-modal');
+            const closeBuilderModal = document.getElementById('close-builder-modal');
+            const btnCancelBuilder = document.getElementById('btn-cancel-builder');
+            const btnApplyBuilder = document.getElementById('btn-apply-builder');
+            const zoneSelected = document.getElementById('zone-selected');
+            const zoneAvailable = document.getElementById('zone-available');
+            const btnAddConcept = document.getElementById('btn-add-concept');
+            const builderNewConcept = document.getElementById('builder-new-concept');
+
+            // --- Elementos de Modal y Créditos ---
+            const emailModal = document.getElementById('email-modal');
+            const closeEmailModal = document.getElementById('close-email-modal');
+            const emailCaptureForm = document.getElementById('email-capture-form');
+            const userEmailInput = document.getElementById('user-email-input');
+            const emailRobotCheck = document.getElementById('email-robot-check');
+            const emailModalError = document.getElementById('email-modal-error');
+            const limitModal = document.getElementById('limit-modal');
+            const limitModalMessage = document.getElementById('limit-modal-message');
+            const closeLimitModal = document.getElementById('close-limit-modal');
+            const creditCounter = document.getElementById('credit-counter');
+
+            // --- Banner Upsell B2B ---
+            const btnOpenUpsell = document.getElementById('btn-open-upsell');
+            const upsellModal = document.getElementById('upsell-modal');
+            const closeUpsellModal = document.getElementById('close-upsell-modal');
+            const customSimulatorForm = document.getElementById('custom-simulator-form');
+            const upsellWhatsAppBtn = document.getElementById('upsell-whatsapp-btn');
+            const serviceAccessModal = document.getElementById('service-access-modal');
+            const closeServiceAccessModal = document.getElementById('close-service-access-modal');
+            const serviceAccessForm = document.getElementById('service-access-form');
+            const serviceAccessEmail = document.getElementById('service-access-email');
+            const serviceAccessErrorMsg = document.getElementById('service-access-error-msg');
+            const introGifModal = document.getElementById('intro-gif-modal');
+            const closeIntroGifModal = document.getElementById('close-intro-gif-modal');
+            const btnIntroGifEnter = document.getElementById('btn-intro-gif-enter');
+            const intelligenceDrawer = document.getElementById('intelligence-drawer');
+            const irisTrigger = document.getElementById('iris-trigger');
+            const closeDrawerBtn = document.getElementById('close-drawer');
+
+            const API_BASE = ((new URLSearchParams(window.location.search)).get('apiBase') || 'https://www.api.thefutureagencyai.com').replace(/\/$/, '');
+            const PUBLIC_PROJECT_KEY = 'simulator_public_project_id';
+            const PUBLIC_GUEST_FP_KEY = 'simulator_public_guest_fp';
+            const LEAD_EMAIL_KEY = 'simulator_lead_email';
+            const EMAIL_USAGE_KEY = 'simulator_email_usage_v1';
+            const MAX_RENDERS_PER_EMAIL = 3;
+            const MAX_CREDITS = Number.POSITIVE_INFINITY;
+            let currentCredits = Number.POSITIVE_INFINITY;
+            let userEmail = '';
+            let currentProjectId = Number(localStorage.getItem(PUBLIC_PROJECT_KEY) || 0) || null;
+            let latestRenderId = null;
+            let pendingGenerationAction = null;
+            let emailUsageByEmail = {};
+            let guestFingerprint = localStorage.getItem(PUBLIC_GUEST_FP_KEY) || '';
+            if (!guestFingerprint) {
+                guestFingerprint = (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function')
+                    ? crypto.randomUUID()
+                    : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+                localStorage.setItem(PUBLIC_GUEST_FP_KEY, guestFingerprint);
+            }
+
+            try {
+                emailUsageByEmail = JSON.parse(localStorage.getItem(EMAIL_USAGE_KEY) || '{}') || {};
+            } catch (_error) {
+                emailUsageByEmail = {};
+            }
+
+            function normalizeEmail(value) {
+                return String(value || '').trim().toLowerCase();
+            }
+
+            function isCorporateEmailValid(value) {
+                const email = normalizeEmail(value);
+                return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+            }
+
+            function saveEmailUsageMap() {
+                localStorage.setItem(EMAIL_USAGE_KEY, JSON.stringify(emailUsageByEmail));
+            }
+
+            function getEmailRenderCount(email) {
+                const normalized = normalizeEmail(email);
+                if (!normalized) return 0;
+                return Number(emailUsageByEmail[normalized] || 0);
+            }
+
+            function incrementEmailRenderCount(email) {
+                const normalized = normalizeEmail(email);
+                if (!normalized) return;
+                emailUsageByEmail[normalized] = getEmailRenderCount(normalized) + 1;
+                saveEmailUsageMap();
+            }
+
+            function hasEmailRenderQuota(email) {
+                return getEmailRenderCount(email) < MAX_RENDERS_PER_EMAIL;
+            }
+
+            function setLeadEmail(email) {
+                const normalized = normalizeEmail(email);
+                userEmail = normalized;
+                localStorage.setItem(LEAD_EMAIL_KEY, normalized);
+                localStorage.setItem('iris_user_email', normalized);
+            }
+
+            function showLimitByEmailModal(email) {
+                const normalized = normalizeEmail(email);
+                const used = getEmailRenderCount(normalized);
+                if (limitModalMessage) {
+                    limitModalMessage.textContent = `El correo ${normalized} ya alcanzó ${used}/${MAX_RENDERS_PER_EMAIL} renders gratis. Para seguir, contáctanos y activamos tu simulador comercial.`;
+                }
+                limitModal.classList.remove('hidden');
+                limitModal.classList.add('flex');
+            }
+
+            function openLeadModalFor(action) {
+                pendingGenerationAction = typeof action === 'function' ? action : null;
+                if (emailModalError) {
+                    emailModalError.textContent = '';
+                    emailModalError.classList.add('hidden');
+                }
+                if (emailRobotCheck) {
+                    emailRobotCheck.checked = false;
+                }
+                if (userEmailInput) {
+                    userEmailInput.value = userEmail || '';
+                }
+                emailModal.classList.remove('hidden');
+                emailModal.classList.add('flex');
+                userEmailInput?.focus();
+                sendUsageNotify('modal_open');
+            }
+
+            function runWithLeadGate(action) {
+                if (typeof action !== 'function') return;
+                const normalized = normalizeEmail(userEmail);
+                if (normalized && !hasEmailRenderQuota(normalized)) {
+                    showLimitByEmailModal(normalized);
+                    return;
+                }
+                openLeadModalFor(action);
+            }
+
+            function markLeadRenderSuccess() {
+                const normalized = normalizeEmail(userEmail);
+                if (!normalized) return;
+                incrementEmailRenderCount(normalized);
+            }
+
+            const savedLeadEmail = normalizeEmail(localStorage.getItem(LEAD_EMAIL_KEY) || localStorage.getItem('iris_user_email'));
+            if (savedLeadEmail) {
+                setLeadEmail(savedLeadEmail);
+            }
+            let accessGrant = {
+                token: '',
+                nonce: '',
+                expiresAt: 0
+            };
+
+            function updateCreditDisplay() {
+                creditCounter.textContent = '∞';
+                creditCounter.classList.remove('text-red-500');
+                creditCounter.classList.add('text-accent');
+            }
+            updateCreditDisplay();
+
+            let toastTimer = null;
+
+            function showToast(message, type = 'success') {
+                if (!simToast || !simToastText || !simToastIcon) return;
+                if (toastTimer) {
+                    clearTimeout(toastTimer);
+                    toastTimer = null;
+                }
+                simToastText.textContent = String(message || '');
+                simToast.classList.remove('sim-toast-success', 'sim-toast-error');
+                if (type === 'error') {
+                    simToast.classList.add('sim-toast-error');
+                    simToastIcon.className = 'ph ph-warning-circle text-lg text-red-400';
+                } else {
+                    simToast.classList.add('sim-toast-success');
+                    simToastIcon.className = 'ph ph-check-circle text-lg text-green-400';
+                }
+                simToast.classList.add('show');
+                toastTimer = setTimeout(() => {
+                    simToast.classList.remove('show');
+                }, 4200);
+            }
+
+            if (simToastClose) {
+                simToastClose.addEventListener('click', () => {
+                    if (toastTimer) clearTimeout(toastTimer);
+                    simToast?.classList.remove('show');
+                });
+            }
+
+            function setGenerationFeedback({ stage, progress, hint, showRetry = false } = {}) {
+                if (!generationFeedback) return;
+                generationFeedback.classList.remove('hidden');
+                generationFeedback.classList.add('flex');
+                if (generationStageLabel && stage) generationStageLabel.textContent = stage;
+                if (generationProgressLabel) generationProgressLabel.textContent = `${Math.max(0, Math.min(100, Number(progress || 0)))}%`;
+                if (generationProgressFill) generationProgressFill.style.width = `${Math.max(0, Math.min(100, Number(progress || 0)))}%`;
+                if (generationStageHint && hint) generationStageHint.textContent = hint;
+                if (generationRetryBtn) generationRetryBtn.classList.toggle('hidden', !showRetry);
+            }
+
+            function hideGenerationFeedback() {
+                if (!generationFeedback) return;
+                generationFeedback.classList.remove('flex');
+                generationFeedback.classList.add('hidden');
+                if (generationRetryBtn) generationRetryBtn.classList.add('hidden');
+            }
+
+            function mapApiErrorToUi(error) {
+                const code = String(error?.code || '').trim();
+                const raw = String(error?.message || 'Error inesperado durante la generación.');
+                if (code === 'migration_required' || raw.includes('migration_required')) {
+                    return 'Falta migración de seguridad en API. Ejecuta dm_simulator_public_setup.sql.';
+                }
+                if (code === 'missing_access_token') {
+                    return 'Acceso seguro faltante. Refresca la página e intenta de nuevo.';
+                }
+                if (code === 'expired_token') {
+                    return 'La sesión segura expiró. Reintentando con nuevo token.';
+                }
+                if (code === 'nonce_replay') {
+                    return 'Token ya usado. Se solicitará uno nuevo al reintentar.';
+                }
+                if (code === 'rate_limit_exceeded') {
+                    if (Number(error?.retryAfterSec || 0) > 0) {
+                        return `Límite público alcanzado. Reintenta en ${Number(error.retryAfterSec)} segundos.`;
+                    }
+                    return 'Límite público alcanzado. Espera un momento e inténtalo nuevamente.';
+                }
+                return raw;
+            }
+
+            function applyLanguage(lang) {
+                document.documentElement.lang = lang;
+                document.querySelectorAll('[data-en][data-es]').forEach((el) => {
+                    el.textContent = lang === 'en' ? el.dataset.en : el.dataset.es;
+                });
+                document.querySelectorAll('[data-en-placeholder][data-es-placeholder]').forEach((el) => {
+                    el.placeholder = lang === 'en' ? el.dataset.enPlaceholder : el.dataset.esPlaceholder;
+                });
+
+                if (langEsBtn && langEnBtn) {
+                    if (lang === 'en') {
+                        langEnBtn.classList.remove('text-white/45');
+                        langEnBtn.classList.add('text-white');
+                        langEsBtn.classList.remove('text-white');
+                        langEsBtn.classList.add('text-white/45');
+                    } else {
+                        langEsBtn.classList.remove('text-white/45');
+                        langEsBtn.classList.add('text-white');
+                        langEnBtn.classList.remove('text-white');
+                        langEnBtn.classList.add('text-white/45');
+                    }
+                }
+            }
+
+            const savedLang = localStorage.getItem('simulator_lang') || 'en';
+            applyLanguage(savedLang);
+
+            if (langEsBtn) {
+                langEsBtn.addEventListener('click', () => {
+                    localStorage.setItem('simulator_lang', 'es');
+                    applyLanguage('es');
+                });
+            }
+
+            if (langEnBtn) {
+                langEnBtn.addEventListener('click', () => {
+                    localStorage.setItem('simulator_lang', 'en');
+                    applyLanguage('en');
+                });
+            }
+
+            let currentScene = 'living';
+            let currentStyle = 'nordic';
+            let customStyleTags = [];
+            let styleReferenceDataUrl = '';
+            let isGenerating = false;
+            let isSliderActive = false;
+            let inputTab = 'image';
+            let hasCapturedFbxSnapshot = false;
+            let hasLoadedFbxModel = false;
+            let fbxScene = null;
+            let fbxCamera = null;
+            let fbxRenderer = null;
+            let fbxControls = null;
+            let fbxAnimationId = null;
+
+            function isAccessGrantValid() {
+                return !!accessGrant.token && !!accessGrant.nonce && Number(accessGrant.expiresAt || 0) > (Date.now() + 10 * 1000);
+            }
+
+            async function ensureAccessGrant(forceRefresh = false) {
+                if (!forceRefresh && isAccessGrantValid()) {
+                    return accessGrant;
+                }
+                const url = `${API_BASE}/api/public/simulator/init`;
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'x-guest-fp': guestFingerprint
+                    }
+                });
+                let payload = {};
+                try {
+                    payload = await response.json();
+                } catch (_e) {
+                    payload = {};
+                }
+                if (!response.ok || payload.success === false) {
+                    const errorMessage = payload?.error?.message || payload?.message || `HTTP ${response.status}`;
+                    throw new Error(`No se pudo solicitar token de acceso: ${errorMessage}`);
+                }
+                const data = payload?.data ?? payload;
+                accessGrant = {
+                    token: String(data?.accessToken || ''),
+                    nonce: String(data?.nonce || ''),
+                    expiresAt: Number(data?.expiresAt || 0)
+                };
+                if (!accessGrant.token || !accessGrant.nonce || !accessGrant.expiresAt) {
+                    throw new Error('Respuesta de token de acceso incompleta.');
+                }
+                return accessGrant;
+            }
+
+            async function apiRequest(path, options = {}) {
+                const url = `${API_BASE}${path}`;
+
+                const send = async (retry = false) => {
+                    let secureHeaders = {};
+                    if (options.requireAccess) {
+                        const grant = await ensureAccessGrant(retry);
+                        secureHeaders = {
+                            'x-sim-access-token': grant.token,
+                            'x-sim-access-nonce': grant.nonce
+                        };
+                    }
+
+                    const response = await fetch(url, {
+                        method: options.method || 'GET',
+                        headers: {
+                            ...(options.body ? { 'Content-Type': 'application/json' } : {}),
+                            'x-guest-fp': guestFingerprint,
+                            ...secureHeaders,
+                            ...(options.headers || {})
+                        },
+                        body: options.body ? JSON.stringify(options.body) : undefined
+                    });
+
+                    let payload = {};
+                    try {
+                        payload = await response.json();
+                    } catch (_e) {
+                        payload = {};
+                    }
+
+                    if (options.requireAccess && !retry && (response.status === 401 || response.status === 403 || response.status === 409)) {
+                        accessGrant = { token: '', nonce: '', expiresAt: 0 };
+                        return send(true);
+                    }
+
+                    if (!response.ok || payload.success === false) {
+                        const errorMessage = payload?.error?.message || payload?.message || `HTTP ${response.status}`;
+                        const requestError = new Error(errorMessage);
+                        requestError.code = payload?.error?.code || '';
+                        requestError.status = Number(response.status || 0);
+                        const retryAfterHeader = Number(response.headers?.get('Retry-After') || 0);
+                        requestError.retryAfterSec = Number.isFinite(retryAfterHeader) ? retryAfterHeader : 0;
+                        throw requestError;
+                    }
+                    return payload?.data ?? payload;
+                };
+
+                return send(false);
+            }
+
+            async function ensurePublicProject() {
+                if (currentProjectId && Number.isInteger(currentProjectId) && currentProjectId > 0) {
+                    return currentProjectId;
+                }
+                const created = await apiRequest('/api/public/simulator/projects', {
+                    method: 'POST',
+                    body: {
+                        source: 'simulador-ia-render-con-ia',
+                        name: 'Simulator Session'
+                    }
+                });
+                currentProjectId = Number(created?.projectId || 0) || null;
+                if (!currentProjectId) {
+                    throw new Error('No se pudo crear projectId publico');
+                }
+                localStorage.setItem(PUBLIC_PROJECT_KEY, String(currentProjectId));
+                return currentProjectId;
+            }
+
+            async function sendUsageNotify(eventType, extra = {}) {
+                try {
+                    const projectId = currentProjectId || Number(localStorage.getItem(PUBLIC_PROJECT_KEY) || 0) || null;
+                    await apiRequest('/api/public/simulator/usage-notify', {
+                        method: 'POST',
+                        body: {
+                            eventType,
+                            source: 'simulador-ia-render-con-ia',
+                            email: normalizeEmail(userEmail) || null,
+                            projectId,
+                            ...extra
+                        }
+                    });
+                } catch (_error) {
+                    // No bloquear UX por fallo de tracking.
+                }
+            }
+
+            // --- Lógica Banner Upsell ---
+            if (btnOpenUpsell) {
+                btnOpenUpsell.addEventListener('click', () => {
+                    upsellModal.classList.remove('hidden');
+                    upsellModal.classList.add('flex');
+                });
+            }
+
+            if (closeUpsellModal) {
+                closeUpsellModal.addEventListener('click', () => {
+                    upsellModal.classList.remove('flex');
+                    upsellModal.classList.add('hidden');
+                });
+            }
+
+            if (customSimulatorForm) {
+                customSimulatorForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const email = document.getElementById('upsell-email').value;
+                    if (!email) return;
+                    const subject = encodeURIComponent('Cotizacion simulador IA interactivo');
+                    const body = encodeURIComponent(`Hola Impact Studios,%0A%0AMi correo corporativo es: ${email}%0AEstoy interesado en cotizar un simulador IA interactivo a medida para mi empresa.%0A%0ASaludos.`);
+                    window.location.href = `mailto:infor@impactrenderstudio.com?subject=${subject}&body=${body}`;
+                    upsellModal.classList.remove('flex');
+                    upsellModal.classList.add('hidden');
+                });
+            }
+
+            if (upsellWhatsAppBtn) {
+                upsellWhatsAppBtn.addEventListener('click', () => {
+                    const email = document.getElementById('upsell-email').value.trim();
+                    const emailText = email ? ` mi correo es ${email} y` : ' ';
+                    const message = encodeURIComponent(`Hola Impact Studios,${emailText} estoy interesado en construir un simulador IA interactivo a medida para mi empresa.`);
+                    const whatsappNumber = '56945254948';
+                    window.open(`https://wa.me/${whatsappNumber}?text=${message}`, '_blank');
+                    upsellModal.classList.remove('flex');
+                    upsellModal.classList.add('hidden');
+                });
+            }
+
+            function isServiceUnavailableError(error) {
+                const message = String(error?.message || '').toLowerCase();
+                const code = String(error?.code || '').toLowerCase();
+                const status = Number(error?.status || 0);
+                return (
+                    status >= 500 ||
+                    status === 0 ||
+                    code === 'migration_required' ||
+                    message.includes('failed to fetch') ||
+                    message.includes('network') ||
+                    message.includes('timeout') ||
+                    message.includes('econnrefused') ||
+                    message.includes('service unavailable')
+                );
+            }
+
+            function openServiceAccessModal(errorMessage) {
+                if (!serviceAccessModal) return;
+                if (serviceAccessErrorMsg) {
+                    serviceAccessErrorMsg.textContent = String(errorMessage || 'El servicio no responde en este momento.');
+                }
+                if (serviceAccessEmail) {
+                    serviceAccessEmail.value = userEmail || '';
+                }
+                serviceAccessModal.classList.remove('hidden');
+                serviceAccessModal.classList.add('flex');
+                serviceAccessEmail?.focus();
+            }
+
+            if (closeServiceAccessModal) {
+                closeServiceAccessModal.addEventListener('click', () => {
+                    serviceAccessModal.classList.remove('flex');
+                    serviceAccessModal.classList.add('hidden');
+                });
+            }
+
+            if (serviceAccessForm) {
+                serviceAccessForm.addEventListener('submit', (event) => {
+                    event.preventDefault();
+                    const email = normalizeEmail(serviceAccessEmail?.value || userEmail);
+                    if (!isCorporateEmailValid(email)) {
+                        showToast('Ingresa un correo válido para solicitar acceso.', 'error');
+                        return;
+                    }
+                    const subject = encodeURIComponent('Solicitud acceso simulador - servicio no disponible');
+                    const body = encodeURIComponent(
+                        `Hola equipo,\n\nSolicito acceso/revisión del simulador porque el servicio no está respondiendo.\n\nCorreo: ${email}\nProyecto: ${currentProjectId || 'n/a'}\nFecha: ${new Date().toISOString()}\n\nGracias.`
+                    );
+                    window.location.href = `mailto:infor@impactrenderstudio.com?subject=${subject}&body=${body}`;
+                    serviceAccessModal.classList.remove('flex');
+                    serviceAccessModal.classList.add('hidden');
+                    showToast('Solicitud preparada para administradores.', 'success');
+                });
+            }
+
+            function openIntroGifModal() {
+                if (!introGifModal) return;
+                introGifModal.classList.remove('hidden');
+                introGifModal.classList.add('flex');
+            }
+
+            function closeIntroGif() {
+                if (!introGifModal) return;
+                introGifModal.classList.remove('flex');
+                introGifModal.classList.add('hidden');
+            }
+
+            if (closeIntroGifModal) {
+                closeIntroGifModal.addEventListener('click', closeIntroGif);
+            }
+            if (btnIntroGifEnter) {
+                btnIntroGifEnter.addEventListener('click', closeIntroGif);
+            }
+            if (introGifModal) {
+                introGifModal.addEventListener('click', (event) => {
+                    if (event.target === introGifModal) closeIntroGif();
+                });
+            }
+
+            const openIntelligenceDrawer = () => {
+                if (!intelligenceDrawer) return;
+                intelligenceDrawer.classList.add('open');
+                intelligenceDrawer.setAttribute('aria-hidden', 'false');
+            };
+
+            const closeIntelligenceDrawer = () => {
+                if (!intelligenceDrawer) return;
+                intelligenceDrawer.classList.remove('open');
+                intelligenceDrawer.setAttribute('aria-hidden', 'true');
+            };
+
+            if (irisTrigger) {
+                irisTrigger.addEventListener('click', openIntelligenceDrawer);
+            }
+
+            if (closeDrawerBtn) {
+                closeDrawerBtn.addEventListener('click', closeIntelligenceDrawer);
+            }
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') closeIntelligenceDrawer();
+            });
+
+            // --- Lógica Dropdown Estilos ---
+            styleDropdownTrigger.addEventListener('click', () => {
+                const isHidden = styleDropdownContent.classList.contains('opacity-0');
+                if (isHidden) {
+                    styleDropdownContent.classList.remove('opacity-0', 'pointer-events-none', '-translate-y-2');
+                    styleDropdownIcon.style.transform = 'rotate(180deg)';
+                } else {
+                    closeStyleDropdown();
+                }
+            });
+
+            function closeStyleDropdown() {
+                styleDropdownContent.classList.add('opacity-0', 'pointer-events-none', '-translate-y-2');
+                styleDropdownIcon.style.transform = 'rotate(0deg)';
+            }
+
+            // Cerrar dropdown al hacer clic fuera
+            document.addEventListener('click', (e) => {
+                if (!styleDropdownTrigger.contains(e.target) && !styleDropdownContent.contains(e.target)) {
+                    closeStyleDropdown();
+                }
+            });
+
+            // --- Lógica de Formato y Aspect Ratio ---
+            selectFormat.addEventListener('change', (e) => {
+                aspectContainer.style.aspectRatio = e.target.value;
+                updatePromptText();
+            });
+
+            // --- Lógica Constructor de Prompt ---
+            function getStylePromptText(styleCode = currentStyle) {
+                if (styleCode === 'custom_builder') {
+                    return customStyleTags.length > 0
+                        ? customStyleTags.join(", ")
+                        : "custom architectural design";
+                }
+                return promptDictionary.styles[styleCode] || promptDictionary.styles.nordic;
+            }
+
+            function getPromptFormatText(formatValue = selectFormat.value) {
+                const fallback = String(formatValue || '4/3');
+                const selectedOption = Array.from(selectFormat.options || []).find((opt) => opt.value === formatValue);
+                if (!selectedOption) return fallback;
+                const match = selectedOption.text.match(/\(([^)]+)\)/);
+                return match ? match[1] : fallback;
+            }
+
+            function getFbxCameraHint() {
+                if (!fbxCamera) {
+                    return 'Camera lock: preserve the exact camera framing and perspective from the provided FBX snapshot.';
+                }
+                const pos = fbxCamera.position || { x: 0, y: 0, z: 0 };
+                const tgt = fbxControls?.target || { x: 0, y: 0, z: 0 };
+                const fov = Number(fbxCamera.fov || 45);
+                return [
+                    'Camera lock from FBX viewport.',
+                    `camera_position=(${pos.x.toFixed(3)}, ${pos.y.toFixed(3)}, ${pos.z.toFixed(3)})`,
+                    `camera_target=(${tgt.x.toFixed(3)}, ${tgt.y.toFixed(3)}, ${tgt.z.toFixed(3)})`,
+                    `camera_fov=${fov.toFixed(2)}`
+                ].join(' ');
+            }
+
+            function buildCompiledPrompt({ forceFbx = false, styleOverride, formatOverride } = {}) {
+                const effectiveStyle = styleOverride || currentStyle;
+                const effectiveFormat = formatOverride || selectFormat.value;
+                const styleTxt = getStylePromptText(effectiveStyle);
+                const formatTxt = getPromptFormatText(effectiveFormat);
+                const isFbxPrompt = forceFbx || inputTab === 'fbx';
+                const styleReferenceHint = styleReferenceDataUrl
+                    ? 'Use the optional style reference image only for texture palette, material language and mood.'
+                    : '';
+
+                if (isFbxPrompt) {
+                    const cameraHint = getFbxCameraHint();
+                    return `"Reference-first FBX ArchViz. STRICTLY preserve camera framing, perspective, room layout, geometry, and object placement from the FBX snapshot. ${cameraHint} Never invent a new viewpoint and never replace composition with generic scenes. ${styleReferenceHint} Apply ${styleTxt} only as material/light finish treatment. highly detailed 8k, aspect ratio ${formatTxt}"`;
+                }
+
+                return `"Reference-first ArchViz. Keep exact framing, geometry, perspective and composition from the uploaded reference image. ${styleReferenceHint} Apply ${styleTxt} only as material/light mood. highly detailed 8k, aspect ratio ${formatTxt}"`;
+            }
+
+            function updatePromptText() {
+                promptDisplay.value = buildCompiledPrompt();
+            }
+
+            function clearStyleReference() {
+                styleReferenceDataUrl = '';
+                if (styleReferenceUpload) styleReferenceUpload.value = '';
+                if (styleReferencePreviewImg) styleReferencePreviewImg.src = '';
+                if (styleReferenceName) styleReferenceName.textContent = '';
+                styleReferencePreviewWrap?.classList.add('hidden');
+                styleReferencePreviewWrap?.classList.remove('flex');
+                updatePromptText();
+            }
+
+            if (btnStyleReferenceUpload && styleReferenceUpload) {
+                btnStyleReferenceUpload.addEventListener('click', () => {
+                    if (!isGenerating) styleReferenceUpload.click();
+                });
+            }
+
+            if (styleReferenceUpload) {
+                styleReferenceUpload.addEventListener('change', () => {
+                    const file = styleReferenceUpload.files && styleReferenceUpload.files[0];
+                    if (!file) return;
+                    if (!String(file.type || '').startsWith('image/')) {
+                        showToast('Solo se permiten imágenes para estilo.', 'error');
+                        clearStyleReference();
+                        return;
+                    }
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        const dataUrl = String(event?.target?.result || '');
+                        if (!dataUrl) return;
+                        styleReferenceDataUrl = dataUrl;
+                        if (styleReferencePreviewImg) styleReferencePreviewImg.src = dataUrl;
+                        if (styleReferenceName) styleReferenceName.textContent = file.name || 'style-reference.png';
+                        styleReferencePreviewWrap?.classList.remove('hidden');
+                        styleReferencePreviewWrap?.classList.add('flex');
+                        updatePromptText();
+                    };
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            if (btnStyleReferenceRemove) {
+                btnStyleReferenceRemove.addEventListener('click', clearStyleReference);
+            }
+
+            if (improvePromptBtn && promptDisplay) {
+                improvePromptBtn.addEventListener('click', async () => {
+                    const rawPrompt = (promptDisplay.value || '').trim().replace(/^"|"$/g, '');
+                    if (!rawPrompt) return;
+                    improvePromptBtn.disabled = true;
+                    appendLog('> POST /api/public/simulator/prompts/improve');
+                    try {
+                        const improved = await apiRequest('/api/public/simulator/prompts/improve', {
+                            method: 'POST',
+                            requireAccess: true,
+                            body: {
+                                prompt: rawPrompt,
+                                style: currentStyle,
+                                format: selectFormat.value,
+                                language: document.documentElement.lang || 'es'
+                            }
+                        });
+                        promptDisplay.value = `"${improved?.prompt || rawPrompt}"`;
+                        if (promptBox) {
+                            promptBox.classList.remove('prompt-flash');
+                            void promptBox.offsetWidth;
+                            promptBox.classList.add('prompt-flash');
+                        }
+                        appendLog('> Response 200 OK - Prompt improved.');
+                    } catch (error) {
+                        appendLog(`> ERROR improve: ${error.message}`);
+                    } finally {
+                        improvePromptBtn.disabled = false;
+                    }
+                });
+            }
+
+            // --- Lógica Drag & Drop (STYLE BUILDER) ---
+            btnOpenBuilder.addEventListener('click', () => {
+                closeStyleDropdown(); // Cerrar dropdown si estaba abierto
+                builderModal.classList.remove('hidden');
+                builderModal.classList.add('flex');
+            });
+            const closeBuilder = () => {
+                builderModal.classList.remove('flex');
+                builderModal.classList.add('hidden');
+            };
+            closeBuilderModal.addEventListener('click', closeBuilder);
+            btnCancelBuilder.addEventListener('click', closeBuilder);
+
+            let draggedItem = null;
+            const conceptTagBaseClass = 'concept-tag bg-[#141414] border border-white/5 px-5 py-2.5 rounded-full text-[13px] font-medium text-gray-300 hover:border-tech hover:text-white hover:shadow-[0_0_20px_rgba(59,130,246,0.2)]';
+
+            function bindConceptTag(tag) {
+                if (!tag || tag.dataset.bound === '1') return;
+                tag.dataset.bound = '1';
+                tag.setAttribute('draggable', 'true');
+
+                tag.addEventListener('dragstart', function() {
+                    draggedItem = this;
+                    setTimeout(() => this.classList.add('dragging'), 0);
+                });
+
+                tag.addEventListener('dragend', function() {
+                    setTimeout(() => {
+                        this.classList.remove('dragging');
+                        draggedItem = null;
+                        zoneSelected.classList.remove('zone-highlight');
+                        zoneAvailable.classList.remove('zone-highlight');
+                    }, 0);
+                });
+
+                tag.addEventListener('click', function() {
+                    if (this.parentElement.id === 'zone-available') {
+                        zoneSelected.appendChild(this);
+                    } else {
+                        zoneAvailable.appendChild(this);
+                    }
+                });
+            }
+
+            function createConceptTag(rawValue) {
+                const value = String(rawValue || '').trim().replace(/\s+/g, ' ');
+                if (!value) return null;
+
+                const existing = Array.from(document.querySelectorAll('.concept-tag')).find((el) => {
+                    const currentValue = String(el.getAttribute('data-value') || '').trim().toLowerCase();
+                    return currentValue === value.toLowerCase();
+                });
+                if (existing) return existing;
+
+                const tag = document.createElement('div');
+                tag.className = conceptTagBaseClass;
+                tag.setAttribute('data-value', value);
+                tag.textContent = value;
+                bindConceptTag(tag);
+                return tag;
+            }
+
+            document.querySelectorAll('.concept-tag').forEach(bindConceptTag);
+
+            function handleAddConcept() {
+                const newValue = builderNewConcept?.value || '';
+                const tag = createConceptTag(newValue);
+                if (!tag) return;
+                zoneSelected.appendChild(tag);
+                if (builderNewConcept) builderNewConcept.value = '';
+                builderNewConcept?.focus();
+            }
+
+            if (btnAddConcept) {
+                btnAddConcept.addEventListener('click', handleAddConcept);
+            }
+
+            if (builderNewConcept) {
+                builderNewConcept.addEventListener('keydown', (event) => {
+                    if (event.key === 'Enter') {
+                        event.preventDefault();
+                        handleAddConcept();
+                    }
+                });
+            }
+
+            [zoneSelected, zoneAvailable].forEach(zone => {
+                zone.addEventListener('dragover', function(e) {
+                    e.preventDefault();
+                    this.classList.add('zone-highlight');
+                });
+                zone.addEventListener('dragleave', function() {
+                    this.classList.remove('zone-highlight');
+                });
+                zone.addEventListener('drop', function(e) {
+                    e.preventDefault();
+                    this.classList.remove('zone-highlight');
+                    if (draggedItem) this.appendChild(draggedItem);
+                });
+            });
+
+            btnApplyBuilder.addEventListener('click', () => {
+                const selectedElements = zoneSelected.querySelectorAll('.concept-tag');
+                customStyleTags = Array.from(selectedElements).map(el => el.getAttribute('data-value'));
+                
+                styleButtons.forEach(b => {
+                    b.classList.remove('border-tech', 'bg-tech/10', 'text-white');
+                    b.classList.add('border-transparent', 'text-gray-400');
+                    b.querySelector('span').classList.replace('bg-tech', 'bg-gray-600');
+                });
+                
+                currentStyleLabel.textContent = "Custom: " + (customStyleTags.length > 0 ? customStyleTags[0] + "..." : "Libre");
+                
+                currentStyle = 'custom_builder';
+                updatePromptText();
+                resetViewer();
+                closeBuilder();
+            });
+
+            // --- Lógica Drag & Drop (INPUT IMAGE + FBX TAB) ---
+            const stopThreeRenderer = () => {
+                if (fbxAnimationId) {
+                    cancelAnimationFrame(fbxAnimationId);
+                    fbxAnimationId = null;
+                }
+                if (fbxRenderer) {
+                    fbxRenderer.dispose();
+                    fbxRenderer = null;
+                }
+                fbxScene = null;
+                fbxCamera = null;
+                fbxControls = null;
+                hasLoadedFbxModel = false;
+            };
+
+            const showFbxLoadProgress = ({ percent = 0, label = 'Subiendo FBX...' } = {}) => {
+                const safePercent = Math.max(0, Math.min(100, Number(percent || 0)));
+                if (fbxLoadOverlay) {
+                    fbxLoadOverlay.classList.remove('hidden');
+                }
+                if (fbxLoadLabel) {
+                    fbxLoadLabel.textContent = String(label || 'Subiendo FBX...');
+                }
+                if (fbxLoadPercent) {
+                    fbxLoadPercent.textContent = `${Math.round(safePercent)}%`;
+                }
+                if (fbxLoadFill) {
+                    fbxLoadFill.style.width = `${safePercent}%`;
+                }
+            };
+
+            const hideFbxLoadProgress = () => {
+                if (fbxLoadOverlay) {
+                    fbxLoadOverlay.classList.add('hidden');
+                }
+            };
+
+            const isDropzoneLocked = () => hasLoadedFbxModel || Boolean(imageDatabase.custom.base);
+
+            const syncDropzoneLockState = () => {
+                const locked = isDropzoneLocked();
+                dropzone.classList.toggle('cursor-pointer', !locked);
+                dropzone.classList.toggle('cursor-not-allowed', locked);
+            };
+
+            const clearCustomInput = () => {
+                stopThreeRenderer();
+                hideFbxLoadProgress();
+                hasCapturedFbxSnapshot = false;
+                imageDatabase.custom.base = null;
+                fileInput.value = "";
+                uploadPreviewImg.src = "";
+                snapshotImg.src = "";
+                uploadPreviewContainer.classList.add('hidden');
+                threeCanvasContainer.classList.add('hidden');
+                threeControlsOverlay.classList.add('hidden');
+                capturedSnapshotContainer.classList.add('hidden');
+                dropzoneContent.classList.remove('hidden');
+                radioInputs[0].checked = true;
+                currentScene = radioInputs[0].value;
+                updateBaseImage();
+                updatePromptText();
+                resetViewer();
+                syncDropzoneLockState();
+            };
+
+            const activateInputTab = (mode) => {
+                inputTab = mode;
+                const isFbxMode = mode === 'fbx';
+                fileInput.accept = isFbxMode ? '.fbx,image/*' : 'image/jpeg,image/png,image/webp';
+                dropzoneTitle.textContent = isFbxMode ? 'Sube FBX o imagen' : 'Sube tu modelo base';
+                dropzoneSubtitle.classList.toggle('hidden', !isFbxMode);
+
+                if (isFbxMode) {
+                    inputTabFbx.classList.add('bg-accent', 'text-black');
+                    inputTabFbx.classList.remove('text-gray-300');
+                    inputTabImage.classList.remove('bg-accent', 'text-black');
+                    inputTabImage.classList.add('text-gray-300');
+                } else {
+                    inputTabImage.classList.add('bg-accent', 'text-black');
+                    inputTabImage.classList.remove('text-gray-300');
+                    inputTabFbx.classList.remove('bg-accent', 'text-black');
+                    inputTabFbx.classList.add('text-gray-300');
+                }
+                clearCustomInput();
+            };
+
+            const animateFbx = () => {
+                if (!fbxRenderer || !fbxScene || !fbxCamera) return;
+                fbxAnimationId = requestAnimationFrame(animateFbx);
+                if (fbxControls) fbxControls.update();
+                fbxRenderer.render(fbxScene, fbxCamera);
+            };
+
+            const initFbxViewer = (file) => {
+                if (!window.THREE || typeof THREE.FBXLoader === 'undefined' || typeof THREE.OrbitControls === 'undefined') {
+                    statusText.textContent = 'FBX loader no disponible';
+                    return;
+                }
+
+                stopThreeRenderer();
+                hasLoadedFbxModel = true;
+                hasCapturedFbxSnapshot = false;
+                dropzoneContent.classList.add('hidden');
+                uploadPreviewContainer.classList.add('hidden');
+                threeCanvasContainer.classList.remove('hidden');
+                threeControlsOverlay.classList.remove('hidden');
+                capturedSnapshotContainer.classList.add('hidden');
+                syncDropzoneLockState();
+
+                fbxScene = new THREE.Scene();
+                fbxCamera = new THREE.PerspectiveCamera(45, threeCanvasContainer.clientWidth / threeCanvasContainer.clientHeight, 0.1, 10000);
+                fbxCamera.position.set(400, 400, 800);
+
+                fbxRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+                fbxRenderer.setSize(threeCanvasContainer.clientWidth, threeCanvasContainer.clientHeight);
+                fbxRenderer.setPixelRatio(window.devicePixelRatio);
+                threeCanvasContainer.innerHTML = '';
+                threeCanvasContainer.appendChild(fbxRenderer.domElement);
+
+                fbxControls = new THREE.OrbitControls(fbxCamera, fbxRenderer.domElement);
+                fbxControls.enableDamping = true;
+                fbxControls.dampingFactor = 0.05;
+
+                fbxScene.add(new THREE.HemisphereLight(0xffffff, 0x444444, 1.5));
+                const dirLight = new THREE.DirectionalLight(0xffffff, 1.0);
+                dirLight.position.set(100, 200, 100);
+                fbxScene.add(dirLight);
+
+                const loader = new THREE.FBXLoader();
+                const fileUrl = URL.createObjectURL(file);
+                statusText.textContent = 'PROCESANDO FBX...';
+                showFbxLoadProgress({
+                    percent: 6,
+                    label: 'Subiendo FBX...'
+                });
+
+                loader.load(fileUrl, (obj) => {
+                    obj.updateMatrixWorld(true);
+                    const box = new THREE.Box3().setFromObject(obj);
+                    const sizeVec = box.getSize(new THREE.Vector3());
+                    const maxDim = Math.max(sizeVec.x || 0, sizeVec.y || 0, sizeVec.z || 0, 1);
+                    const targetMaxDim = 500;
+                    const scaleFactor = targetMaxDim / maxDim;
+                    obj.scale.multiplyScalar(scaleFactor);
+                    obj.updateMatrixWorld(true);
+
+                    const centeredBox = new THREE.Box3().setFromObject(obj);
+                    const centered = centeredBox.getCenter(new THREE.Vector3());
+                    obj.position.sub(centered);
+                    obj.updateMatrixWorld(true);
+                    fbxScene.add(obj);
+
+                    const fitHeightDistance = (targetMaxDim * 0.5) / Math.tan(THREE.MathUtils.degToRad((fbxCamera.fov || 45) * 0.5));
+                    const fitWidthDistance = fitHeightDistance / Math.max(0.4, Number(fbxCamera.aspect) || 1);
+                    const fitDistance = Math.max(fitHeightDistance, fitWidthDistance) * 1.35;
+                    fbxCamera.near = Math.max(0.1, fitDistance / 200);
+                    fbxCamera.far = Math.max(10000, fitDistance * 200);
+                    fbxCamera.position.set(fitDistance * 0.95, fitDistance * 0.75, fitDistance * 1.15);
+                    fbxCamera.updateProjectionMatrix();
+                    fbxControls.target.set(0, 0, 0);
+                    fbxControls.update();
+                    animateFbx();
+                    showFbxLoadProgress({
+                        percent: 100,
+                        label: 'FBX cargado'
+                    });
+                    setTimeout(() => {
+                        hideFbxLoadProgress();
+                    }, 450);
+                    statusText.textContent = 'FBX LISTO | AJUSTA Y CAPTURA';
+                }, (xhr) => {
+                    if (xhr.total > 0) {
+                        const progress = Math.round((xhr.loaded / xhr.total) * 100);
+                        statusText.textContent = `CARGANDO FBX: ${progress}%`;
+                        showFbxLoadProgress({
+                            percent: progress,
+                            label: 'Subiendo FBX...'
+                        });
+                    } else {
+                        showFbxLoadProgress({
+                            percent: 30,
+                            label: 'Procesando FBX pesado...'
+                        });
+                    }
+                }, () => {
+                    hideFbxLoadProgress();
+                    statusText.textContent = 'ERROR AL CARGAR FBX';
+                });
+            };
+
+            const captureFbxView = () => {
+                if (!fbxRenderer) return;
+                const dataUrl = fbxRenderer.domElement.toDataURL('image/png');
+                imageDatabase.custom.base = dataUrl;
+                imageBase.src = dataUrl;
+                snapshotImg.src = dataUrl;
+                capturedSnapshotContainer.classList.remove('hidden');
+                hasCapturedFbxSnapshot = true;
+                radioInputs.forEach(r => r.checked = false);
+                currentScene = 'custom';
+                statusText.textContent = 'VISTA CAPTURADA | LISTO PARA RENDER';
+                resetViewer();
+                syncDropzoneLockState();
+            };
+
+            const setCustomFromImage = (dataUrl) => {
+                imageDatabase.custom.base = dataUrl;
+                hideFbxLoadProgress();
+                uploadPreviewImg.src = dataUrl;
+                dropzoneContent.classList.add('hidden');
+                threeCanvasContainer.classList.add('hidden');
+                threeControlsOverlay.classList.add('hidden');
+                capturedSnapshotContainer.classList.add('hidden');
+                uploadPreviewContainer.classList.remove('hidden');
+                hasCapturedFbxSnapshot = false;
+                stopThreeRenderer();
+                radioInputs.forEach(r => r.checked = false);
+                currentScene = 'custom';
+                updateBaseImage();
+                updatePromptText();
+                resetViewer();
+                syncDropzoneLockState();
+            };
+
+            dropzone.addEventListener('click', (e) => {
+                if (e.target.closest('#remove-upload-btn, #btn-capture-scene, #remove-file-btn, #btn-delete-snapshot')) return;
+                if (isDropzoneLocked()) return;
+                if (!isGenerating) fileInput.click();
+            });
+
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropzone.addEventListener(eventName, e => { e.preventDefault(); e.stopPropagation(); }, false);
+            });
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropzone.addEventListener(eventName, () => {
+                    if(!isGenerating && !isDropzoneLocked()) dropzone.classList.add('dropzone-active');
+                }, false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropzone.addEventListener(eventName, () => dropzone.classList.remove('dropzone-active'), false);
+            });
+
+            const handleFiles = (files) => {
+                if (isDropzoneLocked()) return;
+                if (!files || files.length === 0) return;
+                const file = files[0];
+                const isFbxFile = file.name.toLowerCase().endsWith('.fbx');
+                const isImage = file.type.startsWith('image/');
+
+                if (inputTab === 'fbx' && isFbxFile) {
+                    initFbxViewer(file);
+                    return;
+                }
+
+                if (isImage) {
+                    const reader = new FileReader();
+                    reader.onloadend = () => setCustomFromImage(reader.result);
+                    reader.readAsDataURL(file);
+                    return;
+                }
+
+                alert(inputTab === 'fbx' ? 'Sube un archivo FBX o imagen.' : 'Solo imágenes para geometría base.');
+            };
+
+            dropzone.addEventListener('drop', (e) => {
+                if(isGenerating || isDropzoneLocked()) return;
+                handleFiles(e.dataTransfer.files);
+            });
+
+            fileInput.addEventListener('change', function() {
+                if(isGenerating || isDropzoneLocked()) return;
+                handleFiles(this.files);
+            });
+
+            removeUploadBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if(isGenerating) return;
+                clearCustomInput();
+            });
+
+            removeFileBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if(isGenerating) return;
+                clearCustomInput();
+            });
+
+            btnCaptureScene.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if(isGenerating) return;
+                captureFbxView();
+            });
+
+            btnDeleteSnapshot.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if(isGenerating) return;
+                hasCapturedFbxSnapshot = false;
+                capturedSnapshotContainer.classList.add('hidden');
+                snapshotImg.src = '';
+                imageDatabase.custom.base = null;
+                statusText.textContent = 'FBX LISTO | AJUSTA Y CAPTURA';
+                resetViewer();
+                syncDropzoneLockState();
+            });
+
+            inputTabImage.addEventListener('click', () => {
+                if (isGenerating) return;
+                activateInputTab('image');
+            });
+
+            inputTabFbx.addEventListener('click', () => {
+                if (isGenerating) return;
+                activateInputTab('fbx');
+            });
+
+            radioInputs.forEach(radio => {
+                radio.addEventListener('change', (e) => {
+                    if(isGenerating) return;
+                    currentScene = e.target.value;
+                    if(imageDatabase.custom.base || hasLoadedFbxModel) {
+                        clearCustomInput();
+                        currentScene = e.target.value;
+                    }
+                    updateBaseImage();
+                    updatePromptText();
+                    resetViewer();
+                });
+            });
+
+            styleButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    if(isGenerating) return;
+                    
+                    styleButtons.forEach(b => {
+                        b.classList.remove('border-tech', 'bg-tech/10', 'text-white');
+                        b.classList.add('border-transparent', 'text-gray-400');
+                        b.querySelector('span').classList.replace('bg-tech', 'bg-gray-600');
+                    });
+                    
+                    btn.classList.remove('border-transparent', 'text-gray-400');
+                    btn.classList.add('border-tech', 'bg-tech/10', 'text-white');
+                    btn.querySelector('span').classList.replace('bg-gray-600', 'bg-tech');
+                    
+                    currentStyle = btn.dataset.style;
+                    currentStyleLabel.textContent = btn.dataset.name;
+                    
+                    updatePromptText();
+                    resetViewer();
+                    closeStyleDropdown();
+                });
+            });
+
+            function updateBaseImage() {
+                imageBase.src = imageDatabase[currentScene].base;
+            }
+
+            function resetViewer() {
+                imageGenerated.classList.add('hidden');
+                imageGenerated.className = 'comparison-image-after hidden w-full h-full object-cover'; 
+                imageGenerated.style.filter = '';
+                sliderHandle.style.display = 'none';
+                imageBase.style.clipPath = 'none';
+                statusText.textContent = "ESPERANDO INPUT...";
+                statusText.classList.remove('text-accent');
+            }
+
+            // --- Eventos Modales de Leads ---
+            closeEmailModal.addEventListener('click', () => {
+                emailModal.classList.remove('flex');
+                emailModal.classList.add('hidden');
+                pendingGenerationAction = null;
+                if (emailRobotCheck) {
+                    emailRobotCheck.checked = false;
+                }
+            });
+
+            closeLimitModal.addEventListener('click', () => {
+                limitModal.classList.remove('flex');
+                limitModal.classList.add('hidden');
+            });
+
+            emailCaptureForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const email = normalizeEmail(userEmailInput.value);
+                if (!isCorporateEmailValid(email)) {
+                    if (emailModalError) {
+                        emailModalError.textContent = 'Ingresa un correo válido.';
+                        emailModalError.classList.remove('hidden');
+                    }
+                    return;
+                }
+                if (!emailRobotCheck?.checked) {
+                    if (emailModalError) {
+                        emailModalError.textContent = 'Confirma "No soy un robot" para continuar.';
+                        emailModalError.classList.remove('hidden');
+                    }
+                    return;
+                }
+                if (!hasEmailRenderQuota(email)) {
+                    if (emailModalError) {
+                        emailModalError.textContent = `Este correo ya alcanzó ${MAX_RENDERS_PER_EMAIL} renders gratis.`;
+                        emailModalError.classList.remove('hidden');
+                    }
+                    emailModal.classList.remove('flex');
+                    emailModal.classList.add('hidden');
+                    showLimitByEmailModal(email);
+                    pendingGenerationAction = null;
+                    return;
+                }
+                setLeadEmail(email);
+                sendUsageNotify('email_submitted');
+                emailModal.classList.remove('flex');
+                emailModal.classList.add('hidden');
+                const action = pendingGenerationAction;
+                pendingGenerationAction = null;
+                if (typeof action === 'function') {
+                    action();
+                }
+            });
+
+            // --- Generación AI (API pública real) ---
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                if(isGenerating) return;
+                runWithLeadGate(startGeneration);
+            });
+
+            if (generationRetryBtn) {
+                generationRetryBtn.addEventListener('click', () => {
+                    if (isGenerating) return;
+                    runWithLeadGate(startGeneration);
+                });
+            }
+
+            function getReferencePayload() {
+                if (currentScene === 'custom' && imageDatabase.custom.base) {
+                    return {
+                        referenceImageDataUrl: imageDatabase.custom.base
+                    };
+                }
+                return {
+                    referenceImageUrl: imageDatabase[currentScene]?.base || imageDatabase.living.base
+                };
+            }
+
+            async function startGeneration() {
+                if (inputTab === 'fbx' && hasLoadedFbxModel && !hasCapturedFbxSnapshot) {
+                    captureFbxView();
+                }
+
+                isGenerating = true;
+                generateBtn.disabled = true;
+                generateBtn.style.opacity = '0.5';
+                
+                resetViewer();
+                scanningLine.style.display = 'block';
+                terminalOverlay.classList.remove('hidden');
+                terminalOverlay.classList.add('flex');
+                terminalLogs.innerHTML = '';
+                processingIcon.classList.remove('hidden');
+                setGenerationFeedback({
+                    stage: 'Inicializando',
+                    progress: 8,
+                    hint: 'Preparando sesión segura y validando parámetros.',
+                    showRetry: false
+                });
+                
+                statusText.textContent = "CONECTANDO CON IRIS ENGINE...";
+                statusText.classList.add('text-tech');
+                viewerPanel.classList.add('is-generating'); // Activa animación de Magic Border
+
+                const isCustom = currentScene === 'custom';
+                const format = selectFormat.value;
+
+                const logs = [
+                    '> POST /api/public/simulator/renders',
+                    `> Payload: { style: "${currentStyle}", aspect_ratio: "${format}", projectId: "${currentProjectId || 'new'}" }`,
+                    `> Cargando mapa topológico base (${isCustom ? 'UserImage' : currentScene})...`,
+                    '> Analizando geometría estructural...',
+                    '> Aplicando transferencia de estilo...',
+                    '> Esperando respuesta de inferencia...'
+                ];
+
+                let delay = 0;
+                logs.forEach((log, index) => {
+                    setTimeout(() => {
+                        appendLog(log);
+                        if (index === 3) statusText.textContent = "SINC. TOPOLOGÍA 3D...";
+                        if (index === 5) statusText.textContent = "RENDERIZANDO PASES...";
+                    }, delay);
+                    delay += Math.floor(Math.random() * 400) + 200; 
+                });
+
+                try {
+                    setGenerationFeedback({
+                        stage: 'Inicializando',
+                        progress: 18,
+                        hint: 'Solicitando token seguro y preparando proyecto.'
+                    });
+                    const projectId = await ensurePublicProject();
+                    await sendUsageNotify('render_requested', {
+                        mode: inputTab === 'fbx' ? 'fbx' : 'image',
+                        status: 'requested'
+                    });
+                    setGenerationFeedback({
+                        stage: 'Subiendo referencia',
+                        progress: 42,
+                        hint: 'Enviando referencia base y parámetros de estilo.'
+                    });
+                    const compiledPrompt = buildCompiledPrompt({ forceFbx: inputTab === 'fbx' });
+                    promptDisplay.value = compiledPrompt;
+                    const renderPayload = {
+                        projectId,
+                        mode: inputTab === 'fbx' ? 'fbx' : 'image',
+                        style: currentStyle,
+                        format,
+                        email: normalizeEmail(userEmail),
+                        source: 'simulador-ia-render-con-ia',
+                        prompt: compiledPrompt.trim().replace(/^"|"$/g, ''),
+                        meta: {
+                            scene: currentScene,
+                            inputTab,
+                            hasCapturedFbxSnapshot,
+                            styleReference: styleReferenceDataUrl ? 'provided' : 'none',
+                            camera: inputTab === 'fbx' && fbxCamera ? {
+                                position: {
+                                    x: Number(fbxCamera.position?.x || 0),
+                                    y: Number(fbxCamera.position?.y || 0),
+                                    z: Number(fbxCamera.position?.z || 0)
+                                },
+                                target: {
+                                    x: Number(fbxControls?.target?.x || 0),
+                                    y: Number(fbxControls?.target?.y || 0),
+                                    z: Number(fbxControls?.target?.z || 0)
+                                },
+                                fov: Number(fbxCamera.fov || 45)
+                            } : null
+                        },
+                        styleReferenceImageDataUrl: styleReferenceDataUrl || null,
+                        ...getReferencePayload()
+                    };
+                    setGenerationFeedback({
+                        stage: 'Generando',
+                        progress: 70,
+                        hint: 'IRIS está procesando tu solicitud en la nube.'
+                    });
+                    const response = await apiRequest('/api/public/simulator/renders', {
+                        method: 'POST',
+                        requireAccess: true,
+                        body: renderPayload
+                    });
+                    await sendUsageNotify('render_success', {
+                        mode: inputTab === 'fbx' ? 'fbx' : 'image',
+                        status: 'success',
+                        renderId: Number(response?.renderId || 0) || null
+                    });
+                    markLeadRenderSuccess();
+                    latestRenderId = response?.renderId || null;
+                    appendLog(`> Response 200 OK - Render success. renderId=${latestRenderId || 'n/a'}`);
+                    setGenerationFeedback({
+                        stage: 'Procesando salida',
+                        progress: 92,
+                        hint: 'Aplicando resultado final y preparando comparador.'
+                    });
+                    finishGeneration(response?.imageUrl || response?.imageDataUrl || null);
+                } catch (error) {
+                    await sendUsageNotify('render_failed', {
+                        mode: inputTab === 'fbx' ? 'fbx' : 'image',
+                        status: 'error'
+                    });
+                    const uiErrorMessage = mapApiErrorToUi(error);
+                    appendLog(`> ERROR ${uiErrorMessage}`);
+                    scanningLine.style.display = 'none';
+                    terminalOverlay.classList.remove('flex');
+                    terminalOverlay.classList.add('hidden');
+                    processingIcon.classList.add('hidden');
+                    viewerPanel.classList.remove('is-generating');
+                    statusText.textContent = `ERROR: ${uiErrorMessage}`;
+                    statusText.classList.remove('text-tech');
+                    statusText.classList.add('text-red-400');
+                    setGenerationFeedback({
+                        stage: 'Error',
+                        progress: 100,
+                        hint: uiErrorMessage,
+                        showRetry: true
+                    });
+                    showToast(uiErrorMessage, 'error');
+                    if (isServiceUnavailableError(error)) {
+                        openServiceAccessModal(uiErrorMessage);
+                    }
+                    isGenerating = false;
+                    generateBtn.disabled = false;
+                    generateBtn.style.opacity = '1';
+                }
+            }
+
+            function appendLog(text) {
+                const p = document.createElement('p');
+                p.textContent = text;
+                if(text.includes('200 OK')) p.classList.add('text-accent');
+                terminalLogs.appendChild(p);
+                terminalLogs.scrollTop = terminalLogs.scrollHeight;
+            }
+
+            function getDynamicFilter(style) {
+                let filterStr = "";
+                if (style === 'nordic') filterStr += "saturate(0.8) contrast(1.05) brightness(1.1) ";
+                else if (style === 'industrial') filterStr += "saturate(0.6) contrast(1.25) ";
+                else if (style === 'luxury') filterStr += "saturate(1.2) contrast(1.15) sepia(0.1) ";
+                else if (style === 'brutalist') filterStr += "saturate(0.4) contrast(1.3) grayscale(0.2) ";
+                else if (style === 'custom_builder') {
+                    let saturate = 1.0 + (customStyleTags.length * 0.05);
+                    let contrast = 1.0 + (customStyleTags.length * 0.03);
+                    filterStr += `saturate(${saturate}) contrast(${contrast}) brightness(1.05) `;
+                }
+                return filterStr;
+            }
+
+            function finishGeneration(imageSource) {
+                scanningLine.style.display = 'none';
+                terminalOverlay.classList.remove('flex');
+                terminalOverlay.classList.add('hidden');
+                processingIcon.classList.add('hidden');
+                viewerPanel.classList.remove('is-generating'); // Desactiva animación rápida
+                hideGenerationFeedback();
+                
+                if (imageSource) {
+                    imageGenerated.src = imageSource;
+                    imageGenerated.className = 'comparison-image-after filter-transition w-full h-full object-cover';
+                    imageGenerated.style.filter = 'none';
+                } else if (currentScene === 'custom') {
+                    imageGenerated.src = imageDatabase.custom.base;
+                    imageGenerated.className = 'comparison-image-after filter-transition w-full h-full object-cover';
+                    imageGenerated.style.filter = getDynamicFilter(currentStyle);
+                } else if (currentStyle === 'custom_builder') {
+                    imageGenerated.src = imageDatabase[currentScene].base;
+                    imageGenerated.className = 'comparison-image-after filter-transition w-full h-full object-cover';
+                    imageGenerated.style.filter = 'brightness(1.3) sepia(0.2) saturate(1.1) contrast(1.1)';
+                } else {
+                    imageGenerated.src = imageDatabase[currentScene].styles[currentStyle];
+                    imageGenerated.className = 'comparison-image-after filter-transition w-full h-full object-cover';
+                    imageGenerated.style.filter = 'none';
+                }
+
+                imageGenerated.classList.remove('hidden');
+                
+                sliderHandle.style.display = 'block';
+                setSliderPosition(50);
+                
+                statusText.textContent = "RENDER COMPUTADO";
+                statusText.classList.remove('text-tech');
+                statusText.classList.add('text-accent');
+
+                isGenerating = false;
+                generateBtn.disabled = false;
+                generateBtn.style.opacity = '1';
+                showToast('Render generado correctamente.', 'success');
+            }
+
+            // --- Eventos Slider Before/After ---
+            function setSliderPosition(percentage) {
+                percentage = Math.max(0, Math.min(percentage, 100));
+                sliderHandle.style.left = `${percentage}%`;
+                imageGenerated.style.clipPath = `polygon(0 0, ${percentage}% 0, ${percentage}% 100%, 0 100%)`;
+            }
+
+            function handleInteraction(e) {
+                if (!isSliderActive) return;
+                e.preventDefault(); 
+                const rect = comparisonSlider.getBoundingClientRect();
+                const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+                let position = ((clientX - rect.left) / rect.width) * 100;
+                setSliderPosition(position);
+            }
+
+            sliderHandle.addEventListener('mousedown', () => isSliderActive = true);
+            window.addEventListener('mouseup', () => isSliderActive = false);
+            window.addEventListener('mousemove', handleInteraction);
+
+            sliderHandle.addEventListener('touchstart', () => isSliderActive = true, {passive: false});
+            window.addEventListener('touchend', () => isSliderActive = false);
+            window.addEventListener('touchmove', handleInteraction, {passive: false});
+
+            comparisonSlider.addEventListener('click', (e) => {
+                if(!imageGenerated.classList.contains('hidden') && e.target !== sliderHandle) {
+                    const rect = comparisonSlider.getBoundingClientRect();
+                    let position = ((e.clientX - rect.left) / rect.width) * 100;
+                    setSliderPosition(position);
+                }
+            });
+
+            // --- Módulo adicional: FBX Perspective Control ---
+            (function initFbxLab() {
+                const fbxForm = document.getElementById('fbx-ai-form');
+                if (!fbxForm) return;
+
+                const fbxDropzone = document.getElementById('fbx-dropzone');
+                const fbxFileInput = document.getElementById('fbx-file-upload');
+                const fbxDropzoneContent = document.getElementById('fbx-dropzone-content');
+                const fbxThreeContainer = document.getElementById('fbx-three-canvas-container');
+                const fbxImagePreviewContainer = document.getElementById('fbx-image-preview-container');
+                const fbxUploadPreviewImg = document.getElementById('fbx-upload-preview-img');
+                const fbxControlsOverlay = document.getElementById('fbx-controls-overlay');
+                const fbxBtnCapture = document.getElementById('fbx-btn-capture-scene');
+                const fbxRemoveFileBtn = document.getElementById('fbx-remove-file-btn');
+                const fbxSnapshotContainer = document.getElementById('fbx-captured-snapshot-container');
+                const fbxSnapshotImg = document.getElementById('fbx-snapshot-img');
+                const fbxDeleteSnapshotBtn = document.getElementById('fbx-btn-delete-snapshot');
+                const fbxImageBase = document.getElementById('fbx-image-base');
+                const fbxImageGenerated = document.getElementById('fbx-image-generated');
+                const fbxSliderHandle = document.getElementById('fbx-slider-handle');
+                const fbxComparisonSlider = document.getElementById('fbx-comparison-slider');
+                const fbxStatusText = document.getElementById('fbx-status-text');
+                const fbxStatusInline = document.getElementById('fbx-status-inline');
+                const fbxTerminalOverlay = document.getElementById('fbx-terminal-overlay');
+                const fbxScanningLine = document.getElementById('fbx-scanning-line');
+                const fbxTerminalLogs = document.getElementById('fbx-terminal-logs');
+                const fbxProcessingIcon = document.getElementById('fbx-processing-icon');
+                const fbxGenerateBtn = document.getElementById('fbx-generate-btn');
+                const fbxCurrentStyleLabel = document.getElementById('fbx-current-style-label');
+                const fbxCreditCounter = document.getElementById('fbx-credit-counter');
+                const fbxViewerPanel = document.getElementById('fbx-viewer-panel');
+
+                const fbxBaseScenes = {
+                    living: "https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=1200&auto=format&fit=crop",
+                    bedroom: "https://images.unsplash.com/photo-1540518614846-7eded433c457?q=80&w=1200&auto=format&fit=crop"
+                };
+
+                const fbxStyleMaps = {
+                    nordic: "https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?q=80&w=1200&auto=format&fit=crop",
+                    industrial: "https://images.unsplash.com/photo-1600607687920-4e2a09c15468?q=80&w=1200&auto=format&fit=crop",
+                    luxury: "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?q=80&w=1200&auto=format&fit=crop"
+                };
+
+                let fbxScene = null;
+                let fbxCamera = null;
+                let fbxRenderer = null;
+                let fbxControls = null;
+                let fbxAnimationId = null;
+                let fbxHasSnapshot = false;
+                let fbxCurrentStyle = 'nordic';
+                let fbxCredits = Number.POSITIVE_INFINITY;
+                let fbxIsGenerating = false;
+                let fbxIsSliderActive = false;
+                let fbxHasLoadedFile = false;
+
+                if (fbxCreditCounter) {
+                    fbxCreditCounter.textContent = '∞';
+                }
+
+                const updateFbxBasePreview = () => {
+                    const checkedScene = document.querySelector('input[name="fbx-base-scene"]:checked');
+                    const selectedScene = checkedScene ? checkedScene.value : 'living';
+                    if (!fbxHasSnapshot) {
+                        fbxImageBase.src = fbxBaseScenes[selectedScene] || fbxBaseScenes.living;
+                    }
+                };
+
+                const appendFbxLog = (text) => {
+                    if (!fbxTerminalLogs) return;
+                    const line = document.createElement('p');
+                    line.textContent = text;
+                    if (text.includes('OK')) line.classList.add('text-accent');
+                    fbxTerminalLogs.appendChild(line);
+                    fbxTerminalLogs.scrollTop = fbxTerminalLogs.scrollHeight;
+                };
+
+                const stopFbxRenderer = () => {
+                    if (fbxAnimationId) {
+                        cancelAnimationFrame(fbxAnimationId);
+                        fbxAnimationId = null;
+                    }
+                    if (fbxRenderer) {
+                        fbxRenderer.dispose();
+                        fbxRenderer = null;
+                    }
+                    fbxScene = null;
+                    fbxCamera = null;
+                    fbxControls = null;
+                };
+
+                const animateFbx = () => {
+                    if (!fbxRenderer || !fbxScene || !fbxCamera) return;
+                    fbxAnimationId = requestAnimationFrame(animateFbx);
+                    if (fbxControls) fbxControls.update();
+                    fbxRenderer.render(fbxScene, fbxCamera);
+                };
+
+                const initFbxViewer = (file) => {
+                    if (!window.THREE || typeof THREE.FBXLoader === 'undefined' || typeof THREE.OrbitControls === 'undefined') {
+                        fbxStatusText.textContent = 'FBX no disponible (loader)';
+                        fbxStatusInline.textContent = 'Error Loader';
+                        return;
+                    }
+
+                    stopFbxRenderer();
+                    fbxHasLoadedFile = true;
+                    fbxDropzoneContent.classList.add('hidden');
+                    fbxThreeContainer.classList.remove('hidden');
+                    fbxControlsOverlay.classList.remove('hidden');
+                    fbxImagePreviewContainer.classList.add('hidden');
+
+                    fbxScene = new THREE.Scene();
+                    fbxCamera = new THREE.PerspectiveCamera(45, fbxThreeContainer.clientWidth / fbxThreeContainer.clientHeight, 0.1, 10000);
+                    fbxCamera.position.set(400, 400, 800);
+
+                    fbxRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+                    fbxRenderer.setPixelRatio(window.devicePixelRatio);
+                    fbxRenderer.setSize(fbxThreeContainer.clientWidth, fbxThreeContainer.clientHeight);
+                    fbxThreeContainer.innerHTML = '';
+                    fbxThreeContainer.appendChild(fbxRenderer.domElement);
+
+                    fbxControls = new THREE.OrbitControls(fbxCamera, fbxRenderer.domElement);
+                    fbxControls.enableDamping = true;
+                    fbxControls.dampingFactor = 0.05;
+
+                    fbxScene.add(new THREE.HemisphereLight(0xffffff, 0x444444, 1.5));
+                    const dirLight = new THREE.DirectionalLight(0xffffff, 1);
+                    dirLight.position.set(120, 220, 100);
+                    fbxScene.add(dirLight);
+
+                    const fbxLoader = new THREE.FBXLoader();
+                    const fileUrl = URL.createObjectURL(file);
+                    fbxStatusText.textContent = 'PROCESANDO FBX...';
+                    fbxStatusInline.textContent = 'Loading FBX';
+
+                    fbxLoader.load(fileUrl, (obj) => {
+                        obj.updateMatrixWorld(true);
+                        const box = new THREE.Box3().setFromObject(obj);
+                        const sizeVec = box.getSize(new THREE.Vector3());
+                        const maxDim = Math.max(sizeVec.x || 0, sizeVec.y || 0, sizeVec.z || 0, 1);
+                        const targetMaxDim = 500;
+                        const scaleFactor = targetMaxDim / maxDim;
+                        obj.scale.multiplyScalar(scaleFactor);
+                        obj.updateMatrixWorld(true);
+
+                        const centeredBox = new THREE.Box3().setFromObject(obj);
+                        const centered = centeredBox.getCenter(new THREE.Vector3());
+                        obj.position.sub(centered);
+                        obj.updateMatrixWorld(true);
+                        fbxScene.add(obj);
+
+                        const fitHeightDistance = (targetMaxDim * 0.5) / Math.tan(THREE.MathUtils.degToRad((fbxCamera.fov || 45) * 0.5));
+                        const fitWidthDistance = fitHeightDistance / Math.max(0.4, Number(fbxCamera.aspect) || 1);
+                        const fitDistance = Math.max(fitHeightDistance, fitWidthDistance) * 1.35;
+                        fbxCamera.near = Math.max(0.1, fitDistance / 200);
+                        fbxCamera.far = Math.max(10000, fitDistance * 200);
+                        fbxCamera.position.set(fitDistance * 0.95, fitDistance * 0.75, fitDistance * 1.15);
+                        fbxCamera.updateProjectionMatrix();
+                        fbxControls.target.set(0, 0, 0);
+                        fbxControls.update();
+                        animateFbx();
+                        fbxStatusText.textContent = 'FBX LISTO | AJUSTA Y CAPTURA';
+                        fbxStatusInline.textContent = 'FBX Ready';
+                    }, (xhr) => {
+                        if (xhr.total > 0) {
+                            const percent = Math.round((xhr.loaded / xhr.total) * 100);
+                            fbxStatusText.textContent = `CARGANDO FBX: ${percent}%`;
+                        }
+                    }, () => {
+                        fbxStatusText.textContent = 'ERROR AL CARGAR FBX';
+                        fbxStatusInline.textContent = 'Load Error';
+                    });
+                };
+
+                const captureFbxView = () => {
+                    if (!fbxRenderer) return;
+                    const dataUrl = fbxRenderer.domElement.toDataURL('image/png');
+                    fbxImageBase.src = dataUrl;
+                    fbxSnapshotImg.src = dataUrl;
+                    fbxSnapshotContainer.classList.remove('hidden');
+                    fbxHasSnapshot = true;
+                    fbxStatusText.textContent = 'VISTA CAPTURADA | LISTO PARA RENDER';
+                    fbxStatusInline.textContent = 'Snapshot Saved';
+                };
+
+                const removeFbxFile = () => {
+                    stopFbxRenderer();
+                    fbxHasLoadedFile = false;
+                    fbxHasSnapshot = false;
+                    fbxDropzoneContent.classList.remove('hidden');
+                    fbxThreeContainer.classList.add('hidden');
+                    fbxImagePreviewContainer.classList.add('hidden');
+                    fbxControlsOverlay.classList.add('hidden');
+                    fbxSnapshotContainer.classList.add('hidden');
+                    fbxSnapshotImg.src = '';
+                    fbxUploadPreviewImg.src = '';
+                    fbxStatusText.textContent = 'ESPERANDO MODELO...';
+                    fbxStatusInline.textContent = 'Ready';
+                    fbxFileInput.value = '';
+                    updateFbxBasePreview();
+                };
+
+                const runFbxGeneration = async () => {
+                    if (fbxIsGenerating) return;
+
+                    if (!fbxHasLoadedFile) {
+                        fbxStatusText.textContent = 'SUBE FBX O IMAGEN';
+                        fbxStatusInline.textContent = 'Missing Input';
+                        return;
+                    }
+
+                    if (fbxRenderer && !fbxHasSnapshot) {
+                        captureFbxView();
+                    }
+
+                    fbxIsGenerating = true;
+                    fbxCreditCounter.textContent = '∞';
+                    fbxStatusText.textContent = 'RENDERIZANDO PERSPECTIVA...';
+                    fbxStatusInline.textContent = 'Generating';
+                    fbxViewerPanel.classList.add('is-generating');
+                    fbxGenerateBtn.disabled = true;
+                    fbxGenerateBtn.style.opacity = '0.6';
+                    fbxScanningLine.style.display = 'block';
+                    fbxTerminalOverlay.classList.remove('hidden');
+                    fbxTerminalOverlay.classList.add('flex');
+                    fbxProcessingIcon.classList.remove('hidden');
+                    fbxTerminalLogs.innerHTML = '';
+
+                    const fbxLogs = [
+                        '> POST /api/public/simulator/renders',
+                        `> style: ${fbxCurrentStyle}`,
+                        '> normalizing camera matrix...',
+                        '> extracting topology hints...',
+                        '> guiding diffusion with captured viewport...'
+                    ];
+
+                    let delay = 0;
+                    fbxLogs.forEach((log) => {
+                        setTimeout(() => appendFbxLog(log), delay);
+                        delay += 280;
+                    });
+
+                    try {
+                        const projectId = await ensurePublicProject();
+                        await sendUsageNotify('render_requested', {
+                            mode: 'fbx',
+                            status: 'requested'
+                        });
+                        const compiledPrompt = buildCompiledPrompt({
+                            forceFbx: true,
+                            styleOverride: fbxCurrentStyle,
+                            formatOverride: '4/3'
+                        });
+                        promptDisplay.value = compiledPrompt;
+                        const payload = {
+                            projectId,
+                            mode: 'fbx',
+                            style: fbxCurrentStyle,
+                            format: '4/3',
+                            email: normalizeEmail(userEmail),
+                            source: 'simulador-ia-render-con-ia-fbx-lab',
+                            prompt: compiledPrompt.trim().replace(/^"|"$/g, ''),
+                            referenceImageDataUrl: fbxSnapshotImg?.src || fbxUploadPreviewImg?.src || null,
+                            meta: {
+                                source: 'fbx-lab'
+                            }
+                        };
+                        const response = await apiRequest('/api/public/simulator/renders', {
+                            method: 'POST',
+                            requireAccess: true,
+                            body: payload
+                        });
+                        await sendUsageNotify('render_success', {
+                            mode: 'fbx',
+                            status: 'success',
+                            renderId: Number(response?.renderId || 0) || null
+                        });
+                        markLeadRenderSuccess();
+                        appendFbxLog(`> Response 200 OK - FBX render success. renderId=${response?.renderId || 'n/a'}`);
+                        fbxImageGenerated.src = response?.imageUrl || response?.imageDataUrl || (fbxStyleMaps[fbxCurrentStyle] || fbxStyleMaps.nordic);
+                        fbxImageGenerated.classList.remove('hidden');
+                        fbxSliderHandle.style.display = 'block';
+                        fbxSliderHandle.style.left = '50%';
+                        fbxImageGenerated.style.clipPath = 'polygon(0 0, 50% 0, 50% 100%, 0 100%)';
+                        fbxScanningLine.style.display = 'none';
+                        fbxTerminalOverlay.classList.remove('flex');
+                        fbxTerminalOverlay.classList.add('hidden');
+                        fbxProcessingIcon.classList.add('hidden');
+                        fbxViewerPanel.classList.remove('is-generating');
+                        fbxStatusText.textContent = 'RENDER COMPLETADO';
+                        fbxStatusInline.textContent = 'Done';
+                        fbxGenerateBtn.disabled = false;
+                        fbxGenerateBtn.style.opacity = '1';
+                        fbxIsGenerating = false;
+                    } catch (error) {
+                        await sendUsageNotify('render_failed', {
+                            mode: 'fbx',
+                            status: 'error'
+                        });
+                        appendFbxLog(`> ERROR ${error.message}`);
+                        fbxScanningLine.style.display = 'none';
+                        fbxTerminalOverlay.classList.remove('flex');
+                        fbxTerminalOverlay.classList.add('hidden');
+                        fbxProcessingIcon.classList.add('hidden');
+                        fbxViewerPanel.classList.remove('is-generating');
+                        fbxStatusText.textContent = `ERROR: ${error.message}`;
+                        fbxStatusInline.textContent = 'Error';
+                        fbxGenerateBtn.disabled = false;
+                        fbxGenerateBtn.style.opacity = '1';
+                        fbxIsGenerating = false;
+                        if (isServiceUnavailableError(error)) {
+                            openServiceAccessModal(mapApiErrorToUi(error));
+                        }
+                    }
+                };
+
+                const onFbxFileSelected = (file) => {
+                    if (!file) return;
+                    if (file.name.toLowerCase().endsWith('.fbx')) {
+                        initFbxViewer(file);
+                    } else if (file.type.startsWith('image/')) {
+                        fbxHasLoadedFile = true;
+                        stopFbxRenderer();
+                        fbxDropzoneContent.classList.add('hidden');
+                        fbxThreeContainer.classList.add('hidden');
+                        fbxControlsOverlay.classList.add('hidden');
+                        fbxImagePreviewContainer.classList.remove('hidden');
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            fbxUploadPreviewImg.src = e.target.result;
+                            fbxImageBase.src = e.target.result;
+                            fbxHasSnapshot = true;
+                            fbxSnapshotImg.src = e.target.result;
+                            fbxSnapshotContainer.classList.remove('hidden');
+                            fbxStatusText.textContent = 'IMAGEN CARGADA';
+                            fbxStatusInline.textContent = 'Image Ready';
+                        };
+                        reader.readAsDataURL(file);
+                    } else {
+                        fbxStatusText.textContent = 'Formato no soportado';
+                    }
+                };
+
+                fbxDropzone.addEventListener('click', () => {
+                    if (!fbxIsGenerating && !fbxHasLoadedFile) fbxFileInput.click();
+                });
+
+                fbxFileInput.addEventListener('change', () => {
+                    onFbxFileSelected(fbxFileInput.files[0]);
+                });
+
+                ['dragenter', 'dragover', 'dragleave', 'drop'].forEach((eventName) => {
+                    fbxDropzone.addEventListener(eventName, (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    });
+                });
+
+                ['dragenter', 'dragover'].forEach((eventName) => {
+                    fbxDropzone.addEventListener(eventName, () => fbxDropzone.classList.add('dropzone-active'));
+                });
+
+                ['dragleave', 'drop'].forEach((eventName) => {
+                    fbxDropzone.addEventListener(eventName, () => fbxDropzone.classList.remove('dropzone-active'));
+                });
+
+                fbxDropzone.addEventListener('drop', (e) => {
+                    const dropped = e.dataTransfer && e.dataTransfer.files ? e.dataTransfer.files[0] : null;
+                    onFbxFileSelected(dropped);
+                });
+
+                fbxBtnCapture.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    captureFbxView();
+                });
+
+                fbxDeleteSnapshotBtn.addEventListener('click', () => {
+                    fbxHasSnapshot = false;
+                    fbxSnapshotContainer.classList.add('hidden');
+                    fbxSnapshotImg.src = '';
+                    fbxStatusText.textContent = 'FBX LISTO | AJUSTA Y CAPTURA';
+                    fbxStatusInline.textContent = 'Snapshot Cleared';
+                    updateFbxBasePreview();
+                });
+
+                fbxRemoveFileBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    removeFbxFile();
+                });
+
+                document.querySelectorAll('input[name="fbx-base-scene"]').forEach((radio) => {
+                    radio.addEventListener('change', () => {
+                        if (!fbxHasLoadedFile || !fbxHasSnapshot) updateFbxBasePreview();
+                    });
+                });
+
+                document.querySelectorAll('.fbx-style-btn').forEach((btn) => {
+                    btn.addEventListener('click', () => {
+                        document.querySelectorAll('.fbx-style-btn').forEach((b) => {
+                            b.classList.remove('border-tech', 'bg-tech/10', 'text-white');
+                            b.classList.add('border-white/10', 'text-gray-400');
+                        });
+                        btn.classList.remove('border-white/10', 'text-gray-400');
+                        btn.classList.add('border-tech', 'bg-tech/10', 'text-white');
+                        fbxCurrentStyle = btn.dataset.style;
+                        fbxCurrentStyleLabel.textContent = btn.textContent.trim();
+                    });
+                });
+
+                fbxForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    runWithLeadGate(runFbxGeneration);
+                });
+
+                fbxSliderHandle.addEventListener('mousedown', () => { fbxIsSliderActive = true; });
+                window.addEventListener('mouseup', () => { fbxIsSliderActive = false; });
+                window.addEventListener('mousemove', (e) => {
+                    if (!fbxIsSliderActive) return;
+                    const rect = fbxComparisonSlider.getBoundingClientRect();
+                    let pos = ((e.clientX - rect.left) / rect.width) * 100;
+                    pos = Math.max(0, Math.min(pos, 100));
+                    fbxSliderHandle.style.left = `${pos}%`;
+                    fbxImageGenerated.style.clipPath = `polygon(0 0, ${pos}% 0, ${pos}% 100%, 0 100%)`;
+                });
+
+                updateFbxBasePreview();
+            })();
+
+            (async () => {
+                try {
+                    const cfg = await apiRequest('/api/public/simulator/config');
+                    appendLog(`> GET /api/public/simulator/config OK (${(cfg?.styles || []).length} styles)`);
+                } catch (error) {
+                    appendLog(`> WARN config: ${error.message}`);
+                }
+                try {
+                    const pid = await ensurePublicProject();
+                    appendLog(`> Public project ready: ${pid}`);
+                } catch (error) {
+                    appendLog(`> WARN project: ${error.message}`);
+                }
+            })();
+
+            // Mostrar modal GIF al abrir la página
+            setTimeout(() => {
+                openIntroGifModal();
+            }, 220);
+
+            activateInputTab('image');
+            syncDropzoneLockState();
+            updatePromptText();
+        });
+    </script>
+</body>
+</html>

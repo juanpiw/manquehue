@@ -1,0 +1,1241 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IRIS | Inmersive Sales Experience</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Outfit:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    },
+                    colors: {
+                        background: '#050505',
+                        accent: '#d4af7a', // Oro Impact Studios
+                        tech: '#3b82f6',
+                        whatsapp: '#25D366'
+                    },
+                    animation: {
+                        'slow-pan': 'slowPan 20s ease-in-out infinite alternate',
+                        'fade-in': 'fadeIn 1s ease-out forwards',
+                        'slide-up': 'slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                        'wave': 'wave 1.2s ease-in-out infinite',
+                        'attention-pulse': 'attentionPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        slowPan: {
+                            '0%': { transform: 'scale(1) translate(0, 0)' },
+                            '100%': { transform: 'scale(1.1) translate(-2%, -2%)' },
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { opacity: '0', transform: 'translateY(40px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        wave: {
+                            '0%, 100%': { height: '8px' },
+                            '50%': { height: '24px' }
+                        },
+                        attentionPulse: {
+                            '0%, 100%': { opacity: 1, transform: 'scale(1)', boxShadow: '0 0 0px rgba(212, 175, 122, 0)' },
+                            '50%': { opacity: 0.8, transform: 'scale(1.02)', boxShadow: '0 0 20px rgba(212, 175, 122, 0.4)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { 
+            background-color: #000; 
+            color: #fff; 
+            overflow: hidden; 
+            height: 100vh;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .bg-layer {
+            position: absolute;
+            inset: 0;
+            background-size: cover;
+            background-position: center;
+            transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 0;
+        }
+
+        .vignette {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle, transparent 30%, rgba(0,0,0,0.7) 100%);
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        /* --- IRIS PLACEMENT OVERLAY --- */
+        #iris-placement-brush-preview {
+            position: fixed;
+            pointer-events: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid #fff;
+            z-index: 620;
+            display: none;
+            transform: translate(-50%, -50%);
+            mix-blend-mode: difference;
+        }
+
+        #iris-paint-canvas {
+            position: fixed;
+            inset: 0;
+            z-index: 610;
+            cursor: crosshair;
+            opacity: 0.72;
+            pointer-events: none;
+        }
+
+        #iris-paint-canvas.active {
+            pointer-events: auto;
+        }
+
+        .iris-placement-hud {
+            position: fixed;
+            top: 1.9rem;
+            left: 1.9rem;
+            z-index: 640;
+            display: flex;
+            align-items: center;
+            gap: 1.1rem;
+            pointer-events: auto;
+        }
+
+        .iris-placement-toolbar {
+            position: fixed;
+            left: 1.9rem;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            z-index: 640;
+            background: rgba(0, 0, 0, 0.55);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 1.25rem;
+            padding: 0.65rem;
+            box-shadow: 0 14px 34px rgba(0, 0, 0, 0.45);
+            pointer-events: auto;
+        }
+
+        .iris-placement-tool-btn {
+            width: 58px;
+            height: 58px;
+            border-radius: 18px;
+            background: rgba(20, 20, 20, 0.82);
+            border: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .iris-placement-tool-btn:hover { border-color: #d4af7a; }
+        .iris-placement-tool-btn.active { background: #d4af7a; color: #000; }
+
+        .iris-placement-side-panel {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: min(420px, 92vw);
+            height: 100%;
+            background: rgba(10, 10, 10, 0.92);
+            backdrop-filter: blur(50px);
+            border-left: 1px solid rgba(255,255,255,0.1);
+            z-index: 650;
+            transform: translateX(100%);
+            transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+            display: flex;
+            flex-direction: column;
+            visibility: hidden;
+            pointer-events: none;
+            will-change: transform;
+        }
+        .iris-placement-side-panel.open {
+            transform: translateX(0);
+            visibility: visible;
+            pointer-events: auto;
+        }
+
+        .iris-placement-gallery-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+            padding: 24px;
+            overflow-y: auto;
+        }
+
+        .iris-furniture-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 20px;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            position: relative;
+        }
+        .iris-furniture-card.selected {
+            background: rgba(212, 175, 122, 0.1);
+            border-color: #d4af7a;
+            transform: scale(1.02);
+        }
+
+        .iris-furniture-thumb {
+            width: 80px;
+            height: 80px;
+            border-radius: 12px;
+            object-fit: cover;
+        }
+
+        .iris-color-indicator {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.2);
+        }
+
+        #iris-placement-apply-wrap {
+            position: fixed;
+            bottom: 3rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 640;
+        }
+
+        #iris-placement-apply-btn {
+            background: #fff;
+            color: #000;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            padding: 18px 40px;
+            border-radius: 99px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            transition: all 0.4s ease;
+            display: none;
+            align-items: center;
+            gap: 0.7rem;
+        }
+        #iris-placement-apply-btn:hover { transform: scale(1.05); }
+
+        #iris-placement-loader {
+            position: fixed;
+            inset: 0;
+            z-index: 500;
+            background: #000;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        /* --- PROJECT EXPLORER (BIBLIOTECA) --- */
+        .project-explorer {
+            position: fixed;
+            inset: 0;
+            z-index: 200;
+            background: #000;
+            display: flex;
+            transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+            transform: translateY(-100%);
+        }
+
+        .project-explorer.open {
+            transform: translateY(0);
+        }
+
+        .project-column {
+            position: relative;
+            flex: 1;
+            height: 100%;
+            overflow: hidden;
+            transition: flex 0.7s cubic-bezier(0.25, 1, 0.3, 1);
+            cursor: pointer;
+            border-right: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .project-column:hover {
+            flex: 2.5;
+        }
+
+        .project-column img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: grayscale(40%) brightness(0.6);
+            transition: filter 0.7s ease, transform 1.2s ease;
+        }
+
+        .project-column:hover img {
+            filter: grayscale(0%) brightness(0.9);
+            transform: scale(1.05);
+        }
+
+        .project-info-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 3rem 2rem;
+            background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 60%);
+            z-index: 2;
+        }
+
+        .project-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            line-height: 1;
+            margin-bottom: 0.5rem;
+            transform: translateY(20px);
+            opacity: 0;
+            transition: all 0.5s ease 0.2s;
+        }
+
+        .project-column:hover .project-title {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .project-tagline {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.3em;
+            color: #d4af7a;
+            opacity: 0.6;
+            transition: opacity 0.5s ease;
+        }
+
+        .project-column:hover .project-tagline { opacity: 1; }
+
+        /* --- MODAL TOUR INICIAL --- */
+        .tour-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 300;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(12px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        .tour-modal.visible { display: flex; opacity: 1; }
+        .tour-card {
+            background: rgba(15, 15, 15, 0.95);
+            border: 1px solid rgba(212, 175, 122, 0.3);
+            border-radius: 2rem;
+            padding: 3rem;
+            max-width: 450px;
+            text-align: center;
+            box-shadow: 0 40px 100px rgba(0,0,0,0.8);
+        }
+
+        /* --- CHAT DOCK --- */
+        .chat-dock {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 95%;
+            max-width: 750px;
+            background: rgba(8, 8, 8, 0.92); 
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 2.5rem;
+            z-index: 50;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 40px 100px rgba(0,0,0,0.8);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .chat-input-wrapper {
+            background: rgba(0, 0, 0, 0.6); 
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 999px;
+            padding: 4px 6px 4px 20px;
+            display: flex;
+            align-items: center;
+        }
+        
+        #user-input {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #fff;
+            font-size: 13px;
+            width: 100%;
+            padding: 10px 0;
+        }
+
+        .option-pill { 
+            background: rgba(255, 255, 255, 0.03); 
+            border: 1px solid rgba(212, 175, 122, 0.2);
+            color: #d4af7a;
+            padding: 0.5rem 1.2rem;
+            border-radius: 999px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .avatar-projection {
+            position: absolute;
+            bottom: 22%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 250px;
+            height: auto;
+            z-index: 15;
+            filter: drop-shadow(0 0 20px rgba(212, 175, 122, 0.4)) contrast(1.05);
+            opacity: 0;
+            transition: opacity 1s ease;
+            pointer-events: none;
+        }
+
+        .intel-badge {
+            font-size: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.3em;
+            color: rgba(255,255,255,0.4);
+            border-bottom: 1px solid rgba(212, 175, 122, 0.15);
+            padding-bottom: 2px;
+            margin-bottom: 4px;
+        }
+
+        /* --- BOTONES FAB ESQUINA IZQUIERDA --- */
+        .fab-container-left {
+            position: fixed;
+            bottom: 2rem;
+            left: 2rem;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            align-items: flex-start;
+        }
+
+        .base-fab {
+            backdrop-filter: blur(10px);
+            border-radius: 999px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            text-decoration: none;
+        }
+
+        .ai-gen-fab {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.4);
+            color: #3b82f6;
+            padding: 0.8rem 1.2rem;
+        }
+        .ai-gen-fab:hover {
+            background: #3b82f6;
+            color: #fff;
+            transform: scale(1.05) translateY(-3px);
+            box-shadow: 0 15px 40px rgba(59, 130, 246, 0.3);
+        }
+
+        .demo-fab {
+            background: rgba(212, 175, 122, 0.1);
+            border: 1px solid rgba(212, 175, 122, 0.4);
+            color: #d4af7a;
+            padding: 1rem 1.5rem;
+        }
+        .demo-fab:hover {
+            background: #d4af7a;
+            color: #000;
+            transform: scale(1.05) translateY(-5px);
+            box-shadow: 0 15px 40px rgba(212, 175, 122, 0.3);
+        }
+
+        .base-fab span {
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+        }
+
+        .chat-mobile-actions {
+            display: none;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .chat-mobile-actions .mini-fab {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            border-radius: 999px;
+            font-size: 9px;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            padding: 0.45rem 0.7rem;
+            text-decoration: none;
+            border: 1px solid transparent;
+            background: rgba(255, 255, 255, 0.06);
+            color: #fff;
+        }
+
+        .chat-mobile-actions .mini-fab.ai {
+            color: #3b82f6;
+            border-color: rgba(59, 130, 246, 0.45);
+            background: rgba(59, 130, 246, 0.12);
+        }
+
+        .chat-mobile-actions .mini-fab.demo {
+            color: #d4af7a;
+            border-color: rgba(212, 175, 122, 0.45);
+            background: rgba(212, 175, 122, 0.12);
+        }
+
+        /* Modal de Demo */
+        .demo-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 400;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(15px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        .demo-modal.visible { display: flex; }
+        .demo-card {
+            background: #0a0a0a;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 2.5rem;
+            width: 100%;
+            max-width: 500px;
+            padding: 3rem;
+            position: relative;
+            box-shadow: 0 50px 100px rgba(0,0,0,0.9);
+        }
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+        .input-group label {
+            display: block;
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            color: #666;
+            margin-bottom: 8px;
+        }
+        .input-group input, .input-group textarea {
+            width: 100%;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 12px 16px;
+            border-radius: 12px;
+            color: #fff;
+            outline: none;
+            transition: border 0.3s;
+        }
+        .input-group input:focus { border-color: #d4af7a; }
+
+        /* Audio Visualizer */
+        .voice-indicator {
+            display: none;
+            align-items: center;
+            gap: 3px;
+            height: 24px;
+            margin-left: 8px;
+        }
+        .voice-indicator.active { display: flex; }
+        .voice-indicator span {
+            width: 3px;
+            background: #d4af7a;
+            border-radius: 10px;
+            animation: wave 1.2s ease-in-out infinite;
+        }
+        .voice-indicator span:nth-child(2) { animation-delay: 0.1s; }
+        .voice-indicator span:nth-child(3) { animation-delay: 0.2s; }
+        .voice-indicator span:nth-child(4) { animation-delay: 0.3s; }
+
+        @media (max-width: 768px) {
+            .fab-container-left {
+                display: none;
+            }
+
+            .chat-mobile-actions {
+                display: flex;
+            }
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <div id="iris-placement-brush-preview"></div>
+    <canvas id="iris-paint-canvas"></canvas>
+
+    <!-- BOTONES FAB ESQUINA IZQUIERDA -->
+    <div class="fab-container-left">
+        <!-- Botón Generador IA -->
+        <a href="https://impactrenderstudios.com/simulador-ia-render-con-ia.html" target="_blank" class="base-fab ai-gen-fab">
+            <i class="ph-fill ph-magic-wand text-lg"></i>
+            <span>Genera tus propios render con IA</span>
+        </a>
+        
+        <!-- Botón Pide tu Demo -->
+        <div class="base-fab demo-fab" onclick="toggleDemoModal(true)">
+            <i class="ph-fill ph-rocket-launch text-xl"></i>
+            <span>Pide tu Demo</span>
+        </div>
+    </div>
+
+    <!-- MODAL DE SOLICITUD DE DEMO -->
+    <div id="demo-modal" class="demo-modal">
+        <div class="demo-card animate-slide-up">
+            <button onclick="toggleDemoModal(false)" class="absolute top-6 right-6 text-gray-500 hover:text-white transition-colors">
+                <i class="ph ph-x text-2xl"></i>
+            </button>
+            <h2 class="font-serif italic text-3xl text-white mb-2">Solicita tu Demo</h2>
+            <p class="text-gray-500 text-sm mb-8 font-light">Lleva la inteligencia de Iris a tu próximo proyecto inmobiliario.</p>
+            
+            <form onsubmit="handleDemoSubmit(event)" id="demo-form" class="space-y-4">
+                <div class="input-group">
+                    <label>Nombre Completo</label>
+                    <input type="text" id="demo-name" required placeholder="Tu nombre...">
+                </div>
+                <div class="input-group">
+                    <label>Email Corporativo</label>
+                    <input type="email" id="demo-email" required placeholder="tu@empresa.com">
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4 pt-4">
+                    <button type="submit" class="bg-accent text-black font-bold py-4 rounded-xl uppercase tracking-widest text-[10px] hover:bg-white transition-all shadow-lg">
+                        Enviar Formulario
+                    </button>
+                    <button type="button" onclick="openWspDemo()" class="bg-whatsapp/10 border border-whatsapp/30 text-whatsapp font-bold py-4 rounded-xl uppercase tracking-widest text-[10px] hover:bg-whatsapp hover:text-black transition-all">
+                        WhatsApp Directo
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL DE ENTRADA -->
+    <div id="entry-choice-modal" class="demo-modal">
+        <div class="demo-card animate-slide-up">
+            <div class="absolute top-6 left-6 inline-flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-2 py-1">
+                <button id="entry-lang-en" type="button" class="text-[10px] font-bold tracking-widest text-white">EN</button>
+                <span class="text-white/20 text-[10px]">|</span>
+                <button id="entry-lang-es" type="button" class="text-[10px] font-bold tracking-widest text-white/40 hover:text-white/80 transition-colors">ES</button>
+            </div>
+            <button onclick="toggleEntryModal(false)" class="absolute top-6 right-6 text-gray-500 hover:text-white transition-colors">
+                <i class="ph ph-x text-2xl"></i>
+            </button>
+            <h2 id="entry-title" class="font-serif italic text-3xl text-white mb-2">How would you like to continue?</h2>
+            <p id="entry-subtitle" class="text-gray-500 text-sm mb-8 font-light">Choose between a guided demo with our team or generating your own AI renders right now.</p>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                <button id="entry-demo-btn" type="button" onclick="chooseEntryPath('demo')" class="bg-accent text-black font-bold py-4 rounded-xl uppercase tracking-widest text-[10px] hover:bg-white transition-all shadow-lg">
+                    Request Demo
+                </button>
+                <button id="entry-render-btn" type="button" onclick="chooseEntryPath('render')" class="bg-tech/10 border border-tech/40 text-tech font-bold py-4 rounded-xl uppercase tracking-widest text-[10px] hover:bg-tech hover:text-white transition-all">
+                    Generate Renders
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SELECTOR DE PROYECTOS (BIBLIOTECA) -->
+    <div id="project-explorer" class="project-explorer">
+        <div class="project-column" onclick="selectProject('mirador')">
+            <img src="https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?q=80&w=2000" alt="Mirador">
+            <div class="project-info-overlay">
+                <p class="project-tagline">Santiago, Chile</p>
+                <h3 class="project-title">Mirador Suite</h3>
+            </div>
+        </div>
+        
+        <div class="project-column" onclick="selectProject('ocean')">
+            <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=2000" alt="Ocean">
+            <div class="project-info-overlay">
+                <p class="project-tagline">Gold Coast, Australia</p>
+                <h3 class="project-title">Ocean Front</h3>
+            </div>
+        </div>
+        
+        <div class="project-column" onclick="selectProject('sky')">
+            <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2000" alt="Sky">
+            <div class="project-info-overlay">
+                <p class="project-tagline">Delaware, USA</p>
+                <h3 class="project-title">Sky Tower</h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE BIENVENIDA AL TOUR -->
+    <div id="tour-modal" class="tour-modal">
+        <div class="tour-card animate-slide-up">
+            <div class="w-16 h-16 bg-accent/10 border border-accent/20 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                <i class="ph-fill ph-play text-accent text-3xl"></i>
+            </div>
+            <h2 class="font-serif italic text-3xl text-white mb-4" id="modal-project-title">Tour Virtual</h2>
+            <p class="text-gray-400 font-light mb-10 leading-relaxed" id="modal-text">Partamos el tour virtual de IA para el piloto seleccionado.</p>
+            <button onclick="startGuidedTour()" class="w-full bg-accent text-black font-bold py-4 rounded-xl uppercase tracking-[0.2em] text-[10px] hover:bg-white transition-all shadow-xl">
+                OK, Iniciar Tour
+            </button>
+        </div>
+    </div>
+
+    <!-- Capas de Imagen de Fondo -->
+    <div id="bg-1" class="bg-layer opacity-100 animate-slow-pan"></div>
+    <div id="bg-2" class="bg-layer opacity-0 animate-slow-pan"></div>
+    
+    <!-- Proyección del Usuario -->
+    <img id="user-avatar-projection" class="avatar-projection" src="" alt="Avatar">
+
+    <div class="vignette"></div>
+
+    <!-- IRIS Smart Placement Overlay -->
+    <div class="iris-placement-hud">
+        <img src="https://impactrenderstudios.com/images/logo.png" class="h-6 opacity-80" alt="Impact Render">
+        <div class="h-4 w-px bg-white/20"></div>
+        <div class="flex flex-col mr-4">
+            <span class="text-[10px] uppercase tracking-[0.3em] font-bold text-accent">Smart Placement Mode</span>
+            <span id="iris-active-item-label" class="text-[9px] text-gray-500 uppercase mt-0.5">Selecciona un mueble para ubicarlo</span>
+        </div>
+        <button id="iris-base-upload-trigger" class="animate-attention-pulse bg-accent/10 border border-accent/40 px-5 py-2.5 rounded-full hover:bg-accent hover:text-black transition-all flex items-center gap-2 group">
+            <i class="ph-fill ph-image-square text-accent group-hover:text-black transition-colors"></i>
+            <span class="text-[9px] uppercase font-bold tracking-widest transition-colors">Subir base del render</span>
+            <input type="file" id="iris-base-upload" class="hidden" accept="image/*">
+        </button>
+    </div>
+
+    <div class="fixed top-10 right-10 z-[240] flex gap-4">
+        <button id="iris-gallery-toggle-btn" class="bg-white/5 border border-white/10 px-6 py-3 rounded-full hover:bg-white/10 transition-all flex items-center gap-3">
+            <i class="ph ph-armchair text-accent"></i>
+            <span class="text-[10px] uppercase font-bold tracking-widest">Mis Muebles</span>
+        </button>
+    </div>
+
+    <div class="iris-placement-toolbar">
+        <div id="iris-tool-pan" class="iris-placement-tool-btn active">
+            <i class="ph ph-arrows-out-cardinal text-xl"></i>
+        </div>
+        <div id="iris-tool-paint" class="iris-placement-tool-btn">
+            <i class="ph ph-paint-brush-broad text-xl"></i>
+        </div>
+        <div id="iris-tool-clear" class="iris-placement-tool-btn">
+            <i class="ph ph-trash text-xl"></i>
+        </div>
+        <div class="h-px bg-white/10 my-2"></div>
+        <div id="iris-tool-upload" class="iris-placement-tool-btn text-accent">
+            <i class="ph ph-plus-circle text-2xl"></i>
+            <input type="file" id="iris-furniture-upload" class="hidden" accept="image/*" multiple>
+        </div>
+    </div>
+
+    <div id="iris-placement-apply-wrap">
+        <button id="iris-placement-apply-btn">
+            <i class="ph-fill ph-sparkle text-xl"></i>
+            Generar Espacio con IA
+        </button>
+    </div>
+
+    <div id="iris-placement-gallery" class="iris-placement-side-panel">
+        <div class="p-8 border-b border-white/10">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="font-serif italic text-3xl text-white">Muebles</h3>
+                <button id="iris-gallery-close-btn" class="text-gray-500 hover:text-white transition-colors">
+                    <i class="ph ph-x text-2xl"></i>
+                </button>
+            </div>
+            <button id="iris-gallery-upload-btn" class="w-full py-4 bg-accent/10 border border-accent/30 rounded-2xl text-accent hover:bg-accent hover:text-black transition-all text-[10px] font-bold uppercase tracking-[0.2em]">
+                + Subir tus muebles o elementos
+            </button>
+        </div>
+
+        <div id="iris-furniture-list" class="iris-placement-gallery-grid"></div>
+
+        <div class="mt-auto p-8 border-t border-white/5 bg-black/20">
+            <p class="text-[10px] text-gray-500 leading-relaxed italic">
+                Tip: Selecciona un mueble y pinta la zona exacta del render donde quieres que la IA lo posicione.
+            </p>
+        </div>
+    </div>
+
+    <div id="iris-placement-loader">
+        <div class="w-20 h-20 border-t-2 border-accent rounded-full animate-spin mb-8"></div>
+        <h2 class="font-serif italic text-4xl text-white">Procesando Mapas de Color...</h2>
+        <p class="text-gray-500 text-xs uppercase tracking-[0.4em] mt-4">La IA está posicionando cada elemento en su zona pintada</p>
+    </div>
+
+    <!-- UI Superior -->
+    <div class="fixed top-10 left-10 z-20 flex flex-col gap-2">
+        <img src="https://impactrenderstudios.com/images/logo.png" class="h-8 opacity-60">
+        <button onclick="toggleExplorer(true)" class="flex items-center gap-3 bg-white/5 border border-white/10 px-4 py-2 rounded-full hover:bg-white/10 transition-all group">
+            <span id="current-project-name" class="text-[10px] uppercase tracking-[0.3em] font-bold text-accent">Mirador Suite</span>
+            <i class="ph ph-caret-down text-accent group-hover:translate-y-0.5 transition-transform"></i>
+        </button>
+    </div>
+
+    <div class="fixed top-10 right-10 z-20 text-right flex flex-col items-end gap-6">
+        <button id="toggle-voice" class="w-11 h-11 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-all">
+            <i id="voice-icon" class="ph ph-speaker-high text-accent text-xl"></i>
+        </button>
+        <div>
+            <p class="intel-badge">Closing Probability</p>
+            <p id="ui-score" class="font-serif italic text-4xl text-white">0%</p>
+        </div>
+    </div>
+
+    <!-- Chat Dock -->
+    <div class="chat-dock">
+        <div class="chat-mobile-actions">
+            <a href="https://impactrenderstudios.com/simulador-ia-render-con-ia.html" target="_blank" class="mini-fab ai">
+                <i class="ph-fill ph-magic-wand text-sm"></i>
+                <span>Genera con IA</span>
+            </a>
+            <button type="button" class="mini-fab demo" onclick="toggleDemoModal(true)">
+                <i class="ph-fill ph-rocket-launch text-sm"></i>
+                <span>Pide Demo</span>
+            </button>
+        </div>
+
+        <div class="flex items-center justify-between border-b border-white/5 pb-3">
+            <div class="flex items-center gap-2">
+                <div id="status-pulse" class="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"></div>
+                <span class="text-[9px] font-bold uppercase tracking-widest text-gray-500">IRIS: Guided Sales Intelligence</span>
+                <div id="voice-waves" class="voice-indicator">
+                    <span></span><span></span><span></span><span></span>
+                </div>
+            </div>
+            <span id="ui-location" class="text-[8px] uppercase tracking-tighter text-gray-400 font-mono">Loading...</span>
+        </div>
+
+        <div id="iris-message">
+            <p class="font-serif italic text-lg md:text-xl text-white/95 leading-tight transition-opacity duration-500">
+                Bienvenido. Por favor selecciona un proyecto para comenzar la experiencia.
+            </p>
+        </div>
+
+        <div id="options-grid" class="flex gap-2 flex-wrap mb-1">
+            <!-- Dinámico -->
+        </div>
+
+        <div class="chat-input-wrapper mt-1">
+            <input type="text" id="user-input" placeholder="Pregunta a Iris o solicita verte ahí..." autocomplete="off">
+            <input type="file" id="avatar-upload" class="hidden" accept="image/*">
+            <button onclick="document.getElementById('avatar-upload').click()" class="mr-2 text-gray-500 hover:text-accent transition-colors">
+                <i class="ph ph-camera text-xl"></i>
+            </button>
+            <button onclick="handleUserInput()" class="send-btn">
+                <i class="ph-bold ph-paper-plane-right"></i>
+            </button>
+        </div>
+    </div>
+
+    <script type="module" src="./js/iris-placement-overlay.js"></script>
+    <script>
+        const apiKey = "";
+        const API_BASE = ((new URLSearchParams(window.location.search)).get('apiBase') || 'https://www.api.thefutureagencyai.com').replace(/\/$/, '');
+        let voiceEnabled = true;
+        let selectedProjKey = null;
+        let isReplying = false;
+
+        const projects = {
+            mirador: {
+                name: "Mirador Suite",
+                scenes: {
+                    start: {
+                        img: "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?q=80&w=2000",
+                        text: "Mirador Suite. Un desarrollo de lujo. ¿Deseas ver el Living o el Master Bedroom?",
+                        options: [{ label: "Living Social", next: "living" }, { label: "Master Bedroom", next: "bedroom" }],
+                        score: "15%", location: "Penthouse / View A"
+                    },
+                    living: {
+                        img: "https://images.unsplash.com/photo-1600607687920-4e2a09c15468?q=80&w=2000",
+                        text: "Diseño abierto y luz natural. ¿Te gustaría ver cómo te verías habitando este espacio?",
+                        options: [{ label: "Sí, quiero verme ahí", next: "upload" }, { label: "Pide una Demo Real", next: "demo" }],
+                        score: "45%", location: "Living Room / Organic"
+                    },
+                    bedroom: {
+                        img: "https://images.unsplash.com/photo-1540518614846-7eded433c457?q=80&w=2000",
+                        text: "Master Bedroom de alto nivel. ¿Hablamos de rentabilidad y precios?",
+                        options: [{ label: "Ver ROI", next: "roi" }, { label: "Pide tu Demo", next: "demo" }],
+                        score: "70%", location: "Bedroom / View B"
+                    }
+                }
+            },
+            ocean: {
+                name: "Ocean Front",
+                scenes: {
+                    start: {
+                        img: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=2000",
+                        text: "Ocean Front. Vistas al Pacífico. ¿Vemos la terraza infinita o la cocina?",
+                        options: [{ label: "Terraza", next: "terrace" }, { label: "Cocina", next: "kitchen" }],
+                        score: "20%", location: "Sea Level / High"
+                    }
+                }
+            },
+            sky: {
+                name: "Sky Tower",
+                scenes: {
+                    start: {
+                        img: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2000",
+                        text: "Sky Tower. Una experiencia vertical premium en entorno urbano. ¿Quieres revisar amenities o propuesta de inversión?",
+                        options: [{ label: "Amenities", next: "amenities" }, { label: "Inversión", next: "investment" }],
+                        score: "24%", location: "Skyline / High Rise"
+                    },
+                    amenities: {
+                        img: "https://images.unsplash.com/photo-1494526585095-c41746248156?q=80&w=2000",
+                        text: "El proyecto prioriza bienestar, vistas y experiencia integral para residentes.",
+                        options: [{ label: "Pide tu Demo", next: "demo" }, { label: "Ver Inversión", next: "investment" }],
+                        score: "58%", location: "Amenities / Lifestyle"
+                    },
+                    investment: {
+                        img: "https://images.unsplash.com/photo-1460317442991-0ec209397118?q=80&w=2000",
+                        text: "Sky Tower combina ubicación estratégica y ticket premium para perfil de inversionista.",
+                        options: [{ label: "Pide tu Demo", next: "demo" }, { label: "Amenities", next: "amenities" }],
+                        score: "74%", location: "Investment / Urban Core"
+                    }
+                }
+            }
+        };
+
+        let activeBg = 1;
+        const bg1 = document.getElementById('bg-1');
+        const bg2 = document.getElementById('bg-2');
+        const messageEl = document.querySelector('#iris-message p');
+        const optionsGrid = document.getElementById('options-grid');
+        const userInput = document.getElementById('user-input');
+        const explorer = document.getElementById('project-explorer');
+        const avatarProj = document.getElementById('user-avatar-projection');
+        const voiceIcon = document.getElementById('voice-icon');
+        const voiceWaves = document.getElementById('voice-waves');
+        const tourModal = document.getElementById('tour-modal');
+        const demoModal = document.getElementById('demo-modal');
+        const entryChoiceModal = document.getElementById('entry-choice-modal');
+        const entryLangEn = document.getElementById('entry-lang-en');
+        const entryLangEs = document.getElementById('entry-lang-es');
+        const entryTitle = document.getElementById('entry-title');
+        const entrySubtitle = document.getElementById('entry-subtitle');
+        const entryDemoBtn = document.getElementById('entry-demo-btn');
+        const entryRenderBtn = document.getElementById('entry-render-btn');
+        let entryModalLang = 'en';
+
+        // LÓGICA DE AUDIO (CONVERSIÓN PCM A WAV PARA GEMINI API)
+        function pcmToWav(pcmBase64, sampleRate = 24000) {
+            const byteCharacters = atob(pcmBase64);
+            const dataSize = byteCharacters.length;
+            const buffer = new ArrayBuffer(44 + dataSize);
+            const view = new DataView(buffer);
+            const writeString = (offset, string) => {
+                for (let i = 0; i < string.length; i++) view.setUint8(offset + i, string.charCodeAt(i));
+            };
+            writeString(0, 'RIFF');
+            view.setUint32(4, 36 + dataSize, true);
+            writeString(8, 'WAVE');
+            writeString(12, 'fmt ');
+            view.setUint32(16, 16, true);
+            view.setUint16(20, 1, true);
+            view.setUint16(22, 1, true);
+            view.setUint32(24, sampleRate, true);
+            view.setUint32(28, sampleRate * 2, true);
+            view.setUint16(32, 2, true);
+            view.setUint16(34, 16, true);
+            writeString(36, 'data');
+            view.setUint32(40, dataSize, true);
+            for (let i = 0; i < dataSize; i++) view.setUint8(44 + i, byteCharacters.charCodeAt(i));
+            return new Blob([buffer], { type: 'audio/wav' });
+        }
+
+        async function speakText(text) {
+            if (!voiceEnabled || !apiKey) return;
+            voiceWaves.classList.add('active');
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: `Di de forma elegante y sofisticada: ${text}` }] }],
+                        generationConfig: {
+                            responseModalities: ["AUDIO"],
+                            speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: "Kore" } } }
+                        },
+                        model: "gemini-2.5-flash-preview-tts"
+                    })
+                });
+                const result = await response.json();
+                const audioPart = result.candidates[0].content.parts[0].inlineData;
+                const audioBlob = pcmToWav(audioPart.data, parseInt(audioPart.mimeType.match(/rate=(\d+)/)?.[1] || 24000));
+                const audioUrl = URL.createObjectURL(audioBlob);
+                const audioPlayer = new Audio(audioUrl);
+                audioPlayer.onended = () => { voiceWaves.classList.remove('active'); URL.revokeObjectURL(audioUrl); };
+                await audioPlayer.play();
+            } catch (error) {
+                console.error("TTS Error:", error);
+                voiceWaves.classList.remove('active');
+            }
+        }
+
+        function toggleDemoModal(show) { demoModal.classList.toggle('visible', show); }
+        function toggleEntryModal(show) { entryChoiceModal.classList.toggle('visible', show); }
+        function applyEntryModalLang(lang) {
+            entryModalLang = lang === 'es' ? 'es' : 'en';
+            const isEs = entryModalLang === 'es';
+            entryTitle.textContent = isEs ? '¿Cómo quieres continuar?' : 'How would you like to continue?';
+            entrySubtitle.textContent = isEs
+                ? 'Elige si quieres una demo guiada con el equipo o generar tus propios renders con IA ahora mismo.'
+                : 'Choose between a guided demo with our team or generating your own AI renders right now.';
+            entryDemoBtn.textContent = isEs ? 'Pide tu Demo' : 'Request Demo';
+            entryRenderBtn.textContent = isEs ? 'Genera tus renders' : 'Generate Renders';
+            entryLangEn.classList.toggle('text-white', !isEs);
+            entryLangEn.classList.toggle('text-white/40', isEs);
+            entryLangEs.classList.toggle('text-white', isEs);
+            entryLangEs.classList.toggle('text-white/40', !isEs);
+        }
+        function chooseEntryPath(path) {
+            toggleEntryModal(false);
+            if (path === 'demo') {
+                toggleDemoModal(true);
+                return;
+            }
+            if (path === 'render') {
+                window.location.href = 'https://impactrenderstudios.com/simulador-ia-render-con-ia.html';
+            }
+        }
+
+        function handleDemoSubmit(e) {
+            e.preventDefault();
+            const name = document.getElementById('demo-name').value;
+            alert(`Gracias ${name}. Hemos recibido tu solicitud. Te contactaremos en breve.`);
+            toggleDemoModal(false);
+            e.target.reset();
+        }
+
+        function openWspDemo() {
+            const project = projects[selectedProjKey]?.name || "vuestro proyecto";
+            const text = encodeURIComponent(`Hola Impact Studios, me gustaría solicitar una demo personalizada para el proyecto ${project}.`);
+            window.open(`https://wa.me/56945254948?text=${text}`, '_blank');
+        }
+
+        async function notifyIrisUsage(eventType, extra = {}) {
+            try {
+                await fetch(`${API_BASE}/api/public/simulator/usage-notify`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        eventType,
+                        source: 'iris-chat-ai',
+                        email: null,
+                        ...extra
+                    })
+                });
+            } catch (_error) {
+                // no-op
+            }
+        }
+
+        async function fetchProjectReply(projectId, message) {
+            const params = new URLSearchParams({
+                projectId: String(projectId || '').trim().toLowerCase(),
+                message: String(message || '').trim()
+            });
+            const response = await fetch(`${API_BASE}/api/public/iris-chat/reply?${params.toString()}`);
+            const payload = await response.json().catch(() => null);
+            if (!response.ok || !payload?.success) {
+                const apiMessage = payload?.error?.message || `HTTP ${response.status}`;
+                throw new Error(apiMessage);
+            }
+            return payload.data || {};
+        }
+
+        function toggleExplorer(open) { explorer.classList.toggle('open', open); }
+
+        function selectProject(id) {
+            if (!projects[id]) {
+                return;
+            }
+            selectedProjKey = id;
+            document.getElementById('current-project-name').textContent = projects[id].name;
+            resetAvatar();
+            changeEnvironment('start');
+            toggleExplorer(false);
+        }
+
+        function startGuidedTour() {
+            tourModal.classList.remove('visible');
+            document.getElementById('current-project-name').textContent = projects[selectedProjKey].name;
+            resetAvatar();
+            changeEnvironment('start');
+        }
+
+        function changeEnvironment(key) {
+            const project = projects[selectedProjKey];
+            const scene = project.scenes[key] || project.scenes['start'];
+            
+            if (activeBg === 1) {
+                bg2.style.backgroundImage = `url('${scene.img}')`;
+                bg2.style.opacity = '1'; bg1.style.opacity = '0';
+                activeBg = 2;
+            } else {
+                bg1.style.backgroundImage = `url('${scene.img}')`;
+                bg1.style.opacity = '1'; bg2.style.opacity = '0';
+                activeBg = 1;
+            }
+
+            document.getElementById('ui-score').textContent = scene.score;
+            document.getElementById('ui-location').textContent = scene.location;
+
+            messageEl.style.opacity = '0';
+            setTimeout(() => {
+                messageEl.textContent = scene.text;
+                messageEl.style.opacity = '1';
+                speakText(scene.text);
+            }, 400);
+
+            optionsGrid.innerHTML = '';
+            scene.options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'option-pill animate-fade-in';
+                btn.textContent = opt.label;
+                btn.onclick = () => {
+                    if(opt.next === 'upload') document.getElementById('avatar-upload').click();
+                    else if(opt.next === 'demo') toggleDemoModal(true);
+                    else changeEnvironment(opt.next);
+                };
+                optionsGrid.appendChild(btn);
+            });
+        }
+
+        async function handleUserInput() {
+            const text = userInput.value.trim();
+            if (!text || isReplying) return;
+            if (!selectedProjKey || !projects[selectedProjKey]) {
+                selectedProjKey = 'ocean';
+            }
+
+            userInput.value = '';
+            isReplying = true;
+            optionsGrid.innerHTML = '';
+            messageEl.style.opacity = '0.5';
+
+            try {
+                await notifyIrisUsage('iris_chat_message', {
+                    mode: 'chat',
+                    status: 'requested'
+                });
+                const data = await fetchProjectReply(selectedProjKey, text);
+                const reply = String(data?.reply || '').trim() || "Puedo ayudarte con este proyecto. Si quieres, te explico su propuesta de valor y siguiente paso comercial.";
+                messageEl.textContent = reply;
+                messageEl.style.opacity = '1';
+                speakText(reply);
+                await notifyIrisUsage('iris_chat_message', {
+                    mode: 'chat',
+                    status: 'success'
+                });
+            } catch (error) {
+                const fallbackReply = "Ahora mismo no puedo responder con el motor de proyecto. Si quieres, puedo derivarte a una demo comercial.";
+                messageEl.textContent = fallbackReply;
+                messageEl.style.opacity = '1';
+                console.warn('[IRIS Chat UI] backend reply failed', { message: error?.message || 'unknown_error' });
+                await notifyIrisUsage('iris_chat_error', {
+                    mode: 'chat',
+                    status: 'error'
+                });
+            } finally {
+                isReplying = false;
+            }
+        }
+
+        document.getElementById('toggle-voice').onclick = () => {
+            voiceEnabled = !voiceEnabled;
+            voiceIcon.className = voiceEnabled ? 'ph ph-speaker-high text-accent text-xl' : 'ph ph-speaker-x text-gray-500 text-xl';
+        };
+
+        document.getElementById('avatar-upload').onchange = function(e) {
+            if (this.files && this.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    messageEl.textContent = "Integrando tu imagen mediante proyección neural...";
+                    speakText(messageEl.textContent);
+                    setTimeout(() => {
+                        avatarProj.src = ev.target.result;
+                        avatarProj.style.opacity = '1';
+                        messageEl.textContent = "Te ves increíble habitando el Penthouse. ¿Solicitamos una demo real ahora?";
+                        speakText(messageEl.textContent);
+                        document.getElementById('ui-score').textContent = "98%";
+                        optionsGrid.innerHTML = '<button onclick="toggleDemoModal(true)" class="option-pill bg-accent text-black border-none font-bold">Pide tu Demo</button>';
+                    }, 3000);
+                };
+                reader.readAsDataURL(this.files[0]);
+            }
+        };
+
+        function resetAvatar() { avatarProj.style.opacity = '0'; setTimeout(() => avatarProj.src = "", 1000); }
+
+        userInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleUserInput(); });
+
+        window.addEventListener('mousemove', (e) => {
+            const x = (e.clientX / window.innerWidth - 0.5) * 15;
+            const y = (e.clientY / window.innerHeight - 0.5) * 15;
+            bg1.style.transform = `scale(1.1) translate(${x}px, ${y}px)`;
+            bg2.style.transform = `scale(1.1) translate(${x}px, ${y}px)`;
+        });
+
+        // Iniciar directo en chat con proyecto por defecto (sin cortina inicial).
+        selectedProjKey = 'ocean';
+        document.getElementById('current-project-name').textContent = projects[selectedProjKey].name;
+        resetAvatar();
+        changeEnvironment('start');
+        applyEntryModalLang('en');
+        entryLangEn.onclick = () => applyEntryModalLang('en');
+        entryLangEs.onclick = () => applyEntryModalLang('es');
+        toggleEntryModal(true);
+    </script>
+</body>
+</html>
