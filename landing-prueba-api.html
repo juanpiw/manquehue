@@ -757,6 +757,11 @@
             const stamp = new Date().toLocaleTimeString();
             const text = typeof payload === 'string' ? payload : JSON.stringify(payload, null, 2);
             apiLog.textContent = `[${stamp}] ${title}\n${text}\n\n${apiLog.textContent}`;
+            try {
+                console.log(`[LandingDebug] ${title}`, payload);
+            } catch (_error) {
+                // no-op
+            }
         }
 
         function resolveDefaultApiBaseUrl() {
@@ -767,13 +772,24 @@
             const params = new URLSearchParams(window.location.search || '');
             const hash = new URLSearchParams((window.location.hash || '').replace(/^#/, ''));
             const projectId =
-                (params.get('projectId') || params.get('id') || params.get('project') || '').trim() ||
-                (hash.get('projectId') || hash.get('id') || hash.get('project') || '').trim();
+                (params.get('projectId') || params.get('projectid') || params.get('id') || params.get('project') || '').trim() ||
+                (hash.get('projectId') || hash.get('projectid') || hash.get('id') || hash.get('project') || '').trim();
 
-            return {
+            const runtimeConfig = {
                 apiBase: (params.get('apiBase') || '').trim(),
                 projectId
             };
+
+            appendLog('RUNTIME CONFIG', {
+                href: window.location.href,
+                protocol: window.location.protocol,
+                search: window.location.search,
+                hash: window.location.hash,
+                resolvedProjectId: runtimeConfig.projectId || null,
+                resolvedApiBase: runtimeConfig.apiBase || resolveDefaultApiBaseUrl()
+            });
+
+            return runtimeConfig;
         }
 
         function getApiBaseUrl() {
@@ -783,6 +799,10 @@
         function getProjectId() {
             const inputId = Number(apiProjectIdInput.value);
             if (Number.isInteger(inputId) && inputId > 0) {
+                appendLog('PROJECT ID SOURCE', {
+                    source: 'input',
+                    value: inputId
+                });
                 return inputId;
             }
 
@@ -791,12 +811,20 @@
                 const jsonId = Number(parsed?.projectId || parsed?.id || parsed?.project_id);
                 if (Number.isInteger(jsonId) && jsonId > 0) {
                     apiProjectIdInput.value = String(jsonId);
+                    appendLog('PROJECT ID SOURCE', {
+                        source: 'json',
+                        value: jsonId
+                    });
                     return jsonId;
                 }
             } catch (_error) {
                 // ignore malformed json
             }
 
+            appendLog('PROJECT ID ERROR', {
+                inputValue: apiProjectIdInput.value || '',
+                jsonPreview: (jsonArea.value || '').slice(0, 300)
+            });
             throw new Error('Project ID invalido (usa input o JSON: projectId/id/project_id)');
         }
 
@@ -904,6 +932,111 @@
             apiProjectState.textContent = `Project ID: ${currentId}`;
         }
 
+        function buildLandingRenderPreview(rawData, source = 'unknown') {
+            const data = normalizeLandingData(rawData || {});
+            return {
+                source,
+                projectId: data.projectId || null,
+                hero: {
+                    headline: data.headline,
+                    subHeadline: data.subHeadline,
+                    ctaLabel: data.ctaLabel,
+                    tipo_inmueble: data.tipo_inmueble,
+                    estado_entrega: data.estado_entrega || 'Estado pendiente',
+                    orientacion_principal: data.orientacion_principal || 'Orientacion pendiente'
+                },
+                location: {
+                    direccion_pin: data.direccion_pin || 'Ubicacion pendiente',
+                    punto_cercano_1: data.punto_cercano_1 || '-',
+                    punto_cercano_2: data.punto_cercano_2 || '-',
+                    tiempo_visita_min: data.tiempo_visita_min || 0,
+                    tiempo_recorrido_min: data.tiempo_recorrido_min || 0,
+                    tiempo_post_venta: data.tiempo_post_venta || 0
+                },
+                commercial: {
+                    narrativa: data.narrativa || '',
+                    descripcion_comercial: data.descripcion_comercial || '',
+                    unidades_totales: data.unidades_totales || 0,
+                    unidades_disponibles: data.unidades_disponibles || 0,
+                    ratio_estacionamientos: data.ratio_estacionamientos
+                },
+                media: {
+                    portada_url: data.multimedia?.portada_url || '',
+                    gallery_count: Array.isArray(data.multimedia?.gallery) ? data.multimedia.gallery.length : 0,
+                    audio_url: data.multimedia?.audio_url || ''
+                },
+                collections: {
+                    amenities_count: Array.isArray(data.amenities) ? data.amenities.length : 0,
+                    unidades_list_count: Array.isArray(data.unidades_list) ? data.unidades_list.length : 0,
+                    sucursales_count: Array.isArray(data.sucursales) ? data.sucursales.length : 0
+                },
+                sample_units: Array.isArray(data.unidades_list) ? data.unidades_list.slice(0, 3) : [],
+                sample_amenities: Array.isArray(data.amenities) ? data.amenities.slice(0, 5) : []
+            };
+        }
+
+        function buildStep2Diagnostics(rawData, source = 'unknown') {
+            const normalized = normalizeLandingData(rawData || {});
+            const rawTypologies = toArray(rawData?.tipologias_asociadas);
+            const normalizedTypologies = toArray(normalized.tipologias_asociadas);
+            const normalizedUnits = toArray(normalized.unidades_list);
+            const normalizedAmenities = toArray(normalized.amenities);
+            const gallery = toArray(normalized.multimedia?.gallery);
+
+            return {
+                source,
+                projectId: normalized.projectId || rawData?.projectId || rawData?.id || rawData?.project_id || null,
+                config: {
+                    unidades_totales: normalized.unidades_totales,
+                    unidades_disponibles: normalized.unidades_disponibles,
+                    entrega_estimada: rawData?.entrega_estimada || rawData?.entrega_estimada_texto || '',
+                    etapa_texto: rawData?.etapa_texto || '',
+                    ratio_estacionamientos: normalized.ratio_estacionamientos,
+                    pet_friendly: normalized.pet_friendly,
+                    bodega_incluida: normalized.bodega_incluida
+                },
+                typologies: {
+                    raw_count: rawTypologies.length,
+                    normalized_count: normalizedTypologies.length,
+                    active_cards_count: normalizedUnits.length,
+                    sample: normalizedTypologies.slice(0, 4).map((item) => ({
+                        id: item.id || null,
+                        label: item.label || '',
+                        asociacion: item.asociacion || '',
+                        has_media: Boolean(item.media?.url || item.plan_url),
+                        has_blueprint: Boolean(item.blueprint?.url || item.blueprint_url),
+                        models_count: Array.isArray(item.models) ? item.models.length : 0
+                    }))
+                },
+                amenities: {
+                    count: normalizedAmenities.length,
+                    sample: normalizedAmenities.slice(0, 6).map((item) => item.nombre || item.label || '')
+                },
+                media: {
+                    has_cover: Boolean(normalized.multimedia?.portada_url),
+                    gallery_count: gallery.length,
+                    image_count: gallery.filter((item) => item.type === 'image').length,
+                    video_count: gallery.filter((item) => item.type === 'video').length,
+                    has_masterplan: Boolean(normalized.documentos?.masterplan_url),
+                    has_brochure: Boolean(normalized.documentos?.brochure_url)
+                },
+                unit_list_resolution: {
+                    source:
+                        toArray(rawData?.unidades_list).length > 0
+                            ? 'raw_unidades_list'
+                            : normalizedTypologies.length > 0
+                                ? 'tipologias_asociadas_fallback'
+                                : 'empty',
+                    empty_reason:
+                        normalizedUnits.length > 0
+                            ? ''
+                            : normalizedTypologies.length === 0
+                                ? 'No llegaron tipologias activas ni unidades_list.'
+                                : 'Llegaron tipologias, pero faltan datos para construir cards utiles.'
+                }
+            };
+        }
+
         async function apiRequest(method, path, body = null, isFormData = false) {
             const url = `${getApiBaseUrl()}${path}`;
             const headers = isFormData ? {} : { 'Content-Type': 'application/json' };
@@ -913,7 +1046,25 @@
                 options.body = isFormData ? body : JSON.stringify(body);
             }
 
-            const res = await fetch(url, options);
+            appendLog('API REQUEST START', {
+                method,
+                url,
+                hasBody: body !== null,
+                isFormData
+            });
+
+            let res;
+            try {
+                res = await fetch(url, options);
+            } catch (networkError) {
+                appendLog('API REQUEST NETWORK ERROR', {
+                    method,
+                    url,
+                    message: networkError?.message || String(networkError)
+                });
+                throw networkError;
+            }
+
             const text = await res.text();
             let parsed = text;
 
@@ -924,9 +1075,29 @@
             }
 
             appendLog(`${method} ${path} -> ${res.status}`, parsed);
+            appendLog('API RESPONSE META', {
+                method,
+                url,
+                status: res.status,
+                ok: res.ok,
+                contentType: res.headers.get('content-type') || '',
+                bodyType: typeof parsed,
+                bodyPreview: typeof parsed === 'string' ? parsed.slice(0, 500) : null
+            });
 
             if (!res.ok) {
-                throw new Error(`HTTP ${res.status}`);
+                const serverMessage =
+                    parsed?.error?.message ||
+                    parsed?.message ||
+                    (typeof parsed === 'string' ? parsed.slice(0, 300) : '') ||
+                    `HTTP ${res.status}`;
+                appendLog('API REQUEST FAILED', {
+                    method,
+                    url,
+                    status: res.status,
+                    serverMessage
+                });
+                throw new Error(serverMessage);
             }
 
             return parsed;
@@ -1139,6 +1310,8 @@
                     'Proyecto en desarrollo inteligente.',
                 ctaLabel: rawData?.ctaLabel || rawData?.cta || rawData?.cta_principal || 'Solicitar visita guiada',
                 narrativa: rawData?.narrativa || rawData?.narrativa_comercial || rawData?.descripcion_comercial || '',
+                diferenciadores: toArray(rawData?.diferenciadores).map((item) => String(item || '').trim()).filter(Boolean),
+                video_tour_url: rawData?.video_tour_url || '',
                 descripcion_comercial: rawData?.descripcion_comercial || rawData?.narrativa || rawData?.nombre || '',
                 direccion_pin: rawData?.direccion_pin || '',
                 punto_cercano_1: rawData?.punto_cercano_1 || '',
@@ -1307,12 +1480,25 @@
             if (metaEl) metaEl.textContent = unit?.meta || unit?.label || data?.nombre || '-';
 
             if (blueprintUrl) {
+                appendLog('ACTIVE BLUEPRINT MEDIA', {
+                    unitId: unit?.id || null,
+                    unitLabel: unit?.label || '',
+                    blueprintUrl,
+                    using: 'image'
+                });
                 blueprintImage.src = blueprintUrl;
                 blueprintImage.classList.remove('hidden');
                 blueprintSvg.classList.add('hidden');
                 return;
             }
 
+            appendLog('ACTIVE BLUEPRINT MEDIA', {
+                unitId: unit?.id || null,
+                unitLabel: unit?.label || '',
+                blueprintUrl: '',
+                using: 'svg_fallback',
+                blueprintPath: blueprintValue
+            });
             blueprintImage.classList.add('hidden');
             blueprintImage.removeAttribute('src');
             blueprintSvg.classList.remove('hidden');
@@ -1329,20 +1515,43 @@
 
         function updateActiveUnit(unit, data = currentLandingData) {
             const planUrl = unit?.plan_url || '';
+            const unitMediaType = unit?.plan_type || 'image';
+            const galleryImageUrl = data?.multimedia?.gallery?.find((item) => item.type === 'image')?.url || '';
+            const galleryVideoUrl = data?.multimedia?.gallery?.find((item) => item.type === 'video')?.url || '';
             const visualUrl =
-                data?.multimedia?.gallery?.find((item) => item.type === 'image')?.url ||
-                data?.multimedia?.portada_url ||
                 planUrl ||
+                galleryImageUrl ||
+                data?.multimedia?.portada_url ||
                 '';
             const visualType =
-                data?.multimedia?.gallery?.find((item) => item.type === 'video')?.type ||
-                'image';
-            const visualVideoUrl = data?.multimedia?.gallery?.find((item) => item.type === 'video')?.url || '';
-            const homeUrl = data?.multimedia?.portada_url || data?.multimedia?.gallery?.find((item) => item.type === 'image')?.url || visualUrl;
+                planUrl
+                    ? unitMediaType
+                    : (galleryVideoUrl ? 'video' : 'image');
+            const visualVideoUrl =
+                planUrl && unitMediaType === 'video'
+                    ? planUrl
+                    : galleryVideoUrl;
+            const homeUrl = data?.multimedia?.portada_url || galleryImageUrl || visualUrl;
             const featureUrl =
+                planUrl ||
                 data?.multimedia?.gallery?.find((item) => item.type === 'image' && item.url !== visualUrl)?.url ||
-                data?.multimedia?.gallery?.find((item) => item.type === 'image')?.url ||
+                galleryImageUrl ||
                 homeUrl;
+
+            appendLog('ACTIVE UNIT MEDIA', {
+                unitId: unit?.id || null,
+                unitLabel: unit?.label || '',
+                unitMeta: unit?.meta || '',
+                planUrl,
+                blueprintUrl: unit?.blueprint_url || '',
+                unitMediaType,
+                resolvedVisualType: visualType,
+                resolvedVisualUrl: visualType === 'video' ? visualVideoUrl : visualUrl,
+                homeUrl,
+                featureUrl,
+                galleryImageUrl,
+                galleryVideoUrl
+            });
 
             setText('active-unit-label', unit?.label || data?.nombre || 'Unidad');
             setText('active-unit-size', unit?.detail || 'Unidad disponible');
@@ -1394,6 +1603,16 @@
         function renderAmenities(data) {
             const amenityList = document.getElementById('amenities-list-vertical');
             if (!amenityList) return;
+            const differentiators = Array.isArray(data.diferenciadores) ? data.diferenciadores : [];
+            if (differentiators.length) {
+                amenityList.innerHTML = differentiators.map((text, index) => `
+                    <div class="amenity-row">
+                        <span>${String(index + 1).padStart(2, '0')}</span>
+                        <span class="text-2xl font-bold uppercase tracking-tighter">${escapeHtml(text)}</span>
+                    </div>
+                `).join('');
+                return;
+            }
 
             if (!data.amenities.length) {
                 amenityList.innerHTML = '<div class="empty-state rounded-[28px] p-6 text-sm text-white/45">Sin amenities destacados aun.</div>';
@@ -1464,6 +1683,8 @@
             const data = normalizeLandingData(rawData);
             currentLandingData = data;
             document.body.style.opacity = '0.7';
+            appendLog('RENDER PREVIEW', buildLandingRenderPreview(data, 'renderLanding'));
+            appendLog('STEP 2 DIAGNOSTICS', buildStep2Diagnostics(rawData, 'renderLanding'));
 
             setTimeout(() => {
                 setHtml('view-headline', formatHeadline(data.headline));
@@ -1509,6 +1730,17 @@
                 const amenityVisual = document.getElementById('amenity-visual');
                 if (amenityVisual && visualUrl) {
                     amenityVisual.src = visualUrl;
+                }
+
+                const tourVisual = document.getElementById('tour-visual');
+                if (tourVisual) {
+                    const tourPosterUrl = data.multimedia.gallery[0]?.url || data.multimedia.portada_url || tourVisual.src;
+                    if (tourPosterUrl) {
+                        tourVisual.src = tourPosterUrl;
+                    }
+                    const tourUrl = data.video_tour_url || '';
+                    tourVisual.style.cursor = tourUrl ? 'pointer' : 'default';
+                    tourVisual.onclick = tourUrl ? () => window.open(tourUrl, '_blank', 'noopener,noreferrer') : null;
                 }
 
                 const petTag = document.getElementById('tag-pet');
@@ -1564,6 +1796,13 @@
                 let source = 'landing';
                 let response = null;
 
+                appendLog('FETCH PROJECT START', {
+                    projectId,
+                    apiBase: getApiBaseUrl(),
+                    landingUrl,
+                    step1Url: `${getApiBaseUrl()}${step1Path}`
+                });
+
                 updateRuntimeStatus(String(projectId), 'PUBLICO / LANDING', landingUrl);
                 appendLog('PUBLIC API CALL', { method: 'GET', endpoint: landingUrl, projectId });
 
@@ -1581,14 +1820,84 @@
                 }
 
                 const payload = normalizeLandingData(response?.data || {});
+                appendLog('FETCH PROJECT NORMALIZED', {
+                    source,
+                    projectId,
+                    payloadProjectId: payload?.projectId || null,
+                    nombre: payload?.nombre || '',
+                    headline: payload?.headline || '',
+                    galleryCount: Array.isArray(payload?.multimedia?.gallery) ? payload.multimedia.gallery.length : 0,
+                    hasCover: Boolean(payload?.multimedia?.portada_url),
+                    hasUnits: Array.isArray(payload?.unidades_list) ? payload.unidades_list.length : 0,
+                    hasAmenities: Array.isArray(payload?.amenities) ? payload.amenities.length : 0
+                });
+                appendLog('TYPOLOGIES MEDIA MAP', {
+                    raw: toArray(response?.data?.tipologias_asociadas).map((item) => ({
+                        id: item?.id || null,
+                        label: item?.label || item?.nombre || '',
+                        asociacion: item?.asociacion || '',
+                        plan_url: item?.plan_url || item?.media?.url || '',
+                        blueprint_url: item?.blueprint_url || item?.blueprint?.url || '',
+                        media: item?.media || null,
+                        blueprint: item?.blueprint || null
+                    })),
+                    normalized: toArray(payload?.tipologias_asociadas).map((item) => ({
+                        id: item?.id || null,
+                        label: item?.label || '',
+                        asociacion: item?.asociacion || '',
+                        plan_url: item?.plan_url || '',
+                        blueprint_url: item?.blueprint_url || '',
+                        media: item?.media || null,
+                        blueprint: item?.blueprint || null
+                    }))
+                });
+                appendLog('FETCH PROJECT RENDER PREVIEW', buildLandingRenderPreview(payload, `api:${source}`));
+                appendLog('FETCH PROJECT STEP 2 DIAGNOSTICS', buildStep2Diagnostics(response?.data || payload, `api:${source}`));
                 rememberProjectId(projectId);
                 await renderProjectIdsDropdown();
                 jsonArea.value = JSON.stringify(payload, null, 2);
                 renderLanding(payload);
                 showNotification(`Proyecto cargado (${source})`);
             } catch (error) {
-                appendLog('ERROR fetchProjectById', error?.message || String(error));
-                alert(`Error obteniendo proyecto: ${error.message}`);
+                appendLog('EXPECTED LANDING CONTRACT', {
+                    requiredTopLevelKeys: [
+                        'projectId|id|project_id',
+                        'nombre',
+                        'headline',
+                        'subHeadline|subheadline|subtitle',
+                        'ctaLabel|cta|cta_principal',
+                        'descripcion_comercial',
+                        'narrativa',
+                        'direccion_pin',
+                        'punto_cercano_1',
+                        'punto_cercano_2',
+                        'tiempo_visita_min',
+                        'tiempo_recorrido_min',
+                        'tiempo_post_venta|tiempo_postventa_min',
+                        'tipo_inmueble',
+                        'unidades_totales',
+                        'unidades_disponibles',
+                        'ratio_estacionamientos',
+                        'orientacion_principal',
+                        'estado_entrega',
+                        'pet_friendly',
+                        'bodega_incluida',
+                        'amenities',
+                        'unidades_list|tipologias_asociadas',
+                        'sucursales',
+                        'multimedia.portada_url',
+                        'multimedia.gallery[]',
+                        'documentos.brochure_url|masterplan_url'
+                    ]
+                });
+                appendLog('FALLBACK PREVIEW initialData', buildLandingRenderPreview(initialData, 'initialData'));
+                appendLog('ERROR fetchProjectById', {
+                    message: error?.message || String(error),
+                    href: window.location.href,
+                    apiBase: getApiBaseUrl(),
+                    projectIdInput: apiProjectIdInput.value || ''
+                });
+                alert(`Error obteniendo proyecto: ${error.message}. Revisa el panel debug y la consola.`);
             }
         }
 
@@ -1613,10 +1922,20 @@
         window.onload = () => {
             const runtime = getRuntimeConfigFromUrl();
             apiBaseInput.value = runtime.apiBase || resolveDefaultApiBaseUrl();
+            appendLog('WINDOW ONLOAD', {
+                runtimeProjectId: runtime.projectId || null,
+                runtimeApiBase: apiBaseInput.value,
+                origin: window.location.origin || 'file://',
+                protocol: window.location.protocol
+            });
 
             if (runtime.projectId) {
                 apiProjectIdInput.value = runtime.projectId;
                 rememberProjectId(Number(runtime.projectId));
+                appendLog('AUTOLOAD PROJECT ID', {
+                    source: 'url',
+                    value: runtime.projectId
+                });
             }
 
             apiBaseInput.addEventListener('input', () => updateRuntimeStatus());
@@ -1648,6 +1967,9 @@
             }
 
             if (apiProjectIdInput.value) {
+                appendLog('AUTO FETCH TRIGGER', {
+                    projectId: apiProjectIdInput.value
+                });
                 fetchProjectById();
             } else {
                 appendLog('INFO projectId requerido', 'Define ?projectId=123 en la URL o escribe Project ID en el panel para cargar datos publicos.');

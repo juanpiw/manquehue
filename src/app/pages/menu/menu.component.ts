@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, NgZone } from '@angular/core';
 import { RouterOutlet, Router } from '@angular/router';
 import { MenuStateService } from '../../servicios/menuStateService';
 import { AuthService } from '../../servicios/authService.service';
@@ -91,7 +91,8 @@ export class menuComponent implements OnInit, OnDestroy {
   constructor(
     private menuStateService: MenuStateService,
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private ngZone: NgZone
   ) {
     this.subscription = new Subscription();
     this.subscription.add(
@@ -142,6 +143,8 @@ export class menuComponent implements OnInit, OnDestroy {
   logout() {
     this.authService.logout();
     this.menuStateService.changeComponent('resumen');
-    this.router.navigate(['/login']);
+    this.ngZone.run(() => {
+      this.router.navigate(['/login']);
+    });
   }
 }

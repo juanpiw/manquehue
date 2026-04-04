@@ -235,6 +235,12 @@ export class NuevoProyectoComponent implements OnDestroy {
   aiContextPrompt = '';
   private coverImageFile: File | null = null;
   private ambientAudioFile: File | null = null;
+  private step3AssetFiles: Record<MediaAssetKey, File | null> = {
+    masterPlan: null,
+    brochure: null,
+    legalDocs: null
+  };
+  private pendingGalleryFiles: File[] = [];
   coverImagePreviewUrl: string | null = null;
 
   constructor(private http: HttpClient) {
@@ -287,22 +293,33 @@ export class NuevoProyectoComponent implements OnDestroy {
   handleAssetUpload(event: Event, key: MediaAssetKey) {
     const input = event.target as HTMLInputElement;
     if (input?.files?.length) {
-      this.mediaAssets[key] = Array.from(input.files)
-        .map(file => file.name)
-        .join(', ');
+      const selectedFile = input.files[0];
+      this.mediaAssets[key] = selectedFile.name;
+      this.step3AssetFiles[key] = selectedFile;
+      this.saveFeedback = `${selectedFile.name} preparado. Guarda el paso 3 para subirlo.`;
+      input.value = '';
     }
   }
 
   handleGalleryUpload(event: Event) {
     const input = event.target as HTMLInputElement;
     if (input?.files?.length) {
-      const names = Array.from(input.files).map(file => file.name);
+      const files = Array.from(input.files);
+      const names = files.map(file => file.name);
       this.mediaGallery = [...this.mediaGallery, ...names];
+      this.pendingGalleryFiles = [...this.pendingGalleryFiles, ...files];
+      this.saveFeedback = `${files.length} archivo(s) preparados para la galería.`;
+      input.value = '';
     }
   }
 
   removeGalleryAsset(index: number) {
+    const nonPendingCount = Math.max(this.mediaGallery.length - this.pendingGalleryFiles.length, 0);
     this.mediaGallery = this.mediaGallery.filter((_, i) => i !== index);
+    const pendingIndex = index - nonPendingCount;
+    if (pendingIndex >= 0 && pendingIndex < this.pendingGalleryFiles.length) {
+      this.pendingGalleryFiles = this.pendingGalleryFiles.filter((_, i) => i !== pendingIndex);
+    }
   }
 
   handleTypologyMediaChange(event: Event, typology: TypologyOption) {
@@ -722,6 +739,8 @@ export class NuevoProyectoComponent implements OnDestroy {
       this.project.mapAddress = String(data['direccion_pin'] || '');
       this.currentStep = Number(data['current_step'] || 1) || 1;
       await this.loadStep2Resources(projectId, token);
+      await this.loadStep3Resources(projectId, token);
+      await this.loadStep4Resources(projectId, token);
       this.saveFeedback = `Proyecto #${projectId} cargado correctamente.`;
       console.log('[NuevoProyectoUI] saved project selected', { projectId, data });
       this.closeSavedProjectsModal();
@@ -795,6 +814,14 @@ export class NuevoProyectoComponent implements OnDestroy {
 
       if (this.currentStep === 2) {
         await this.saveStep2Resources(projectId, token);
+      }
+
+      if (this.currentStep === 3) {
+        await this.saveStep3Resources(projectId, token);
+      }
+
+      if (this.currentStep === 4) {
+        await this.saveStep4Resources(projectId, token);
       }
 
       const stepPayload = this.buildCurrentStepPayload();
@@ -1006,6 +1033,153 @@ export class NuevoProyectoComponent implements OnDestroy {
     );
 
     await this.syncTypologyMedia(projectId, token);
+  }
+
+  private async saveStep3Resources(projectId: number, token: string): Promise<void> {
+    const documentEndpoints: Array<{ key: MediaAssetKey; endpoint: 'masterplan' | 'brochure' | 'legal' }> = [
+      { key: 'masterPlan', endpoint: 'masterplan' },
+      { key: 'brochure', endpoint: 'brochure' },
+      { key: 'legalDocs', endpoint: 'legal' }
+    ];
+
+    for (const entry of documentEndpoints) {
+      const file = this.step3AssetFiles[entry.key];
+      if (!file) {
+        continue;
+      }
+      const formData = new FormData();
+      formData.append('file', file);
+      await firstValueFrom(
+        this.http.post(
+          `${this.getApiBaseUrl()}/api/dash-manquehue/projects/${projectId}/files/${entry.endpoint}`,
+          formData,
+          { headers: new HttpHeaders({ Authorization: `Bearer ${token}` }) }
+        )
+      );
+      this.step3AssetFiles[entry.key] = null;
+    }
+
+    if (this.pendingGalleryFiles.length > 0) {
+      const galleryData = new FormData();
+      this.pendingGalleryFiles.forEach((file) => galleryData.append('files', file));
+      await firstValueFrom(
+        this.http.post(
+          `${this.getApiBaseUrl()}/api/dash-manquehue/projects/${projectId}/files/gallery`,
+          galleryData,
+          { headers: new HttpHeaders({ Authorization: `Bearer ${token}` }) }
+        )
+      );
+      this.pendingGalleryFiles = [];
+    }
+
+    await this.loadStep3Resources(projectId, token);
+  }
+
+  private async loadStep3Resources(projectId: number, token: string): Promise<void> {
+    try {
+      const [documentsResponse, galleryResponse] = await Promise.all([
+        firstValueFrom(
+          this.http.get<{ data?: Array<Record<string, unknown>> }>(
+            `${this.getApiBaseUrl()}/api/dash-manquehue/projects/${projectId}/files/documents`,
+            { headers: this.buildJsonHeaders(token) }
+          )
+        ),
+        firstValueFrom(
+          this.http.get<{ data?: Array<Record<string, unknown>> }>(
+            `${this.getApiBaseUrl()}/api/dash-manquehue/projects/${projectId}/files/gallery`,
+            { headers: this.buildJsonHeaders(token) }
+          )
+        )
+      ]);
+
+      const documents = Array.isArray(documentsResponse?.data) ? documentsResponse.data : [];
+      const gallery = Array.isArray(galleryResponse?.data) ? galleryResponse.data : [];
+      const pickName = (category: string) =>
+        String(
+          documents.find((row) => String(row['file_category'] || '') === category)?.['original_name'] || ''
+        );
+
+      this.mediaAssets.masterPlan = pickName('masterplan');
+      this.mediaAssets.brochure = pickName('brochure');
+      this.mediaAssets.legalDocs = pickName('legal_document');
+      this.mediaGallery = gallery.map((row) => String(row['original_name'] || '')).filter(Boolean);
+      this.pendingGalleryFiles = [];
+      this.step3AssetFiles.masterPlan = null;
+      this.step3AssetFiles.brochure = null;
+      this.step3AssetFiles.legalDocs = null;
+    } catch (error) {
+      console.error('[NuevoProyectoUI] loadStep3Resources error', error);
+    }
+  }
+
+  private async saveStep4Resources(projectId: number, token: string): Promise<void> {
+    await firstValueFrom(
+      this.http.patch(
+        `${this.getApiBaseUrl()}/api/dash-manquehue/projects/${projectId}/content`,
+        {
+          headlinePrincipal: this.contentPlan.heroHeadline?.trim() || null,
+          subtituloInspiracional: this.contentPlan.heroTagline?.trim() || null,
+          narrativaComercial: this.contentPlan.narrative?.trim() || null,
+          ctaPrincipal: this.contentPlan.ctaLabel?.trim() || null,
+          videoTourUrl: this.contentPlan.videoUrl?.trim() || null
+        },
+        { headers: this.buildJsonHeaders(token) }
+      )
+    );
+
+    await firstValueFrom(
+      this.http.put(
+        `${this.getApiBaseUrl()}/api/dash-manquehue/projects/${projectId}/differentiators`,
+        {
+          items: (this.contentPlan.sellingPoints || [])
+            .map((item) => String(item || '').trim())
+            .filter(Boolean)
+            .map((text) => ({ text }))
+        },
+        { headers: this.buildJsonHeaders(token) }
+      )
+    );
+  }
+
+  private async loadStep4Resources(projectId: number, token: string): Promise<void> {
+    try {
+      const [contentResponse, differentiatorsResponse] = await Promise.all([
+        firstValueFrom(
+          this.http.get<{ data?: Record<string, unknown> | null }>(
+            `${this.getApiBaseUrl()}/api/dash-manquehue/projects/${projectId}/content`,
+            { headers: this.buildJsonHeaders(token) }
+          )
+        ),
+        firstValueFrom(
+          this.http.get<{ data?: Array<Record<string, unknown>> }>(
+            `${this.getApiBaseUrl()}/api/dash-manquehue/projects/${projectId}/differentiators`,
+            { headers: this.buildJsonHeaders(token) }
+          )
+        )
+      ]);
+
+      const content = contentResponse?.data || null;
+      if (content) {
+        this.contentPlan.heroHeadline = String(content['headline_principal'] || this.contentPlan.heroHeadline || '');
+        this.contentPlan.heroTagline = String(
+          content['subtitulo_inspiracional'] || this.contentPlan.heroTagline || ''
+        );
+        this.contentPlan.narrative = String(content['narrativa_comercial'] || this.contentPlan.narrative || '');
+        this.contentPlan.ctaLabel = String(content['cta_principal'] || this.contentPlan.ctaLabel || '');
+        this.contentPlan.videoUrl = String(content['video_tour_url'] || this.contentPlan.videoUrl || '');
+      }
+
+      const differentiators = Array.isArray(differentiatorsResponse?.data) ? differentiatorsResponse.data : [];
+      const points = differentiators
+        .map((row) => String(row['text'] || row['label'] || ''))
+        .map((text) => text.trim())
+        .filter(Boolean);
+      if (points.length > 0) {
+        this.contentPlan.sellingPoints = points;
+      }
+    } catch (error) {
+      console.error('[NuevoProyectoUI] loadStep4Resources error', error);
+    }
   }
 
   private async loadStep2Resources(projectId: number, token: string): Promise<void> {

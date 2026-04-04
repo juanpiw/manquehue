@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, NgZone } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import {
   FormGroup,
@@ -35,7 +35,8 @@ export class LoginComponent {
 
   constructor(
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private ngZone: NgZone
   ) {}
 
   get emailControl(): FormControl<string> {
@@ -69,7 +70,9 @@ export class LoginComponent {
     this.authService.login(credentials).subscribe({
       next: () => {
         this.loading = false;
-        this.router.navigate(['/dash']);
+        this.ngZone.run(() => {
+          this.router.navigate(['/dash']);
+        });
       },
       error: (error: { error?: { error?: { message?: string }; message?: string } }) => {
         this.loading = false;

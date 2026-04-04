@@ -10,6 +10,24 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Outfit:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-6SC1WL9L8J"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-6SC1WL9L8J');
+        gtag('config', 'AW-16671568626');
+    </script>
+    <script type="text/javascript">
+        (function (c, l, a, r, i, t, y) {
+            c[a] = c[a] || function () { (c[a].q = c[a].q || []).push(arguments); };
+            t = l.createElement(r);
+            t.async = 1;
+            t.src = "https://www.clarity.ms/tag/" + i;
+            y = l.getElementsByTagName(r)[0];
+            y.parentNode.insertBefore(t, y);
+        })(window, document, "clarity", "script", "sut7jifh3h");
+    </script>
 
     <script>
         tailwind.config = {
@@ -528,28 +546,33 @@
         <img src="https://impactrenderstudios.com/images/logo.png" class="h-6 opacity-80">
         <div class="h-4 w-px bg-white/20"></div>
         <div class="flex flex-col mr-4">
-            <span class="text-[10px] uppercase tracking-[0.3em] font-bold text-accent">Smart Placement Mode</span>
-            <span id="active-item-label" class="text-[9px] text-gray-500 uppercase mt-0.5">Selecciona un mueble para ubicarlo</span>
+            <span id="mode-title" class="text-[10px] uppercase tracking-[0.3em] font-bold text-accent">Smart Placement Mode</span>
+            <span id="active-item-label" class="text-[9px] text-gray-500 uppercase mt-0.5">Select a furniture item to place</span>
         </div>
         
         <!-- BOTÓN SUBIR BASE DEL RENDER CON ANIMACIÓN DE PARPADEO -->
         <button onclick="document.getElementById('base-upload').click()" class="animate-attention-pulse bg-accent/10 border border-accent/40 px-5 py-2.5 rounded-full hover:bg-accent hover:text-black transition-all flex items-center gap-2 group">
             <i class="ph-fill ph-image-square text-accent group-hover:text-black transition-colors"></i>
-            <span class="text-[9px] uppercase font-bold tracking-widest transition-colors">Subir base del render</span>
+            <span id="base-upload-label" class="text-[9px] uppercase font-bold tracking-widest transition-colors">Upload Base Render</span>
             <input type="file" id="base-upload" class="hidden" accept="image/*" onchange="uploadBaseRender(event)">
         </button>
     </div>
 
     <div class="fixed top-10 right-10 z-50 flex gap-4">
+        <div class="inline-flex items-center gap-2 bg-white/5 border border-white/10 px-2 py-2 rounded-full">
+            <button id="lang-switch-en" type="button" class="text-[10px] font-bold tracking-widest text-white">EN</button>
+            <span class="text-white/20 text-[10px]">|</span>
+            <button id="lang-switch-es" type="button" class="text-[10px] font-bold tracking-widest text-white/40 hover:text-white/80 transition-colors">ES</button>
+        </div>
         <button onclick="toggleGallery()" class="bg-white/5 border border-white/10 px-6 py-3 rounded-full hover:bg-white/10 transition-all flex items-center gap-3">
             <i class="ph ph-armchair text-accent"></i>
-            <span class="text-[10px] uppercase font-bold tracking-widest">Mis Muebles</span>
+            <span id="gallery-toggle-label" class="text-[10px] uppercase font-bold tracking-widest">My Furniture</span>
         </button>
     </div>
 
     <div class="project-switcher">
         <button onclick="toggleExplorer(true)" class="flex items-center gap-3 bg-white/5 border border-white/10 px-4 py-2 rounded-full hover:bg-white/10 transition-all group">
-            <span id="current-project-name" class="text-[10px] uppercase tracking-[0.3em] font-bold text-accent">Selecciona Proyecto</span>
+            <span id="current-project-name" class="text-[10px] uppercase tracking-[0.3em] font-bold text-accent">Select Project</span>
             <i class="ph ph-caret-down text-accent group-hover:translate-y-0.5 transition-transform"></i>
         </button>
     </div>
@@ -559,7 +582,7 @@
             <i id="voice-icon" class="ph ph-speaker-high text-accent text-xl"></i>
         </button>
         <div>
-            <p class="intel-badge">Closing Probability</p>
+            <p id="closing-probability-label" class="intel-badge">Closing Probability</p>
             <p id="ui-score" class="font-serif italic text-4xl text-white">--</p>
         </div>
     </div>
@@ -586,7 +609,7 @@
     <div id="apply-ia-wrap" class="fixed bottom-[13rem] left-1/2 -translate-x-1/2 z-[130]">
         <button id="apply-ia-btn" onclick="processIA()" class="apply-btn flex items-center gap-3">
             <i class="ph-fill ph-sparkle text-xl"></i>
-            Generar Espacio con IA
+            <span id="apply-ia-label">Generate Space with AI</span>
         </button>
     </div>
 
@@ -594,13 +617,13 @@
     <div id="side-gallery" class="side-panel">
         <div class="p-8 border-b border-white/10">
             <div class="flex justify-between items-center mb-6">
-                <h3 class="font-serif italic text-3xl text-white">Muebles</h3>
+                <h3 id="furniture-panel-title" class="font-serif italic text-3xl text-white">Furniture</h3>
                 <button onclick="toggleGallery()" class="text-gray-500 hover:text-white transition-colors">
                     <i class="ph ph-x text-2xl"></i>
                 </button>
             </div>
-            <button onclick="document.getElementById('file-upload').click()" class="w-full py-4 bg-accent/10 border border-accent/30 rounded-2xl text-accent hover:bg-accent hover:text-black transition-all text-[10px] font-bold uppercase tracking-[0.2em]">
-                + Subir tus muebles o elementos
+            <button id="upload-furniture-button" onclick="document.getElementById('file-upload').click()" class="w-full py-4 bg-accent/10 border border-accent/30 rounded-2xl text-accent hover:bg-accent hover:text-black transition-all text-[10px] font-bold uppercase tracking-[0.2em]">
+                + Upload your furniture or elements
             </button>
         </div>
         
@@ -609,8 +632,8 @@
         </div>
 
         <div class="mt-auto p-8 border-t border-white/5 bg-black/20">
-            <p class="text-[10px] text-gray-500 leading-relaxed italic">
-                Tip: Selecciona un mueble y pinta la zona exacta del render donde quieres que la IA lo posicione.
+            <p id="furniture-tip" class="text-[10px] text-gray-500 leading-relaxed italic">
+                Tip: Select a furniture item and paint the exact area of the render where you want the AI to place it.
             </p>
         </div>
     </div>
@@ -618,8 +641,8 @@
     <!-- LOADER IA -->
     <div id="ai-loader" class="ai-loader">
         <div class="w-20 h-20 border-t-2 border-accent rounded-full animate-spin mb-8"></div>
-        <h2 class="font-serif italic text-4xl text-white">Procesando Mapas de Color...</h2>
-        <p class="text-gray-500 text-xs uppercase tracking-[0.4em] mt-4">La IA está posicionando cada elemento en su zona pintada</p>
+        <h2 id="loader-title" class="font-serif italic text-4xl text-white">Processing Color Maps...</h2>
+        <p id="loader-subtitle" class="text-gray-500 text-xs uppercase tracking-[0.4em] mt-4">The AI is placing each element in its painted area</p>
     </div>
 
     <div id="demo-modal" class="demo-modal">
@@ -627,25 +650,25 @@
             <button onclick="toggleDemoModal(false)" class="absolute top-6 right-6 text-gray-500 hover:text-white transition-colors">
                 <i class="ph ph-x text-2xl"></i>
             </button>
-            <h2 class="font-serif italic text-3xl text-white mb-2">Solicita tu Demo</h2>
-            <p class="text-gray-500 text-sm mb-8 font-light">Lleva la inteligencia de Iris a tu próximo proyecto inmobiliario.</p>
+            <h2 id="demo-title" class="font-serif italic text-3xl text-white mb-2">Request Your Demo</h2>
+            <p id="demo-subtitle" class="text-gray-500 text-sm mb-8 font-light">Bring Iris intelligence to your next real estate project.</p>
 
             <form onsubmit="handleDemoSubmit(event)" id="demo-form" class="space-y-4">
                 <div class="input-group">
-                    <label>Nombre Completo</label>
-                    <input type="text" id="demo-name" required placeholder="Tu nombre...">
+                    <label id="demo-name-label">Full Name</label>
+                    <input type="text" id="demo-name" required placeholder="Your name...">
                 </div>
                 <div class="input-group">
-                    <label>Email Corporativo</label>
+                    <label id="demo-email-label">Corporate Email</label>
                     <input type="email" id="demo-email" required placeholder="tu@empresa.com">
                 </div>
 
                 <div class="grid grid-cols-2 gap-4 pt-4">
-                    <button type="submit" class="bg-accent text-black font-bold py-4 rounded-xl uppercase tracking-widest text-[10px] hover:bg-white transition-all shadow-lg">
-                        Enviar Formulario
+                    <button id="demo-submit-button" type="submit" class="bg-accent text-black font-bold py-4 rounded-xl uppercase tracking-widest text-[10px] hover:bg-white transition-all shadow-lg">
+                        Submit Form
                     </button>
-                    <button type="button" onclick="openWspDemo()" class="bg-green-500/10 border border-green-500/30 text-green-400 font-bold py-4 rounded-xl uppercase tracking-widest text-[10px] hover:bg-green-500 hover:text-black transition-all">
-                        WhatsApp Directo
+                    <button id="demo-whatsapp-button" type="button" onclick="openWspDemo()" class="bg-green-500/10 border border-green-500/30 text-green-400 font-bold py-4 rounded-xl uppercase tracking-widest text-[10px] hover:bg-green-500 hover:text-black transition-all">
+                        Direct WhatsApp
                     </button>
                 </div>
             </form>
@@ -706,35 +729,35 @@
         <div class="chat-mobile-actions">
             <a href="https://impactrenderstudios.com/simulador-ia-render-con-ia.html" target="_blank" class="mini-fab ai">
                 <i class="ph-fill ph-magic-wand text-sm"></i>
-                <span>Genera con IA</span>
+                <span id="mobile-ai-label">Generate with AI</span>
             </a>
             <button type="button" class="mini-fab demo" onclick="toggleDemoModal(true)">
                 <i class="ph-fill ph-rocket-launch text-sm"></i>
-                <span>Pide Demo</span>
+                <span id="mobile-demo-label">Request Demo</span>
             </button>
         </div>
 
         <div class="flex items-center justify-between border-b border-white/5 pb-3">
             <div class="flex items-center gap-2">
                 <div id="status-pulse" class="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"></div>
-                <span class="text-[9px] font-bold uppercase tracking-widest text-gray-500">IRIS: Guided Sales Intelligence</span>
+                <span id="guided-sales-label" class="text-[9px] font-bold uppercase tracking-widest text-gray-500">IRIS: Guided Sales Intelligence</span>
                 <div id="voice-waves" class="voice-indicator">
                     <span></span><span></span><span></span><span></span>
                 </div>
             </div>
-            <span id="ui-location" class="text-[8px] uppercase tracking-tighter text-gray-400 font-mono">Modo Libre</span>
+            <span id="ui-location" class="text-[8px] uppercase tracking-tighter text-gray-400 font-mono">Free Mode</span>
         </div>
 
         <div id="iris-message">
             <p class="font-serif italic text-lg md:text-xl text-white/95 leading-tight transition-opacity duration-500" style="opacity: 1;">
-                Sube tu render base o selecciona un proyecto para empezar.
+                Upload your base render or select a project to begin.
             </p>
         </div>
 
         <div id="options-grid" class="flex gap-2 flex-wrap mb-1"></div>
 
         <div class="chat-input-wrapper mt-1">
-            <input type="text" id="user-input" placeholder="Pregunta a Iris o solicita verte ahí..." autocomplete="off">
+            <input type="text" id="user-input" placeholder="Ask Iris or request to see yourself there..." autocomplete="off">
             <input type="file" id="avatar-upload" class="hidden" accept="image/*">
             <button onclick="document.getElementById('avatar-upload').click()" class="mr-2 text-gray-500 hover:text-accent transition-colors" type="button">
                 <i class="ph ph-camera text-xl"></i>
@@ -769,6 +792,8 @@
         const voiceWaves = document.getElementById('voice-waves');
         const demoModal = document.getElementById('demo-modal');
         const entryChoiceModal = document.getElementById('entry-choice-modal');
+        const langSwitchEn = document.getElementById('lang-switch-en');
+        const langSwitchEs = document.getElementById('lang-switch-es');
         const entryLangEn = document.getElementById('entry-lang-en');
         const entryLangEs = document.getElementById('entry-lang-es');
         const entryTitle = document.getElementById('entry-title');
@@ -788,9 +813,131 @@
         let isGenerating = false;
         let voiceEnabled = true;
         let selectedProjKey = '';
+        let currentSceneKey = '';
         let isReplying = false;
-        let entryModalLang = 'en';
+        let currentLang = 'en';
+        let isAvatarExperienceActive = false;
         const apiKey = '';
+
+        function localized(en, es) {
+            return { en, es };
+        }
+
+        const translations = {
+            en: {
+                modeTitle: 'Smart Placement Mode',
+                defaultActiveItem: 'Select a furniture item to place',
+                uploadBaseRender: 'Upload Base Render',
+                myFurniture: 'My Furniture',
+                closingProbability: 'Closing Probability',
+                selectProject: 'Select Project',
+                freeMode: 'Free Mode',
+                generateSpaceAI: 'Generate Space with AI',
+                furniture: 'Furniture',
+                uploadFurniture: '+ Upload your furniture or elements',
+                furnitureTip: 'Tip: Select a furniture item and paint the exact area of the render where you want the AI to place it.',
+                loaderTitle: 'Processing Color Maps...',
+                loaderSubtitle: 'The AI is placing each element in its painted area',
+                demoTitle: 'Request Your Demo',
+                demoSubtitle: 'Bring Iris intelligence to your next real estate project.',
+                fullName: 'Full Name',
+                yourName: 'Your name...',
+                corporateEmail: 'Corporate Email',
+                submitForm: 'Submit Form',
+                directWhatsapp: 'Direct WhatsApp',
+                entryTitle: 'How would you like to continue?',
+                entrySubtitle: 'Choose between a guided demo with our team or generating your own AI renders right now.',
+                requestDemo: 'Request Demo',
+                generateRenders: 'Generate Renders',
+                generateWithAI: 'Generate with AI',
+                guidedSalesIntel: 'IRIS: Guided Sales Intelligence',
+                startMessage: 'Upload your base render or select a project to begin.',
+                userInputPlaceholder: 'Ask Iris or request to see yourself there...',
+                thankYouDemo: 'Thanks {name}. We received your request and will contact you shortly.',
+                whatsappMessage: 'Hello Impact Studios, I would like to request a personalized demo for the project {project}.',
+                incompleteToken: 'Incomplete token response.',
+                publicProjectError: 'Could not create public projectId.',
+                audioEmpty: 'Empty audio response',
+                ttsPrompt: 'Say this in an elegant and sophisticated way: {text}',
+                noProjectSelected: 'Select a project first to activate guided chat.',
+                chatFallback: 'I can help you with this project. If you want, I can explain its value proposition and the next commercial step.',
+                chatBackendFallback: 'I cannot answer with the project engine right now. If you want, I can route you to a commercial demo.',
+                assignedToColor: 'Assigned to this color',
+                placingPrefix: 'Placing: {name}',
+                needFurniture: 'Upload at least one furniture item before generating.',
+                needPaintZone: 'Paint an area of the render to place the furniture.',
+                noPaintedZones: 'We could not detect painted zones associated with your furniture.',
+                finalImageMissing: 'The API did not return a final image.',
+                generationFailed: 'Could not generate the space: {message}',
+                avatarIntegrating: 'Integrating your image through neural projection...',
+                avatarResult: 'You look incredible living in this space. Should we request a real demo now?'
+            },
+            es: {
+                modeTitle: 'Modo de Ubicacion Inteligente',
+                defaultActiveItem: 'Selecciona un mueble para ubicarlo',
+                uploadBaseRender: 'Subir base del render',
+                myFurniture: 'Mis Muebles',
+                closingProbability: 'Probabilidad de Cierre',
+                selectProject: 'Selecciona Proyecto',
+                freeMode: 'Modo Libre',
+                generateSpaceAI: 'Generar Espacio con IA',
+                furniture: 'Muebles',
+                uploadFurniture: '+ Subir tus muebles o elementos',
+                furnitureTip: 'Tip: Selecciona un mueble y pinta la zona exacta del render donde quieres que la IA lo posicione.',
+                loaderTitle: 'Procesando Mapas de Color...',
+                loaderSubtitle: 'La IA esta posicionando cada elemento en su zona pintada',
+                demoTitle: 'Solicita tu Demo',
+                demoSubtitle: 'Lleva la inteligencia de Iris a tu proximo proyecto inmobiliario.',
+                fullName: 'Nombre Completo',
+                yourName: 'Tu nombre...',
+                corporateEmail: 'Email Corporativo',
+                submitForm: 'Enviar Formulario',
+                directWhatsapp: 'WhatsApp Directo',
+                entryTitle: '¿Como quieres continuar?',
+                entrySubtitle: 'Elige si quieres una demo guiada con el equipo o generar tus propios renders con IA ahora mismo.',
+                requestDemo: 'Pide tu Demo',
+                generateRenders: 'Genera tus renders',
+                generateWithAI: 'Genera con IA',
+                guidedSalesIntel: 'IRIS: Inteligencia Comercial Guiada',
+                startMessage: 'Sube tu render base o selecciona un proyecto para empezar.',
+                userInputPlaceholder: 'Pregunta a Iris o solicita verte ahi...',
+                thankYouDemo: 'Gracias {name}. Hemos recibido tu solicitud. Te contactaremos en breve.',
+                whatsappMessage: 'Hola Impact Studios, me gustaria solicitar una demo personalizada para el proyecto {project}.',
+                incompleteToken: 'Respuesta de token incompleta.',
+                publicProjectError: 'No se pudo crear projectId publico.',
+                audioEmpty: 'Respuesta de audio vacia',
+                ttsPrompt: 'Di de forma elegante y sofisticada: {text}',
+                noProjectSelected: 'Primero selecciona un proyecto para activar el chat guiado.',
+                chatFallback: 'Puedo ayudarte con este proyecto. Si quieres, te explico su propuesta de valor y siguiente paso comercial.',
+                chatBackendFallback: 'Ahora mismo no puedo responder con el motor de proyecto. Si quieres, puedo derivarte a una demo comercial.',
+                assignedToColor: 'Asignado a este color',
+                placingPrefix: 'Ubicando: {name}',
+                needFurniture: 'Sube al menos un mueble antes de generar.',
+                needPaintZone: 'Pinta una zona del render para ubicar los muebles.',
+                noPaintedZones: 'No detectamos zonas pintadas asociadas a tus muebles.',
+                finalImageMissing: 'La API no devolvio imagen final.',
+                generationFailed: 'No se pudo generar el espacio: {message}',
+                avatarIntegrating: 'Integrando tu imagen mediante proyeccion neural...',
+                avatarResult: 'Te ves increible habitando este espacio. ¿Solicitamos una demo real ahora?'
+            }
+        };
+
+        function t(key, vars = {}) {
+            const table = translations[currentLang] || translations.en;
+            const fallback = translations.en || {};
+            let template = table[key] || fallback[key] || key;
+            Object.entries(vars).forEach(([name, value]) => {
+                template = template.replaceAll(`{${name}}`, String(value));
+            });
+            return template;
+        }
+
+        function getLocalizedValue(value) {
+            if (value && typeof value === 'object' && ('en' in value || 'es' in value)) {
+                return String(value[currentLang] || value.en || value.es || '');
+            }
+            return String(value || '');
+        }
 
         const projects = {
             mirador: {
@@ -798,27 +945,51 @@
                 scenes: {
                     start: {
                         img: "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?q=80&w=2000",
-                        text: "Mirador Suite. Un desarrollo de lujo. ¿Deseas ver el Living o el Master Bedroom?",
-                        options: [{ label: "Living Social", next: "living" }, { label: "Master Bedroom", next: "bedroom" }],
-                        score: "15%", location: "Penthouse / View A"
+                        text: localized(
+                            "Mirador Suite. A luxury development. Would you like to see the social living room or the master bedroom?",
+                            "Mirador Suite. Un desarrollo de lujo. ¿Deseas ver el living o el master bedroom?"
+                        ),
+                        options: [
+                            { label: localized("Social Living", "Living Social"), next: "living" },
+                            { label: localized("Master Bedroom", "Master Bedroom"), next: "bedroom" }
+                        ],
+                        score: "15%", location: localized("Penthouse / View A", "Penthouse / Vista A")
                     },
                     living: {
                         img: "https://images.unsplash.com/photo-1600607687920-4e2a09c15468?q=80&w=2000",
-                        text: "Diseno abierto y luz natural. ¿Te gustaria ver como te verias habitando este espacio?",
-                        options: [{ label: "Si, quiero verme ahi", next: "upload" }, { label: "Pide una Demo Real", next: "demo" }],
-                        score: "45%", location: "Living Room / Organic"
+                        text: localized(
+                            "Open design and natural light. Would you like to see yourself living in this space?",
+                            "Diseno abierto y luz natural. ¿Te gustaria ver como te verias habitando este espacio?"
+                        ),
+                        options: [
+                            { label: localized("Yes, I want to see myself there", "Si, quiero verme ahi"), next: "upload" },
+                            { label: localized("Request a Real Demo", "Pide una Demo Real"), next: "demo" }
+                        ],
+                        score: "45%", location: localized("Living Room / Organic", "Living Room / Organico")
                     },
                     bedroom: {
                         img: "https://images.unsplash.com/photo-1540518614846-7eded433c457?q=80&w=2000",
-                        text: "Master Bedroom de alto nivel. ¿Hablamos de rentabilidad y precios?",
-                        options: [{ label: "Ver ROI", next: "roi" }, { label: "Pide tu Demo", next: "demo" }],
-                        score: "70%", location: "Bedroom / View B"
+                        text: localized(
+                            "A high-end master bedroom. Shall we talk about profitability and pricing?",
+                            "Master Bedroom de alto nivel. ¿Hablamos de rentabilidad y precios?"
+                        ),
+                        options: [
+                            { label: localized("View ROI", "Ver ROI"), next: "roi" },
+                            { label: localized("Request Demo", "Pide tu Demo"), next: "demo" }
+                        ],
+                        score: "70%", location: localized("Bedroom / View B", "Bedroom / Vista B")
                     },
                     roi: {
                         img: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?q=80&w=2000",
-                        text: "Mirador Suite proyecta una narrativa premium ideal para acelerar cierres y elevar ticket promedio.",
-                        options: [{ label: "Pide tu Demo", next: "demo" }, { label: "Volver al Living", next: "living" }],
-                        score: "82%", location: "ROI / Premium Lead"
+                        text: localized(
+                            "Mirador Suite projects a premium narrative that is ideal for accelerating closings and increasing average ticket size.",
+                            "Mirador Suite proyecta una narrativa premium ideal para acelerar cierres y elevar ticket promedio."
+                        ),
+                        options: [
+                            { label: localized("Request Demo", "Pide tu Demo"), next: "demo" },
+                            { label: localized("Back to Living", "Volver al Living"), next: "living" }
+                        ],
+                        score: "82%", location: localized("ROI / Premium Lead", "ROI / Lead Premium")
                     }
                 }
             },
@@ -827,33 +998,63 @@
                 scenes: {
                     start: {
                         img: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=2000",
-                        text: "Ocean Front. Vistas al Pacifico. ¿Vemos la terraza infinita o la cocina?",
-                        options: [{ label: "Terraza", next: "terrace" }, { label: "Cocina", next: "kitchen" }],
-                        score: "20%", location: "Sea Level / High"
+                        text: localized(
+                            "Ocean Front. Pacific views. Shall we see the infinity terrace or the kitchen?",
+                            "Ocean Front. Vistas al Pacifico. ¿Vemos la terraza infinita o la cocina?"
+                        ),
+                        options: [
+                            { label: localized("Terrace", "Terraza"), next: "terrace" },
+                            { label: localized("Kitchen", "Cocina"), next: "kitchen" }
+                        ],
+                        score: "20%", location: localized("Sea Level / High", "Nivel del Mar / Alto")
                     },
                     terrace: {
                         img: "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?q=80&w=2000",
-                        text: "La terraza funciona como pieza de venta emocional. ¿Quieres verte ahi o revisar amenities?",
-                        options: [{ label: "Quiero verme ahi", next: "upload" }, { label: "Amenities", next: "amenities" }],
-                        score: "52%", location: "Terrace / Ocean Deck"
+                        text: localized(
+                            "The terrace works as an emotional sales piece. Do you want to see yourself there or review the amenities?",
+                            "La terraza funciona como pieza de venta emocional. ¿Quieres verte ahi o revisar amenities?"
+                        ),
+                        options: [
+                            { label: localized("I want to see myself there", "Quiero verme ahi"), next: "upload" },
+                            { label: localized("Amenities", "Amenities"), next: "amenities" }
+                        ],
+                        score: "52%", location: localized("Terrace / Ocean Deck", "Terraza / Ocean Deck")
                     },
                     kitchen: {
                         img: "https://images.unsplash.com/photo-1484154218962-a197022b5858?q=80&w=2000",
-                        text: "La cocina integra terminaciones premium y vista abierta. ¿Profundizamos en materiales o agenda demo?",
-                        options: [{ label: "Materiales", next: "materials" }, { label: "Pide Demo", next: "demo" }],
-                        score: "49%", location: "Kitchen / Signature Finish"
+                        text: localized(
+                            "The kitchen combines premium finishes and an open view. Should we go deeper into materials or schedule a demo?",
+                            "La cocina integra terminaciones premium y vista abierta. ¿Profundizamos en materiales o agenda demo?"
+                        ),
+                        options: [
+                            { label: localized("Materials", "Materiales"), next: "materials" },
+                            { label: localized("Request Demo", "Pide Demo"), next: "demo" }
+                        ],
+                        score: "49%", location: localized("Kitchen / Signature Finish", "Kitchen / Terminacion Signature")
                     },
                     amenities: {
                         img: "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?q=80&w=2000",
-                        text: "El proyecto combina lifestyle costero con una propuesta comercial de alta conversion.",
-                        options: [{ label: "Pide Demo", next: "demo" }, { label: "Volver", next: "start" }],
-                        score: "68%", location: "Amenities / Lifestyle"
+                        text: localized(
+                            "The project combines a coastal lifestyle with a high-conversion commercial proposal.",
+                            "El proyecto combina lifestyle costero con una propuesta comercial de alta conversion."
+                        ),
+                        options: [
+                            { label: localized("Request Demo", "Pide Demo"), next: "demo" },
+                            { label: localized("Back", "Volver"), next: "start" }
+                        ],
+                        score: "68%", location: localized("Amenities / Lifestyle", "Amenities / Lifestyle")
                     },
                     materials: {
                         img: "https://images.unsplash.com/photo-1484154218962-a197022b5858?q=80&w=2000",
-                        text: "Las terminaciones aportan una percepcion de lujo consistente para el cierre comercial.",
-                        options: [{ label: "Ver Terraza", next: "terrace" }, { label: "Pide Demo", next: "demo" }],
-                        score: "64%", location: "Kitchen / Materiality"
+                        text: localized(
+                            "The finishes provide a consistent perception of luxury for the commercial close.",
+                            "Las terminaciones aportan una percepcion de lujo consistente para el cierre comercial."
+                        ),
+                        options: [
+                            { label: localized("View Terrace", "Ver Terraza"), next: "terrace" },
+                            { label: localized("Request Demo", "Pide Demo"), next: "demo" }
+                        ],
+                        score: "64%", location: localized("Kitchen / Materiality", "Kitchen / Materialidad")
                     }
                 }
             },
@@ -862,21 +1063,39 @@
                 scenes: {
                     start: {
                         img: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2000",
-                        text: "Sky Tower. Una experiencia vertical premium en entorno urbano. ¿Quieres revisar amenities o propuesta de inversion?",
-                        options: [{ label: "Amenities", next: "amenities" }, { label: "Inversion", next: "investment" }],
-                        score: "24%", location: "Skyline / High Rise"
+                        text: localized(
+                            "Sky Tower. A premium vertical experience in an urban environment. Would you like to review amenities or the investment proposal?",
+                            "Sky Tower. Una experiencia vertical premium en entorno urbano. ¿Quieres revisar amenities o propuesta de inversion?"
+                        ),
+                        options: [
+                            { label: localized("Amenities", "Amenities"), next: "amenities" },
+                            { label: localized("Investment", "Inversion"), next: "investment" }
+                        ],
+                        score: "24%", location: localized("Skyline / High Rise", "Skyline / Gran Altura")
                     },
                     amenities: {
                         img: "https://images.unsplash.com/photo-1494526585095-c41746248156?q=80&w=2000",
-                        text: "El proyecto prioriza bienestar, vistas y experiencia integral para residentes.",
-                        options: [{ label: "Pide tu Demo", next: "demo" }, { label: "Ver Inversion", next: "investment" }],
-                        score: "58%", location: "Amenities / Lifestyle"
+                        text: localized(
+                            "The project prioritizes wellbeing, views, and a complete resident experience.",
+                            "El proyecto prioriza bienestar, vistas y experiencia integral para residentes."
+                        ),
+                        options: [
+                            { label: localized("Request Demo", "Pide tu Demo"), next: "demo" },
+                            { label: localized("View Investment", "Ver Inversion"), next: "investment" }
+                        ],
+                        score: "58%", location: localized("Amenities / Lifestyle", "Amenities / Lifestyle")
                     },
                     investment: {
                         img: "https://images.unsplash.com/photo-1460317442991-0ec209397118?q=80&w=2000",
-                        text: "Sky Tower combina ubicacion estrategica y ticket premium para perfil de inversionista.",
-                        options: [{ label: "Pide tu Demo", next: "demo" }, { label: "Amenities", next: "amenities" }],
-                        score: "74%", location: "Investment / Urban Core"
+                        text: localized(
+                            "Sky Tower combines strategic location and a premium ticket for an investor profile.",
+                            "Sky Tower combina ubicacion estrategica y ticket premium para perfil de inversionista."
+                        ),
+                        options: [
+                            { label: localized("Request Demo", "Pide tu Demo"), next: "demo" },
+                            { label: localized("Amenities", "Amenities"), next: "amenities" }
+                        ],
+                        score: "74%", location: localized("Investment / Urban Core", "Inversion / Nucleo Urbano")
                     }
                 }
             }
@@ -922,7 +1141,7 @@
                 expiresAt: Number(data?.expiresAt || 0)
             };
             if (!accessGrant.token || !accessGrant.nonce || !accessGrant.expiresAt) {
-                throw new Error('Respuesta de token incompleta.');
+                throw new Error(t('incompleteToken'));
             }
             return accessGrant;
         }
@@ -976,7 +1195,7 @@
             });
             currentProjectId = Number(created?.projectId || 0) || null;
             if (!currentProjectId) {
-                throw new Error('No se pudo crear projectId publico.');
+                throw new Error(t('publicProjectError'));
             }
             localStorage.setItem(PLACEMENT_PROJECT_KEY, String(currentProjectId));
             return currentProjectId;
@@ -1021,7 +1240,7 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        contents: [{ parts: [{ text: `Di de forma elegante y sofisticada: ${text}` }] }],
+                        contents: [{ parts: [{ text: t('ttsPrompt', { text }) }] }],
                         generationConfig: {
                             responseModalities: ['AUDIO'],
                             speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Kore' } } }
@@ -1032,7 +1251,7 @@
                 const result = await response.json();
                 const audioPart = result?.candidates?.[0]?.content?.parts?.[0]?.inlineData;
                 if (!audioPart?.data) {
-                    throw new Error('Respuesta de audio vacia');
+                    throw new Error(t('audioEmpty'));
                 }
                 const sampleRate = parseInt(audioPart.mimeType?.match(/rate=(\d+)/)?.[1] || '24000', 10);
                 const audioBlob = pcmToWav(audioPart.data, sampleRate);
@@ -1061,23 +1280,127 @@
             entryChoiceModal.classList.toggle('visible', show);
         }
 
+        function updateLanguageToggleState(activeLang) {
+            const isEs = activeLang === 'es';
+            [langSwitchEn, entryLangEn].forEach((button) => {
+                button.classList.toggle('text-white', !isEs);
+                button.classList.toggle('text-white/40', isEs);
+            });
+            [langSwitchEs, entryLangEs].forEach((button) => {
+                button.classList.toggle('text-white', isEs);
+                button.classList.toggle('text-white/40', !isEs);
+            });
+        }
+
+        function renderSceneContent(scene, speak = false) {
+            if (!scene) return;
+            const sceneText = getLocalizedValue(scene.text);
+            document.getElementById('ui-score').textContent = scene.score;
+            document.getElementById('ui-location').textContent = getLocalizedValue(scene.location);
+
+            messageEl.style.opacity = '0';
+            setTimeout(() => {
+                messageEl.textContent = sceneText;
+                messageEl.style.opacity = '1';
+                if (speak) {
+                    speakText(sceneText);
+                }
+            }, 250);
+
+            optionsGrid.innerHTML = '';
+            scene.options.forEach((opt) => {
+                const button = document.createElement('button');
+                button.className = 'option-pill animate-fade-in';
+                button.textContent = getLocalizedValue(opt.label);
+                button.onclick = () => {
+                    if (opt.next === 'upload') {
+                        document.getElementById('avatar-upload').click();
+                    } else if (opt.next === 'demo') {
+                        toggleDemoModal(true);
+                    } else {
+                        changeEnvironment(opt.next);
+                    }
+                };
+                optionsGrid.appendChild(button);
+            });
+        }
+
+        function refreshActiveItemLabel() {
+            const item = furnitureItems[selectedItemIndex];
+            if (!item) {
+                activeItemLabel.textContent = t('defaultActiveItem');
+                activeItemLabel.style.color = '';
+                return;
+            }
+            activeItemLabel.textContent = t('placingPrefix', { name: item.name });
+            activeItemLabel.style.color = item.color;
+        }
+
+        function applyLanguage(lang) {
+            currentLang = lang === 'es' ? 'es' : 'en';
+            updateLanguageToggleState(currentLang);
+
+            document.getElementById('mode-title').textContent = t('modeTitle');
+            document.getElementById('base-upload-label').textContent = t('uploadBaseRender');
+            document.getElementById('gallery-toggle-label').textContent = t('myFurniture');
+            document.getElementById('closing-probability-label').textContent = t('closingProbability');
+            document.getElementById('apply-ia-label').textContent = t('generateSpaceAI');
+            document.getElementById('furniture-panel-title').textContent = t('furniture');
+            document.getElementById('upload-furniture-button').textContent = t('uploadFurniture');
+            document.getElementById('furniture-tip').textContent = t('furnitureTip');
+            document.getElementById('loader-title').textContent = t('loaderTitle');
+            document.getElementById('loader-subtitle').textContent = t('loaderSubtitle');
+            document.getElementById('demo-title').textContent = t('demoTitle');
+            document.getElementById('demo-subtitle').textContent = t('demoSubtitle');
+            document.getElementById('demo-name-label').textContent = t('fullName');
+            document.getElementById('demo-name').placeholder = t('yourName');
+            document.getElementById('demo-email-label').textContent = t('corporateEmail');
+            document.getElementById('demo-submit-button').textContent = t('submitForm');
+            document.getElementById('demo-whatsapp-button').textContent = t('directWhatsapp');
+            document.getElementById('mobile-ai-label').textContent = t('generateWithAI');
+            document.getElementById('mobile-demo-label').textContent = t('requestDemo');
+            document.getElementById('guided-sales-label').textContent = t('guidedSalesIntel');
+            userInput.placeholder = t('userInputPlaceholder');
+            entryTitle.textContent = t('entryTitle');
+            entrySubtitle.textContent = t('entrySubtitle');
+            entryDemoBtn.textContent = t('requestDemo');
+            entryRenderBtn.textContent = t('generateRenders');
+
+            if (selectedProjKey) {
+                document.getElementById('current-project-name').textContent = projects[selectedProjKey].name;
+            } else {
+                document.getElementById('current-project-name').textContent = t('selectProject');
+                document.getElementById('ui-location').textContent = t('freeMode');
+                if (!isAvatarExperienceActive) {
+                    messageEl.textContent = t('startMessage');
+                }
+            }
+
+            refreshActiveItemLabel();
+            if (furnitureItems.length) {
+                renderFurnitureList();
+            }
+
+            if (selectedProjKey && currentSceneKey) {
+                renderSceneContent(projects[selectedProjKey].scenes[currentSceneKey], false);
+            }
+
+            if (isAvatarExperienceActive) {
+                messageEl.textContent = t('avatarResult');
+                optionsGrid.innerHTML = `<button onclick="toggleDemoModal(true)" class="option-pill animate-fade-in bg-accent text-black border-none font-bold">${t('requestDemo')}</button>`;
+            }
+        }
+
         function applyEntryModalLang(lang) {
-            entryModalLang = lang === 'es' ? 'es' : 'en';
-            const isEs = entryModalLang === 'es';
-            entryTitle.textContent = isEs ? '¿Como quieres continuar?' : 'How would you like to continue?';
-            entrySubtitle.textContent = isEs
-                ? 'Elige si quieres una demo guiada con el equipo o generar tus propios renders con IA ahora mismo.'
-                : 'Choose between a guided demo with our team or generating your own AI renders right now.';
-            entryDemoBtn.textContent = isEs ? 'Pide tu Demo' : 'Request Demo';
-            entryRenderBtn.textContent = isEs ? 'Genera tus renders' : 'Generate Renders';
-            entryLangEn.classList.toggle('text-white', !isEs);
-            entryLangEn.classList.toggle('text-white/40', isEs);
-            entryLangEs.classList.toggle('text-white', isEs);
-            entryLangEs.classList.toggle('text-white/40', !isEs);
+            applyLanguage(lang);
         }
 
         function chooseEntryPath(path) {
             toggleEntryModal(false);
+            trackUiAnalytics('simulator_entry_path_selected', {
+                path,
+                project: selectedProjKey || 'none'
+            });
             if (path === 'demo') {
                 toggleDemoModal(true);
                 return;
@@ -1090,14 +1413,22 @@
         function handleDemoSubmit(event) {
             event.preventDefault();
             const name = document.getElementById('demo-name').value;
-            alert(`Gracias ${name}. Hemos recibido tu solicitud. Te contactaremos en breve.`);
+            const email = document.getElementById('demo-email').value;
+            trackUiAnalytics('simulator_demo_form_submitted', {
+                project: selectedProjKey || 'none',
+                has_email: Boolean(String(email || '').trim())
+            });
+            alert(t('thankYouDemo', { name }));
             toggleDemoModal(false);
             event.target.reset();
         }
 
         function openWspDemo() {
-            const project = projects[selectedProjKey]?.name || 'vuestro proyecto';
-            const text = encodeURIComponent(`Hola Impact Studios, me gustaria solicitar una demo personalizada para el proyecto ${project}.`);
+            const project = projects[selectedProjKey]?.name || (currentLang === 'es' ? 'vuestro proyecto' : 'your project');
+            trackUiAnalytics('simulator_whatsapp_opened', {
+                project: selectedProjKey || 'none'
+            });
+            const text = encodeURIComponent(t('whatsappMessage', { project }));
             window.open(`https://wa.me/56945254948?text=${text}`, '_blank');
         }
 
@@ -1115,6 +1446,19 @@
                 });
             } catch (_error) {
                 // no-op
+            }
+        }
+
+        function trackUiAnalytics(eventName, payload = {}) {
+            try {
+                if (typeof window.gtag === 'function') {
+                    window.gtag('event', eventName, payload);
+                }
+                if (typeof window.clarity === 'function') {
+                    window.clarity('event', eventName);
+                }
+            } catch (_error) {
+                // analytics must never block UX
             }
         }
 
@@ -1138,16 +1482,19 @@
 
         function initializeLandingState() {
             selectedProjKey = '';
+            currentSceneKey = '';
+            isAvatarExperienceActive = false;
             currentBaseImageUrl = DEFAULT_BASE_IMAGE_URL;
             baseRenderDataUrl = '';
             bgMain.style.backgroundImage = `url('${DEFAULT_BASE_IMAGE_URL}')`;
-            document.getElementById('current-project-name').textContent = 'Selecciona Proyecto';
+            document.getElementById('current-project-name').textContent = t('selectProject');
             document.getElementById('ui-score').textContent = '--';
-            document.getElementById('ui-location').textContent = 'Modo Libre';
+            document.getElementById('ui-location').textContent = t('freeMode');
             messageEl.style.opacity = '1';
-            messageEl.textContent = 'Sube tu render base o selecciona un proyecto para empezar.';
+            messageEl.textContent = t('startMessage');
             optionsGrid.innerHTML = '';
             resetAvatar();
+            refreshActiveItemLabel();
             clearCanvas();
         }
 
@@ -1155,41 +1502,21 @@
             const project = projects[selectedProjKey];
             if (!project) return;
             const scene = project.scenes[key] || project.scenes.start;
+            currentSceneKey = key;
             currentBaseImageUrl = scene.img;
             baseRenderDataUrl = '';
             bgMain.style.backgroundImage = `url('${scene.img}')`;
-            document.getElementById('ui-score').textContent = scene.score;
-            document.getElementById('ui-location').textContent = scene.location;
-
-            messageEl.style.opacity = '0';
-            setTimeout(() => {
-                messageEl.textContent = scene.text;
-                messageEl.style.opacity = '1';
-                speakText(scene.text);
-            }, 250);
-
-            optionsGrid.innerHTML = '';
-            scene.options.forEach((opt) => {
-                const button = document.createElement('button');
-                button.className = 'option-pill animate-fade-in';
-                button.textContent = opt.label;
-                button.onclick = () => {
-                    if (opt.next === 'upload') {
-                        document.getElementById('avatar-upload').click();
-                    } else if (opt.next === 'demo') {
-                        toggleDemoModal(true);
-                    } else {
-                        changeEnvironment(opt.next);
-                    }
-                };
-                optionsGrid.appendChild(button);
-            });
+            isAvatarExperienceActive = false;
+            renderSceneContent(scene, true);
             clearCanvas();
         }
 
         function selectProject(id) {
             if (!projects[id]) return;
             selectedProjKey = id;
+            trackUiAnalytics('simulator_project_selected', {
+                project: id
+            });
             document.getElementById('current-project-name').textContent = projects[id].name;
             resetAvatar();
             changeEnvironment('start');
@@ -1200,7 +1527,7 @@
             const text = userInput.value.trim();
             if (!text || isReplying) return;
             if (!selectedProjKey) {
-                messageEl.textContent = 'Primero selecciona un proyecto para activar el chat guiado.';
+                messageEl.textContent = t('noProjectSelected');
                 toggleExplorer(true);
                 return;
             }
@@ -1216,7 +1543,7 @@
                     project: selectedProjKey
                 });
                 const data = await fetchProjectReply(selectedProjKey, text);
-                const reply = String(data?.reply || '').trim() || 'Puedo ayudarte con este proyecto. Si quieres, te explico su propuesta de valor y siguiente paso comercial.';
+                const reply = String(data?.reply || '').trim() || t('chatFallback');
                 messageEl.textContent = reply;
                 messageEl.style.opacity = '1';
                 speakText(reply);
@@ -1226,7 +1553,7 @@
                     project: selectedProjKey
                 });
             } catch (error) {
-                const fallbackReply = 'Ahora mismo no puedo responder con el motor de proyecto. Si quieres, puedo derivarte a una demo comercial.';
+                const fallbackReply = t('chatBackendFallback');
                 messageEl.textContent = fallbackReply;
                 messageEl.style.opacity = '1';
                 console.warn('[IRIS Chat UI] backend reply failed', { message: error?.message || 'unknown_error' });
@@ -1296,6 +1623,9 @@
         function uploadBaseRender(event) {
             const file = event.target.files[0];
             if (!file) return;
+            trackUiAnalytics('simulator_base_render_uploaded', {
+                file_name: file.name || 'unknown'
+            });
             const reader = new FileReader();
             reader.onload = (loadEvent) => {
                 baseRenderDataUrl = String(loadEvent.target?.result || '');
@@ -1314,6 +1644,9 @@
         function uploadFurniture(event) {
             const files = Array.from(event.target.files || []);
             if (!files.length) return;
+            trackUiAnalytics('simulator_furniture_uploaded', {
+                item_count: files.length
+            });
             files.forEach((file) => {
                 const reader = new FileReader();
                 reader.onload = (loadEvent) => {
@@ -1348,7 +1681,7 @@
                         <p class="text-[11px] font-bold uppercase tracking-wider text-white mb-1">${item.name}</p>
                         <div class="flex items-center gap-2">
                             <div class="color-indicator" style="background-color: ${item.color}"></div>
-                            <span class="text-[9px] text-gray-500 uppercase font-bold">Asignado a este color</span>
+                            <span class="text-[9px] text-gray-500 uppercase font-bold">${t('assignedToColor')}</span>
                         </div>
                     </div>
                 `;
@@ -1360,7 +1693,7 @@
             selectedItemIndex = index;
             const item = furnitureItems[index];
             if (!item) return;
-            activeItemLabel.textContent = `Ubicando: ${item.name}`;
+            activeItemLabel.textContent = t('placingPrefix', { name: item.name });
             activeItemLabel.style.color = item.color;
             brushPreview.style.borderColor = item.color;
             renderFurnitureList();
@@ -1410,12 +1743,12 @@
         async function processIA() {
             if (isGenerating) return;
             if (!furnitureItems.length) {
-                alert('Sube al menos un mueble antes de generar.');
+                alert(t('needFurniture'));
                 return;
             }
             const hasPaint = checkState();
             if (!hasPaint) {
-                alert('Pinta una zona del render para ubicar los muebles.');
+                alert(t('needPaintZone'));
                 return;
             }
             const maskImageDataUrl = canvas.toDataURL('image/png');
@@ -1427,7 +1760,7 @@
                 .filter((item) => item.pixelCount > 0);
 
             if (!paintedObjects.length) {
-                alert('No detectamos zonas pintadas asociadas a tus muebles.');
+                alert(t('noPaintedZones'));
                 return;
             }
 
@@ -1440,7 +1773,7 @@
                 const body = {
                     projectId,
                     source: 'simulador_2.html',
-                    language: 'es',
+                    language: currentLang,
                     style: 'placement_photoreal',
                     format: '16/9',
                     maskImageDataUrl,
@@ -1465,18 +1798,25 @@
 
                 const generatedImage = String(response?.imageDataUrl || response?.imageUrl || '').trim();
                 if (!generatedImage) {
-                    throw new Error('La API no devolvio imagen final.');
+                    throw new Error(t('finalImageMissing'));
                 }
 
+                trackUiAnalytics('simulator_generation_success', {
+                    project: selectedProjKey || 'none',
+                    objects_count: paintedObjects.length
+                });
                 bgMain.style.backgroundImage = `url('${generatedImage}')`;
                 baseRenderDataUrl = generatedImage.startsWith('data:image/') ? generatedImage : '';
                 currentBaseImageUrl = generatedImage.startsWith('data:image/') ? '' : generatedImage;
                 clearCanvas();
             } catch (error) {
+                trackUiAnalytics('simulator_generation_error', {
+                    project: selectedProjKey || 'none'
+                });
                 console.error('[PlacementUI] generation error', {
                     message: error?.message || 'placement_generation_failed'
                 });
-                alert(`No se pudo generar el espacio: ${error.message}`);
+                alert(t('generationFailed', { message: error.message }));
             } finally {
                 loader.style.display = 'none';
                 applyBtn.disabled = false;
@@ -1496,14 +1836,15 @@
             if (this.files && this.files[0]) {
                 const reader = new FileReader();
                 reader.onload = (event) => {
-                    messageEl.textContent = 'Integrando tu imagen mediante proyeccion neural...';
+                    isAvatarExperienceActive = true;
+                    messageEl.textContent = t('avatarIntegrating');
                     speakText(messageEl.textContent);
                     setTimeout(() => {
                         avatarProj.src = String(event.target?.result || '');
                         avatarProj.style.opacity = '1';
-                        messageEl.textContent = 'Te ves increible habitando este espacio. ¿Solicitamos una demo real ahora?';
+                        messageEl.textContent = t('avatarResult');
                         document.getElementById('ui-score').textContent = '98%';
-                        optionsGrid.innerHTML = '<button onclick="toggleDemoModal(true)" class="option-pill animate-fade-in bg-accent text-black border-none font-bold">Pide tu Demo</button>';
+                        optionsGrid.innerHTML = `<button onclick="toggleDemoModal(true)" class="option-pill animate-fade-in bg-accent text-black border-none font-bold">${t('requestDemo')}</button>`;
                         speakText(messageEl.textContent);
                     }, 1500);
                 };
@@ -1518,13 +1859,15 @@
             }
         });
 
+        langSwitchEn.onclick = () => applyLanguage('en');
+        langSwitchEs.onclick = () => applyLanguage('es');
         entryLangEn.onclick = () => applyEntryModalLang('en');
         entryLangEs.onclick = () => applyEntryModalLang('es');
 
         window.addEventListener('resize', resizeCanvas);
         resizeCanvas();
         setTool('pan');
-        applyEntryModalLang('en');
+        applyLanguage('en');
         initializeLandingState();
     </script>
 </body>
