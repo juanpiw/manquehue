@@ -617,6 +617,19 @@
                       Quitar media
                     </button>
                   </div>
+                  <div class="np-upload-state mt-3" *ngIf="getDifferentiatorPreviewUrl(i)">
+                    <div class="np-upload-state__preview">
+                      <video
+                        *ngIf="isDifferentiatorPreviewVideo(i); else differentiatorImagePreview"
+                        [src]="getDifferentiatorPreviewUrl(i)"
+                        controls
+                        muted
+                        playsinline></video>
+                      <ng-template #differentiatorImagePreview>
+                        <img [src]="getDifferentiatorPreviewUrl(i)" alt="Preview media diferenciador" />
+                      </ng-template>
+                    </div>
+                  </div>
                 </label>
               </div>
               <label>

@@ -1171,15 +1171,39 @@
                 };
             }
 
-            const mediaRaw = item.media && typeof item.media === 'object' ? item.media : null;
+            const mediaRaw = item.media && typeof item.media === 'object'
+                ? item.media
+                : (item.feature_media && typeof item.feature_media === 'object' ? item.feature_media : null);
+            const mediaUrl =
+                mediaRaw?.url ||
+                mediaRaw?.file_url ||
+                mediaRaw?.path ||
+                mediaRaw?.file_path ||
+                item.media_url ||
+                item.mediaUrl ||
+                item.image_url ||
+                item.image ||
+                '';
+            const mediaType =
+                mediaRaw?.type ||
+                item.media_type ||
+                item.mediaType ||
+                (String(mediaRaw?.mimeType || mediaRaw?.mime_type || item.mime_type || '').startsWith('video/') ? 'video' : 'image');
             const media = mediaRaw
                 ? {
                     id: mediaRaw.id || null,
-                    url: mediaRaw.url || mediaRaw.file_url || mediaRaw.path || '',
-                    type: mediaRaw.type || (String(mediaRaw.mimeType || mediaRaw.mime_type || '').startsWith('video/') ? 'video' : 'image'),
+                    url: mediaUrl,
+                    type: mediaType,
                     name: mediaRaw.name || mediaRaw.original_name || ''
                 }
-                : null;
+                : (mediaUrl
+                    ? {
+                        id: null,
+                        url: mediaUrl,
+                        type: mediaType,
+                        name: item.media_name || item.mediaName || ''
+                    }
+                    : null);
 
             return {
                 text: item.text || item.nombre || item.label || '',
@@ -1330,6 +1354,18 @@
             const differentiatorsDetail = toArray(rawData?.diferenciadores_detalle)
                 .map((item, index) => normalizeDifferentiator(item, index))
                 .filter(Boolean);
+            appendLog('FEATURES RAW DIFFERENTIATORS', {
+                hasRawDifferentiators: Array.isArray(rawData?.diferenciadores),
+                rawDifferentiatorsCount: toArray(rawData?.diferenciadores).length,
+                hasRawDifferentiatorsDetail: Array.isArray(rawData?.diferenciadores_detalle),
+                rawDifferentiatorsDetailCount: toArray(rawData?.diferenciadores_detalle).length,
+                rawDifferentiatorsDetail: toArray(rawData?.diferenciadores_detalle).map((item, index) => ({
+                    index: index + 1,
+                    text: item?.text || item?.label || item?.nombre || '',
+                    sort_order: item?.sort_order || null,
+                    media: item?.media || null
+                }))
+            });
             const gallery = toArray(multimedia.gallery).map(normalizeGalleryItem).filter(Boolean);
             const unidadesDisponibles = toNumber(rawData?.unidades_disponibles, 0);
             const unidadesTotales = toNumber(rawData?.unidades_totales, 0);
@@ -1422,6 +1458,90 @@
             const element = document.getElementById(id);
             if (element) {
                 element.innerHTML = value || '';
+            }
+        }
+
+        async function probeMediaUrl(url, context = 'media') {
+            const target = String(url || '').trim();
+            if (!target || target === '#') {
+                appendLog('MEDIA PROBE SKIP', { context, url: target || null });
+                return;
+            }
+            try {
+                const response = await fetch(target, { method: 'HEAD', cache: 'no-store' });
+                appendLog('MEDIA PROBE RESULT', {
+                    context,
+                    url: target,
+                    status: response.status,
+                    ok: response.ok,
+                    contentType: response.headers.get('content-type') || null
+                });
+            } catch (error) {
+                appendLog('MEDIA PROBE ERROR', {
+                    context,
+                    url: target,
+                    message: error?.message || String(error)
+                });
+            }
+        }
+
+        function bindFeatureMediaDebug() {
+            const amenityVisual = document.getElementById('amenity-visual');
+            const amenityVideo = document.getElementById('amenity-visual-video');
+
+            if (amenityVisual && !amenityVisual.dataset.debugBound) {
+                amenityVisual.dataset.debugBound = 'true';
+                amenityVisual.addEventListener('load', () => {
+                    appendLog('FEATURE IMAGE LOAD', {
+                        currentSrc: amenityVisual.currentSrc || amenityVisual.src || null,
+                        naturalWidth: amenityVisual.naturalWidth || 0,
+                        naturalHeight: amenityVisual.naturalHeight || 0,
+                        complete: amenityVisual.complete
+                    });
+                });
+                amenityVisual.addEventListener('error', () => {
+                    appendLog('FEATURE IMAGE ERROR', {
+                        currentSrc: amenityVisual.currentSrc || amenityVisual.src || null,
+                        complete: amenityVisual.complete
+                    });
+                });
+                amenityVisual.addEventListener('abort', () => {
+                    appendLog('FEATURE IMAGE ABORT', {
+                        currentSrc: amenityVisual.currentSrc || amenityVisual.src || null
+                    });
+                });
+            }
+
+            if (amenityVideo && !amenityVideo.dataset.debugBound) {
+                amenityVideo.dataset.debugBound = 'true';
+                amenityVideo.addEventListener('loadedmetadata', () => {
+                    appendLog('FEATURE VIDEO METADATA', {
+                        currentSrc: amenityVideo.currentSrc || amenityVideo.src || null,
+                        videoWidth: amenityVideo.videoWidth || 0,
+                        videoHeight: amenityVideo.videoHeight || 0,
+                        readyState: amenityVideo.readyState
+                    });
+                });
+                amenityVideo.addEventListener('canplay', () => {
+                    appendLog('FEATURE VIDEO CANPLAY', {
+                        currentSrc: amenityVideo.currentSrc || amenityVideo.src || null,
+                        readyState: amenityVideo.readyState
+                    });
+                });
+                amenityVideo.addEventListener('error', () => {
+                    appendLog('FEATURE VIDEO ERROR', {
+                        currentSrc: amenityVideo.currentSrc || amenityVideo.src || null,
+                        networkState: amenityVideo.networkState,
+                        readyState: amenityVideo.readyState
+                    });
+                });
+                amenityVideo.addEventListener('stalled', () => {
+                    appendLog('FEATURE VIDEO STALLED', {
+                        currentSrc: amenityVideo.currentSrc || amenityVideo.src || null,
+                        networkState: amenityVideo.networkState,
+                        readyState: amenityVideo.readyState
+                    });
+                });
             }
         }
 
@@ -1651,6 +1771,28 @@
                 const rows = differentiatorsDetail.length
                     ? differentiatorsDetail
                     : differentiators.map((text, index) => ({ text, code: String(index + 1).padStart(2, '0'), media: null }));
+                appendLog('FEATURES NORMALIZED ROWS', rows.map((item, index) => ({
+                    index: index + 1,
+                    code: item.code,
+                    text: item.text,
+                    mediaType: item?.media?.type || null,
+                    mediaUrl: item?.media?.url || null,
+                    mediaName: item?.media?.name || null
+                })));
+                appendLog('FEATURES MEDIA AVAILABILITY', {
+                    totalRows: rows.length,
+                    rowsWithMedia: rows.filter((item) => Boolean(item?.media?.url)).length,
+                    rowsWithoutMedia: rows.filter((item) => !item?.media?.url).map((item, index) => ({
+                        index: index + 1,
+                        code: item.code,
+                        text: item.text
+                    }))
+                });
+                rows.forEach((item, index) => {
+                    if (item?.media?.url) {
+                        probeMediaUrl(item.media.url, `features-row-${index + 1}`);
+                    }
+                });
                 amenityList.innerHTML = rows.map((item, index) => `
                     <div class="amenity-row">
                         <span>${escapeHtml(item.code || String(index + 1).padStart(2, '0'))}</span>
@@ -1664,6 +1806,13 @@
                     const amenityVideo = document.getElementById('amenity-visual-video');
                     const mediaType = String(media?.type || '').toLowerCase();
                     const mediaUrl = media?.url || fallbackVisual;
+                    appendLog('FEATURES ACTIVE VISUAL', {
+                        requestedMedia: media || null,
+                        resolvedType: mediaType || 'image',
+                        resolvedUrl: mediaUrl || null,
+                        fallbackVisual: fallbackVisual || null
+                    });
+                    probeMediaUrl(mediaUrl, `features-active-${mediaType || 'image'}`);
                     if (amenityVisual && amenityVideo) {
                         if (mediaType === 'video' && mediaUrl) {
                             amenityVideo.src = mediaUrl;
@@ -1684,6 +1833,11 @@
                 const rowElements = Array.from(amenityList.querySelectorAll('.amenity-row'));
                 rowElements.forEach((element, index) => {
                     element.addEventListener('click', () => {
+                        appendLog('FEATURES ROW CLICK', {
+                            rowIndex: index + 1,
+                            rowText: rows[index]?.text || '',
+                            rowMedia: rows[index]?.media || null
+                        });
                         rowElements.forEach((row) => row.classList.remove('is-active'));
                         element.classList.add('is-active');
                         setFeatureVisual(rows[index]?.media || null);
@@ -1813,6 +1967,7 @@
                 const amenityVideo = document.getElementById('amenity-visual-video');
                 if (amenityVisual && visualUrl) {
                     amenityVisual.src = visualUrl;
+                    probeMediaUrl(visualUrl, 'features-default-amenity-visual');
                 }
                 if (amenityVisual) {
                     amenityVisual.classList.remove('hidden');
@@ -2013,6 +2168,7 @@
 
         window.onload = () => {
             const runtime = getRuntimeConfigFromUrl();
+            bindFeatureMediaDebug();
             apiBaseInput.value = runtime.apiBase || resolveDefaultApiBaseUrl();
             appendLog('WINDOW ONLOAD', {
                 runtimeProjectId: runtime.projectId || null,

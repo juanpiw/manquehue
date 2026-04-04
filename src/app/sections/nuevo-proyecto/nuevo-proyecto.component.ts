@@ -58,6 +58,8 @@ type TypologyOption = {
 type DifferentiatorMediaState = {
   media: TypologyMediaInfo | null;
   pendingFile: File | null;
+  pendingPreviewUrl: string | null;
+  pendingMediaType: TypologyMediaType | null;
   removeMedia: boolean;
 };
 
@@ -348,7 +350,10 @@ export class NuevoProyectoComponent implements OnDestroy {
       input.value = '';
       return;
     }
+    this.revokeDifferentiatorPreview(slot);
     slot.pendingFile = selectedFile;
+    slot.pendingPreviewUrl = URL.createObjectURL(selectedFile);
+    slot.pendingMediaType = selectedFile.type.startsWith('video/') ? 'video' : 'image';
     slot.removeMedia = false;
     this.saveFeedback = `Media preparada para Diferenciador ${index + 1}. Guarda el paso 4 para subirla.`;
     input.value = '';
@@ -360,8 +365,22 @@ export class NuevoProyectoComponent implements OnDestroy {
     if (!slot) {
       return;
     }
+    this.revokeDifferentiatorPreview(slot);
     slot.pendingFile = null;
+    slot.pendingPreviewUrl = null;
+    slot.pendingMediaType = null;
     slot.removeMedia = Boolean(slot.media);
+  }
+
+  getDifferentiatorPreviewUrl(index: number): string {
+    const slot = this.differentiatorMediaStates[index];
+    return slot?.pendingPreviewUrl || slot?.media?.url || '';
+  }
+
+  isDifferentiatorPreviewVideo(index: number): boolean {
+    const slot = this.differentiatorMediaStates[index];
+    const type = slot?.pendingMediaType || slot?.media?.type || '';
+    return type === 'video';
   }
 
   handleTypologyMediaChange(event: Event, typology: TypologyOption) {
@@ -1197,16 +1216,28 @@ export class NuevoProyectoComponent implements OnDestroy {
         slot.removeMedia = false;
       }
       if (slot.pendingFile) {
+        const uploadedFile = slot.pendingFile;
+        const previewUrl = slot.pendingPreviewUrl;
+        const mediaType = slot.pendingMediaType || (uploadedFile.type.startsWith('video/') ? 'video' : 'image');
         const formData = new FormData();
-        formData.append('file', slot.pendingFile);
-        await firstValueFrom(
-          this.http.post(
+        formData.append('file', uploadedFile);
+        const response = await firstValueFrom(
+          this.http.post<{ data?: { fileId?: number } }>(
             `${this.getApiBaseUrl()}/api/dash-manquehue/projects/${projectId}/differentiators/${position}/media`,
             formData,
             { headers: new HttpHeaders({ Authorization: `Bearer ${token}` }) }
           )
         );
+        slot.media = {
+          fileId: Number(response?.data?.fileId || 0) || null,
+          url: previewUrl || slot.media?.url || '',
+          name: uploadedFile.name,
+          mimeType: uploadedFile.type,
+          type: mediaType
+        };
         slot.pendingFile = null;
+        slot.pendingPreviewUrl = null;
+        slot.pendingMediaType = null;
       }
     }
   }
@@ -1249,8 +1280,11 @@ export class NuevoProyectoComponent implements OnDestroy {
       }
       this.ensureDifferentiatorMediaStatesLength(this.contentPlan.sellingPoints.length);
       this.differentiatorMediaStates.forEach((slot) => {
+        this.revokeDifferentiatorPreview(slot);
         slot.media = null;
         slot.pendingFile = null;
+        slot.pendingPreviewUrl = null;
+        slot.pendingMediaType = null;
         slot.removeMedia = false;
       });
       differentiators.forEach((row, index) => {
@@ -1273,10 +1307,15 @@ export class NuevoProyectoComponent implements OnDestroy {
       this.differentiatorMediaStates.push({
         media: null,
         pendingFile: null,
+        pendingPreviewUrl: null,
+        pendingMediaType: null,
         removeMedia: false
       });
     }
     if (this.differentiatorMediaStates.length > normalizedLength) {
+      this.differentiatorMediaStates
+        .slice(normalizedLength)
+        .forEach((slot) => this.revokeDifferentiatorPreview(slot));
       this.differentiatorMediaStates = this.differentiatorMediaStates.slice(0, normalizedLength);
     }
   }
@@ -1601,6 +1640,7 @@ export class NuevoProyectoComponent implements OnDestroy {
       this.revokeTypologyPreview(option);
       this.revokeTypologyBlueprintPreview(option);
     });
+    this.differentiatorMediaStates.forEach((slot) => this.revokeDifferentiatorPreview(slot));
   }
 
   private normalizeText(value: string): string {
@@ -1728,6 +1768,12 @@ export class NuevoProyectoComponent implements OnDestroy {
   private revokeTypologyBlueprintPreview(typology: TypologyOption): void {
     if (typology.pendingBlueprintPreviewUrl) {
       URL.revokeObjectURL(typology.pendingBlueprintPreviewUrl);
+    }
+  }
+
+  private revokeDifferentiatorPreview(slot: DifferentiatorMediaState): void {
+    if (slot.pendingPreviewUrl) {
+      URL.revokeObjectURL(slot.pendingPreviewUrl);
     }
   }
 }
