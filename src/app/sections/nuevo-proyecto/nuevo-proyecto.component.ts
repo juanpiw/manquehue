@@ -55,6 +55,11 @@ type TypologyOption = {
   pendingBlueprintPreviewUrl?: string | null;
   removeBlueprint?: boolean;
 };
+type DifferentiatorMediaState = {
+  media: TypologyMediaInfo | null;
+  pendingFile: File | null;
+  removeMedia: boolean;
+};
 
 @Component({
   selector: 'app-nuevo-proyecto',
@@ -213,6 +218,7 @@ export class NuevoProyectoComponent implements OnDestroy {
     ctaLabel: 'Solicitar visita guiada',
     videoUrl: ''
   };
+  differentiatorMediaStates: DifferentiatorMediaState[] = [];
   publicationSettings = {
     scheduleDate: '',
     scheduleTime: '',
@@ -245,6 +251,7 @@ export class NuevoProyectoComponent implements OnDestroy {
 
   constructor(private http: HttpClient) {
     this.currentProjectId = this.getStoredProjectId();
+    this.ensureDifferentiatorMediaStatesLength(this.contentPlan.sellingPoints.length);
   }
 
   selectPropertyType(typeId: string) {
@@ -320,6 +327,41 @@ export class NuevoProyectoComponent implements OnDestroy {
     if (pendingIndex >= 0 && pendingIndex < this.pendingGalleryFiles.length) {
       this.pendingGalleryFiles = this.pendingGalleryFiles.filter((_, i) => i !== pendingIndex);
     }
+  }
+
+  handleDifferentiatorMediaUpload(event: Event, index: number): void {
+    const input = event.target as HTMLInputElement;
+    if (!input?.files?.length) {
+      return;
+    }
+
+    const selectedFile = input.files[0];
+    if (!selectedFile.type.startsWith('image/') && !selectedFile.type.startsWith('video/')) {
+      this.saveFeedback = 'La media del diferenciador debe ser imagen o video.';
+      input.value = '';
+      return;
+    }
+
+    this.ensureDifferentiatorMediaStatesLength(this.contentPlan.sellingPoints.length);
+    const slot = this.differentiatorMediaStates[index];
+    if (!slot) {
+      input.value = '';
+      return;
+    }
+    slot.pendingFile = selectedFile;
+    slot.removeMedia = false;
+    this.saveFeedback = `Media preparada para Diferenciador ${index + 1}. Guarda el paso 4 para subirla.`;
+    input.value = '';
+  }
+
+  removeDifferentiatorMedia(index: number): void {
+    this.ensureDifferentiatorMediaStatesLength(this.contentPlan.sellingPoints.length);
+    const slot = this.differentiatorMediaStates[index];
+    if (!slot) {
+      return;
+    }
+    slot.pendingFile = null;
+    slot.removeMedia = Boolean(slot.media);
   }
 
   handleTypologyMediaChange(event: Event, typology: TypologyOption) {
@@ -1113,6 +1155,7 @@ export class NuevoProyectoComponent implements OnDestroy {
   }
 
   private async saveStep4Resources(projectId: number, token: string): Promise<void> {
+    this.ensureDifferentiatorMediaStatesLength(this.contentPlan.sellingPoints.length);
     await firstValueFrom(
       this.http.patch(
         `${this.getApiBaseUrl()}/api/dash-manquehue/projects/${projectId}/content`,
@@ -1139,6 +1182,33 @@ export class NuevoProyectoComponent implements OnDestroy {
         { headers: this.buildJsonHeaders(token) }
       )
     );
+
+    for (let i = 0; i < this.differentiatorMediaStates.length; i += 1) {
+      const slot = this.differentiatorMediaStates[i];
+      const position = i + 1;
+      if (slot.removeMedia && slot.media?.fileId) {
+        await firstValueFrom(
+          this.http.delete(
+            `${this.getApiBaseUrl()}/api/dash-manquehue/projects/${projectId}/differentiators/${position}/media`,
+            { headers: this.buildJsonHeaders(token) }
+          )
+        );
+        slot.media = null;
+        slot.removeMedia = false;
+      }
+      if (slot.pendingFile) {
+        const formData = new FormData();
+        formData.append('file', slot.pendingFile);
+        await firstValueFrom(
+          this.http.post(
+            `${this.getApiBaseUrl()}/api/dash-manquehue/projects/${projectId}/differentiators/${position}/media`,
+            formData,
+            { headers: new HttpHeaders({ Authorization: `Bearer ${token}` }) }
+          )
+        );
+        slot.pendingFile = null;
+      }
+    }
   }
 
   private async loadStep4Resources(projectId: number, token: string): Promise<void> {
@@ -1177,8 +1247,37 @@ export class NuevoProyectoComponent implements OnDestroy {
       if (points.length > 0) {
         this.contentPlan.sellingPoints = points;
       }
+      this.ensureDifferentiatorMediaStatesLength(this.contentPlan.sellingPoints.length);
+      this.differentiatorMediaStates.forEach((slot) => {
+        slot.media = null;
+        slot.pendingFile = null;
+        slot.removeMedia = false;
+      });
+      differentiators.forEach((row, index) => {
+        const sortOrder = Number(row['sort_order'] || index + 1);
+        const slot = this.differentiatorMediaStates[Math.max(sortOrder - 1, 0)];
+        if (!slot) {
+          return;
+        }
+        const media = this.mapTypologyMediaFromApi(row['media']);
+        slot.media = media;
+      });
     } catch (error) {
       console.error('[NuevoProyectoUI] loadStep4Resources error', error);
+    }
+  }
+
+  private ensureDifferentiatorMediaStatesLength(length: number): void {
+    const normalizedLength = Math.max(Number(length) || 0, 0);
+    while (this.differentiatorMediaStates.length < normalizedLength) {
+      this.differentiatorMediaStates.push({
+        media: null,
+        pendingFile: null,
+        removeMedia: false
+      });
+    }
+    if (this.differentiatorMediaStates.length > normalizedLength) {
+      this.differentiatorMediaStates = this.differentiatorMediaStates.slice(0, normalizedLength);
     }
   }
 

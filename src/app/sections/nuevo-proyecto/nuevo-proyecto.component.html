@@ -597,6 +597,26 @@
                 <label *ngFor="let point of contentPlan.sellingPoints; let i = index">
                   <span>Diferenciador {{ i + 1 }}</span>
                   <input type="text" [(ngModel)]="contentPlan.sellingPoints[i]" placeholder="Ej: Sky pool panorámica" />
+                  <div class="np-upload-grid mt-3">
+                    <label class="np-upload np-upload--outline">
+                      <input type="file" accept="image/*,video/*" (change)="handleDifferentiatorMediaUpload($event, i)" hidden />
+                      <p>Media diferenciador {{ i + 1 }}</p>
+                      <small>
+                        {{
+                          differentiatorMediaStates[i]?.pendingFile?.name
+                            || differentiatorMediaStates[i]?.media?.name
+                            || 'Imagen o video (JPG/PNG/WebP/MP4/WebM)'
+                        }}
+                      </small>
+                    </label>
+                    <button
+                      type="button"
+                      class="btn ghost"
+                      (click)="removeDifferentiatorMedia(i)"
+                      [disabled]="!differentiatorMediaStates[i]?.pendingFile && !differentiatorMediaStates[i]?.media">
+                      Quitar media
+                    </button>
+                  </div>
                 </label>
               </div>
               <label>

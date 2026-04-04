@@ -106,6 +106,11 @@
             background: linear-gradient(90deg, rgba(16, 185, 129, 0.1) 0%, transparent 100%);
         }
 
+        .amenity-row.is-active {
+            padding-left: 1.5rem;
+            background: linear-gradient(90deg, rgba(16, 185, 129, 0.18) 0%, transparent 100%);
+        }
+
         .amenity-row span:first-child {
             font-size: 10px;
             font-weight: 900;
@@ -604,6 +609,7 @@
 
         <div class="lg:col-span-7 h-[800px] rounded-[60px] overflow-hidden sticky top-32 glass-panel">
             <img id="amenity-visual" src="https://images.unsplash.com/photo-1600566752355-35792bedcfea?auto=format&fit=crop&q=80&w=1400" class="w-full h-full object-cover transition-all duration-1000" alt="Feature visual">
+            <video id="amenity-visual-video" class="w-full h-full object-cover transition-all duration-1000 hidden" autoplay muted loop playsinline></video>
             <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
             <div class="absolute bottom-12 left-12 max-w-md">
                 <p class="text-[9px] font-black uppercase tracking-[0.4em] text-white/35 mb-4">Project Summary</p>
@@ -1155,6 +1161,33 @@
             };
         }
 
+        function normalizeDifferentiator(item, index = 0) {
+            if (!item) return null;
+            if (typeof item === 'string') {
+                return {
+                    text: item,
+                    code: String(index + 1).padStart(2, '0'),
+                    media: null
+                };
+            }
+
+            const mediaRaw = item.media && typeof item.media === 'object' ? item.media : null;
+            const media = mediaRaw
+                ? {
+                    id: mediaRaw.id || null,
+                    url: mediaRaw.url || mediaRaw.file_url || mediaRaw.path || '',
+                    type: mediaRaw.type || (String(mediaRaw.mimeType || mediaRaw.mime_type || '').startsWith('video/') ? 'video' : 'image'),
+                    name: mediaRaw.name || mediaRaw.original_name || ''
+                }
+                : null;
+
+            return {
+                text: item.text || item.nombre || item.label || '',
+                code: String(item.sort_order || index + 1).padStart(2, '0'),
+                media: media && media.url ? media : null
+            };
+        }
+
         function normalizeTypology(item) {
             if (!item) return null;
             if (typeof item === 'string') {
@@ -1294,6 +1327,9 @@
             const documents = rawData?.documentos || {};
             const tipologias = toArray(rawData?.tipologias_asociadas).map(normalizeTypology).filter(Boolean);
             const amenities = toArray(rawData?.amenities).map((item, index) => normalizeAmenity(item, index)).filter(Boolean);
+            const differentiatorsDetail = toArray(rawData?.diferenciadores_detalle)
+                .map((item, index) => normalizeDifferentiator(item, index))
+                .filter(Boolean);
             const gallery = toArray(multimedia.gallery).map(normalizeGalleryItem).filter(Boolean);
             const unidadesDisponibles = toNumber(rawData?.unidades_disponibles, 0);
             const unidadesTotales = toNumber(rawData?.unidades_totales, 0);
@@ -1311,6 +1347,12 @@
                 ctaLabel: rawData?.ctaLabel || rawData?.cta || rawData?.cta_principal || 'Solicitar visita guiada',
                 narrativa: rawData?.narrativa || rawData?.narrativa_comercial || rawData?.descripcion_comercial || '',
                 diferenciadores: toArray(rawData?.diferenciadores).map((item) => String(item || '').trim()).filter(Boolean),
+                diferenciadores_detalle:
+                    differentiatorsDetail.length > 0
+                        ? differentiatorsDetail
+                        : toArray(rawData?.diferenciadores)
+                            .map((item, index) => normalizeDifferentiator(item, index))
+                            .filter(Boolean),
                 video_tour_url: rawData?.video_tour_url || '',
                 descripcion_comercial: rawData?.descripcion_comercial || rawData?.narrativa || rawData?.nombre || '',
                 direccion_pin: rawData?.direccion_pin || '',
@@ -1604,13 +1646,53 @@
             const amenityList = document.getElementById('amenities-list-vertical');
             if (!amenityList) return;
             const differentiators = Array.isArray(data.diferenciadores) ? data.diferenciadores : [];
+            const differentiatorsDetail = Array.isArray(data.diferenciadores_detalle) ? data.diferenciadores_detalle : [];
             if (differentiators.length) {
-                amenityList.innerHTML = differentiators.map((text, index) => `
+                const rows = differentiatorsDetail.length
+                    ? differentiatorsDetail
+                    : differentiators.map((text, index) => ({ text, code: String(index + 1).padStart(2, '0'), media: null }));
+                amenityList.innerHTML = rows.map((item, index) => `
                     <div class="amenity-row">
-                        <span>${String(index + 1).padStart(2, '0')}</span>
-                        <span class="text-2xl font-bold uppercase tracking-tighter">${escapeHtml(text)}</span>
+                        <span>${escapeHtml(item.code || String(index + 1).padStart(2, '0'))}</span>
+                        <span class="text-2xl font-bold uppercase tracking-tighter">${escapeHtml(item.text || '')}</span>
                     </div>
                 `).join('');
+
+                const fallbackVisual = data.multimedia.gallery[0]?.url || data.multimedia.portada_url || '';
+                const setFeatureVisual = (media) => {
+                    const amenityVisual = document.getElementById('amenity-visual');
+                    const amenityVideo = document.getElementById('amenity-visual-video');
+                    const mediaType = String(media?.type || '').toLowerCase();
+                    const mediaUrl = media?.url || fallbackVisual;
+                    if (amenityVisual && amenityVideo) {
+                        if (mediaType === 'video' && mediaUrl) {
+                            amenityVideo.src = mediaUrl;
+                            amenityVideo.classList.remove('hidden');
+                            amenityVisual.classList.add('hidden');
+                            amenityVideo.play?.().catch(() => {});
+                        } else {
+                            amenityVisual.src = mediaUrl || amenityVisual.src;
+                            amenityVisual.classList.remove('hidden');
+                            amenityVideo.classList.add('hidden');
+                            amenityVideo.pause?.();
+                            amenityVideo.removeAttribute('src');
+                            amenityVideo.load?.();
+                        }
+                    }
+                };
+
+                const rowElements = Array.from(amenityList.querySelectorAll('.amenity-row'));
+                rowElements.forEach((element, index) => {
+                    element.addEventListener('click', () => {
+                        rowElements.forEach((row) => row.classList.remove('is-active'));
+                        element.classList.add('is-active');
+                        setFeatureVisual(rows[index]?.media || null);
+                    });
+                });
+                if (rowElements.length) {
+                    rowElements[0].classList.add('is-active');
+                    setFeatureVisual(rows[0]?.media || null);
+                }
                 return;
             }
 
@@ -1728,8 +1810,18 @@
                 setApartmentLayerBackground('apartments-img-feat', data.multimedia.gallery[1]?.url || visualUrl);
 
                 const amenityVisual = document.getElementById('amenity-visual');
+                const amenityVideo = document.getElementById('amenity-visual-video');
                 if (amenityVisual && visualUrl) {
                     amenityVisual.src = visualUrl;
+                }
+                if (amenityVisual) {
+                    amenityVisual.classList.remove('hidden');
+                }
+                if (amenityVideo) {
+                    amenityVideo.classList.add('hidden');
+                    amenityVideo.pause?.();
+                    amenityVideo.removeAttribute('src');
+                    amenityVideo.load?.();
                 }
 
                 const tourVisual = document.getElementById('tour-visual');
