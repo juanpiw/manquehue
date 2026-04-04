@@ -233,6 +233,7 @@ export class NuevoProyectoComponent implements OnDestroy {
   isLoadingSavedProjects = false;
   savedProjectsError = '';
   savedProjects: SavedProjectItem[] = [];
+  selectedProjectPickerId = '';
 
   isAssociationModalOpen = false;
   associationForm = {
@@ -691,7 +692,7 @@ export class NuevoProyectoComponent implements OnDestroy {
       return '';
     }
     const apiBase = encodeURIComponent(this.resolvePublicApiBaseUrl());
-    return `landing-prueba-api.html?apiBase=${apiBase}&projectId=${this.currentProjectId}`;
+    return `dashManqu/landing-prueba-api.html?apiBase=${apiBase}&projectId=${this.currentProjectId}`;
   }
 
   async copyProjectId(): Promise<void> {
@@ -708,7 +709,7 @@ export class NuevoProyectoComponent implements OnDestroy {
       this.saveFeedback = 'No se pudo copiar la URL.';
       return;
     }
-    const absoluteUrl = `${window.location.origin}/${this.landingManualUrl}`;
+    const absoluteUrl = new URL(this.landingManualUrl, `${window.location.origin}/`).toString();
     await navigator.clipboard.writeText(absoluteUrl);
     this.saveFeedback = 'URL de landing copiada.';
   }
@@ -717,7 +718,7 @@ export class NuevoProyectoComponent implements OnDestroy {
     if (!this.currentProjectId || typeof window === 'undefined') {
       return;
     }
-    const absoluteUrl = `${window.location.origin}/${this.landingManualUrl}`;
+    const absoluteUrl = new URL(this.landingManualUrl, `${window.location.origin}/`).toString();
     window.open(absoluteUrl, '_blank', 'noopener,noreferrer');
   }
 
@@ -754,6 +755,9 @@ export class NuevoProyectoComponent implements OnDestroy {
         status: String(row['status'] || 'draft'),
         updatedAt: row['updated_at'] ? String(row['updated_at']) : null
       })).filter((row) => row.id > 0);
+      if (!this.selectedProjectPickerId && this.currentProjectId) {
+        this.selectedProjectPickerId = String(this.currentProjectId);
+      }
       console.log('[NuevoProyectoUI] saved projects loaded', { total: this.savedProjects.length });
     } catch (error) {
       console.error('[NuevoProyectoUI] loadSavedProjects error', error);
@@ -784,6 +788,7 @@ export class NuevoProyectoComponent implements OnDestroy {
       );
       const data = (response?.data || {}) as Record<string, unknown>;
       this.currentProjectId = projectId;
+      this.selectedProjectPickerId = String(projectId);
       this.storeProjectId(projectId);
       this.project.name = String(data['nombre'] || '');
       this.project.description = String(data['descripcion_comercial'] || '');
@@ -811,6 +816,43 @@ export class NuevoProyectoComponent implements OnDestroy {
     } finally {
       this.isLoadingSavedProjects = false;
     }
+  }
+
+  async refreshProjectPicker(): Promise<void> {
+    await this.loadSavedProjects();
+    this.saveFeedback = this.savedProjects.length
+      ? `${this.savedProjects.length} proyecto(s) disponibles.`
+      : 'No hay proyectos guardados todavía.';
+  }
+
+  async loadProjectFromPicker(): Promise<void> {
+    const projectId = Number(this.selectedProjectPickerId || 0);
+    if (!projectId) {
+      this.saveFeedback = 'Selecciona un ID para cargar.';
+      return;
+    }
+    const exists = this.savedProjects.some((project) => project.id === projectId);
+    if (exists) {
+      await this.selectSavedProject(projectId);
+      return;
+    }
+
+    const shouldCreate = typeof window === 'undefined'
+      ? false
+      : window.confirm(
+          `El ID #${projectId} no existe. Si continúas, crearás un proyecto nuevo y se limpiará el formulario. ` +
+          'La base de datos asignará el próximo ID disponible.'
+        );
+    if (!shouldCreate) {
+      return;
+    }
+    this.resetFormForNewProject();
+    this.saveFeedback = `Preparado para crear un proyecto nuevo. La BD asignará un ID nuevo al guardar.`;
+  }
+
+  createNewProjectId(): void {
+    this.resetFormForNewProject();
+    this.saveFeedback = 'Formulario desacoplado del proyecto actual. Al guardar se creará un nuevo ID.';
   }
 
   async saveCurrentStep(): Promise<void> {
@@ -1630,6 +1672,119 @@ export class NuevoProyectoComponent implements OnDestroy {
       return;
     }
     localStorage.setItem('imanquehue_current_project_id', String(projectId));
+  }
+
+  private clearStoredProjectId(): void {
+    if (typeof window === 'undefined') {
+      return;
+    }
+    localStorage.removeItem('imanquehue_current_project_id');
+  }
+
+  private resetFormForNewProject(): void {
+    this.currentProjectId = null;
+    this.selectedProjectPickerId = '';
+    this.clearStoredProjectId();
+    this.currentStep = 1;
+
+    if (this.coverImagePreviewUrl) {
+      URL.revokeObjectURL(this.coverImagePreviewUrl);
+    }
+    this.coverImagePreviewUrl = null;
+    this.coverImageFile = null;
+    this.ambientAudioFile = null;
+    this.pendingGalleryFiles = [];
+    this.step3AssetFiles = {
+      masterPlan: null,
+      brochure: null,
+      legalDocs: null
+    };
+
+    this.project = {
+      name: '',
+      description: '',
+      propertyType: 'apartment',
+      estado: this.deliveryOptions[0].id,
+      fechaEntrega: '',
+      orientacion: '',
+      ubicacion: '',
+      puntoCercano: '',
+      puntoCercano2: '',
+      entornoDescripcion: '',
+      mapAddress: '',
+      coverImage: '',
+      ambientAudio: ''
+    };
+    this.timings = {
+      preVenta: 5,
+      recorrido: 10,
+      postVenta: 15
+    };
+    this.unitConfig = {
+      totalUnits: 120,
+      availableUnits: 2,
+      deliveryQuarter: 'Q4 · 2025',
+      stage: '2D / 2B',
+      parkingRatio: 1.2,
+      storageIncluded: true,
+      petFriendly: true,
+      observation: ''
+    };
+    this.mediaAssets = {
+      masterPlan: '',
+      brochure: '',
+      legalDocs: ''
+    };
+    this.mediaGallery = [];
+    this.contentPlan = {
+      heroHeadline: 'Un nuevo skyline en Manquehue',
+      heroTagline: 'Departamentos inteligentes con vistas infinitas.',
+      narrative: '',
+      sellingPoints: [
+        'Sky pool temperada con vista 360°',
+        'Cowork panorámico 24/7',
+        'Departamentos con domótica integrada'
+      ],
+      ctaLabel: 'Solicitar visita guiada',
+      videoUrl: ''
+    };
+    this.publicationSettings = {
+      scheduleDate: '',
+      scheduleTime: '',
+      notifyTeam: true,
+      autoTranslate: false,
+      remarks: ''
+    };
+    this.publicationSettingsEnabled = true;
+    this.modelAssociations = [
+      { typology: '2D / 2B', model: 'Azotea' },
+      { typology: '3D / 3B', model: 'Jardín' }
+    ];
+
+    this.typologyOptions.forEach((option) => {
+      this.revokeTypologyPreview(option);
+      this.revokeTypologyBlueprintPreview(option);
+      option.selected = option.id === '2d1b' || option.id === '2d2b';
+      option.media = null;
+      option.pendingFile = null;
+      option.pendingPreviewUrl = null;
+      option.pendingMediaType = null;
+      option.removeMedia = false;
+      option.blueprint = null;
+      option.pendingBlueprintFile = null;
+      option.pendingBlueprintPreviewUrl = null;
+      option.removeBlueprint = false;
+    });
+
+    const defaultAmenityIds = new Set(['cowork', 'gourmet', 'gym', 'pool']);
+    this.amenityOptions = this.amenityOptions.map((option) => ({
+      ...option,
+      selected: defaultAmenityIds.has(option.id)
+    }));
+
+    this.differentiatorMediaStates.forEach((slot) => this.revokeDifferentiatorPreview(slot));
+    this.differentiatorMediaStates = [];
+    this.ensureDifferentiatorMediaStatesLength(this.contentPlan.sellingPoints.length);
   }
 
   ngOnDestroy(): void {

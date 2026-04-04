@@ -234,6 +234,24 @@
     gap: 0.45rem;
     flex-wrap: wrap;
   }
+
+  &__project-id-picker {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.5rem;
+    margin-bottom: 0.55rem;
+  }
+
+  &__project-id-select {
+    width: 100%;
+    border-radius: 0.85rem;
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    background: #fff;
+    color: #1f2937;
+    padding: 0.7rem 0.85rem;
+    font-size: 0.85rem;
+    outline: none;
+  }
 }
 
 .np-card {

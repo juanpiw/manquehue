@@ -33,7 +33,24 @@
       <div class="np__project-id-panel np__project-id-panel--inline">
         <p class="np__project-id-title">ID de Proyecto (BD)</p>
         <p class="np__project-id-value">{{ currentProjectId || 'Sin guardar' }}</p>
+        <div class="np__project-id-picker">
+          <input
+            type="number"
+            min="1"
+            [(ngModel)]="selectedProjectPickerId"
+            class="np__project-id-select"
+            list="np-project-id-options"
+            placeholder="Escribe o selecciona un ID" />
+          <datalist id="np-project-id-options">
+            <option *ngFor="let project of savedProjects" [value]="project.id">
+              #{{ project.id }} - {{ project.nombre }}
+            </option>
+          </datalist>
+          <button type="button" class="btn ghost" (click)="refreshProjectPicker()">Refrescar IDs</button>
+        </div>
         <div class="np__project-id-actions">
+          <button type="button" class="btn ghost" (click)="loadProjectFromPicker()" [disabled]="!selectedProjectPickerId">Usar ID</button>
+          <button type="button" class="btn ghost" (click)="createNewProjectId()">Nuevo ID</button>
           <button type="button" class="btn light" (click)="copyProjectId()" [disabled]="!currentProjectId">Copiar ID</button>
           <button type="button" class="btn save-blue" (click)="openLandingWithProjectId()" [disabled]="!currentProjectId">Abrir Landing (ID)</button>
         </div>
