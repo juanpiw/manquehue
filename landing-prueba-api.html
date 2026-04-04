@@ -1413,7 +1413,7 @@
                 unidades_list: buildUnitCards(rawData?.unidades_list, tipologias, unidadesDisponibles, unidadesTotales),
                 sucursales: toArray(rawData?.sucursales).map(normalizeBranch).filter(Boolean),
                 multimedia: {
-                    portada_url: multimedia.portada_url || initialData.multimedia.portada_url,
+                    portada_url: multimedia.portada_url || '',
                     audio_url: multimedia.audio_url || '',
                     gallery
                 },
@@ -2202,10 +2202,17 @@
                 updateRuntimeStatus(selectedId);
             });
 
-            jsonArea.value = JSON.stringify(normalizeLandingData(initialData), null, 4);
+            const hasRuntimeProjectId = Boolean(runtime.projectId);
+            jsonArea.value = JSON.stringify(
+                hasRuntimeProjectId ? {} : normalizeLandingData(initialData),
+                null,
+                4
+            );
             updateRuntimeStatus(runtime.projectId || null);
             renderProjectIdsDropdown();
-            renderLanding(initialData);
+            if (!hasRuntimeProjectId) {
+                renderLanding(initialData);
+            }
             initAnimations();
             bindAudioModule();
 

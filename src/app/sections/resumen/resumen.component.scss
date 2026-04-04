@@ -423,6 +423,10 @@
     color: #2563eb;
   }
 
+  .status-draft {
+    color: #64748b;
+  }
+
   &__status-dot {
     width: 0.5rem;
     height: 0.5rem;
@@ -446,6 +450,16 @@
     opacity: 0;
     transform: translateY(0.5rem);
     transition: opacity 0.25s ease, transform 0.25s ease;
+  }
+
+  &__project-card--empty {
+    justify-content: center;
+    min-height: 14rem;
+
+    .resumen__project-info {
+      text-align: center;
+      width: 100%;
+    }
   }
 
   &__project-card:hover &__project-edit {

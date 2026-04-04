@@ -81,9 +81,9 @@
           <div class="resumen__projects-head">
             <h3>Proyectos recientes</h3>
             <div class="resumen__filters">
-              <button class="active">Todos</button>
-              <button>En venta</button>
-              <button>Drafts</button>
+              <button class="active">Reales</button>
+              <button>{{ projectsCount }} activos</button>
+              <button *ngIf="isLoading">Cargando...</button>
             </div>
           </div>
 
@@ -112,6 +112,14 @@
                   <span [style.width.%]="project.progress"></span>
                 </div>
                 <small>{{ project.progress }}% completado</small>
+                <small *ngIf="project.updatedAt">Actualizado {{ project.updatedAt | date:'d MMM yyyy, HH:mm' }}</small>
+              </div>
+            </article>
+
+            <article class="resumen__project-card resumen__project-card--empty" *ngIf="!isLoading && featuredProjects.length === 0">
+              <div class="resumen__project-info">
+                <h4>Aún no hay proyectos reales</h4>
+                <p>Inicia un proyecto desde el dashboard para verlo aquí.</p>
               </div>
             </article>
 
