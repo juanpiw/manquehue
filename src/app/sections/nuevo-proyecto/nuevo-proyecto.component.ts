@@ -768,14 +768,17 @@ export class NuevoProyectoComponent implements OnDestroy {
     }
   }
 
-  async selectSavedProject(projectId: number): Promise<void> {
+  async selectSavedProject(
+    projectId: number,
+    options: { suppressNotFoundMessage?: boolean } = {}
+  ): Promise<'loaded' | 'not_found' | 'error'> {
     if (!projectId) {
-      return;
+      return 'error';
     }
     const token = this.getAccessToken();
     if (!token) {
       this.savedProjectsError = 'Sesión inválida para cargar proyecto.';
-      return;
+      return 'error';
     }
     this.isLoadingSavedProjects = true;
     this.savedProjectsError = '';
@@ -810,9 +813,17 @@ export class NuevoProyectoComponent implements OnDestroy {
       this.saveFeedback = `Proyecto #${projectId} cargado correctamente.`;
       console.log('[NuevoProyectoUI] saved project selected', { projectId, data });
       this.closeSavedProjectsModal();
+      return 'loaded';
     } catch (error) {
       console.error('[NuevoProyectoUI] selectSavedProject error', error);
+      if (error instanceof HttpErrorResponse && error.status === 404) {
+        if (!options.suppressNotFoundMessage) {
+          this.savedProjectsError = `El proyecto #${projectId} no existe.`;
+        }
+        return 'not_found';
+      }
       this.savedProjectsError = 'No se pudo cargar el proyecto seleccionado.';
+      return 'error';
     } finally {
       this.isLoadingSavedProjects = false;
     }
@@ -826,14 +837,28 @@ export class NuevoProyectoComponent implements OnDestroy {
   }
 
   async loadProjectFromPicker(): Promise<void> {
-    const projectId = Number(this.selectedProjectPickerId || 0);
+    const projectId = this.parseProjectPickerId(this.selectedProjectPickerId);
     if (!projectId) {
       this.saveFeedback = 'Selecciona un ID para cargar.';
       return;
     }
+
+    if (!this.savedProjects.length && this.getAccessToken()) {
+      await this.loadSavedProjects();
+    }
+
     const exists = this.savedProjects.some((project) => project.id === projectId);
     if (exists) {
       await this.selectSavedProject(projectId);
+      return;
+    }
+
+    const directLoadResult = await this.selectSavedProject(projectId, { suppressNotFoundMessage: true });
+    if (directLoadResult === 'loaded') {
+      return;
+    }
+    if (directLoadResult === 'error') {
+      this.saveFeedback = '';
       return;
     }
 
@@ -853,6 +878,16 @@ export class NuevoProyectoComponent implements OnDestroy {
   createNewProjectId(): void {
     this.resetFormForNewProject();
     this.saveFeedback = 'Formulario desacoplado del proyecto actual. Al guardar se creará un nuevo ID.';
+  }
+
+  private parseProjectPickerId(value: string | number | null | undefined): number {
+    const normalized = String(value ?? '').trim();
+    if (!normalized) {
+      return 0;
+    }
+    const digitsOnly = normalized.replace(/[^\d]/g, '');
+    const projectId = Number(digitsOnly);
+    return Number.isInteger(projectId) && projectId > 0 ? projectId : 0;
   }
 
   async saveCurrentStep(): Promise<void> {
