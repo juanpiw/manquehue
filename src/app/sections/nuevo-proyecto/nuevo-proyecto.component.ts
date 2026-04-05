@@ -1370,7 +1370,7 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
     };
   }
 
-  private parseBranchId(value: string | number | null | undefined): number | null {
+  private parseBranchId(value: unknown): number | null {
     const parsed = Number(value || 0);
     return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
   }
