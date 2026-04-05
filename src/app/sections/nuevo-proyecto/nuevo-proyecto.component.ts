@@ -63,6 +63,42 @@ type DifferentiatorMediaState = {
   removeMedia: boolean;
 };
 
+type PublicationChannel = {
+  id: string;
+  label: string;
+  description: string;
+  selected: boolean;
+  branchId: number | null;
+  code?: string | null;
+};
+
+type ProjectScreenStatus = 'online' | 'offline' | 'maintenance' | 'draft';
+type ProjectScreenOrientation = 'horizontal' | 'vertical';
+
+type ProjectScreen = {
+  localId: string;
+  id: number | null;
+  branchId: number | null;
+  branchName: string;
+  screenName: string;
+  screenCode: string;
+  locationLabel: string;
+  status: ProjectScreenStatus;
+  deviceModel: string;
+  operatingSystem: string;
+  resolution: string;
+  orientation: ProjectScreenOrientation;
+  connectivity: string;
+  responsibleName: string;
+  responsibleRole: string;
+  responsibleEmail: string;
+  responsiblePhone: string;
+  lastSyncAt: string;
+  lastActivityAt: string;
+  notes: string;
+  sortOrder: number;
+};
+
 @Component({
   selector: 'app-nuevo-proyecto',
   standalone: true,
@@ -156,16 +192,28 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
     { id: 'kidsRoom', label: 'Salón de niños', selected: false }
   ];
   newAmenityLabel = '';
-  publicationChannels = [
-    { id: 'residencial-las-condes', label: 'Residencial Las Condes', description: 'Sucursal', selected: true },
-    { id: 'casa-familiar-providencia', label: 'Casa Familiar Providencia', description: 'Sucursal', selected: false },
-    { id: 'cancha-deportiva-maipu', label: 'Cancha Deportiva Maipú', description: 'Sucursal', selected: false },
-    { id: 'edificio-corporativo-santiago-centro', label: 'Edificio Corporativo Santiago Centro', description: 'Sucursal', selected: false },
-    { id: 'villa-residencial-nunoa', label: 'Villa Residencial Ñuñoa', description: 'Sucursal', selected: false },
-    { id: 'centro-comercial-las-condes', label: 'Centro Comercial Las Condes', description: 'Sucursal', selected: false }
+  publicationChannels: PublicationChannel[] = [
+    { id: 'residencial-las-condes', label: 'Residencial Las Condes', description: 'Sucursal', selected: true, branchId: null },
+    { id: 'casa-familiar-providencia', label: 'Casa Familiar Providencia', description: 'Sucursal', selected: false, branchId: null },
+    { id: 'cancha-deportiva-maipu', label: 'Cancha Deportiva Maipu', description: 'Sucursal', selected: false, branchId: null },
+    { id: 'edificio-corporativo-santiago-centro', label: 'Edificio Corporativo Santiago Centro', description: 'Sucursal', selected: false, branchId: null },
+    { id: 'villa-residencial-nunoa', label: 'Villa Residencial Nunoa', description: 'Sucursal', selected: false, branchId: null },
+    { id: 'centro-comercial-las-condes', label: 'Centro Comercial Las Condes', description: 'Sucursal', selected: false, branchId: null }
   ];
   branchSearch = '';
   newBranchName = '';
+  projectScreens: ProjectScreen[] = [];
+  readonly screenStatusOptions: Array<{ id: ProjectScreenStatus; label: string }> = [
+    { id: 'online', label: 'Online' },
+    { id: 'offline', label: 'Offline' },
+    { id: 'maintenance', label: 'Mantención' },
+    { id: 'draft', label: 'Borrador' }
+  ];
+  readonly screenOrientationOptions: Array<{ id: ProjectScreenOrientation; label: string }> = [
+    { id: 'horizontal', label: 'Horizontal' },
+    { id: 'vertical', label: 'Vertical' }
+  ];
+  readonly screenConnectivityOptions = ['Ethernet', 'WiFi', '4G/5G', 'Híbrida'];
 
   currentStep = 1;
   currentProjectId: number | null = null;
@@ -261,6 +309,7 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
   constructor(private http: HttpClient) {
     this.currentProjectId = this.getStoredProjectId();
     this.ensureDifferentiatorMediaStatesLength(this.contentPlan.sellingPoints.length);
+    this.projectScreens = [this.createEmptyProjectScreen()];
     if (this.currentProjectId) {
       this.selectedProjectPickerId = String(this.currentProjectId);
     }
@@ -269,6 +318,7 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
   ngOnInit(): void {
     if (this.getAccessToken()) {
       void this.loadSavedProjects();
+      void this.loadBranchChannels(this.getAccessToken());
     }
   }
 
@@ -564,53 +614,114 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
   }
 
   addBranchChannel() {
-    const label = this.branchSearch.trim();
-    if (!label) {
+    const branchId = this.parseBranchId(this.branchSearch);
+    if (!branchId) {
       return;
     }
-    const existing = this.publicationChannels.find(
-      channel => channel.label.toLowerCase() === label.toLowerCase()
-    );
-    if (existing) {
-      this.selectBranchChannel(existing.label);
-      return;
-    }
-    const id = `branch-${label
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '')}`;
-    this.publicationChannels = [
-      ...this.publicationChannels,
-      { id, label, description: 'Sucursal', selected: false }
-    ];
-    this.selectBranchChannel(label);
+    this.selectBranchChannel(branchId);
   }
 
-  selectBranchChannel(label: string) {
-    this.publicationChannels = this.publicationChannels.map(channel => ({
+  selectBranchChannel(branchId: number | null) {
+    this.publicationChannels = this.publicationChannels.map((channel) => ({
       ...channel,
-      selected: channel.label === label
+      selected: branchId !== null && channel.branchId === branchId
     }));
-    this.branchSearch = label;
+    this.branchSearch = branchId ? String(branchId) : '';
   }
 
-  addBranchFromInput() {
+  async addBranchFromInput() {
     const label = this.newBranchName.trim();
     if (!label) {
       return;
     }
-    this.branchSearch = label;
-    this.newBranchName = '';
-    this.addBranchChannel();
+    const token = this.getAccessToken();
+    if (!token) {
+      this.saveFeedback = 'Inicia sesión para crear sucursales.';
+      return;
+    }
+    try {
+      const response = await firstValueFrom(
+        this.http.post<{ data?: { branchId?: number | null } }>(
+          `${this.getApiBaseUrl()}/api/dash-manquehue/projects/branches`,
+          { name: label },
+          { headers: this.buildJsonHeaders(token) }
+        )
+      );
+      const branchId = Number(response?.data?.branchId || 0) || null;
+      this.newBranchName = '';
+      await this.loadBranchChannels(token, branchId);
+      this.saveFeedback = branchId
+        ? `Sucursal creada y seleccionada: ${label}.`
+        : `Sucursal creada: ${label}.`;
+    } catch (error) {
+      console.error('[NuevoProyectoUI] addBranchFromInput error', error);
+      this.saveFeedback = this.getApiErrorMessage(error);
+    }
   }
 
-  get branchOptions(): string[] {
-    return this.publicationChannels
-      .filter(channel => channel.description === 'Sucursal')
-      .map(channel => channel.label)
-      .sort((a, b) => a.localeCompare(b));
+  addScreenCard(): void {
+    const selectedChannel = this.publicationChannels.find((channel) => channel.selected) || null;
+    this.projectScreens = [
+      ...this.projectScreens,
+      this.createEmptyProjectScreen({
+        branchId: selectedChannel?.branchId || null,
+        branchName: selectedChannel?.label || '',
+        sortOrder: this.projectScreens.length + 1
+      })
+    ];
+  }
+
+  removeScreenCard(localId: string): void {
+    const nextScreens = this.projectScreens
+      .filter((screen) => screen.localId !== localId)
+      .map((screen, index) => ({ ...screen, sortOrder: index + 1 }));
+    this.projectScreens = nextScreens.length ? nextScreens : [this.createEmptyProjectScreen()];
+  }
+
+  syncScreenBranchName(screen: ProjectScreen, branchIdValue: string | number | null): void {
+    const branchId = this.parseBranchId(branchIdValue);
+    const branch = this.publicationChannels.find((channel) => channel.branchId === branchId) || null;
+    screen.branchId = branchId;
+    screen.branchName = branch?.label || '';
+    if (branchId && this.selectedBranchId === null) {
+      this.selectBranchChannel(branchId);
+    }
+  }
+
+  get branchOptions(): PublicationChannel[] {
+    return [...this.publicationChannels].sort((a, b) => a.label.localeCompare(b.label));
+  }
+
+  get selectedBranchId(): number | null {
+    return this.publicationChannels.find((channel) => channel.selected)?.branchId || null;
+  }
+
+  get selectedBranchLabel(): string {
+    return this.publicationChannels.find((channel) => channel.selected)?.label || '';
+  }
+
+  get totalOnlineScreens(): number {
+    return this.projectScreens.filter((screen) => screen.status === 'online').length;
+  }
+
+  get totalOfflineScreens(): number {
+    return this.projectScreens.filter((screen) => screen.status === 'offline').length;
+  }
+
+  getScreenInitials(value: string): string {
+    const parts = String(value || '')
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2);
+    if (!parts.length) {
+      return 'SC';
+    }
+    return parts.map((part) => part.charAt(0).toUpperCase()).join('');
+  }
+
+  getScreenStatusLabel(status: ProjectScreenStatus): string {
+    return this.screenStatusOptions.find((option) => option.id === status)?.label || 'Borrador';
   }
 
   saveDraft() {
@@ -903,6 +1014,7 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
       await this.loadStep2Resources(projectId, sessionToken);
       await this.loadStep3Resources(projectId, sessionToken);
       await this.loadStep4Resources(projectId, sessionToken);
+      await this.loadStep5Resources(projectId, sessionToken);
       this.saveFeedback = `Proyecto #${projectId} cargado correctamente.`;
       console.log('[NuevoProyectoUI] saved project selected', { projectId, data });
       this.closeSavedProjectsModal();
@@ -1105,6 +1217,10 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
         await this.saveStep4Resources(projectId, token);
       }
 
+      if (this.currentStep === 5) {
+        await this.saveStep5Resources(projectId, token);
+      }
+
       const stepPayload = this.buildCurrentStepPayload();
       console.log('[NuevoProyectoUI] PATCH step payload', {
         projectId,
@@ -1219,8 +1335,102 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
     return {
       publicationSettingsEnabled: this.publicationSettingsEnabled,
       publicationSettings: this.publicationSettings,
-      publicationChannels: this.publicationChannels
+      publicationChannels: this.publicationChannels,
+      selectedBranchId: this.selectedBranchId,
+      selectedBranchLabel: this.selectedBranchLabel || null,
+      projectScreens: this.projectScreens
     };
+  }
+
+  private createEmptyProjectScreen(overrides: Partial<ProjectScreen> = {}): ProjectScreen {
+    const nextIndex = Number(overrides.sortOrder || this.projectScreens.length + 1) || 1;
+    return {
+      localId: `screen-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`,
+      id: null,
+      branchId: null,
+      branchName: '',
+      screenName: `Pantalla ${nextIndex}`,
+      screenCode: '',
+      locationLabel: '',
+      status: 'draft',
+      deviceModel: 'Touch 50',
+      operatingSystem: 'Windows 11 Pro',
+      resolution: '1920 x 1080',
+      orientation: 'horizontal',
+      connectivity: 'Ethernet',
+      responsibleName: '',
+      responsibleRole: '',
+      responsibleEmail: '',
+      responsiblePhone: '',
+      lastSyncAt: '',
+      lastActivityAt: '',
+      notes: '',
+      sortOrder: nextIndex,
+      ...overrides
+    };
+  }
+
+  private parseBranchId(value: string | number | null | undefined): number | null {
+    const parsed = Number(value || 0);
+    return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
+  }
+
+  private normalizeDateTimeLocal(value: unknown): string {
+    const raw = String(value || '').trim();
+    if (!raw) {
+      return '';
+    }
+    const normalized = raw.replace(' ', 'T');
+    const parsed = new Date(normalized);
+    if (Number.isNaN(parsed.getTime())) {
+      return normalized.slice(0, 16);
+    }
+    const local = new Date(parsed.getTime() - parsed.getTimezoneOffset() * 60000);
+    return local.toISOString().slice(0, 16);
+  }
+
+  private buildPublicationChannelsFromRows(
+    rows: Array<Record<string, unknown>>,
+    selectedBranchId: number | null = null
+  ): PublicationChannel[] {
+    if (!rows.length) {
+      return this.publicationChannels.map((channel) => ({
+        ...channel,
+        selected: selectedBranchId !== null && channel.branchId === selectedBranchId
+      }));
+    }
+    return rows.map((row, index) => {
+      const branchId = Number(row['id'] || 0) || null;
+      const label = String(row['name'] || '').trim() || `Sucursal ${index + 1}`;
+      return {
+        id: String(row['code'] || this.slugifyValue(label) || `branch-${branchId || index + 1}`),
+        label,
+        description: 'Sucursal',
+        selected: selectedBranchId !== null ? branchId === selectedBranchId : index === 0,
+        branchId,
+        code: String(row['code'] || '') || null
+      };
+    });
+  }
+
+  private async loadBranchChannels(token: string, selectedBranchId: number | null = null): Promise<void> {
+    try {
+      const response = await firstValueFrom(
+        this.http.get<{ data?: Array<Record<string, unknown>> }>(
+          `${this.getApiBaseUrl()}/api/dash-manquehue/projects/branches`,
+          { headers: this.buildJsonHeaders(token) }
+        )
+      );
+      const rows = Array.isArray(response?.data) ? response.data : [];
+      this.publicationChannels = this.buildPublicationChannelsFromRows(rows, selectedBranchId);
+      if (selectedBranchId) {
+        this.branchSearch = String(selectedBranchId);
+      } else if (this.selectedBranchId) {
+        this.branchSearch = String(this.selectedBranchId);
+      }
+    } catch (error) {
+      console.error('[NuevoProyectoUI] loadBranchChannels error', error);
+    }
   }
 
   private async uploadStep1File(
@@ -1570,6 +1780,145 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
       });
     } catch (error) {
       console.error('[NuevoProyectoUI] loadStep4Resources error', error);
+    }
+  }
+
+  private async saveStep5Resources(projectId: number, token: string): Promise<void> {
+    const selectedBranchId =
+      this.selectedBranchId ||
+      this.projectScreens.find((screen) => screen.branchId)?.branchId ||
+      null;
+
+    await firstValueFrom(
+      this.http.patch(
+        `${this.getApiBaseUrl()}/api/dash-manquehue/projects/${projectId}/publish-config`,
+        {
+          automationEnabled: this.publicationSettingsEnabled,
+          notifySalesTeam: this.publicationSettings.notifyTeam,
+          finalNotes: this.publicationSettings.remarks?.trim() || null,
+          selectedBranchId,
+          publicationMode: 'manual'
+        },
+        { headers: this.buildJsonHeaders(token) }
+      )
+    );
+
+    await firstValueFrom(
+      this.http.put(
+        `${this.getApiBaseUrl()}/api/dash-manquehue/projects/${projectId}/screens`,
+        {
+          screens: this.projectScreens
+            .map((screen, index) => ({
+              ...screen,
+              branchId: screen.branchId || selectedBranchId,
+              sortOrder: index + 1
+            }))
+            .filter((screen) =>
+              Boolean(
+                screen.branchId ||
+                  screen.screenName?.trim() ||
+                  screen.locationLabel?.trim() ||
+                  screen.responsibleName?.trim()
+              )
+            )
+        },
+        { headers: this.buildJsonHeaders(token) }
+      )
+    );
+  }
+
+  private async loadStep5Resources(projectId: number, token: string): Promise<void> {
+    try {
+      const [publishConfigResponse, screensResponse, branchesResponse] = await Promise.all([
+        firstValueFrom(
+          this.http.get<{ data?: Record<string, unknown> | null }>(
+            `${this.getApiBaseUrl()}/api/dash-manquehue/projects/${projectId}/publish-config`,
+            { headers: this.buildJsonHeaders(token) }
+          )
+        ),
+        firstValueFrom(
+          this.http.get<{ data?: Array<Record<string, unknown>> }>(
+            `${this.getApiBaseUrl()}/api/dash-manquehue/projects/${projectId}/screens`,
+            { headers: this.buildJsonHeaders(token) }
+          )
+        ),
+        firstValueFrom(
+          this.http.get<{ data?: Array<Record<string, unknown>> }>(
+            `${this.getApiBaseUrl()}/api/dash-manquehue/projects/branches`,
+            { headers: this.buildJsonHeaders(token) }
+          )
+        )
+      ]);
+
+      const publishConfig = (publishConfigResponse?.data || {}) as Record<string, unknown>;
+      const selectedBranchId = this.parseBranchId(publishConfig['selected_branch_id'] || publishConfig['selectedBranchId']);
+      const branchRows = Array.isArray(branchesResponse?.data) ? branchesResponse.data : [];
+      const screenRows = Array.isArray(screensResponse?.data) ? screensResponse.data : [];
+
+      this.publicationChannels = this.buildPublicationChannelsFromRows(branchRows, selectedBranchId);
+
+      screenRows.forEach((row) => {
+        const branchId = this.parseBranchId(row['branchId']);
+        const branchName = String(row['branchName'] || '').trim();
+        if (branchId && branchName && !this.publicationChannels.some((channel) => channel.branchId === branchId)) {
+          this.publicationChannels = [
+            ...this.publicationChannels,
+            {
+              id: String(row['branchCode'] || this.slugifyValue(branchName)),
+              label: branchName,
+              description: 'Sucursal',
+              selected: branchId === selectedBranchId,
+              branchId,
+              code: String(row['branchCode'] || '') || null
+            }
+          ];
+        }
+      });
+
+      this.publicationSettingsEnabled = Boolean(
+        publishConfig['automation_enabled'] ?? publishConfig['automationEnabled'] ?? true
+      );
+      this.publicationSettings = {
+        ...this.publicationSettings,
+        scheduleDate: '',
+        scheduleTime: '',
+        notifyTeam: Boolean(publishConfig['notify_sales_team'] ?? publishConfig['notifySalesTeam'] ?? true),
+        remarks: String(publishConfig['final_notes'] || publishConfig['finalNotes'] || '')
+      };
+      this.branchSearch = selectedBranchId ? String(selectedBranchId) : '';
+      if (selectedBranchId) {
+        this.selectBranchChannel(selectedBranchId);
+      }
+
+      this.projectScreens = screenRows.length
+        ? screenRows.map((row, index) =>
+            this.createEmptyProjectScreen({
+              localId: `screen-${row['id'] || index + 1}`,
+              id: Number(row['id'] || 0) || null,
+              branchId: this.parseBranchId(row['branchId']),
+              branchName: String(row['branchName'] || ''),
+              screenName: String(row['screenName'] || ''),
+              screenCode: String(row['screenCode'] || ''),
+              locationLabel: String(row['locationLabel'] || ''),
+              status: (String(row['status'] || 'draft') as ProjectScreenStatus),
+              deviceModel: String(row['deviceModel'] || ''),
+              operatingSystem: String(row['operatingSystem'] || ''),
+              resolution: String(row['resolution'] || ''),
+              orientation: (String(row['orientation'] || 'horizontal') as ProjectScreenOrientation),
+              connectivity: String(row['connectivity'] || ''),
+              responsibleName: String(row['responsibleName'] || ''),
+              responsibleRole: String(row['responsibleRole'] || ''),
+              responsibleEmail: String(row['responsibleEmail'] || ''),
+              responsiblePhone: String(row['responsiblePhone'] || ''),
+              lastSyncAt: this.normalizeDateTimeLocal(row['lastSyncAt']),
+              lastActivityAt: this.normalizeDateTimeLocal(row['lastActivityAt']),
+              notes: String(row['notes'] || ''),
+              sortOrder: Number(row['sortOrder'] || index + 1) || index + 1
+            })
+          )
+        : [this.createEmptyProjectScreen({ branchId: selectedBranchId, branchName: this.selectedBranchLabel })];
+    } catch (error) {
+      console.error('[NuevoProyectoUI] loadStep5Resources error', error);
     }
   }
 
@@ -2045,6 +2394,17 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
       remarks: ''
     };
     this.publicationSettingsEnabled = true;
+    this.publicationChannels = [
+      { id: 'residencial-las-condes', label: 'Residencial Las Condes', description: 'Sucursal', selected: true, branchId: null },
+      { id: 'casa-familiar-providencia', label: 'Casa Familiar Providencia', description: 'Sucursal', selected: false, branchId: null },
+      { id: 'cancha-deportiva-maipu', label: 'Cancha Deportiva Maipu', description: 'Sucursal', selected: false, branchId: null },
+      { id: 'edificio-corporativo-santiago-centro', label: 'Edificio Corporativo Santiago Centro', description: 'Sucursal', selected: false, branchId: null },
+      { id: 'villa-residencial-nunoa', label: 'Villa Residencial Nunoa', description: 'Sucursal', selected: false, branchId: null },
+      { id: 'centro-comercial-las-condes', label: 'Centro Comercial Las Condes', description: 'Sucursal', selected: false, branchId: null }
+    ];
+    this.branchSearch = '';
+    this.newBranchName = '';
+    this.projectScreens = [this.createEmptyProjectScreen()];
     this.modelAssociations = [
       { typology: '2D / 2B', model: 'Azotea' },
       { typology: '3D / 3B', model: 'Jardín' }

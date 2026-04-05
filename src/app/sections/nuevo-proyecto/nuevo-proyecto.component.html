@@ -753,41 +753,152 @@
                 <strong>{{ mediaAssets.masterPlan ? 'Masterplan listo' : 'Falta Masterplan' }}</strong>
                 <small>{{ mediaGallery.length }} recursos en galería</small>
               </div>
+              <div>
+                <span class="np-summary__label">Canal Principal</span>
+                <strong>{{ selectedBranchLabel || 'Selecciona una sucursal' }}</strong>
+              </div>
+              <div>
+                <span class="np-summary__label">Pantallas</span>
+                <strong>{{ projectScreens.length }} configurada(s)</strong>
+                <small>{{ totalOnlineScreens }} online · {{ totalOfflineScreens }} offline</small>
+              </div>
             </div>
           </article>
 
           <article class="np-card">
             <div class="np-card__head">
               <span>5</span>
-              <h3>Agenda & Automatización</h3>
+              <h3>Pantallas & Responsables</h3>
             </div>
-            <div class="np-form np-form__group">
-              <label class="np-toggle">
-                <span>Activar agenda y automatización</span>
-                <input type="checkbox" [(ngModel)]="publicationSettingsEnabled" />
-                <span class="np-toggle__slider"></span>
-              </label>
-              <label>
-                <span>Fecha publicación</span>
-                <input type="date" [(ngModel)]="publicationSettings.scheduleDate" [disabled]="!publicationSettingsEnabled" />
-              </label>
-              <label>
-                <span>Hora</span>
-                <input type="time" [(ngModel)]="publicationSettings.scheduleTime" [disabled]="!publicationSettingsEnabled" />
-              </label>
-              <label class="np-toggle">
-                <span>Notificar equipo comercial</span>
-                <input type="checkbox" [(ngModel)]="publicationSettings.notifyTeam" [disabled]="!publicationSettingsEnabled" />
-                <span class="np-toggle__slider"></span>
-              </label>
-              <label>
-                <span>Notas finales</span>
-                <textarea
-                  rows="4"
-                  placeholder="Recordatorios, pendientes..."
-                  [(ngModel)]="publicationSettings.remarks"
-                  [disabled]="!publicationSettingsEnabled"></textarea>
-              </label>
+            <div class="np-screens">
+              <div class="np-screens__toolbar">
+                <div>
+                  <p class="np-label">Circuito digital</p>
+                  <strong>{{ projectScreens.length }} pantalla(s) conectadas al proyecto</strong>
+                </div>
+                <button type="button" class="np-channel-form__btn" (click)="addScreenCard()">
+                  Agregar pantalla
+                </button>
+              </div>
+
+              <article class="np-screen-card" *ngFor="let screen of projectScreens; let i = index">
+                <div class="np-screen-card__header">
+                  <div class="np-screen-card__title">
+                    <div class="np-screen-card__avatar">{{ getScreenInitials(screen.responsibleName || screen.screenName) }}</div>
+                    <div>
+                      <p>Pantalla {{ i + 1 }}</p>
+                      <h4>{{ screen.screenName || ('Pantalla ' + (i + 1)) }}</h4>
+                    </div>
+                  </div>
+                  <div class="np-screen-card__actions">
+                    <span
+                      class="np-screen-card__status"
+                      [class.np-screen-card__status--online]="screen.status === 'online'"
+                      [class.np-screen-card__status--offline]="screen.status === 'offline'"
+                      [class.np-screen-card__status--maintenance]="screen.status === 'maintenance'">
+                      {{ getScreenStatusLabel(screen.status) }}
+                    </span>
+                    <button
+                      type="button"
+                      class="np-screen-card__remove"
+                      (click)="removeScreenCard(screen.localId)"
+                      [disabled]="projectScreens.length === 1">
+                      Eliminar
+                    </button>
+                  </div>
+                </div>
+
+                <div class="np-form np-form__group">
+                  <label>
+                    <span>Nombre visible</span>
+                    <input type="text" placeholder="Pantalla Hall Recepción" [(ngModel)]="screen.screenName" />
+                  </label>
+                  <label>
+                    <span>Canal / sucursal</span>
+                    <select [(ngModel)]="screen.branchId" (ngModelChange)="syncScreenBranchName(screen, $event)">
+                      <option [ngValue]="null">Selecciona una sucursal</option>
+                      <option *ngFor="let branch of branchOptions" [ngValue]="branch.branchId">{{ branch.label }}</option>
+                    </select>
+                  </label>
+                  <label>
+                    <span>Ubicación física</span>
+                    <input type="text" placeholder="Hall acceso, piso 1" [(ngModel)]="screen.locationLabel" />
+                  </label>
+                  <label>
+                    <span>Estado</span>
+                    <select [(ngModel)]="screen.status">
+                      <option *ngFor="let option of screenStatusOptions" [ngValue]="option.id">{{ option.label }}</option>
+                    </select>
+                  </label>
+                </div>
+
+                <div class="np-form np-form__group">
+                  <label>
+                    <span>Modelo / tamaño</span>
+                    <input type="text" placeholder="Touch 50" [(ngModel)]="screen.deviceModel" />
+                  </label>
+                  <label>
+                    <span>Sistema operativo</span>
+                    <input type="text" placeholder="Windows 11 Pro" [(ngModel)]="screen.operatingSystem" />
+                  </label>
+                  <label>
+                    <span>Resolución</span>
+                    <input type="text" placeholder="1920 x 1080" [(ngModel)]="screen.resolution" />
+                  </label>
+                  <label>
+                    <span>Orientación</span>
+                    <select [(ngModel)]="screen.orientation">
+                      <option *ngFor="let option of screenOrientationOptions" [ngValue]="option.id">{{ option.label }}</option>
+                    </select>
+                  </label>
+                </div>
+
+                <div class="np-form np-form__group">
+                  <label>
+                    <span>Conectividad</span>
+                    <select [(ngModel)]="screen.connectivity">
+                      <option value="">Selecciona</option>
+                      <option *ngFor="let option of screenConnectivityOptions" [value]="option">{{ option }}</option>
+                    </select>
+                  </label>
+                  <label>
+                    <span>Código interno</span>
+                    <input type="text" placeholder="LCD-001" [(ngModel)]="screen.screenCode" />
+                  </label>
+                  <label>
+                    <span>Última sincronización</span>
+                    <input type="datetime-local" [(ngModel)]="screen.lastSyncAt" />
+                  </label>
+                  <label>
+                    <span>Última actividad</span>
+                    <input type="datetime-local" [(ngModel)]="screen.lastActivityAt" />
+                  </label>
+                </div>
+
+                <div class="np-form np-form__group">
+                  <label>
+                    <span>Encargado</span>
+                    <input type="text" placeholder="María Pérez" [(ngModel)]="screen.responsibleName" />
+                  </label>
+                  <label>
+                    <span>Cargo</span>
+                    <input type="text" placeholder="Encargada de Sala" [(ngModel)]="screen.responsibleRole" />
+                  </label>
+                  <label>
+                    <span>Email</span>
+                    <input type="email" placeholder="maria@imanquehue.com" [(ngModel)]="screen.responsibleEmail" />
+                  </label>
+                  <label>
+                    <span>Teléfono</span>
+                    <input type="text" placeholder="+56 9 1234 5678" [(ngModel)]="screen.responsiblePhone" />
+                  </label>
+                </div>
+
+                <label>
+                  <span>Notas operativas</span>
+                  <textarea rows="3" placeholder="Observaciones de operación, soporte o contenido..." [(ngModel)]="screen.notes"></textarea>
+                </label>
+              </article>
             </div>
           </article>
         </div>
@@ -814,7 +925,7 @@
                 <div class="np-channel-form__row">
                   <select [(ngModel)]="branchSearch" (change)="addBranchChannel()">
                     <option value="">Selecciona sucursal</option>
-                    <option *ngFor="let branch of branchOptions" [value]="branch">{{ branch }}</option>
+                    <option *ngFor="let branch of branchOptions" [value]="branch.branchId">{{ branch.label }}</option>
                   </select>
                   <button type="button" class="np-channel-form__btn" (click)="addBranchChannel()">
                     OK
@@ -828,11 +939,35 @@
                   type="radio"
                   name="publicationChannel"
                   [checked]="channel.selected"
-                  (change)="selectBranchChannel(channel.label)" />
+                  (change)="selectBranchChannel(channel.branchId)" />
                 <span>
                   <strong>{{ channel.label }}</strong>
                   <small>{{ channel.description }}</small>
                 </span>
+              </label>
+            </div>
+          </article>
+
+          <article class="np-card np-card--compact">
+            <h3>Operación</h3>
+            <div class="np-form">
+              <label class="np-toggle">
+                <span>Habilitar automatización del circuito</span>
+                <input type="checkbox" [(ngModel)]="publicationSettingsEnabled" />
+                <span class="np-toggle__slider"></span>
+              </label>
+              <label class="np-toggle">
+                <span>Notificar equipo comercial</span>
+                <input type="checkbox" [(ngModel)]="publicationSettings.notifyTeam" [disabled]="!publicationSettingsEnabled" />
+                <span class="np-toggle__slider"></span>
+              </label>
+              <label>
+                <span>Notas finales</span>
+                <textarea
+                  rows="4"
+                  placeholder="Checklist de soporte, horarios, pendientes..."
+                  [(ngModel)]="publicationSettings.remarks"
+                  [disabled]="!publicationSettingsEnabled"></textarea>
               </label>
             </div>
           </article>
