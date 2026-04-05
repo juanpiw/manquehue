@@ -824,6 +824,13 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
       return 'error';
     }
     const token = this.getAccessToken();
+    console.log('[NuevoProyectoUI] selectSavedProject start', {
+      projectId,
+      hasAccessToken: Boolean(token),
+      hasRefreshToken: Boolean(this.getRefreshToken()),
+      tokenPreview: token ? `${token.slice(0, 12)}...` : null,
+      suppressNotFoundMessage: Boolean(options.suppressNotFoundMessage)
+    });
     if (!token) {
       this.savedProjectsError = 'Sesión inválida para cargar proyecto.';
       return 'error';
@@ -831,12 +838,49 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
     this.isLoadingSavedProjects = true;
     this.savedProjectsError = '';
     try {
-      const response = await firstValueFrom(
-        this.http.get<{ data?: Record<string, unknown> }>(
-          `${this.getApiBaseUrl()}/api/dash-manquehue/projects/${projectId}`,
-          { headers: this.buildJsonHeaders(token) }
-        )
-      );
+      let sessionToken = token;
+      let response: { data?: Record<string, unknown> } | undefined;
+
+      try {
+        console.log('[NuevoProyectoUI] selectSavedProject request', {
+          projectId,
+          endpoint: `${this.getApiBaseUrl()}/api/dash-manquehue/projects/${projectId}`,
+          attempt: 'initial'
+        });
+        response = await firstValueFrom(
+          this.http.get<{ data?: Record<string, unknown> }>(
+            `${this.getApiBaseUrl()}/api/dash-manquehue/projects/${projectId}`,
+            { headers: this.buildJsonHeaders(sessionToken) }
+          )
+        );
+      } catch (error) {
+        console.warn('[NuevoProyectoUI] selectSavedProject initial request failed', {
+          projectId,
+          status: error instanceof HttpErrorResponse ? error.status : null,
+          message: error instanceof HttpErrorResponse ? error.message : String(error)
+        });
+        if (error instanceof HttpErrorResponse && error.status === 401) {
+          const refreshedToken = await this.refreshDashSession();
+          if (!refreshedToken) {
+            this.savedProjectsError = 'Tu sesión expiró. Vuelve a iniciar sesión para editar proyectos.';
+            return 'error';
+          }
+          sessionToken = refreshedToken;
+          console.log('[NuevoProyectoUI] selectSavedProject retry after refresh', {
+            projectId,
+            endpoint: `${this.getApiBaseUrl()}/api/dash-manquehue/projects/${projectId}`
+          });
+          response = await firstValueFrom(
+            this.http.get<{ data?: Record<string, unknown> }>(
+              `${this.getApiBaseUrl()}/api/dash-manquehue/projects/${projectId}`,
+              { headers: this.buildJsonHeaders(sessionToken) }
+            )
+          );
+        } else {
+          throw error;
+        }
+      }
+
       const data = (response?.data || {}) as Record<string, unknown>;
       this.currentProjectId = projectId;
       this.selectedProjectPickerId = String(projectId);
@@ -855,10 +899,10 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
       this.project.entornoDescripcion = String(data['entorno_descripcion'] || '');
       this.project.mapAddress = String(data['direccion_pin'] || '');
       this.currentStep = Number(data['current_step'] || 1) || 1;
-      await this.loadStep1Resources(projectId, token);
-      await this.loadStep2Resources(projectId, token);
-      await this.loadStep3Resources(projectId, token);
-      await this.loadStep4Resources(projectId, token);
+      await this.loadStep1Resources(projectId, sessionToken);
+      await this.loadStep2Resources(projectId, sessionToken);
+      await this.loadStep3Resources(projectId, sessionToken);
+      await this.loadStep4Resources(projectId, sessionToken);
       this.saveFeedback = `Proyecto #${projectId} cargado correctamente.`;
       console.log('[NuevoProyectoUI] saved project selected', { projectId, data });
       this.closeSavedProjectsModal();
@@ -887,6 +931,15 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
 
   async loadProjectFromPicker(): Promise<void> {
     const projectId = this.parseProjectPickerId(this.selectedProjectPickerId);
+    console.log('[NuevoProyectoUI] loadProjectFromPicker start', {
+      requestedProjectId: projectId,
+      selectedProjectPickerId: this.selectedProjectPickerId,
+      savedProjectsCount: this.savedProjects.length,
+      hasAccessToken: Boolean(this.getAccessToken()),
+      hasRefreshToken: Boolean(this.getRefreshToken()),
+      apiBaseUrl: this.getApiBaseUrl(),
+      publicApiBaseUrl: this.resolvePublicApiBaseUrl()
+    });
     if (!projectId) {
       this.saveFeedback = 'Selecciona un ID para cargar.';
       return;
@@ -1815,6 +1868,58 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
       return '';
     }
     return localStorage.getItem('imanquehue_access_token') || '';
+  }
+
+  private getRefreshToken(): string {
+    if (typeof window === 'undefined') {
+      return '';
+    }
+    return localStorage.getItem('imanquehue_refresh_token') || '';
+  }
+
+  private async refreshDashSession(): Promise<string> {
+    const refreshToken = this.getRefreshToken();
+    console.log('[NuevoProyectoUI] refreshDashSession start', {
+      hasRefreshToken: Boolean(refreshToken),
+      endpoint: `${this.getApiBaseUrl()}/api/dash-manquehue/auth/refresh`
+    });
+    if (!refreshToken) {
+      return '';
+    }
+
+    try {
+      const response = await firstValueFrom(
+        this.http.post<{
+          data?: { accessToken?: string; refreshToken?: string; user?: unknown };
+        }>(
+          `${this.getApiBaseUrl()}/api/dash-manquehue/auth/refresh`,
+          { refreshToken }
+        )
+      );
+
+      const accessToken = String(response?.data?.accessToken || '');
+      const nextRefreshToken = String(response?.data?.refreshToken || refreshToken);
+      if (!accessToken || typeof window === 'undefined') {
+        console.warn('[NuevoProyectoUI] refreshDashSession empty access token', {
+          hasAccessToken: Boolean(accessToken)
+        });
+        return '';
+      }
+
+      localStorage.setItem('imanquehue_access_token', accessToken);
+      localStorage.setItem('imanquehue_refresh_token', nextRefreshToken);
+      if (response?.data?.user) {
+        localStorage.setItem('imanquehue_user', JSON.stringify(response.data.user));
+      }
+      console.log('[NuevoProyectoUI] refreshDashSession success', {
+        accessTokenPreview: `${accessToken.slice(0, 12)}...`,
+        hasUser: Boolean(response?.data?.user)
+      });
+      return accessToken;
+    } catch (error) {
+      console.error('[NuevoProyectoUI] refreshDashSession error', error);
+      return '';
+    }
   }
 
   private getStoredProjectId(): number | null {
