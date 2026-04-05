@@ -184,6 +184,7 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
     entornoDescripcion: '',
     mapAddress: '',
     coverImage: '',
+    heroVideo: '',
     ambientAudio: ''
   };
 
@@ -246,6 +247,7 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
   isAiModalOpen = false;
   aiContextPrompt = '';
   private coverImageFile: File | null = null;
+  private heroVideoFile: File | null = null;
   private ambientAudioFile: File | null = null;
   private step3AssetFiles: Record<MediaAssetKey, File | null> = {
     masterPlan: null,
@@ -254,6 +256,7 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
   };
   private pendingGalleryFiles: File[] = [];
   coverImagePreviewUrl: string | null = null;
+  heroVideoPreviewUrl: string | null = null;
 
   constructor(private http: HttpClient) {
     this.currentProjectId = this.getStoredProjectId();
@@ -279,7 +282,7 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
     }
   }
 
-  handleFileChange(event: Event, key: 'coverImage' | 'ambientAudio') {
+  handleFileChange(event: Event, key: 'coverImage' | 'heroVideo' | 'ambientAudio') {
     const input = event.target as HTMLInputElement;
     if (input?.files?.length) {
       const selectedFile = input.files[0];
@@ -290,6 +293,12 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
         }
         this.coverImagePreviewUrl = URL.createObjectURL(selectedFile);
         this.coverImageFile = selectedFile;
+      } else if (key === 'heroVideo') {
+        if (this.heroVideoPreviewUrl) {
+          URL.revokeObjectURL(this.heroVideoPreviewUrl);
+        }
+        this.heroVideoPreviewUrl = URL.createObjectURL(selectedFile);
+        this.heroVideoFile = selectedFile;
       } else {
         this.ambientAudioFile = selectedFile;
       }
@@ -303,6 +312,16 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
     this.coverImagePreviewUrl = null;
     this.coverImageFile = null;
     this.project.coverImage = '';
+    input.value = '';
+  }
+
+  clearHeroVideoSelection(input: HTMLInputElement): void {
+    if (this.heroVideoPreviewUrl) {
+      URL.revokeObjectURL(this.heroVideoPreviewUrl);
+    }
+    this.heroVideoPreviewUrl = null;
+    this.heroVideoFile = null;
+    this.project.heroVideo = '';
     input.value = '';
   }
 
@@ -746,35 +765,52 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
 
   async loadSavedProjects(): Promise<void> {
     const token = this.getAccessToken();
-    if (!token) {
-      this.savedProjects = [];
-      this.savedProjectsError = 'Primero debes iniciar sesión para ver proyectos guardados.';
-      return;
-    }
     this.isLoadingSavedProjects = true;
     this.savedProjectsError = '';
     try {
-      const response = await firstValueFrom(
-        this.http.get<{ data?: Array<Record<string, unknown>> }>(
-          `${this.getApiBaseUrl()}/api/dash-manquehue/projects`,
-          { headers: this.buildJsonHeaders(token) }
-        )
-      );
-      const rows = Array.isArray(response?.data) ? response.data : [];
+      let rows: Array<Record<string, unknown>> = [];
+
+      if (token) {
+        try {
+          const response = await firstValueFrom(
+            this.http.get<{ data?: Array<Record<string, unknown>> }>(
+              `${this.getApiBaseUrl()}/api/dash-manquehue/projects`,
+              { headers: this.buildJsonHeaders(token) }
+            )
+          );
+          rows = Array.isArray(response?.data) ? response.data : [];
+        } catch (privateError) {
+          console.warn('[NuevoProyectoUI] private projects list failed, trying public fallback', privateError);
+        }
+      }
+
+      if (!rows.length) {
+        const publicResponse = await firstValueFrom(
+          this.http.get<{ data?: Array<Record<string, unknown>> }>(
+            `${this.resolvePublicApiBaseUrl()}/api/dash-manquehue/public/projects?limit=200`
+          )
+        );
+        rows = Array.isArray(publicResponse?.data) ? publicResponse.data : [];
+      }
+
       this.savedProjects = rows.map((row) => ({
-        id: Number(row['id'] || 0),
-        nombre: String(row['nombre'] || `Proyecto ${row['id'] || ''}`),
+        id: Number(row['id'] || row['projectId'] || 0),
+        nombre: String(row['nombre'] || `Proyecto ${row['id'] || row['projectId'] || ''}`),
         status: String(row['status'] || 'draft'),
-        updatedAt: row['updated_at'] ? String(row['updated_at']) : null
+        updatedAt: row['updated_at'] ? String(row['updated_at']) : (row['updatedAt'] ? String(row['updatedAt']) : null)
       })).filter((row) => row.id > 0);
+
       if (!this.selectedProjectPickerId && this.currentProjectId) {
         this.selectedProjectPickerId = String(this.currentProjectId);
+      }
+      if (!token) {
+        this.savedProjectsError = 'Lista cargada en modo público. Para editar un proyecto existente necesitas iniciar sesión.';
       }
       console.log('[NuevoProyectoUI] saved projects loaded', { total: this.savedProjects.length });
     } catch (error) {
       console.error('[NuevoProyectoUI] loadSavedProjects error', error);
       this.savedProjects = [];
-      this.savedProjectsError = 'No se pudieron cargar los proyectos guardados.';
+      this.savedProjectsError = 'No se pudieron cargar los proyectos guardados ni la lista pública.';
     } finally {
       this.isLoadingSavedProjects = false;
     }
@@ -819,6 +855,7 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
       this.project.entornoDescripcion = String(data['entorno_descripcion'] || '');
       this.project.mapAddress = String(data['direccion_pin'] || '');
       this.currentStep = Number(data['current_step'] || 1) || 1;
+      await this.loadStep1Resources(projectId, token);
       await this.loadStep2Resources(projectId, token);
       await this.loadStep3Resources(projectId, token);
       await this.loadStep4Resources(projectId, token);
@@ -949,6 +986,7 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
       step: this.currentStep,
       hasProjectId: Boolean(this.currentProjectId),
       hasCoverFile: Boolean(this.coverImageFile),
+        hasHeroVideoFile: Boolean(this.heroVideoFile),
       hasAmbientFile: Boolean(this.ambientAudioFile)
     });
 
@@ -977,6 +1015,17 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
           await this.uploadStep1File(projectId, token, this.coverImageFile, 'cover-image');
           this.coverImageFile = null;
           console.log('[NuevoProyectoUI] upload cover ok', { projectId });
+        }
+
+        if (this.heroVideoFile) {
+          console.log('[NuevoProyectoUI] upload hero video start', {
+            projectId,
+            name: this.heroVideoFile.name,
+            size: this.heroVideoFile.size
+          });
+          await this.uploadStep1File(projectId, token, this.heroVideoFile, 'hero-video');
+          this.heroVideoFile = null;
+          console.log('[NuevoProyectoUI] upload hero video ok', { projectId });
         }
 
         if (this.ambientAudioFile) {
@@ -1125,7 +1174,7 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
     projectId: number,
     token: string,
     file: File,
-    endpoint: 'cover-image' | 'ambient-audio'
+    endpoint: 'cover-image' | 'hero-video' | 'ambient-audio'
   ): Promise<void> {
     const formData = new FormData();
     formData.append('file', file);
@@ -1136,6 +1185,40 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
         { headers: new HttpHeaders({ Authorization: `Bearer ${token}` }) }
       )
     );
+  }
+
+  private async loadStep1Resources(projectId: number, token: string): Promise<void> {
+    try {
+      const response = await firstValueFrom(
+        this.http.get<{ data?: Record<string, unknown> | null }>(
+          `${this.getApiBaseUrl()}/api/dash-manquehue/projects/${projectId}/files/step1-media`,
+          { headers: this.buildJsonHeaders(token) }
+        )
+      );
+
+      const data = (response?.data || {}) as Record<string, unknown>;
+      const cover = (data['cover'] || null) as Record<string, unknown> | null;
+      const heroVideo = (data['heroVideo'] || null) as Record<string, unknown> | null;
+      const ambientAudio = (data['ambientAudio'] || null) as Record<string, unknown> | null;
+
+      if (this.coverImagePreviewUrl) {
+        URL.revokeObjectURL(this.coverImagePreviewUrl);
+      }
+      if (this.heroVideoPreviewUrl) {
+        URL.revokeObjectURL(this.heroVideoPreviewUrl);
+      }
+
+      this.coverImageFile = null;
+      this.heroVideoFile = null;
+      this.ambientAudioFile = null;
+      this.project.coverImage = String(cover?.['original_name'] || '');
+      this.project.heroVideo = String(heroVideo?.['original_name'] || '');
+      this.project.ambientAudio = String(ambientAudio?.['original_name'] || '');
+      this.coverImagePreviewUrl = String(cover?.['url'] || '') || null;
+      this.heroVideoPreviewUrl = String(heroVideo?.['url'] || '') || null;
+    } catch (error) {
+      console.error('[NuevoProyectoUI] loadStep1Resources error', error);
+    }
   }
 
   private async saveStep2Resources(projectId: number, token: string): Promise<void> {
@@ -1767,8 +1850,13 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
     if (this.coverImagePreviewUrl) {
       URL.revokeObjectURL(this.coverImagePreviewUrl);
     }
+    if (this.heroVideoPreviewUrl) {
+      URL.revokeObjectURL(this.heroVideoPreviewUrl);
+    }
     this.coverImagePreviewUrl = null;
+    this.heroVideoPreviewUrl = null;
     this.coverImageFile = null;
+    this.heroVideoFile = null;
     this.ambientAudioFile = null;
     this.pendingGalleryFiles = [];
     this.step3AssetFiles = {
@@ -1790,6 +1878,7 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
       entornoDescripcion: '',
       mapAddress: '',
       coverImage: '',
+      heroVideo: '',
       ambientAudio: ''
     };
     this.timings = {
@@ -1867,6 +1956,9 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
   ngOnDestroy(): void {
     if (this.coverImagePreviewUrl) {
       URL.revokeObjectURL(this.coverImagePreviewUrl);
+    }
+    if (this.heroVideoPreviewUrl) {
+      URL.revokeObjectURL(this.heroVideoPreviewUrl);
     }
     this.typologyOptions.forEach((option) => {
       this.revokeTypologyPreview(option);

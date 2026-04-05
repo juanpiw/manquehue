@@ -242,6 +242,23 @@
                   Eliminar audio
                 </button>
               </div>
+
+              <label class="np-upload np-upload--outline">
+                <input #heroVideoInput type="file" accept=".mp4,.webm,.mov" (change)="handleFileChange($event, 'heroVideo')" hidden />
+                <p>Video Hero / Portada</p>
+                <small>{{ project.heroVideo || 'MP4, WebM o MOV para el hero de la landing' }}</small>
+              </label>
+              <div class="np-upload-state" *ngIf="project.heroVideo">
+                <div class="np-upload-state__preview" *ngIf="heroVideoPreviewUrl; else noHeroVideoPreview">
+                  <video [src]="heroVideoPreviewUrl" autoplay muted loop playsinline controls></video>
+                </div>
+                <ng-template #noHeroVideoPreview>
+                  <div class="np-upload-state__empty">Sin preview disponible</div>
+                </ng-template>
+                <button type="button" class="np-upload-state__remove" (click)="clearHeroVideoSelection(heroVideoInput)">
+                  Eliminar video
+                </button>
+              </div>
             </div>
           </article>
         </div>

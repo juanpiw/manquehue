@@ -226,6 +226,100 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
+        .gallery-accordion-shell {
+            display: flex;
+            width: 100%;
+            height: 80vh;
+            min-height: 620px;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .gallery-accordion-item {
+            position: relative;
+            flex: 1;
+            height: 100%;
+            border-radius: 24px;
+            overflow: hidden;
+            transition: flex 0.8s cubic-bezier(0.25, 1, 0.3, 1), filter 0.5s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            filter: grayscale(80%) brightness(0.4);
+            cursor: pointer;
+        }
+
+        .gallery-accordion-item.active {
+            flex: 5;
+            filter: grayscale(0%) brightness(1);
+            border-color: rgba(99, 102, 241, 0.9);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8);
+        }
+
+        .gallery-accordion-media {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scale(1.1);
+            transition: transform 1.2s ease;
+            display: block;
+        }
+
+        .gallery-accordion-item.active .gallery-accordion-media {
+            transform: scale(1);
+        }
+
+        .gallery-accordion-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, transparent 60%);
+            padding: 3rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease 0.3s;
+        }
+
+        .gallery-accordion-item.active .gallery-accordion-overlay {
+            opacity: 1;
+        }
+
+        .gallery-accordion-number {
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 0.4em;
+            color: #6366f1;
+            opacity: 0.55;
+        }
+
+        @media (max-width: 1023px) {
+            .gallery-accordion-shell {
+                flex-direction: column;
+                height: auto;
+                min-height: 0;
+            }
+
+            .gallery-accordion-item,
+            .gallery-accordion-item.active {
+                width: 100%;
+                flex: none;
+                height: 180px;
+            }
+
+            .gallery-accordion-item.active {
+                height: 420px;
+            }
+
+            .gallery-accordion-overlay {
+                padding: 1.5rem;
+            }
+        }
+
         .apartments-section {
             position: relative;
             min-height: 120vh;
@@ -455,6 +549,7 @@
 
     <header id="hero" class="relative w-full h-screen overflow-hidden flex items-center justify-center">
         <div id="hero-img-container" class="absolute inset-0 w-full h-full">
+            <video id="view-cover-video" class="w-full h-full object-cover hidden" autoplay muted loop playsinline></video>
             <img id="view-cover" src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=2000" class="w-full h-full object-cover" alt="Portada proyecto">
         </div>
         <div class="absolute inset-0 bg-black/30"></div>
@@ -659,6 +754,29 @@
         </div>
     </section>
 
+    <section id="gallery-accordion-section" class="px-12 lg:px-24 py-32 bg-white/[0.01] space-y-14">
+        <div class="flex flex-col lg:flex-row lg:justify-between lg:items-end gap-8">
+            <div class="space-y-4">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-px bg-indigo-500"></div>
+                    <span class="text-[10px] font-black uppercase tracking-[0.4em] text-white/40">Paso 03: Recursos Multimedia</span>
+                </div>
+                <h2 class="text-5xl lg:text-6xl font-bold uppercase italic tracking-tighter">Media Vault</h2>
+            </div>
+            <div class="lg:text-right">
+                <p id="gallery-summary" class="text-white/30 text-[10px] font-bold uppercase tracking-widest leading-relaxed">
+                    Exploracion automatica de activos visuales del proyecto.
+                </p>
+            </div>
+        </div>
+
+        <div id="accordion-container" class="gallery-accordion-shell">
+            <div class="empty-state w-full rounded-[36px] p-8 text-sm text-white/45">
+                La galeria se habilitara cuando el proyecto tenga imagenes o videos publicos.
+            </div>
+        </div>
+    </section>
+
     <section id="contact" class="px-12 lg:px-24 py-32 space-y-12">
         <div class="flex items-center gap-8">
             <h2 class="text-4xl font-bold uppercase italic tracking-tighter">Puntos de Venta</h2>
@@ -684,7 +802,7 @@
         requestAnimationFrame(raf);
 
         function initAnimations() {
-            gsap.to('#hero-img-container img', {
+            gsap.to('#hero-img-container img, #hero-img-container video', {
                 scale: 1.4,
                 scrollTrigger: {
                     trigger: 'header',
@@ -751,6 +869,7 @@
             sucursales: ['Las Condes', 'Providencia', 'Maipu', 'Nunoa'],
             multimedia: {
                 portada_url: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=2000',
+                hero_video_url: '',
                 audio_url: '',
                 gallery: [
                     { url: 'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&q=80&w=1400', type: 'image' }
@@ -774,6 +893,8 @@
         let currentLandingData = null;
         let activeUnitId = null;
         let isPlaying = false;
+        let galleryAccordionActiveIndex = 0;
+        let galleryAccordionTimer = null;
 
         function appendLog(title, payload) {
             const stamp = new Date().toLocaleTimeString();
@@ -1430,6 +1551,7 @@
                 sucursales: toArray(rawData?.sucursales).map(normalizeBranch).filter(Boolean),
                 multimedia: {
                     portada_url: multimedia.portada_url || '',
+                    hero_video_url: multimedia.hero_video_url || '',
                     audio_url: multimedia.audio_url || '',
                     gallery
                 },
@@ -1896,6 +2018,124 @@
             `).join('');
         }
 
+        function stopGalleryAccordionAutoplay() {
+            if (galleryAccordionTimer) {
+                clearInterval(galleryAccordionTimer);
+                galleryAccordionTimer = null;
+            }
+        }
+
+        function activateGalleryAccordionItem(index, restartAutoplay = false) {
+            const container = document.getElementById('accordion-container');
+            if (!container) return;
+            const items = Array.from(container.querySelectorAll('.gallery-accordion-item'));
+            if (!items.length) return;
+
+            const safeIndex = ((Number(index) || 0) % items.length + items.length) % items.length;
+            galleryAccordionActiveIndex = safeIndex;
+
+            items.forEach((item, itemIndex) => {
+                const isActive = itemIndex === safeIndex;
+                item.classList.toggle('active', isActive);
+                const mediaVideo = item.querySelector('video');
+                if (mediaVideo) {
+                    if (isActive) {
+                        mediaVideo.play?.().catch(() => {});
+                    } else {
+                        mediaVideo.pause?.();
+                        try {
+                            mediaVideo.currentTime = 0;
+                        } catch (_error) {
+                            // noop
+                        }
+                    }
+                }
+            });
+
+            if (restartAutoplay) {
+                startGalleryAccordionAutoplay(items.length);
+            }
+        }
+
+        function startGalleryAccordionAutoplay(totalItems) {
+            stopGalleryAccordionAutoplay();
+            if (!Number.isFinite(totalItems) || totalItems < 2) return;
+            galleryAccordionTimer = window.setInterval(() => {
+                galleryAccordionActiveIndex = (galleryAccordionActiveIndex + 1) % totalItems;
+                activateGalleryAccordionItem(galleryAccordionActiveIndex, false);
+            }, 5000);
+        }
+
+        function renderGalleryAccordion(data) {
+            const container = document.getElementById('accordion-container');
+            const summary = document.getElementById('gallery-summary');
+            if (!container) return;
+
+            const resources = toArray(data?.multimedia?.gallery)
+                .map((item, index) => ({
+                    id: item?.id || `resource-${index + 1}`,
+                    url: item?.url || '',
+                    type: item?.type === 'video' ? 'video' : 'image',
+                    name: item?.name || `Recurso ${String(index + 1).padStart(2, '0')}`
+                }))
+                .filter((item) => Boolean(item.url));
+
+            appendLog('GALLERY ACCORDION DATA', {
+                total: resources.length,
+                items: resources.map((item, index) => ({
+                    index: index + 1,
+                    type: item.type,
+                    url: item.url,
+                    name: item.name
+                }))
+            });
+
+            if (summary) {
+                summary.textContent = resources.length
+                    ? `${resources.length} activo(s) multimedia listos para exploracion interactiva.`
+                    : 'La galeria se habilitara cuando el proyecto tenga imagenes o videos publicos.';
+            }
+
+            if (!resources.length) {
+                stopGalleryAccordionAutoplay();
+                container.innerHTML = `
+                    <div class="empty-state w-full rounded-[36px] p-8 text-sm text-white/45">
+                        La galeria se habilitara cuando el proyecto tenga imagenes o videos publicos.
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = resources.map((item, index) => `
+                <article class="gallery-accordion-item ${index === 0 ? 'active' : ''}" data-index="${index}">
+                    <span class="gallery-accordion-number">RES_${String(index + 1).padStart(2, '0')}</span>
+                    ${item.type === 'video'
+                        ? `<video src="${escapeHtml(item.url)}" muted loop playsinline preload="metadata" class="gallery-accordion-media"></video>`
+                        : `<img src="${escapeHtml(item.url)}" class="gallery-accordion-media" alt="${escapeHtml(item.name)}">`
+                    }
+                    <div class="gallery-accordion-overlay">
+                        <div class="space-y-2">
+                            <p class="text-[9px] font-black uppercase text-indigo-400 tracking-[0.5em]">
+                                Format: ${item.type === 'video' ? 'VIDEO' : 'IMAGE'}
+                            </p>
+                            <h3 class="text-4xl lg:text-6xl font-bold uppercase italic tracking-tighter">${escapeHtml(item.name)}</h3>
+                        </div>
+                    </div>
+                </article>
+            `).join('');
+
+            container.querySelectorAll('.gallery-accordion-item').forEach((element) => {
+                element.addEventListener('click', () => {
+                    const nextIndex = Number(element.getAttribute('data-index') || 0);
+                    activateGalleryAccordionItem(nextIndex, true);
+                });
+            });
+
+            galleryAccordionActiveIndex = 0;
+            activateGalleryAccordionItem(galleryAccordionActiveIndex, false);
+            startGalleryAccordionAutoplay(resources.length);
+        }
+
         function renderDocuments(data) {
             const docsLink = document.getElementById('docs-download');
             const docsSummary = document.getElementById('docs-summary');
@@ -1962,8 +2202,29 @@
                 setText('view-etapa-text', data.estado_entrega || 'Estado pendiente');
 
                 const coverEl = document.getElementById('view-cover');
+                const coverVideoEl = document.getElementById('view-cover-video');
                 if (coverEl && data.multimedia.portada_url) {
                     coverEl.src = data.multimedia.portada_url;
+                }
+                if (coverVideoEl) {
+                    const heroVideoUrl = data.multimedia.hero_video_url || '';
+                    if (heroVideoUrl) {
+                        coverVideoEl.src = heroVideoUrl;
+                        coverVideoEl.classList.remove('hidden');
+                        coverVideoEl.play?.().catch(() => {});
+                        probeMediaUrl(heroVideoUrl, 'hero-cover-video');
+                        if (coverEl) {
+                            coverEl.classList.add('hidden');
+                        }
+                    } else {
+                        coverVideoEl.pause?.();
+                        coverVideoEl.removeAttribute('src');
+                        coverVideoEl.load?.();
+                        coverVideoEl.classList.add('hidden');
+                        if (coverEl) {
+                            coverEl.classList.remove('hidden');
+                        }
+                    }
                 }
 
                 const typeIconEl = document.getElementById('view-type-icon');
@@ -2015,6 +2276,7 @@
                 renderUnitList(data);
                 renderAmenities(data);
                 renderSucursales(data);
+                renderGalleryAccordion(data);
                 renderDocuments(data);
                 renderAudioState(data);
                 updateRuntimeStatus(data.projectId || null);
