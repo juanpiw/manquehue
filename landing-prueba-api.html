@@ -2071,7 +2071,7 @@
             const summary = document.getElementById('gallery-summary');
             if (!container) return;
 
-            const resources = toArray(data?.multimedia?.gallery)
+            const galleryResources = toArray(data?.multimedia?.gallery)
                 .map((item, index) => ({
                     id: item?.id || `resource-${index + 1}`,
                     url: item?.url || '',
@@ -2080,7 +2080,20 @@
                 }))
                 .filter((item) => Boolean(item.url));
 
+            const differentiatorResources = toArray(data?.diferenciadores_detalle)
+                .map((item, index) => ({
+                    id: item?.media?.id || `differentiator-${index + 1}`,
+                    url: item?.media?.url || '',
+                    type: item?.media?.type === 'video' ? 'video' : 'image',
+                    name: item?.text || item?.media?.name || `Diferenciador ${String(index + 1).padStart(2, '0')}`
+                }))
+                .filter((item) => Boolean(item.url));
+
+            const resources = galleryResources.length ? galleryResources : differentiatorResources;
+            const source = galleryResources.length ? 'step3-gallery' : (differentiatorResources.length ? 'step4-differentiators' : 'empty');
+
             appendLog('GALLERY ACCORDION DATA', {
+                source,
                 total: resources.length,
                 items: resources.map((item, index) => ({
                     index: index + 1,
@@ -2092,7 +2105,7 @@
 
             if (summary) {
                 summary.textContent = resources.length
-                    ? `${resources.length} activo(s) multimedia listos para exploracion interactiva.`
+                    ? `${resources.length} activo(s) multimedia listos para exploracion interactiva. Fuente: ${source}.`
                     : 'La galeria se habilitara cuando el proyecto tenga imagenes o videos publicos.';
             }
 
