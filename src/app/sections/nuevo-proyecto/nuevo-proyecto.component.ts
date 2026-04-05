@@ -1387,12 +1387,22 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
       this.pendingGalleryFiles = [];
     }
 
+    await firstValueFrom(
+      this.http.patch(
+        `${this.getApiBaseUrl()}/api/dash-manquehue/projects/${projectId}/content`,
+        {
+          videoTourUrl: this.contentPlan.videoUrl?.trim() || null
+        },
+        { headers: this.buildJsonHeaders(token) }
+      )
+    );
+
     await this.loadStep3Resources(projectId, token);
   }
 
   private async loadStep3Resources(projectId: number, token: string): Promise<void> {
     try {
-      const [documentsResponse, galleryResponse] = await Promise.all([
+      const [documentsResponse, galleryResponse, contentResponse] = await Promise.all([
         firstValueFrom(
           this.http.get<{ data?: Array<Record<string, unknown>> }>(
             `${this.getApiBaseUrl()}/api/dash-manquehue/projects/${projectId}/files/documents`,
@@ -1404,11 +1414,18 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
             `${this.getApiBaseUrl()}/api/dash-manquehue/projects/${projectId}/files/gallery`,
             { headers: this.buildJsonHeaders(token) }
           )
+        ),
+        firstValueFrom(
+          this.http.get<{ data?: Record<string, unknown> | null }>(
+            `${this.getApiBaseUrl()}/api/dash-manquehue/projects/${projectId}/content`,
+            { headers: this.buildJsonHeaders(token) }
+          )
         )
       ]);
 
       const documents = Array.isArray(documentsResponse?.data) ? documentsResponse.data : [];
       const gallery = Array.isArray(galleryResponse?.data) ? galleryResponse.data : [];
+      const content = (contentResponse?.data || null) as Record<string, unknown> | null;
       const pickName = (category: string) =>
         String(
           documents.find((row) => String(row['file_category'] || '') === category)?.['original_name'] || ''
@@ -1418,6 +1435,7 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
       this.mediaAssets.brochure = pickName('brochure');
       this.mediaAssets.legalDocs = pickName('legal_document');
       this.mediaGallery = gallery.map((row) => String(row['original_name'] || '')).filter(Boolean);
+      this.contentPlan.videoUrl = String(content?.['video_tour_url'] || this.contentPlan.videoUrl || '');
       this.pendingGalleryFiles = [];
       this.step3AssetFiles.masterPlan = null;
       this.step3AssetFiles.brochure = null;

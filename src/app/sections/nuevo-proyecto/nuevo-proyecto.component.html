@@ -578,6 +578,16 @@
                 <small>{{ mediaAssets.legalDocs || 'Escrituras, reglamentos, etc.' }}</small>
               </label>
             </div>
+            <div class="np-form mt-6">
+              <label>
+                <span>Enlace Tour 360 / iframe</span>
+                <input
+                  type="url"
+                  placeholder="https://..."
+                  [(ngModel)]="contentPlan.videoUrl" />
+                <small>Se usa en la landing para abrir el recorrido 360 del proyecto.</small>
+              </label>
+            </div>
           </article>
 
           <article class="np-card">
