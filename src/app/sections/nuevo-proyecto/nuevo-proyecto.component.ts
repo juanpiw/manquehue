@@ -1,4 +1,4 @@
-import { Component, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
@@ -70,7 +70,7 @@ type DifferentiatorMediaState = {
   templateUrl: './nuevo-proyecto.component.html',
   styleUrl: './nuevo-proyecto.component.scss'
 })
-export class NuevoProyectoComponent implements OnDestroy {
+export class NuevoProyectoComponent implements OnDestroy, OnInit {
   readonly steps: SimpleStep[] = [
     { id: 1, label: 'Información' },
     { id: 2, label: 'Configuración' },
@@ -234,6 +234,9 @@ export class NuevoProyectoComponent implements OnDestroy {
   savedProjectsError = '';
   savedProjects: SavedProjectItem[] = [];
   selectedProjectPickerId = '';
+  newProjectCandidateId = '';
+  isCreateProjectModalOpen = false;
+  pendingNewProjectId: number | null = null;
 
   isAssociationModalOpen = false;
   associationForm = {
@@ -255,6 +258,15 @@ export class NuevoProyectoComponent implements OnDestroy {
   constructor(private http: HttpClient) {
     this.currentProjectId = this.getStoredProjectId();
     this.ensureDifferentiatorMediaStatesLength(this.contentPlan.sellingPoints.length);
+    if (this.currentProjectId) {
+      this.selectedProjectPickerId = String(this.currentProjectId);
+    }
+  }
+
+  ngOnInit(): void {
+    if (this.getAccessToken()) {
+      void this.loadSavedProjects();
+    }
   }
 
   selectPropertyType(typeId: string) {
@@ -862,21 +874,50 @@ export class NuevoProyectoComponent implements OnDestroy {
       return;
     }
 
-    const shouldCreate = typeof window === 'undefined'
-      ? false
-      : window.confirm(
-          `El ID #${projectId} no existe. Si continúas, crearás un proyecto nuevo y se limpiará el formulario. ` +
-          'La base de datos asignará el próximo ID disponible.'
-        );
-    if (!shouldCreate) {
+    this.pendingNewProjectId = projectId;
+    this.isCreateProjectModalOpen = true;
+  }
+
+  async requestNewProjectFromInput(): Promise<void> {
+    const projectId = this.parseProjectPickerId(this.newProjectCandidateId);
+    if (!projectId) {
+      this.saveFeedback = 'Escribe un ID válido para el nuevo proyecto.';
       return;
     }
+
+    if (!this.savedProjects.length && this.getAccessToken()) {
+      await this.loadSavedProjects();
+    }
+
+    const exists = this.savedProjects.some((project) => project.id === projectId);
+    if (exists) {
+      this.selectedProjectPickerId = String(projectId);
+      this.saveFeedback = `El proyecto #${projectId} ya existe. Selecciónalo desde la lista y cárgalo.`;
+      return;
+    }
+
+    this.pendingNewProjectId = projectId;
+    this.isCreateProjectModalOpen = true;
+  }
+
+  closeCreateProjectModal(): void {
+    this.isCreateProjectModalOpen = false;
+    this.pendingNewProjectId = null;
+  }
+
+  confirmCreateProjectFromModal(): void {
+    const projectId = this.pendingNewProjectId;
+    this.closeCreateProjectModal();
     this.resetFormForNewProject();
-    this.saveFeedback = `Preparado para crear un proyecto nuevo. La BD asignará un ID nuevo al guardar.`;
+    this.newProjectCandidateId = projectId ? String(projectId) : '';
+    this.saveFeedback = projectId
+      ? `Proyecto nuevo preparado desde el ID #${projectId}. La BD asignará el próximo ID disponible al guardar.`
+      : 'Proyecto nuevo preparado. La BD asignará el próximo ID disponible al guardar.';
   }
 
   createNewProjectId(): void {
     this.resetFormForNewProject();
+    this.newProjectCandidateId = '';
     this.saveFeedback = 'Formulario desacoplado del proyecto actual. Al guardar se creará un nuevo ID.';
   }
 
@@ -1721,6 +1762,7 @@ export class NuevoProyectoComponent implements OnDestroy {
     this.selectedProjectPickerId = '';
     this.clearStoredProjectId();
     this.currentStep = 1;
+    this.savedProjectsError = '';
 
     if (this.coverImagePreviewUrl) {
       URL.revokeObjectURL(this.coverImagePreviewUrl);
