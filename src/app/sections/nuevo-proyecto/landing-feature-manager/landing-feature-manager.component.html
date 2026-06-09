@@ -1,0 +1,37 @@
+<div class="landing-features" *ngIf="items.length; else emptyState">
+  <article class="landing-feature" *ngFor="let item of items; let i = index">
+    <div class="landing-feature__preview">
+      <img *ngIf="item.type === 'image' && item.url" [src]="item.url" [alt]="item.displayName || item.originalName" />
+      <video *ngIf="item.type === 'video' && item.url" [src]="item.url" muted playsinline controls preload="metadata"></video>
+      <span *ngIf="!item.url">{{ item.type === 'video' ? 'Video' : 'Imagen' }}</span>
+    </div>
+
+    <div class="landing-feature__body">
+      <p class="landing-feature__eyebrow">Sección {{ i + 1 | number:'2.0' }}</p>
+      <label>
+        <span>Nombre</span>
+        <input
+          type="text"
+          [(ngModel)]="item.displayName"
+          (keyup.enter)="rename.emit(item)"
+          placeholder="Ej: Gimnasio, Cowork, Fachada día" />
+      </label>
+      <small>{{ item.pending ? 'Pendiente de guardar archivo' : item.originalName }}</small>
+    </div>
+
+    <div class="landing-feature__actions">
+      <button type="button" class="landing-feature__save" (click)="rename.emit(item)">
+        Guardar nombre
+      </button>
+      <button type="button" class="landing-feature__remove" (click)="remove.emit(item)">
+        Quitar
+      </button>
+    </div>
+  </article>
+</div>
+
+<ng-template #emptyState>
+  <p class="landing-features__empty">
+    Sube renders o videos para crear las secciones visuales de Features en la landing.
+  </p>
+</ng-template>

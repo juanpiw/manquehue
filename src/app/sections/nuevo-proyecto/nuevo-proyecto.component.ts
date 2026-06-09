@@ -3,6 +3,10 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
+import {
+  LandingFeatureManagerComponent,
+  LandingFeatureResource
+} from './landing-feature-manager/landing-feature-manager.component';
 
 interface SimpleStep {
   id: number;
@@ -45,6 +49,7 @@ type TypologyOption = {
   id: string;
   label: string;
   selected: boolean;
+  isCustom?: boolean;
   media?: TypologyMediaInfo | null;
   pendingFile?: File | null;
   pendingPreviewUrl?: string | null;
@@ -61,6 +66,10 @@ type DifferentiatorMediaState = {
   pendingPreviewUrl: string | null;
   pendingMediaType: TypologyMediaType | null;
   removeMedia: boolean;
+};
+
+type Step3GalleryItem = LandingFeatureResource & {
+  localId: string;
 };
 
 type PublicationChannel = {
@@ -102,11 +111,22 @@ type ProjectScreen = {
 @Component({
   selector: 'app-nuevo-proyecto',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, LandingFeatureManagerComponent],
   templateUrl: './nuevo-proyecto.component.html',
   styleUrl: './nuevo-proyecto.component.scss'
 })
 export class NuevoProyectoComponent implements OnDestroy, OnInit {
+  private readonly defaultTypologyDefinitions: Array<{ id: string; label: string; selected: boolean }> = [
+    { id: '1d1b', label: '1D / 1B', selected: false },
+    { id: '2d1b', label: '2D / 1B', selected: true },
+    { id: '2d2b', label: '2D / 2B', selected: true },
+    { id: '3d2b', label: '3D / 2B', selected: false },
+    { id: '3d3b', label: '3D / 3B', selected: false },
+    { id: '4d3b', label: '4D / 3B', selected: false },
+    { id: '4d4b', label: '4D / 4B', selected: false },
+    { id: '4d5b', label: '4D / 5B', selected: false }
+  ];
+
   readonly steps: SimpleStep[] = [
     { id: 1, label: 'Información' },
     { id: 2, label: 'Configuración' },
@@ -164,16 +184,7 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
     { id: 'pronta', label: 'Pronta' },
     { id: 'futura', label: 'Futura' }
   ];
-  readonly typologyOptions: TypologyOption[] = [
-    { id: '1d1b', label: '1D / 1B', selected: false },
-    { id: '2d1b', label: '2D / 1B', selected: true },
-    { id: '2d2b', label: '2D / 2B', selected: true },
-    { id: '3d2b', label: '3D / 2B', selected: false },
-    { id: '3d3b', label: '3D / 3B', selected: false },
-    { id: '4d3b', label: '4D / 3B', selected: false },
-    { id: '4d4b', label: '4D / 4B', selected: false },
-    { id: '4d5b', label: '4D / 5B', selected: false }
-  ];
+  typologyOptions: TypologyOption[] = this.createDefaultTypologyOptions();
   modelAssociations = [
     { typology: '2D / 2B', model: 'Azotea' },
     { typology: '3D / 3B', model: 'Jardín' }
@@ -192,6 +203,8 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
     { id: 'kidsRoom', label: 'Salón de niños', selected: false }
   ];
   newAmenityLabel = '';
+  newTypologyBedrooms: number | null = null;
+  newTypologyBathrooms: number | null = null;
   publicationChannels: PublicationChannel[] = [
     { id: 'residencial-las-condes', label: 'Residencial Las Condes', description: 'Sucursal', selected: true, branchId: null },
     { id: 'casa-familiar-providencia', label: 'Casa Familiar Providencia', description: 'Sucursal', selected: false, branchId: null },
@@ -257,6 +270,7 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
     legalDocs: ''
   };
   mediaGallery: string[] = [];
+  mediaGalleryItems: Step3GalleryItem[] = [];
   contentPlan = {
     heroHeadline: 'Un nuevo skyline en Manquehue',
     heroTagline: 'Departamentos inteligentes con vistas infinitas.',
@@ -316,9 +330,20 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
   }
 
   ngOnInit(): void {
-    if (this.getAccessToken()) {
-      void this.loadSavedProjects();
-      void this.loadBranchChannels(this.getAccessToken());
+    void this.initializeSessionData();
+  }
+
+  private async initializeSessionData(): Promise<void> {
+    const token = this.getAccessToken();
+    if (!token) {
+      return;
+    }
+
+    await this.loadSavedProjects();
+    await this.loadBranchChannels(token);
+
+    if (this.currentProjectId) {
+      await this.selectSavedProject(this.currentProjectId, { suppressNotFoundMessage: true });
     }
   }
 
@@ -396,20 +421,93 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
     const input = event.target as HTMLInputElement;
     if (input?.files?.length) {
       const files = Array.from(input.files);
-      const names = files.map(file => file.name);
-      this.mediaGallery = [...this.mediaGallery, ...names];
+      const items = files.map((file, index) => {
+        const url = URL.createObjectURL(file);
+        return {
+          localId: `pending-${Date.now()}-${index}`,
+          fileId: null,
+          displayName: this.stripFileExtension(file.name),
+          originalName: file.name,
+          url,
+          type: file.type.startsWith('video/') ? 'video' as const : 'image' as const,
+          pending: true
+        };
+      });
+      this.mediaGalleryItems = [...this.mediaGalleryItems, ...items];
+      this.syncMediaGalleryNames();
       this.pendingGalleryFiles = [...this.pendingGalleryFiles, ...files];
       this.saveFeedback = `${files.length} archivo(s) preparados para la galería.`;
       input.value = '';
     }
   }
 
-  removeGalleryAsset(index: number) {
-    const nonPendingCount = Math.max(this.mediaGallery.length - this.pendingGalleryFiles.length, 0);
-    this.mediaGallery = this.mediaGallery.filter((_, i) => i !== index);
-    const pendingIndex = index - nonPendingCount;
-    if (pendingIndex >= 0 && pendingIndex < this.pendingGalleryFiles.length) {
-      this.pendingGalleryFiles = this.pendingGalleryFiles.filter((_, i) => i !== pendingIndex);
+  async removeGalleryAsset(item: LandingFeatureResource): Promise<void> {
+    if (item.pending) {
+      const pendingItems = this.mediaGalleryItems.filter((entry) => entry.pending);
+      const pendingIndex = pendingItems.findIndex((entry) => entry === item);
+      if (pendingIndex >= 0) {
+        this.pendingGalleryFiles = this.pendingGalleryFiles.filter((_, i) => i !== pendingIndex);
+      }
+      if (item.url) {
+        URL.revokeObjectURL(item.url);
+      }
+      this.mediaGalleryItems = this.mediaGalleryItems.filter((entry) => entry !== item);
+      this.syncMediaGalleryNames();
+      return;
+    }
+
+    if (!item.fileId || !this.currentProjectId) {
+      return;
+    }
+
+    const token = this.getAccessToken();
+    if (!token) {
+      this.saveFeedback = 'Inicia sesión para quitar recursos de landing.';
+      return;
+    }
+
+    try {
+      await firstValueFrom(
+        this.http.delete(
+          `${this.getApiBaseUrl()}/api/dash-manquehue/projects/${this.currentProjectId}/files/gallery/${item.fileId}`,
+          { headers: this.buildJsonHeaders(token) }
+        )
+      );
+      this.mediaGalleryItems = this.mediaGalleryItems.filter((entry) => entry !== item);
+      this.syncMediaGalleryNames();
+      this.saveFeedback = `Recurso "${item.displayName}" quitado de la landing.`;
+    } catch (error) {
+      console.error('[NuevoProyectoUI] removeGalleryAsset error', error);
+      this.saveFeedback = this.getApiErrorMessage(error);
+    }
+  }
+
+  async renameLandingFeature(item: LandingFeatureResource): Promise<void> {
+    item.displayName = item.displayName.trim() || this.stripFileExtension(item.originalName);
+    this.syncMediaGalleryNames();
+
+    if (item.pending || !item.fileId || !this.currentProjectId) {
+      return;
+    }
+
+    const token = this.getAccessToken();
+    if (!token) {
+      this.saveFeedback = 'Inicia sesión para guardar el nombre de la sección.';
+      return;
+    }
+
+    try {
+      await firstValueFrom(
+        this.http.patch(
+          `${this.getApiBaseUrl()}/api/dash-manquehue/projects/${this.currentProjectId}/files/gallery/${item.fileId}`,
+          { displayName: item.displayName },
+          { headers: this.buildJsonHeaders(token) }
+        )
+      );
+      this.saveFeedback = `Sección "${item.displayName}" actualizada.`;
+    } catch (error) {
+      console.error('[NuevoProyectoUI] renameLandingFeature error', error);
+      this.saveFeedback = this.getApiErrorMessage(error);
     }
   }
 
@@ -611,6 +709,65 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
       .replace(/(^-|-$)/g, '');
     this.amenityOptions = [...this.amenityOptions, { id, label, selected: true }];
     this.newAmenityLabel = '';
+  }
+
+  addCustomTypology(): void {
+    const dormitorios = Number(this.newTypologyBedrooms);
+    const banos = Number(this.newTypologyBathrooms);
+
+    if (!Number.isInteger(dormitorios) || !Number.isInteger(banos) || dormitorios <= 0 || banos <= 0) {
+      this.saveFeedback = 'Define dormitorios y baños válidos para crear la tipología.';
+      return;
+    }
+
+    const label = `${dormitorios}D / ${banos}B`;
+    const existingOption = this.typologyOptions.find(
+      (option) => this.normalizeKey(option.label) === this.normalizeKey(label)
+    );
+
+    if (existingOption) {
+      existingOption.selected = true;
+      this.newTypologyBedrooms = null;
+      this.newTypologyBathrooms = null;
+      this.saveFeedback = `La tipología ${label} ya existe y fue activada.`;
+      return;
+    }
+
+    const id = this.slugifyValue(`${dormitorios}d${banos}b`) || this.slugifyValue(label);
+    this.typologyOptions = [
+      ...this.typologyOptions,
+      {
+        id,
+        label,
+        selected: true,
+        isCustom: true,
+        media: null,
+        pendingFile: null,
+        pendingPreviewUrl: null,
+        pendingMediaType: null,
+        removeMedia: false,
+        blueprint: null,
+        pendingBlueprintFile: null,
+        pendingBlueprintPreviewUrl: null,
+        removeBlueprint: false
+      }
+    ];
+    this.newTypologyBedrooms = null;
+    this.newTypologyBathrooms = null;
+    this.saveFeedback = `Tipología ${label} agregada.`;
+  }
+
+  removeCustomTypology(typology: TypologyOption): void {
+    if (!typology.isCustom) {
+      return;
+    }
+    this.revokeTypologyPreview(typology);
+    this.revokeTypologyBlueprintPreview(typology);
+    this.modelAssociations = this.modelAssociations.filter(
+      (association) => association.typology !== typology.label
+    );
+    this.typologyOptions = this.typologyOptions.filter((option) => option !== typology);
+    this.saveFeedback = `Tipología ${typology.label} eliminada.`;
   }
 
   addBranchChannel() {
@@ -827,6 +984,17 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
     return this.typologyOptions.filter(
       (option) => option.selected && this.hasTypologyMedia(option) && this.hasTypologyBlueprint(option)
     ).length;
+  }
+
+  get canAddCustomTypology(): boolean {
+    const dormitorios = Number(this.newTypologyBedrooms);
+    const banos = Number(this.newTypologyBathrooms);
+    return (
+      Number.isInteger(dormitorios) &&
+      dormitorios > 0 &&
+      Number.isInteger(banos) &&
+      banos > 0
+    );
   }
 
   get landingManualUrl(): string {
@@ -1498,7 +1666,6 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
 
     const typologiesPayload = {
       typologies: this.typologyOptions
-        .filter((option) => option.selected)
         .map((option, index) => {
           const parsed = this.parseTypologyLabel(option.label);
           const models = this.modelAssociations
@@ -1512,7 +1679,7 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
             typologyCode: option.id,
             dormitorios: parsed.dormitorios,
             banos: parsed.banos,
-            isActive: true,
+            isActive: option.selected,
             sortOrder: index,
             models
           };
@@ -1644,7 +1811,13 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
       this.mediaAssets.masterPlan = pickName('masterplan');
       this.mediaAssets.brochure = pickName('brochure');
       this.mediaAssets.legalDocs = pickName('legal_document');
-      this.mediaGallery = gallery.map((row) => String(row['original_name'] || '')).filter(Boolean);
+      this.mediaGalleryItems.forEach((item) => {
+        if (item.pending && item.url) {
+          URL.revokeObjectURL(item.url);
+        }
+      });
+      this.mediaGalleryItems = gallery.map((row, index) => this.mapGalleryRow(row, index));
+      this.syncMediaGalleryNames();
       this.contentPlan.videoUrl = String(content?.['video_tour_url'] || this.contentPlan.videoUrl || '');
       this.pendingGalleryFiles = [];
       this.step3AssetFiles.masterPlan = null;
@@ -1983,6 +2156,7 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
       }
 
       const typologyRows = Array.isArray(typologiesResponse?.data) ? typologiesResponse.data : [];
+      this.resetTypologyOptionsToDefaults();
       const selectedLabels = new Set<string>();
       const modelAssociations = typologyRows.flatMap((row) => {
         const label = this.buildTypologyLabel(
@@ -1990,7 +2164,9 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
           Number(row['dormitorios'] || 0),
           Number(row['banos'] || 0)
         );
-        selectedLabels.add(label);
+        if (Boolean(Number(row['is_active'] || 0))) {
+          selectedLabels.add(label);
+        }
         const models = Array.isArray(row['models']) ? (row['models'] as Array<Record<string, unknown>>) : [];
         return models.map((model) => ({
           typology: label,
@@ -1998,9 +2174,32 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
         })).filter((item) => item.model);
       });
 
+      typologyRows.forEach((row) => {
+        const dormitorios = Number(row['dormitorios'] || 0);
+        const banos = Number(row['banos'] || 0);
+        const label = this.buildTypologyLabel(
+          String(row['typology_code'] || ''),
+          dormitorios,
+          banos
+        );
+        const option = this.ensureTypologyOption(String(row['typology_code'] || ''), label, dormitorios, banos);
+        option.selected = true;
+      });
+
       this.typologyOptions.forEach((option) => {
         option.selected = selectedLabels.has(option.label);
-        const row = typologyRows.find((item) => String(item['typology_code'] || '') === option.id);
+        const row = typologyRows.find((item) => {
+          const rowCode = String(item['typology_code'] || '');
+          const rowLabel = this.buildTypologyLabel(
+            rowCode,
+            Number(item['dormitorios'] || 0),
+            Number(item['banos'] || 0)
+          );
+          return (
+            this.normalizeKey(rowCode) === this.normalizeKey(option.id) ||
+            this.normalizeKey(rowLabel) === this.normalizeKey(option.label)
+          );
+        });
         option.media = this.mapTypologyMediaFromApi(row?.['media']);
         option.blueprint = this.mapTypologyMediaFromApi(row?.['blueprint']);
         option.removeMedia = false;
@@ -2194,6 +2393,33 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
     return this.slugifyValue(value);
   }
 
+  private stripFileExtension(value: string): string {
+    return String(value || '').replace(/\.[^/.]+$/, '').trim();
+  }
+
+  private syncMediaGalleryNames(): void {
+    this.mediaGallery = this.mediaGalleryItems
+      .map((item) => item.displayName || this.stripFileExtension(item.originalName))
+      .filter(Boolean);
+  }
+
+  private mapGalleryRow(row: Record<string, unknown>, index: number): Step3GalleryItem {
+    const originalName = String(row['original_name'] || '');
+    const displayName = String(row['display_name'] || '').trim();
+    const url = String(row['url'] || row['file_path'] || '');
+    const fileCategory = String(row['file_category'] || '');
+    const mimeType = String(row['mime_type'] || '');
+    return {
+      localId: `saved-${row['id'] || index}`,
+      fileId: Number(row['id'] || 0) || null,
+      displayName: displayName || this.stripFileExtension(originalName) || `Sección ${index + 1}`,
+      originalName,
+      url: /^https?:\/\//i.test(url) ? url : `${this.getApiBaseUrl()}${url.startsWith('/') ? url : `/${url}`}`,
+      type: fileCategory === 'gallery_video' || mimeType.startsWith('video/') ? 'video' : 'image',
+      pending: false
+    };
+  }
+
   private toNullableNumber(value: unknown): number | null {
     if (value === '' || value === null || value === undefined) {
       return null;
@@ -2203,22 +2429,21 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
   }
 
   private getApiBaseUrl(): string {
-    if (typeof window === 'undefined') {
-      return '';
+    if (typeof window !== 'undefined') {
+      const host = window.location.hostname.toLowerCase();
+      if (host === 'localhost' || host === '127.0.0.1') {
+        return 'http://localhost:4000';
+      }
     }
-    const host = window.location.hostname.toLowerCase();
-    return host === 'localhost' || host === '127.0.0.1'
-      ? ''
-      : 'https://www.api.thefutureagencyai.com';
+    return 'https://www.api.thefutureagencyai.com';
   }
 
   private resolvePublicApiBaseUrl(): string {
-    if (typeof window === 'undefined') {
-      return 'https://www.api.thefutureagencyai.com';
-    }
-    const host = window.location.hostname.toLowerCase();
-    if (host === 'localhost' || host === '127.0.0.1') {
-      return 'http://localhost:4000';
+    if (typeof window !== 'undefined') {
+      const host = window.location.hostname.toLowerCase();
+      if (host === 'localhost' || host === '127.0.0.1') {
+        return 'http://localhost:4000';
+      }
     }
     return 'https://www.api.thefutureagencyai.com';
   }
@@ -2373,7 +2598,13 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
       brochure: '',
       legalDocs: ''
     };
+    this.mediaGalleryItems.forEach((item) => {
+      if (item.pending && item.url) {
+        URL.revokeObjectURL(item.url);
+      }
+    });
     this.mediaGallery = [];
+    this.mediaGalleryItems = [];
     this.contentPlan = {
       heroHeadline: 'Un nuevo skyline en Manquehue',
       heroTagline: 'Departamentos inteligentes con vistas infinitas.',
@@ -2410,6 +2641,7 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
       { typology: '3D / 3B', model: 'Jardín' }
     ];
 
+    this.resetTypologyOptionsToDefaults();
     this.typologyOptions.forEach((option) => {
       this.revokeTypologyPreview(option);
       this.revokeTypologyBlueprintPreview(option);
@@ -2447,6 +2679,11 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
       this.revokeTypologyPreview(option);
       this.revokeTypologyBlueprintPreview(option);
     });
+    this.mediaGalleryItems.forEach((item) => {
+      if (item.pending && item.url) {
+        URL.revokeObjectURL(item.url);
+      }
+    });
     this.differentiatorMediaStates.forEach((slot) => this.revokeDifferentiatorPreview(slot));
   }
 
@@ -2455,6 +2692,70 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
       .toLowerCase()
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '');
+  }
+
+  private createDefaultTypologyOptions(): TypologyOption[] {
+    return this.defaultTypologyDefinitions.map((item) => ({
+      id: item.id,
+      label: item.label,
+      selected: item.selected,
+      isCustom: false,
+      media: null,
+      pendingFile: null,
+      pendingPreviewUrl: null,
+      pendingMediaType: null,
+      removeMedia: false,
+      blueprint: null,
+      pendingBlueprintFile: null,
+      pendingBlueprintPreviewUrl: null,
+      removeBlueprint: false
+    }));
+  }
+
+  private resetTypologyOptionsToDefaults(): void {
+    this.typologyOptions.forEach((option) => {
+      this.revokeTypologyPreview(option);
+      this.revokeTypologyBlueprintPreview(option);
+    });
+    this.typologyOptions = this.createDefaultTypologyOptions();
+  }
+
+  private ensureTypologyOption(
+    typologyCode: string,
+    label: string,
+    dormitorios: number,
+    banos: number
+  ): TypologyOption {
+    const normalizedLabel = this.normalizeKey(label);
+    const existing = this.typologyOptions.find(
+      (option) =>
+        this.normalizeKey(option.id) === this.normalizeKey(typologyCode) ||
+        this.normalizeKey(option.label) === normalizedLabel
+    );
+    if (existing) {
+      return existing;
+    }
+    const generatedCode =
+      this.slugifyValue(typologyCode) ||
+      this.slugifyValue(`${dormitorios}d${banos}b`) ||
+      this.slugifyValue(label);
+    const option: TypologyOption = {
+      id: generatedCode,
+      label,
+      selected: false,
+      isCustom: true,
+      media: null,
+      pendingFile: null,
+      pendingPreviewUrl: null,
+      pendingMediaType: null,
+      removeMedia: false,
+      blueprint: null,
+      pendingBlueprintFile: null,
+      pendingBlueprintPreviewUrl: null,
+      removeBlueprint: false
+    };
+    this.typologyOptions = [...this.typologyOptions, option];
+    return option;
   }
 
   private inferPropertyType(context: string): 'apartment' | 'house' | 'field' {

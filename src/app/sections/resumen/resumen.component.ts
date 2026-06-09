@@ -37,6 +37,13 @@ export class ResumenComponent implements OnInit {
     this.navigate.emit('nuevoProyecto');
   }
 
+  editProject(project: FeaturedProject): void {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('imanquehue_current_project_id', String(project.id));
+    }
+    this.navigate.emit('nuevoProyecto');
+  }
+
   ngOnInit(): void {
     this.loadProjects();
   }
@@ -147,13 +154,13 @@ export class ResumenComponent implements OnInit {
   }
 
   private getApiBaseUrl(): string {
-    if (typeof window === 'undefined') {
-      return '';
+    if (typeof window !== 'undefined') {
+      const host = window.location.hostname.toLowerCase();
+      if (host === 'localhost' || host === '127.0.0.1') {
+        return 'http://localhost:4000';
+      }
     }
-    const host = window.location.hostname.toLowerCase();
-    return host === 'localhost' || host === '127.0.0.1'
-      ? ''
-      : 'https://www.api.thefutureagencyai.com';
+    return 'https://www.api.thefutureagencyai.com';
   }
 
   private buildJsonHeaders(token: string): HttpHeaders {

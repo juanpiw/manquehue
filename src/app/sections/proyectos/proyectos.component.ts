@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
 import { TranslatePipe } from '../../i18n/t.pipe';
 import { ModalComponent, ModalConfig } from '../../shared/modal/modal.component';
 
@@ -35,93 +37,7 @@ interface Project {
   styleUrl: './proyectos.component.scss'
 })
 export class ProyectosComponent implements OnInit {
-  
-  projects: Project[] = [
-    {
-      id: '1',
-      name: 'Residencial Las Condes',
-      type: 'apartment',
-      status: 'active',
-      creationDate: '2024-01-15',
-      lastModified: '2024-06-20',
-      description: 'Proyecto residencial de lujo en Las Condes con amenities premium',
-      apartmentsCount: 45,
-      floorsCount: 12,
-      priceRange: {
-        min: 2500,
-        max: 4500,
-        currency: 'UF'
-      },
-      thumbnail: 'assets/images/decor.PNG'
-    },
-    {
-      id: '2',
-      name: 'Casa Familiar Providencia',
-      type: 'house',
-      status: 'completed',
-      creationDate: '2024-02-10',
-      lastModified: '2024-05-15',
-      description: 'Casa familiar moderna con diseño contemporáneo',
-      priceRange: {
-        min: 1800,
-        max: 2200,
-        currency: 'UF'
-      },
-      thumbnail: 'assets/images/deco2r.PNG'
-    },
-    {
-      id: '3',
-      name: 'Cancha Deportiva Maipú',
-      type: 'field',
-      status: 'active',
-      creationDate: '2024-03-05',
-      lastModified: '2024-06-18',
-      description: 'Complejo deportivo con múltiples canchas y áreas recreativas',
-      thumbnail: 'assets/images/unnamed.jpg'
-    },
-    {
-      id: '4',
-      name: 'Edificio Corporativo Santiago Centro',
-      type: 'apartment',
-      status: 'draft',
-      creationDate: '2024-04-12',
-      lastModified: '2024-06-10',
-      description: 'Edificio corporativo con oficinas y espacios comerciales',
-      apartmentsCount: 120,
-      floorsCount: 25,
-      priceRange: {
-        min: 3000,
-        max: 6000,
-        currency: 'UF'
-      },
-      thumbnail: 'assets/images/unnamed (1).jpg'
-    },
-    {
-      id: '5',
-      name: 'Villa Residencial Ñuñoa',
-      type: 'house',
-      status: 'active',
-      creationDate: '2024-05-20',
-      lastModified: '2024-06-22',
-      description: 'Villa residencial con jardines y áreas comunes',
-      priceRange: {
-        min: 2000,
-        max: 2800,
-        currency: 'UF'
-      },
-      thumbnail: 'assets/images/unnamed (3).jpg'
-    },
-    {
-      id: '6',
-      name: 'Centro Comercial Las Condes',
-      type: 'field',
-      status: 'completed',
-      creationDate: '2024-01-08',
-      lastModified: '2024-04-30',
-      description: 'Centro comercial con múltiples tiendas y restaurantes',
-      thumbnail: 'assets/images/planta.PNG'
-    }
-  ];
+  projects: Project[] = [];
 
   filteredProjects: Project[] = [];
   searchTerm: string = '';
@@ -141,14 +57,55 @@ export class ProyectosComponent implements OnInit {
   };
   projectToDelete: string | null = null;
 
+  constructor(private http: HttpClient) {}
+
   ngOnInit() {
-    this.filteredProjects = [...this.projects];
-    this.loadProjects();
+    void this.loadProjects();
   }
 
-  loadProjects() {
-    // Aquí se cargarían los proyectos desde el servicio
-    console.log('Cargando proyectos...');
+  async loadProjects() {
+    const token = this.getAccessToken();
+    if (!token) {
+      this.projects = [];
+      this.filteredProjects = [];
+      return;
+    }
+
+    try {
+      const response = await firstValueFrom(
+        this.http.get<{ data?: Array<Record<string, unknown>> }>(
+          `${this.getApiBaseUrl()}/api/dash-manquehue/projects`,
+          { headers: this.buildJsonHeaders(token) }
+        )
+      );
+      const rows = Array.isArray(response?.data) ? response.data : [];
+
+      const mapped = await Promise.all(
+        rows.map(async (row) => {
+          const id = String(row['id'] || '');
+          if (!id) return null;
+
+          const thumbnail = await this.fetchProjectCover(id, token);
+          return {
+            id,
+            name: String(row['nombre'] || `Proyecto ${id}`),
+            type: this.mapProjectType(String(row['tipo_inmueble'] || '')),
+            status: this.mapProjectStatus(String(row['status'] || 'draft')),
+            creationDate: String(row['created_at'] || ''),
+            lastModified: String(row['updated_at'] || row['created_at'] || ''),
+            description: String(row['descripcion_comercial'] || row['ubicacion_texto'] || ''),
+            thumbnail
+          } as Project;
+        })
+      );
+
+      this.projects = mapped.filter((project): project is Project => Boolean(project));
+      this.applyFilters();
+    } catch (error) {
+      console.error('[ProyectosUI] loadProjects error', error);
+      this.projects = [];
+      this.filteredProjects = [];
+    }
   }
 
   onSearchChange(event: Event) {
@@ -179,6 +136,74 @@ export class ProyectosComponent implements OnInit {
       
       return matchesSearch && matchesStatus && matchesType;
     });
+  }
+
+  private getApiBaseUrl(): string {
+    if (typeof window !== 'undefined') {
+      const host = window.location.hostname.toLowerCase();
+      if (host === 'localhost' || host === '127.0.0.1') {
+        return 'http://localhost:4000';
+      }
+    }
+    return 'https://www.api.thefutureagencyai.com';
+  }
+
+  private buildJsonHeaders(token: string): HttpHeaders {
+    return new HttpHeaders({
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
+  }
+
+  private getAccessToken(): string {
+    if (typeof window === 'undefined') {
+      return '';
+    }
+    return localStorage.getItem('imanquehue_access_token') || '';
+  }
+
+  private async fetchProjectCover(projectId: string, token: string): Promise<string> {
+    try {
+      const response = await firstValueFrom(
+        this.http.get<{ data?: Record<string, unknown> | null }>(
+          `${this.getApiBaseUrl()}/api/dash-manquehue/projects/${projectId}/files/step1-media`,
+          { headers: this.buildJsonHeaders(token) }
+        )
+      );
+      const cover = (response?.data?.['cover'] || null) as Record<string, unknown> | null;
+      const filePath = String(cover?.['file_path'] || '');
+      if (!filePath) {
+        return 'assets/logo1.png';
+      }
+      if (/^https?:\/\//i.test(filePath)) {
+        return filePath;
+      }
+      return `${this.getApiBaseUrl()}${filePath.startsWith('/') ? filePath : `/${filePath}`}`;
+    } catch (_error) {
+      return 'assets/logo1.png';
+    }
+  }
+
+  private mapProjectStatus(rawStatus: string): Project['status'] {
+    const normalized = rawStatus.toLowerCase();
+    if (normalized === 'published' || normalized === 'scheduled' || normalized === 'active') {
+      return 'active';
+    }
+    if (normalized === 'completed') {
+      return 'completed';
+    }
+    return 'draft';
+  }
+
+  private mapProjectType(rawType: string): Project['type'] {
+    const normalized = rawType.toLowerCase();
+    if (normalized.includes('casa')) {
+      return 'house';
+    }
+    if (normalized.includes('town') || normalized.includes('campo') || normalized.includes('terreno')) {
+      return 'field';
+    }
+    return 'apartment';
   }
 
   onPreviewProject(project: Project) {

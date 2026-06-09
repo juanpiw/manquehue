@@ -372,6 +372,33 @@
             <div class="np-form">
               <div class="np-section">
                 <span class="np-label">Selecciona tipologías y sube media principal mas plano/planta</span>
+                <div class="np-typology-add">
+                  <label>
+                    <span>Dormitorios</span>
+                    <input
+                      type="number"
+                      min="1"
+                      inputmode="numeric"
+                      [(ngModel)]="newTypologyBedrooms"
+                      placeholder="Ej: 4" />
+                  </label>
+                  <label>
+                    <span>Baños</span>
+                    <input
+                      type="number"
+                      min="1"
+                      inputmode="numeric"
+                      [(ngModel)]="newTypologyBathrooms"
+                      placeholder="Ej: 5" />
+                  </label>
+                  <button
+                    type="button"
+                    class="btn ghost np-typology-add__btn"
+                    (click)="addCustomTypology()"
+                    [disabled]="!canAddCustomTypology">
+                    + Agregar tipología
+                  </button>
+                </div>
                 <div class="np-typology-media-grid">
                   <article
                     class="np-typology-card"
@@ -403,6 +430,13 @@
                         {{ getTypologyStatusLabel(typology) }}
                       </span>
                     </div>
+                    <button
+                      *ngIf="typology.isCustom"
+                      type="button"
+                      class="np-typology-remove"
+                      (click)="removeCustomTypology(typology)">
+                      Eliminar tipología
+                    </button>
 
                     <ng-container *ngIf="typology.selected">
                       <div class="np-typology-assets">
@@ -593,7 +627,7 @@
           <article class="np-card">
             <div class="np-card__head">
               <span>3</span>
-              <h3>Galería de recursos</h3>
+              <h3>Secciones visuales de landing</h3>
             </div>
             <div class="np-media-grid">
               <label class="np-upload np-upload--accent">
@@ -601,13 +635,13 @@
                 <p>Agregar renders / videos</p>
                 <small>Hasta 10 archivos · PNG, JPG, MP4</small>
               </label>
-              <div class="np-gallery" *ngIf="mediaGallery.length > 0">
-                <div class="np-gallery__item" *ngFor="let asset of mediaGallery; let i = index">
-                  <span>{{ asset }}</span>
-                  <button type="button" (click)="removeGalleryAsset(i)" aria-label="Eliminar archivo">×</button>
-                </div>
-              </div>
-              <p *ngIf="mediaGallery.length === 0" class="np-card__hint">No hay archivos cargados todavía.</p>
+            </div>
+            <div class="np-form mt-6">
+              <app-landing-feature-manager
+                [items]="mediaGalleryItems"
+                (rename)="renameLandingFeature($event)"
+                (remove)="removeGalleryAsset($event)">
+              </app-landing-feature-manager>
             </div>
           </article>
         </div>

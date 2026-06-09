@@ -56,6 +56,59 @@
             text-transform: uppercase;
         }
 
+        .hero-subheadline-shell {
+            position: relative;
+            max-width: min(760px, 86vw);
+            padding: 0.2rem 0.25rem;
+        }
+
+        .hero-subheadline-shell::before {
+            content: '';
+            position: absolute;
+            inset: -0.7rem -1.1rem;
+            background: radial-gradient(120% 130% at 0% 50%, rgba(0, 0, 0, 0.78) 0%, rgba(0, 0, 0, 0.52) 42%, rgba(0, 0, 0, 0.22) 72%, rgba(0, 0, 0, 0) 100%);
+            filter: blur(16px);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .hero-subheadline-panel {
+            max-width: 100%;
+            padding: 0.8rem 1rem;
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.6;
+            white-space: pre-line;
+        }
+
+        .hero-subheadline-panel.is-collapsed {
+            display: -webkit-box;
+            -webkit-line-clamp: 6;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            mask-image: linear-gradient(180deg, rgba(0, 0, 0, 1) 78%, rgba(0, 0, 0, 0) 100%);
+            -webkit-mask-image: linear-gradient(180deg, rgba(0, 0, 0, 1) 78%, rgba(0, 0, 0, 0) 100%);
+        }
+
+        .hero-subheadline-toggle {
+            margin-top: -0.35rem;
+            margin-left: 0.25rem;
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            background: rgba(0, 0, 0, 0.28);
+            color: rgba(255, 255, 255, 0.95);
+            border-radius: 999px;
+            padding: 0.35rem 0.85rem;
+            font-size: 0.65rem;
+            font-weight: 800;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            transition: 0.2s ease;
+        }
+
+        .hero-subheadline-toggle:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
         .video-stat {
             width: 130px;
             height: 130px;
@@ -579,8 +632,8 @@
         </div>
         <div class="absolute inset-0 bg-black/30"></div>
 
-        <div class="relative z-10 w-full px-12 lg:px-20 flex flex-col items-center text-center space-y-10" id="hero-text">
-            <div class="flex flex-wrap justify-center gap-3 reveal">
+        <div class="relative z-10 w-full px-12 lg:px-20 flex flex-col items-start text-left space-y-10" id="hero-text">
+            <div class="flex flex-wrap justify-start gap-3 reveal">
                 <div class="param-badge text-indigo-400">
                     <i id="view-type-icon" class="fa-solid fa-building"></i>
                     <span id="view-tag-type">Departamento</span>
@@ -597,10 +650,13 @@
 
             <h1 id="view-headline" class="hero-title reveal">
                     YOUR PLACE<br>ON EARTH
+            </h1>
+            <div class="hero-subheadline-shell reveal">
+                <p id="view-subheadline" class="hero-subheadline-panel is-collapsed text-lg font-light">
+                    Creamos un complejo para quienes valoran vivir en una ciudad moderna con estandares de vanguardia tecnologica.
+                </p>
+                <button id="view-subheadline-toggle" type="button" class="hero-subheadline-toggle hidden">Más</button>
             </div>
-            <p id="view-subheadline" class="max-w-xl text-lg text-white/60 font-light leading-relaxed reveal">
-                Creamos un complejo para quienes valoran vivir en una ciudad moderna con estandares de vanguardia tecnologica.
-            </p>
             <div class="pt-6 reveal">
                 <button id="hero-cta" class="bg-white/10 backdrop-blur-md text-white border border-white/20 px-10 py-5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] hover:bg-white hover:text-black transition-all shadow-2xl">
                     Solicitar Visita Guiada
@@ -934,6 +990,10 @@
         }
 
         function resolveDefaultApiBaseUrl() {
+            const host = window.location.hostname;
+            const isLocalPage = window.location.protocol === 'file:' || host === 'localhost' || host === '127.0.0.1';
+            if (isLocalPage) return 'http://localhost:4000';
+
             return 'https://www.api.thefutureagencyai.com';
         }
 
@@ -1307,6 +1367,36 @@
                 .replace(/(^-|-$)/g, '');
         }
 
+        function repairMojibake(value) {
+            const text = String(value || '');
+            if (!/[ÃÂâ]/.test(text)) return text;
+
+            try {
+                const bytes = Array.from(text, (char) => `%${char.charCodeAt(0).toString(16).padStart(2, '0')}`).join('');
+                return decodeURIComponent(bytes);
+            } catch (_error) {
+                return text;
+            }
+        }
+
+        function stripFileExtension(value) {
+            return String(value || '').replace(/\.[^/.]+$/, '').trim();
+        }
+
+        function cleanFileNameLabel(value) {
+            return stripFileExtension(repairMojibake(value))
+                .replace(/[_-]+/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim();
+        }
+
+        function getGalleryDisplayName(item) {
+            const customName = repairMojibake(item?.displayName || item?.display_name || '').trim();
+            if (customName) return stripFileExtension(customName);
+
+            return cleanFileNameLabel(item?.name || item?.originalName || item?.original_name || item?.file_name || '');
+        }
+
         function normalizeAmenity(item, index = 0) {
             if (!item) return null;
             if (typeof item === 'string') {
@@ -1422,17 +1512,26 @@
         function normalizeGalleryItem(item) {
             if (!item) return null;
             if (typeof item === 'string') {
-                return { url: item, type: 'image', name: '' };
+                return { url: resolveMediaUrl(item), type: 'image', name: cleanFileNameLabel(item) };
             }
             const url = item.url || item.file_url || item.path || item.file_path || '';
             if (!url) return null;
             const mimeType = String(item.mime_type || '');
             return {
                 id: item.id || null,
-                url,
+                url: resolveMediaUrl(url),
                 type: item.type || (mimeType.startsWith('video/') ? 'video' : 'image'),
-                name: item.name || item.original_name || ''
+                name: getGalleryDisplayName(item)
             };
+        }
+
+        function resolveMediaUrl(url) {
+            const value = String(url || '').trim();
+            if (!value) return '';
+            if (/^https?:\/\//i.test(value) || value.startsWith('data:') || value.startsWith('blob:')) {
+                return value;
+            }
+            return `${getApiBaseUrl()}${value.startsWith('/') ? value : `/${value}`}`;
         }
 
         function buildUnitCameraPreset(index) {
@@ -1616,6 +1715,46 @@
             if (element) {
                 element.textContent = value || '';
             }
+        }
+
+        function refreshSubheadlineClamp() {
+            const textEl = document.getElementById('view-subheadline');
+            const toggleEl = document.getElementById('view-subheadline-toggle');
+            if (!textEl || !toggleEl) return;
+
+            textEl.classList.add('is-collapsed');
+            textEl.classList.remove('is-expanded');
+            toggleEl.textContent = 'Más';
+
+            requestAnimationFrame(() => {
+                const needsToggle = textEl.scrollHeight > textEl.clientHeight + 4;
+                if (needsToggle) {
+                    toggleEl.classList.remove('hidden');
+                } else {
+                    toggleEl.classList.add('hidden');
+                    textEl.classList.remove('is-collapsed');
+                }
+            });
+        }
+
+        function setupSubheadlineToggle() {
+            const textEl = document.getElementById('view-subheadline');
+            const toggleEl = document.getElementById('view-subheadline-toggle');
+            if (!textEl || !toggleEl || toggleEl.dataset.bound === 'true') return;
+
+            toggleEl.addEventListener('click', () => {
+                const isExpanded = textEl.classList.contains('is-expanded');
+                if (isExpanded) {
+                    textEl.classList.remove('is-expanded');
+                    textEl.classList.add('is-collapsed');
+                    toggleEl.textContent = 'Más';
+                } else {
+                    textEl.classList.add('is-expanded');
+                    textEl.classList.remove('is-collapsed');
+                    toggleEl.textContent = 'Menos';
+                }
+            });
+            toggleEl.dataset.bound = 'true';
         }
 
         function setHtml(id, value) {
@@ -1931,10 +2070,19 @@
             if (!amenityList) return;
             const differentiators = Array.isArray(data.diferenciadores) ? data.diferenciadores : [];
             const differentiatorsDetail = Array.isArray(data.diferenciadores_detalle) ? data.diferenciadores_detalle : [];
-            if (differentiators.length) {
-                const rows = differentiatorsDetail.length
+            const galleryFeatureRows = Array.isArray(data.multimedia?.gallery)
+                ? data.multimedia.gallery.map((item, index) => ({
+                    text: item.name || `Sección ${index + 1}`,
+                    code: String(index + 1).padStart(2, '0'),
+                    media: item
+                }))
+                : [];
+            const rows = galleryFeatureRows.length
+                ? galleryFeatureRows
+                : (differentiatorsDetail.length
                     ? differentiatorsDetail
-                    : differentiators.map((text, index) => ({ text, code: String(index + 1).padStart(2, '0'), media: null }));
+                    : differentiators.map((text, index) => ({ text, code: String(index + 1).padStart(2, '0'), media: null })));
+            if (rows.length) {
                 appendLog('FEATURES NORMALIZED ROWS', rows.map((item, index) => ({
                     index: index + 1,
                     code: item.code,
@@ -1958,7 +2106,7 @@
                     }
                 });
                 amenityList.innerHTML = rows.map((item, index) => `
-                    <div class="amenity-row">
+                    <div class="amenity-row" data-feature-index="${index}">
                         <span>${escapeHtml(item.code || String(index + 1).padStart(2, '0'))}</span>
                         <span class="text-2xl font-bold uppercase tracking-tighter">${escapeHtml(item.text || '')}</span>
                     </div>
@@ -1969,7 +2117,7 @@
                     const amenityVisual = document.getElementById('amenity-visual');
                     const amenityVideo = document.getElementById('amenity-visual-video');
                     const mediaType = String(media?.type || '').toLowerCase();
-                    const mediaUrl = media?.url || fallbackVisual;
+                    const mediaUrl = resolveMediaUrl(media?.url || fallbackVisual);
                     appendLog('FEATURES ACTIVE VISUAL', {
                         requestedMedia: media || null,
                         resolvedType: mediaType || 'image',
@@ -1984,7 +2132,21 @@
                             amenityVisual.classList.add('hidden');
                             amenityVideo.play?.().catch(() => {});
                         } else {
-                            amenityVisual.src = mediaUrl || amenityVisual.src;
+                            if (mediaUrl && amenityVisual.src !== mediaUrl) {
+                                amenityVisual.style.opacity = '0';
+                                const nextImage = new Image();
+                                nextImage.onload = () => {
+                                    amenityVisual.src = mediaUrl;
+                                    requestAnimationFrame(() => {
+                                        amenityVisual.style.opacity = '1';
+                                    });
+                                };
+                                nextImage.onerror = () => {
+                                    amenityVisual.src = mediaUrl;
+                                    amenityVisual.style.opacity = '1';
+                                };
+                                nextImage.src = mediaUrl;
+                            }
                             amenityVisual.classList.remove('hidden');
                             amenityVideo.classList.add('hidden');
                             amenityVideo.pause?.();
@@ -1995,8 +2157,9 @@
                 };
 
                 const rowElements = Array.from(amenityList.querySelectorAll('.amenity-row'));
-                rowElements.forEach((element, index) => {
-                    element.addEventListener('click', () => {
+                const activateFeatureRow = (index) => {
+                    const element = rowElements[index];
+                    if (!element) return;
                         appendLog('FEATURES ROW CLICK', {
                             rowIndex: index + 1,
                             rowText: rows[index]?.text || '',
@@ -2005,7 +2168,19 @@
                         rowElements.forEach((row) => row.classList.remove('is-active'));
                         element.classList.add('is-active');
                         setFeatureVisual(rows[index]?.media || null);
-                    });
+                };
+                amenityList.onpointerover = (event) => {
+                    const row = event.target?.closest?.('.amenity-row');
+                    if (!row || !amenityList.contains(row)) return;
+                    activateFeatureRow(Number(row.dataset.featureIndex || 0));
+                };
+                amenityList.onclick = (event) => {
+                    const row = event.target?.closest?.('.amenity-row');
+                    if (!row || !amenityList.contains(row)) return;
+                    activateFeatureRow(Number(row.dataset.featureIndex || 0));
+                };
+                rowElements.forEach((element, index) => {
+                    element.addEventListener('focus', () => activateFeatureRow(index));
                 });
                 if (rowElements.length) {
                     rowElements[0].classList.add('is-active');
@@ -2246,6 +2421,8 @@
             setTimeout(() => {
                 setHtml('view-headline', formatHeadline(data.headline));
                 setText('view-subheadline', data.subHeadline);
+                setupSubheadlineToggle();
+                refreshSubheadlineClamp();
                 setText('hero-cta', data.ctaLabel);
                 setText('nav-cta', data.ctaLabel);
                 setText('view-tag-type', data.tipo_inmueble);

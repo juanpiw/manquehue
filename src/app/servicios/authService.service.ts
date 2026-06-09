@@ -39,18 +39,12 @@ export class AuthService {
   }
 
   private resolveApiBaseUrl(): string {
-    if (typeof window === 'undefined') {
-      return '';
+    if (typeof window !== 'undefined') {
+      const host = window.location.hostname.toLowerCase();
+      if (host === 'localhost' || host === '127.0.0.1') {
+        return 'http://localhost:4000';
+      }
     }
-
-    const host = window.location.hostname.toLowerCase();
-
-    // Local dev: use Angular proxy (/api -> localhost:4000)
-    if (host === 'localhost' || host === '127.0.0.1') {
-      return '';
-    }
-
-    // Production/staging frontend: call backend API host directly
     return 'https://www.api.thefutureagencyai.com';
   }
 

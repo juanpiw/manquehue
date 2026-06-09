@@ -1,0 +1,141 @@
+:host {
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+
+.landing-features {
+  display: grid;
+  gap: 0.85rem;
+  width: 100%;
+  min-width: 0;
+}
+
+.landing-feature {
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr);
+  gap: 0.85rem;
+  align-items: center;
+  padding: 0.85rem;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 1.1rem;
+  background: rgba(248, 250, 252, 0.78);
+  min-width: 0;
+  overflow: hidden;
+}
+
+.landing-feature__preview {
+  width: 92px;
+  height: 72px;
+  border-radius: 0.85rem;
+  overflow: hidden;
+  background: #e2e8f0;
+  display: grid;
+  place-items: center;
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 800;
+
+  img,
+  video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+}
+
+.landing-feature__body {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 0;
+
+  label {
+    display: grid;
+    gap: 0.25rem;
+    min-width: 0;
+  }
+
+  span,
+  small {
+    color: #64748b;
+    font-size: 0.72rem;
+  }
+
+  input {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    border: 1px solid #cbd5e1;
+    border-radius: 0.75rem;
+    padding: 0.55rem 0.75rem;
+    font-size: 0.85rem;
+    color: #0f172a;
+    background: #fff;
+  }
+}
+
+.landing-feature__eyebrow {
+  margin: 0;
+  color: #6366f1;
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.landing-feature__actions {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.45rem;
+  justify-content: stretch;
+  min-width: 0;
+}
+
+.landing-feature__save,
+.landing-feature__remove {
+  border: 1px solid #fecaca;
+  border-radius: 999px;
+  padding: 0.45rem 0.75rem;
+  font-size: 0.72rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.landing-feature__save {
+  border-color: #c7d2fe;
+  background: #eef2ff;
+  color: #4338ca;
+}
+
+.landing-feature__remove {
+  background: #fff1f2;
+  color: #b91c1c;
+}
+
+.landing-features__empty {
+  margin: 0;
+  padding: 1rem;
+  border: 1px dashed rgba(148, 163, 184, 0.45);
+  border-radius: 1rem;
+  color: #64748b;
+  font-size: 0.85rem;
+}
+
+@media (max-width: 720px) {
+  .landing-feature {
+    grid-template-columns: 1fr;
+  }
+
+  .landing-feature__preview {
+    width: 100%;
+    height: 160px;
+  }
+
+  .landing-feature__actions {
+    grid-column: 1;
+    grid-template-columns: 1fr;
+  }
+}
