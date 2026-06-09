@@ -82,6 +82,7 @@
 
         .hero-subheadline-panel.is-collapsed {
             display: -webkit-box;
+            line-clamp: 6;
             -webkit-line-clamp: 6;
             -webkit-box-orient: vertical;
             overflow: hidden;
@@ -791,7 +792,9 @@
         <div class="lg:col-span-5 space-y-12">
             <div class="space-y-6">
                 <div class="step-indicator text-fuchsia-400">Paso 4: Diferenciadores</div>
-                <h2 class="text-6xl lg:text-8xl font-bold tracking-tighter uppercase italic leading-none">Features<br><span class="text-white/20">We give more</span></h2>
+                <h2 class="text-6xl lg:text-8xl font-bold tracking-tighter uppercase italic leading-none">
+                    <span id="features-title">Features</span><br><span id="features-subtitle" class="text-white/20">We give more</span>
+                </h2>
                 <p id="view-narrative" class="text-white/50 text-lg leading-relaxed max-w-sm">
                     "Disenado para quienes buscan el equilibrio perfecto entre tecnologia, confort y las mejores vistas."
                 </p>
@@ -1643,6 +1646,8 @@
                     rawData?.descripcion_comercial ||
                     'Proyecto en desarrollo inteligente.',
                 ctaLabel: rawData?.ctaLabel || rawData?.cta || rawData?.cta_principal || 'Solicitar visita guiada',
+                featuresTitle: rawData?.featuresTitle || rawData?.features_title || 'Features',
+                featuresSubtitle: rawData?.featuresSubtitle || rawData?.features_subtitle || 'We give more',
                 narrativa: rawData?.narrativa || rawData?.narrativa_comercial || rawData?.descripcion_comercial || '',
                 diferenciadores: toArray(rawData?.diferenciadores).map((item) => String(item || '').trim()).filter(Boolean),
                 diferenciadores_detalle:
@@ -2435,6 +2440,8 @@
                 setText('view-time-2', data.tiempo_recorrido_min ? String(data.tiempo_recorrido_min) : '-');
                 setText('view-time-pv', data.tiempo_post_venta ? String(data.tiempo_post_venta) : '-');
                 setText('view-address-label', data.direccion_pin || 'Ubicacion pendiente');
+                setText('features-title', data.featuresTitle || 'Features');
+                setText('features-subtitle', data.featuresSubtitle || 'We give more');
                 setText('view-narrative', `"${data.narrativa || data.descripcion_comercial || 'Narrativa pendiente.'}"`);
                 setText('view-desc', data.descripcion_comercial || data.narrativa || data.nombre);
                 setText('view-units', data.unidades_totales ? String(data.unidades_totales) : '0');

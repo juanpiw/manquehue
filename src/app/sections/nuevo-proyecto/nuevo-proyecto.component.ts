@@ -274,6 +274,8 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
   contentPlan = {
     heroHeadline: 'Un nuevo skyline en Manquehue',
     heroTagline: 'Departamentos inteligentes con vistas infinitas.',
+    featuresTitle: 'Features',
+    featuresSubtitle: 'We give more',
     narrative: '',
     sellingPoints: [
       'Sky pool temperada con vista 360°',
@@ -1836,6 +1838,8 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
         {
           headlinePrincipal: this.contentPlan.heroHeadline?.trim() || null,
           subtituloInspiracional: this.contentPlan.heroTagline?.trim() || null,
+          featuresTitle: this.contentPlan.featuresTitle?.trim() || null,
+          featuresSubtitle: this.contentPlan.featuresSubtitle?.trim() || null,
           narrativaComercial: this.contentPlan.narrative?.trim() || null,
           ctaPrincipal: this.contentPlan.ctaLabel?.trim() || null,
           videoTourUrl: this.contentPlan.videoUrl?.trim() || null
@@ -1920,6 +1924,8 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
         this.contentPlan.heroTagline = String(
           content['subtitulo_inspiracional'] || this.contentPlan.heroTagline || ''
         );
+        this.contentPlan.featuresTitle = String(content['features_title'] || this.contentPlan.featuresTitle || '');
+        this.contentPlan.featuresSubtitle = String(content['features_subtitle'] || this.contentPlan.featuresSubtitle || '');
         this.contentPlan.narrative = String(content['narrativa_comercial'] || this.contentPlan.narrative || '');
         this.contentPlan.ctaLabel = String(content['cta_principal'] || this.contentPlan.ctaLabel || '');
         this.contentPlan.videoUrl = String(content['video_tour_url'] || this.contentPlan.videoUrl || '');
@@ -2608,6 +2614,8 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
     this.contentPlan = {
       heroHeadline: 'Un nuevo skyline en Manquehue',
       heroTagline: 'Departamentos inteligentes con vistas infinitas.',
+      featuresTitle: 'Features',
+      featuresSubtitle: 'We give more',
       narrative: '',
       sellingPoints: [
         'Sky pool temperada con vista 360°',

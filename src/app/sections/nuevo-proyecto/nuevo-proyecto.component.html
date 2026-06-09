@@ -681,8 +681,18 @@
                 <span>Subtítulo inspiracional</span>
                 <input type="text" placeholder="Mensaje secundario" [(ngModel)]="contentPlan.heroTagline" />
               </label>
+              <div class="np-form__group">
+                <label>
+                  <span>Título sección Features</span>
+                  <input type="text" placeholder="Features" [(ngModel)]="contentPlan.featuresTitle" />
+                </label>
+                <label>
+                  <span>Subtítulo sección Features</span>
+                  <input type="text" placeholder="We give more" [(ngModel)]="contentPlan.featuresSubtitle" />
+                </label>
+              </div>
               <label>
-                <span>Narrativa comercial</span>
+                <span>Narrativa Features</span>
                 <textarea rows="5" placeholder="Describe la propuesta de valor..." [(ngModel)]="contentPlan.narrative"></textarea>
               </label>
             </div>
