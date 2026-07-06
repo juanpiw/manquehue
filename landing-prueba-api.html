@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dash Manquehue | Real Estate Cinematic Experience</title>
+    <title>Dash Manquehue | Experiencia inmobiliaria cinematográfica</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
@@ -11,7 +11,21 @@
     <script src="https://unpkg.com/@studio-freight/lenis@1.0.34/dist/lenis.min.js"></script>
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700;800&display=swap');
+        @font-face {
+            font-family: 'Made Tommy';
+            src: url('./tipo/MADE TOMMY Regular_PERSONAL USE_2.otf') format('opentype');
+            font-weight: 400;
+            font-style: normal;
+            font-display: swap;
+        }
+
+        @font-face {
+            font-family: 'Made Tommy';
+            src: url('./tipo/MADE TOMMY Medium_PERSONAL USE.otf') format('opentype');
+            font-weight: 500 900;
+            font-style: normal;
+            font-display: swap;
+        }
 
         :root {
             --step1: #6366f1;
@@ -24,13 +38,31 @@
         }
 
         body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-family: 'Made Tommy', Arial, sans-serif;
             background:
                 radial-gradient(circle at top center, rgba(99, 102, 241, 0.18), transparent 26%),
                 radial-gradient(circle at bottom left, rgba(236, 72, 153, 0.08), transparent 25%),
                 #020205;
             color: #fff;
             overflow-x: hidden;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6,
+        p,
+        span,
+        a,
+        button,
+        input,
+        textarea,
+        select,
+        small,
+        strong {
+            font-family: 'Made Tommy', Arial, sans-serif;
         }
 
         html.lenis {
@@ -351,6 +383,69 @@
             opacity: 0.55;
         }
 
+        .gallery-lightbox {
+            position: fixed;
+            inset: 0;
+            z-index: 120;
+            background: rgba(2, 2, 5, 0.9);
+            backdrop-filter: blur(22px);
+            padding: clamp(1rem, 3vw, 3rem);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .gallery-lightbox:not(.hidden) {
+            display: flex;
+        }
+
+        .gallery-lightbox__dialog {
+            position: relative;
+            width: min(1180px, 94vw);
+            height: min(760px, 86vh);
+            border-radius: 36px;
+            overflow: hidden;
+            background: #020205;
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            box-shadow: 0 40px 120px rgba(0, 0, 0, 0.75);
+        }
+
+        .gallery-lightbox__media {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            background: #020205;
+            display: block;
+        }
+
+        .gallery-lightbox__caption {
+            position: absolute;
+            left: 2rem;
+            right: 5rem;
+            bottom: 2rem;
+            color: #fff;
+            text-shadow: 0 8px 30px rgba(0, 0, 0, 0.9);
+        }
+
+        .gallery-lightbox__close {
+            position: absolute;
+            top: 1.25rem;
+            right: 1.25rem;
+            z-index: 2;
+            width: 44px;
+            height: 44px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            color: #fff;
+            font-size: 1.4rem;
+            line-height: 1;
+            transition: 0.2s ease;
+        }
+
+        .gallery-lightbox__close:hover {
+            background: rgba(255, 255, 255, 0.22);
+        }
+
         .tour-embed {
             position: absolute;
             inset: 0;
@@ -579,28 +674,28 @@
     </style>
 </head>
 <body class="antialiased">
-    <div id="debug-panel" class="fixed bottom-8 right-8 z-[100] w-96 glass-panel text-white rounded-[40px] overflow-hidden transition-all duration-500 max-h-[90vh] flex flex-col">
+    <div id="debug-panel" class="hidden fixed bottom-8 right-8 z-[100] w-96 glass-panel text-white rounded-[40px] overflow-hidden transition-all duration-500 max-h-[90vh] flex flex-col">
         <div class="p-6 bg-white/5 flex justify-between items-center cursor-pointer border-b border-white/10" onclick="toggleDebug()">
             <div class="flex items-center gap-3">
                 <div class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></div>
-                <span class="text-[10px] font-black uppercase tracking-[0.2em]">Sync Controller</span>
+                <span class="text-[10px] font-black uppercase tracking-[0.2em]">Control de sincronización</span>
             </div>
             <i id="debug-icon" class="fa-solid fa-chevron-up text-xs opacity-50 transition-transform duration-300"></i>
         </div>
         <div id="debug-content" class="p-8 space-y-4 overflow-y-auto hidden">
-            <input id="api-base-url" class="debug-input" placeholder="API Base URL (ej: http://localhost:4000)">
-            <input id="api-project-id" class="debug-input" placeholder="Project ID manual">
+            <input id="api-base-url" class="debug-input" placeholder="URL base API (ej: http://localhost:4000)">
+            <input id="api-project-id" class="debug-input" placeholder="ID de proyecto manual">
             <div class="grid grid-cols-[1fr_auto] gap-2 items-center">
                 <select id="api-project-select" class="debug-input">
                     <option value="">Selecciona ID guardado</option>
                 </select>
-                <button onclick="refreshProjectIdsDropdown()" class="debug-button px-4 py-3 bg-cyan-700 hover:bg-cyan-600 text-white">Refresh</button>
+                <button onclick="refreshProjectIdsDropdown()" class="debug-button px-4 py-3 bg-cyan-700 hover:bg-cyan-600 text-white">Refrescar</button>
             </div>
             <div class="rounded-[24px] border border-white/10 bg-black/30 p-4 space-y-1">
                 <p class="text-[9px] uppercase tracking-[0.18em] text-white/30 font-bold">Modo</p>
                 <p id="api-mode-state" class="text-[11px] font-black text-emerald-300">PUBLICO / LANDING</p>
-                <p id="api-endpoint-state" class="text-[10px] font-mono text-slate-300 break-all">Endpoint: -</p>
-                <p id="api-project-state" class="text-[10px] font-mono text-indigo-300">Project ID: -</p>
+                <p id="api-endpoint-state" class="text-[10px] font-mono text-slate-300 break-all">Ruta API: -</p>
+                <p id="api-project-state" class="text-[10px] font-mono text-indigo-300">ID proyecto: -</p>
             </div>
             <textarea id="api-json" class="w-full h-72 bg-black/40 text-indigo-300 font-mono text-[10px] p-5 rounded-3xl border border-white/5 outline-none focus:border-indigo-500"></textarea>
             <div class="grid grid-cols-2 gap-2">
@@ -613,12 +708,16 @@
 
     <nav class="fixed top-0 w-full z-50 px-10 py-10 flex justify-between items-center pointer-events-none">
         <div class="flex items-center gap-12 pointer-events-auto">
-            <span class="font-extrabold tracking-tighter text-2xl">DASH<span class="text-indigo-500">MANQUEHUE</span></span>
+            <img
+                src="https://impactrenderstudios.com/assets/manquehue_logo.png?v=20260629"
+                alt="Manquehue"
+                class="h-10 w-auto object-contain" />
             <div class="hidden lg:flex gap-10 text-[10px] font-black uppercase tracking-widest text-white/40">
-                <a href="#hero" class="hover:text-white transition">Home</a>
-                <a href="#apartments" class="hover:text-white transition">Apartments</a>
-                <a href="#features" class="hover:text-white transition">Features</a>
-                <a href="#contact" class="hover:text-white transition">Contact</a>
+                <a href="#hero" class="hover:text-white transition">Inicio</a>
+                <a href="#hero" class="hover:text-white transition">Proyecto</a>
+                <a href="#apartments" class="hover:text-white transition">Unidades</a>
+                <a href="#features" class="hover:text-white transition">Características</a>
+                <a href="#contact" class="hover:text-white transition">Contacto</a>
             </div>
         </div>
         <button id="nav-cta" class="pointer-events-auto bg-white text-black px-10 py-4 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-indigo-600 hover:text-white transition-all shadow-2xl">
@@ -634,23 +733,8 @@
         <div class="absolute inset-0 bg-black/30"></div>
 
         <div class="relative z-10 w-full px-12 lg:px-20 flex flex-col items-start text-left space-y-10" id="hero-text">
-            <div class="flex flex-wrap justify-start gap-3 reveal">
-                <div class="param-badge text-indigo-400">
-                    <i id="view-type-icon" class="fa-solid fa-building"></i>
-                    <span id="view-tag-type">Departamento</span>
-                </div>
-                <div class="param-badge text-emerald-400">
-                    <i class="fa-solid fa-clock"></i>
-                    <span id="view-delivery-status">Entrega inmediata</span>
-                </div>
-                <div class="param-badge text-white/50">
-                    <i class="fa-solid fa-compass"></i>
-                    <span id="view-orientation">Norte</span>
-                </div>
-            </div>
-
             <h1 id="view-headline" class="hero-title reveal">
-                    YOUR PLACE<br>ON EARTH
+                    TU LUGAR<br>EN LA CIUDAD
             </h1>
             <div class="hero-subheadline-shell reveal">
                 <p id="view-subheadline" class="hero-subheadline-panel is-collapsed text-lg font-light">
@@ -708,14 +792,14 @@
                         <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
                         <span id="view-stage-badge" class="text-[10px] font-black text-emerald-400 uppercase tracking-widest">Entrega inmediata</span>
                     </div>
-                    <h2 class="text-7xl font-bold tracking-tighter uppercase italic leading-none">Filter<br><span class="text-white/20">Units</span></h2>
+                    <h2 class="text-7xl font-bold tracking-tighter uppercase italic leading-none">Filtrar<br><span class="text-white/20">Unidades</span></h2>
                 </div>
 
                 <div class="space-y-1 overflow-y-auto max-h-[400px] pr-4 scroll-column" id="unit-list"></div>
 
                 <div class="flex gap-12 items-center pt-8 border-t border-white/10">
                     <div>
-                        <p class="text-[8px] font-black text-white/30 uppercase tracking-widest mb-1">Total Stock</p>
+                        <p class="text-[8px] font-black text-white/30 uppercase tracking-widest mb-1">Unidades totales</p>
                         <span id="view-units" class="text-4xl font-bold text-white">120</span>
                     </div>
                     <div>
@@ -733,7 +817,7 @@
                 <div class="plan-details-card reveal">
                     <div class="flex justify-between items-start mb-12">
                         <div>
-                            <p class="text-[10px] font-black text-indigo-400 uppercase tracking-[0.3em] mb-2">Specifications</p>
+                            <p class="text-[10px] font-black text-indigo-400 uppercase tracking-[0.3em] mb-2">Especificaciones</p>
                             <h3 id="active-unit-label" class="text-5xl font-bold uppercase italic leading-none">Cargando...</h3>
                         </div>
                         <div class="text-right">
@@ -743,7 +827,7 @@
                     </div>
 
                     <div class="grid lg:grid-cols-2 gap-12 items-center">
-                        <div class="blueprint-stage">
+                        <div id="active-blueprint-panel" class="blueprint-stage cursor-zoom-in">
                             <img id="active-blueprint-image" class="blueprint-media hidden" alt="Plano unidad activa">
                             <svg id="active-blueprint-svg" viewBox="0 0 100 100" class="blueprint-svg">
                                 <path id="active-blueprint-path" d=""></path>
@@ -774,12 +858,12 @@
                             </div>
 
                             <div class="flex gap-3 pt-4 flex-wrap">
-                                <div id="tag-pet" class="px-4 py-2 rounded-full border border-white/10 text-[8px] font-black uppercase tracking-widest opacity-20 transition-all duration-500">Pet Friendly</div>
+                                <div id="tag-pet" class="px-4 py-2 rounded-full border border-white/10 text-[8px] font-black uppercase tracking-widest opacity-20 transition-all duration-500">Acepta mascotas</div>
                                 <div id="tag-bodega" class="px-4 py-2 rounded-full border border-white/10 text-[8px] font-black uppercase tracking-widest opacity-20 transition-all duration-500">Bodega Incluida</div>
                             </div>
 
                             <a id="unit-plan-download" href="#" target="_blank" rel="noreferrer" class="doc-link block w-full py-5 bg-white text-black text-center rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-indigo-500 hover:text-white transition-all shadow-xl">
-                                <i class="fa-solid fa-download mr-2"></i> Download Floor Plan
+                                <i class="fa-solid fa-download mr-2"></i> Descargar planta
                             </a>
                         </div>
                     </div>
@@ -793,23 +877,16 @@
             <div class="space-y-6">
                 <div class="step-indicator text-fuchsia-400">Paso 4: Diferenciadores</div>
                 <h2 class="text-6xl lg:text-8xl font-bold tracking-tighter uppercase italic leading-none">
-                    <span id="features-title">Features</span><br><span id="features-subtitle" class="text-white/20">We give more</span>
+                    <span id="features-title">Características</span>
                 </h2>
-                <p id="view-narrative" class="text-white/50 text-lg leading-relaxed max-w-sm">
-                    "Disenado para quienes buscan el equilibrio perfecto entre tecnologia, confort y las mejores vistas."
-                </p>
             </div>
             <div id="amenities-list-vertical"></div>
         </div>
 
-        <div class="lg:col-span-7 h-[800px] rounded-[60px] overflow-hidden sticky top-32 glass-panel">
+        <div id="feature-visual-panel" class="lg:col-span-7 h-[800px] rounded-[60px] overflow-hidden sticky top-32 glass-panel cursor-zoom-in">
             <img id="amenity-visual" src="https://images.unsplash.com/photo-1600566752355-35792bedcfea?auto=format&fit=crop&q=80&w=1400" class="w-full h-full object-cover transition-all duration-1000" alt="Feature visual">
             <video id="amenity-visual-video" class="w-full h-full object-cover transition-all duration-1000 hidden" autoplay muted loop playsinline></video>
             <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
-            <div class="absolute bottom-12 left-12 max-w-md">
-                <p class="text-[9px] font-black uppercase tracking-[0.4em] text-white/35 mb-4">Project Summary</p>
-                <p id="view-desc" class="text-white/80 text-xl leading-relaxed">Descripcion comercial del proyecto.</p>
-            </div>
         </div>
     </section>
 
@@ -817,24 +894,30 @@
         <div class="glass-panel p-16 flex flex-col justify-between rounded-[50px] bg-amber-500/[0.03] border-amber-500/10">
             <div class="space-y-8">
                 <div class="step-indicator text-amber-500">Paso 3: Archivos</div>
-                <h3 class="text-4xl lg:text-5xl font-bold uppercase italic leading-none">Brochure &<br>Masterplan</h3>
-                <p id="docs-summary" class="text-white/40 max-w-sm">Accede a toda la documentacion tecnica y legal del proyecto.</p>
+                <h3 class="text-4xl lg:text-5xl font-bold uppercase italic leading-none">Recibe los<br>documentos</h3>
+                <p id="docs-summary" class="text-white/40 max-w-sm">Completa tus datos y te enviaremos los documentos disponibles del proyecto.</p>
             </div>
-            <a id="docs-download" href="#" target="_blank" rel="noreferrer" class="doc-link w-full py-6 mt-12 bg-amber-600 text-black font-black uppercase text-[10px] tracking-[0.3em] rounded-full hover:bg-amber-500 transition-all text-center">
-                Descargar Todo (PDF)
-            </a>
+            <form id="docs-request-form" class="mt-12 space-y-4">
+                <input id="docs-request-name" type="text" class="debug-input" placeholder="Nombre" autocomplete="name">
+                <input id="docs-request-email" type="email" class="debug-input" placeholder="Correo electrónico" autocomplete="email" required>
+                <input id="docs-request-phone" type="tel" class="debug-input" placeholder="Teléfono" autocomplete="tel">
+                <button id="docs-request-submit" type="submit" class="doc-link w-full py-6 bg-amber-600 text-black font-black uppercase text-[10px] tracking-[0.3em] rounded-full hover:bg-amber-500 transition-all text-center">
+                    Enviar documentos
+                </button>
+                <p id="docs-request-status" class="text-white/45 text-xs leading-relaxed min-h-[1.25rem]"></p>
+            </form>
         </div>
 
         <div id="tour-visual-trigger" class="glass-panel h-[500px] overflow-hidden rounded-[50px] relative group reveal">
             <iframe id="tour-embed-frame" class="tour-embed hidden" src="" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-            <img id="tour-visual" src="https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=1200" class="w-full h-full object-cover opacity-60 group-hover:scale-110 transition-transform duration-1000" alt="Cinematic tour">
+            <img id="tour-visual" src="https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=1200" class="w-full h-full object-cover opacity-60 group-hover:scale-110 transition-transform duration-1000" alt="Tour cinematográfico">
             <div id="tour-visual-overlay" class="tour-visual-overlay">
                 <div class="w-24 h-24 rounded-full bg-white text-black flex items-center justify-center text-3xl shadow-2xl group-hover:scale-110 transition-transform">
                     <i class="fa-solid fa-play ml-2"></i>
                 </div>
             </div>
             <div class="absolute bottom-10 left-10">
-                <p id="tour-visual-label" class="text-[9px] font-black uppercase tracking-[0.4em] text-white/40">Watch cinematic tour</p>
+                <p id="tour-visual-label" class="text-[9px] font-black uppercase tracking-[0.4em] text-white/40">Ver tour cinematográfico</p>
             </div>
         </div>
     </section>
@@ -846,7 +929,7 @@
                     <div class="w-12 h-px bg-indigo-500"></div>
                     <span class="text-[10px] font-black uppercase tracking-[0.4em] text-white/40">Paso 03: Recursos Multimedia</span>
                 </div>
-                <h2 class="text-5xl lg:text-6xl font-bold uppercase italic tracking-tighter">Media Vault</h2>
+                <h2 class="text-5xl lg:text-6xl font-bold uppercase italic tracking-tighter">Galería multimedia</h2>
             </div>
             <div class="lg:text-right">
                 <p id="gallery-summary" class="text-white/30 text-[10px] font-bold uppercase tracking-widest leading-relaxed">
@@ -862,6 +945,17 @@
         </div>
     </section>
 
+    <div id="gallery-lightbox" class="gallery-lightbox hidden" role="dialog" aria-modal="true" aria-label="Vista ampliada de galería">
+        <div class="gallery-lightbox__dialog">
+            <button id="gallery-lightbox-close" class="gallery-lightbox__close" type="button" aria-label="Cerrar galería ampliada">&times;</button>
+            <div id="gallery-lightbox-media"></div>
+            <div class="gallery-lightbox__caption">
+                <p id="gallery-lightbox-format" class="text-[9px] font-black uppercase text-indigo-300 tracking-[0.5em] mb-3"></p>
+                <h3 id="gallery-lightbox-title" class="text-3xl lg:text-5xl font-bold uppercase italic tracking-tighter"></h3>
+            </div>
+        </div>
+    </div>
+
     <section id="contact" class="px-12 lg:px-24 py-32 space-y-12">
         <div class="flex items-center gap-8">
             <h2 class="text-4xl font-bold uppercase italic tracking-tighter">Puntos de Venta</h2>
@@ -871,7 +965,7 @@
     </section>
 
     <footer class="py-20 text-center opacity-30">
-        <p class="text-[8px] font-black uppercase tracking-[1em]">Dash Manquehue Cinematic 2024</p>
+        <p class="text-[8px] font-black uppercase tracking-[1em]">Dash Manquehue Inmobiliario 2024</p>
     </footer>
 
     <script>
@@ -921,9 +1015,11 @@
 
         const initialData = {
             nombre: 'Mirador de Manquehue',
-            headline: 'YOUR PLACE ON EARTH',
+            headline: 'TU LUGAR EN LA CIUDAD',
             subHeadline: 'Departamentos inteligentes con vistas infinitas disenados para una vida cosmopolita.',
             ctaLabel: 'Solicitar visita guiada',
+            featuresTitle: 'Características',
+            featuresSubtitle: 'Entregamos más',
             descripcion_comercial: 'Una propuesta arquitectonica que integra el skyline de Manquehue con tecnologia de punta y una experiencia de venta inmersiva.',
             narrativa: 'Una propuesta arquitectonica que integra el skyline de Manquehue con tecnologia de punta.',
             direccion_pin: 'Av. Manquehue 1234, Las Condes',
@@ -935,21 +1031,21 @@
             unidades_totales: 120,
             unidades_disponibles: 24,
             ratio_estacionamientos: 1.2,
-            tipo_inmueble: 'Apartments',
+            tipo_inmueble: 'Departamentos',
             pet_friendly: true,
             bodega_incluida: true,
             amenities: [
-                { nombre: 'Playground', code: '01' },
-                { nombre: 'Roof Garden', code: '02' },
-                { nombre: 'Sports Ground', code: '03' },
-                { nombre: 'Shopping Center', code: '04' },
-                { nombre: 'Multiple Parkings', code: '05' },
-                { nombre: 'Cinema', code: '06' }
+                { nombre: 'Juegos infantiles', code: '01' },
+                { nombre: 'Jardín en altura', code: '02' },
+                { nombre: 'Zona deportiva', code: '03' },
+                { nombre: 'Centro comercial', code: '04' },
+                { nombre: 'Estacionamientos múltiples', code: '05' },
+                { nombre: 'Sala de cine', code: '06' }
             ],
             unidades_list: [
-                { label: 'Unit 345', detail: '53.75 m2', meta: 'Floor 5' },
-                { label: 'Unit 122', detail: '42.10 m2', meta: 'Floor 2' },
-                { label: 'Unit 567', detail: '68.20 m2', meta: 'Penthouse' }
+                { label: 'Unidad 345', detail: '53.75 m2', meta: 'Piso 5' },
+                { label: 'Unidad 122', detail: '42.10 m2', meta: 'Piso 2' },
+                { label: 'Unidad 567', detail: '68.20 m2', meta: 'Último piso' }
             ],
             sucursales: ['Las Condes', 'Providencia', 'Maipu', 'Nunoa'],
             multimedia: {
@@ -962,7 +1058,11 @@
             },
             documentos: {
                 brochure_url: null,
-                masterplan_url: null
+                brochure_name: null,
+                masterplan_url: null,
+                masterplan_name: null,
+                legal_url: null,
+                legal_name: null
             }
         };
 
@@ -980,6 +1080,9 @@
         let isPlaying = false;
         let galleryAccordionActiveIndex = 0;
         let galleryAccordionTimer = null;
+        let galleryLightboxItems = [];
+        let activeFeatureLightboxItem = null;
+        let activeBlueprintLightboxItem = null;
 
         function appendLog(title, payload) {
             const stamp = new Date().toLocaleTimeString();
@@ -1057,7 +1160,7 @@
                 inputValue: apiProjectIdInput.value || '',
                 jsonPreview: (jsonArea.value || '').slice(0, 300)
             });
-            throw new Error('Project ID invalido (usa input o JSON: projectId/id/project_id)');
+            throw new Error('ID de proyecto invalido (usa input o JSON: projectId/id/project_id)');
         }
 
         function getPublicLandingPath(projectId) {
@@ -1153,15 +1256,15 @@
 
         async function refreshProjectIdsDropdown() {
             await renderProjectIdsDropdown();
-            appendLog('PROJECT IDS', { ids: readStoredProjectIds(), source: 'api+local' });
+            appendLog('IDS DE PROYECTO', { ids: readStoredProjectIds(), source: 'api+local' });
         }
 
         function updateRuntimeStatus(projectId = null, mode = 'PUBLICO / LANDING', endpointPath = null) {
             const currentId = projectId || (apiProjectIdInput.value || '').trim() || '-';
             const endpoint = endpointPath || (currentId !== '-' ? `${getApiBaseUrl()}${getPublicLandingPath(currentId)}` : '-');
             apiModeState.textContent = mode;
-            apiEndpointState.textContent = `Endpoint: ${endpoint}`;
-            apiProjectState.textContent = `Project ID: ${currentId}`;
+            apiEndpointState.textContent = `Ruta API: ${endpoint}`;
+            apiProjectState.textContent = `ID proyecto: ${currentId}`;
         }
 
         function buildLandingRenderPreview(rawData, source = 'unknown') {
@@ -1646,8 +1749,8 @@
                     rawData?.descripcion_comercial ||
                     'Proyecto en desarrollo inteligente.',
                 ctaLabel: rawData?.ctaLabel || rawData?.cta || rawData?.cta_principal || 'Solicitar visita guiada',
-                featuresTitle: rawData?.featuresTitle || rawData?.features_title || 'Features',
-                featuresSubtitle: rawData?.featuresSubtitle || rawData?.features_subtitle || 'We give more',
+                featuresTitle: rawData?.featuresTitle || rawData?.features_title || 'Características',
+                featuresSubtitle: rawData?.featuresSubtitle || rawData?.features_subtitle || 'Entregamos más',
                 narrativa: rawData?.narrativa || rawData?.narrativa_comercial || rawData?.descripcion_comercial || '',
                 diferenciadores: toArray(rawData?.diferenciadores).map((item) => String(item || '').trim()).filter(Boolean),
                 diferenciadores_detalle:
@@ -1687,14 +1790,18 @@
                 },
                 documentos: {
                     brochure_url: documents.brochure_url || rawData?.brochure_url || null,
-                    masterplan_url: documents.masterplan_url || rawData?.masterplan_url || null
+                    brochure_name: documents.brochure_name || rawData?.brochure_name || null,
+                    masterplan_url: documents.masterplan_url || rawData?.masterplan_url || null,
+                    masterplan_name: documents.masterplan_name || rawData?.masterplan_name || null,
+                    legal_url: documents.legal_url || rawData?.legal_url || null,
+                    legal_name: documents.legal_name || rawData?.legal_name || null
                 }
             };
         }
 
         function formatHeadline(value) {
-            const text = String(value || 'YOUR PLACE ON EARTH').trim();
-            if (!text) return 'YOUR PLACE<br>ON EARTH';
+            const text = String(value || 'TU LUGAR EN LA CIUDAD').trim();
+            if (!text) return 'TU LUGAR<br>EN LA CIUDAD';
             if (text.includes('\n')) return text.split('\n').map(escapeHtml).join('<br>');
             if (text.includes(' ON ')) {
                 const parts = text.split(' ON ');
@@ -1935,6 +2042,7 @@
         }
 
         function renderActiveBlueprint(unit, data = currentLandingData) {
+            const blueprintPanel = document.getElementById('active-blueprint-panel');
             const blueprintImage = document.getElementById('active-blueprint-image');
             const blueprintSvg = document.getElementById('active-blueprint-svg');
             const blueprintPath = document.getElementById('active-blueprint-path');
@@ -1949,7 +2057,22 @@
             if (areaEl) areaEl.textContent = unit?.detail || 'Unidad disponible';
             if (metaEl) metaEl.textContent = unit?.meta || unit?.label || data?.nombre || '-';
 
+            if (blueprintPanel && blueprintPanel.dataset.lightboxBound !== 'true') {
+                blueprintPanel.addEventListener('click', () => {
+                    if (activeBlueprintLightboxItem) {
+                        openMediaLightbox(activeBlueprintLightboxItem);
+                    }
+                });
+                blueprintPanel.dataset.lightboxBound = 'true';
+            }
+
             if (blueprintUrl) {
+                activeBlueprintLightboxItem = {
+                    url: blueprintUrl,
+                    type: planType === 'video' ? 'video' : 'image',
+                    name: unit?.label ? `Plano ${unit.label}` : 'Plano de unidad'
+                };
+                blueprintPanel?.classList.add('cursor-zoom-in');
                 appendLog('ACTIVE BLUEPRINT MEDIA', {
                     unitId: unit?.id || null,
                     unitLabel: unit?.label || '',
@@ -1962,6 +2085,8 @@
                 return;
             }
 
+            activeBlueprintLightboxItem = null;
+            blueprintPanel?.classList.remove('cursor-zoom-in');
             appendLog('ACTIVE BLUEPRINT MEDIA', {
                 unitId: unit?.id || null,
                 unitLabel: unit?.label || '',
@@ -2088,6 +2213,7 @@
                     ? differentiatorsDetail
                     : differentiators.map((text, index) => ({ text, code: String(index + 1).padStart(2, '0'), media: null })));
             if (rows.length) {
+                const featureVisualPanel = document.getElementById('feature-visual-panel');
                 appendLog('FEATURES NORMALIZED ROWS', rows.map((item, index) => ({
                     index: index + 1,
                     code: item.code,
@@ -2118,11 +2244,18 @@
                 `).join('');
 
                 const fallbackVisual = data.multimedia.gallery[0]?.url || data.multimedia.portada_url || '';
-                const setFeatureVisual = (media) => {
+                const setFeatureVisual = (media, label = '') => {
                     const amenityVisual = document.getElementById('amenity-visual');
                     const amenityVideo = document.getElementById('amenity-visual-video');
                     const mediaType = String(media?.type || '').toLowerCase();
                     const mediaUrl = resolveMediaUrl(media?.url || fallbackVisual);
+                    activeFeatureLightboxItem = mediaUrl
+                        ? {
+                            url: mediaUrl,
+                            type: mediaType === 'video' ? 'video' : 'image',
+                            name: label || media?.name || media?.displayName || media?.display_name || 'Visual destacado'
+                        }
+                        : null;
                     appendLog('FEATURES ACTIVE VISUAL', {
                         requestedMedia: media || null,
                         resolvedType: mediaType || 'image',
@@ -2161,6 +2294,15 @@
                     }
                 };
 
+                if (featureVisualPanel && featureVisualPanel.dataset.lightboxBound !== 'true') {
+                    featureVisualPanel.addEventListener('click', () => {
+                        if (activeFeatureLightboxItem) {
+                            openMediaLightbox(activeFeatureLightboxItem);
+                        }
+                    });
+                    featureVisualPanel.dataset.lightboxBound = 'true';
+                }
+
                 const rowElements = Array.from(amenityList.querySelectorAll('.amenity-row'));
                 const activateFeatureRow = (index) => {
                     const element = rowElements[index];
@@ -2172,7 +2314,7 @@
                         });
                         rowElements.forEach((row) => row.classList.remove('is-active'));
                         element.classList.add('is-active');
-                        setFeatureVisual(rows[index]?.media || null);
+                        setFeatureVisual(rows[index]?.media || null, rows[index]?.text || '');
                 };
                 amenityList.onpointerover = (event) => {
                     const row = event.target?.closest?.('.amenity-row');
@@ -2189,7 +2331,7 @@
                 });
                 if (rowElements.length) {
                     rowElements[0].classList.add('is-active');
-                    setFeatureVisual(rows[0]?.media || null);
+                    setFeatureVisual(rows[0]?.media || null, rows[0]?.text || '');
                 }
                 return;
             }
@@ -2272,10 +2414,62 @@
             }, 5000);
         }
 
+        function closeGalleryLightbox() {
+            const lightbox = document.getElementById('gallery-lightbox');
+            const mediaContainer = document.getElementById('gallery-lightbox-media');
+            if (!lightbox || !mediaContainer) return;
+
+            lightbox.classList.add('hidden');
+            mediaContainer.innerHTML = '';
+            if (galleryLightboxItems.length > 1) {
+                startGalleryAccordionAutoplay(galleryLightboxItems.length);
+            }
+        }
+
+        function openMediaLightbox(item) {
+            const lightbox = document.getElementById('gallery-lightbox');
+            const mediaContainer = document.getElementById('gallery-lightbox-media');
+            const title = document.getElementById('gallery-lightbox-title');
+            const format = document.getElementById('gallery-lightbox-format');
+            if (!item || !lightbox || !mediaContainer || !title || !format) return;
+
+            stopGalleryAccordionAutoplay();
+            mediaContainer.innerHTML = item.type === 'video'
+                ? `<video src="${escapeHtml(item.url)}" class="gallery-lightbox__media" controls autoplay playsinline></video>`
+                : `<img src="${escapeHtml(item.url)}" class="gallery-lightbox__media" alt="${escapeHtml(item.name)}">`;
+            title.textContent = item.name || '';
+            format.textContent = item.type === 'video' ? 'Formato: video' : 'Formato: imagen';
+            lightbox.classList.remove('hidden');
+        }
+
+        function openGalleryLightbox(index) {
+            openMediaLightbox(galleryLightboxItems[Number(index) || 0]);
+        }
+
+        function setupGalleryLightbox() {
+            const lightbox = document.getElementById('gallery-lightbox');
+            const closeButton = document.getElementById('gallery-lightbox-close');
+            if (!lightbox || lightbox.dataset.bound === 'true') return;
+
+            closeButton?.addEventListener('click', closeGalleryLightbox);
+            lightbox.addEventListener('click', (event) => {
+                if (event.target === lightbox) {
+                    closeGalleryLightbox();
+                }
+            });
+            window.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape' && !lightbox.classList.contains('hidden')) {
+                    closeGalleryLightbox();
+                }
+            });
+            lightbox.dataset.bound = 'true';
+        }
+
         function renderGalleryAccordion(data) {
             const container = document.getElementById('accordion-container');
             const summary = document.getElementById('gallery-summary');
             if (!container) return;
+            setupGalleryLightbox();
 
             const galleryResources = toArray(data?.multimedia?.gallery)
                 .map((item, index) => ({
@@ -2297,6 +2491,7 @@
 
             const resources = galleryResources.length ? galleryResources : differentiatorResources;
             const source = galleryResources.length ? 'step3-gallery' : (differentiatorResources.length ? 'step4-differentiators' : 'empty');
+            galleryLightboxItems = resources;
 
             appendLog('GALLERY ACCORDION DATA', {
                 source,
@@ -2317,6 +2512,8 @@
 
             if (!resources.length) {
                 stopGalleryAccordionAutoplay();
+                closeGalleryLightbox();
+                galleryLightboxItems = [];
                 container.innerHTML = `
                     <div class="empty-state w-full rounded-[36px] p-8 text-sm text-white/45">
                         La galeria se habilitara cuando el proyecto tenga imagenes o videos publicos.
@@ -2347,6 +2544,7 @@
                 element.addEventListener('click', () => {
                     const nextIndex = Number(element.getAttribute('data-index') || 0);
                     activateGalleryAccordionItem(nextIndex, true);
+                    openGalleryLightbox(nextIndex);
                 });
             });
 
@@ -2356,28 +2554,79 @@
         }
 
         function renderDocuments(data) {
-            const docsLink = document.getElementById('docs-download');
             const docsSummary = document.getElementById('docs-summary');
-            const brochureUrl = data.documentos.brochure_url;
-            const masterplanUrl = data.documentos.masterplan_url;
-            const primaryDocument = brochureUrl || masterplanUrl || '#';
+            const docsSubmit = document.getElementById('docs-request-submit');
+            const docsStatus = document.getElementById('docs-request-status');
+            const documents = [
+                data.documentos.brochure_url ? 'brochure comercial' : '',
+                data.documentos.masterplan_url ? 'masterplan' : '',
+                data.documentos.legal_url ? 'documentos legales' : ''
+            ].filter(Boolean);
 
             if (docsSummary) {
-                if (brochureUrl && masterplanUrl) {
-                    docsSummary.textContent = 'Accede al brochure comercial y al masterplan tecnico del proyecto.';
-                } else if (brochureUrl) {
-                    docsSummary.textContent = 'Brochure comercial disponible para descarga.';
-                } else if (masterplanUrl) {
-                    docsSummary.textContent = 'Masterplan tecnico disponible para descarga.';
+                if (documents.length) {
+                    docsSummary.textContent = `Disponibles: ${documents.join(', ')}. Completa tus datos y los enviaremos a tu correo.`;
                 } else {
                     docsSummary.textContent = 'La documentacion se habilitara cuando el proyecto tenga archivos publicos.';
                 }
             }
 
-            if (docsLink) {
-                docsLink.href = primaryDocument;
-                docsLink.setAttribute('aria-disabled', primaryDocument === '#' ? 'true' : 'false');
+            if (docsSubmit) {
+                docsSubmit.disabled = documents.length === 0;
+                docsSubmit.textContent = documents.length ? 'Enviar documentos' : 'Sin documentos disponibles';
+                docsSubmit.classList.toggle('opacity-50', documents.length === 0);
+                docsSubmit.classList.toggle('cursor-not-allowed', documents.length === 0);
             }
+            if (docsStatus) {
+                docsStatus.textContent = '';
+            }
+        }
+
+        async function submitDocumentRequest(event) {
+            event.preventDefault();
+            const statusEl = document.getElementById('docs-request-status');
+            const submitButton = document.getElementById('docs-request-submit');
+            const name = String(document.getElementById('docs-request-name')?.value || '').trim();
+            const email = String(document.getElementById('docs-request-email')?.value || '').trim();
+            const phone = String(document.getElementById('docs-request-phone')?.value || '').trim();
+            const projectId = currentLandingData?.projectId || getProjectId();
+
+            if (!email) {
+                if (statusEl) statusEl.textContent = 'Ingresa tu correo para enviar los documentos.';
+                return;
+            }
+
+            try {
+                if (statusEl) statusEl.textContent = 'Enviando documentos...';
+                if (submitButton) submitButton.disabled = true;
+                const response = await apiRequest(
+                    'POST',
+                    `/api/dash-manquehue/public/projects/${projectId}/documents/email`,
+                    {
+                        name,
+                        email,
+                        phone,
+                        pageUrl: window.location.href
+                    }
+                );
+                const skipped = Boolean(response?.data?.skipped);
+                if (statusEl) {
+                    statusEl.textContent = skipped
+                        ? 'Solicitud registrada. El correo se enviará cuando el servicio SMTP esté configurado.'
+                        : 'Listo, enviamos los documentos a tu correo.';
+                }
+            } catch (error) {
+                if (statusEl) statusEl.textContent = error?.message || 'No pudimos enviar los documentos. Intenta nuevamente.';
+            } finally {
+                if (submitButton) submitButton.disabled = false;
+            }
+        }
+
+        function setupDocumentRequestForm() {
+            const form = document.getElementById('docs-request-form');
+            if (!form || form.dataset.bound === 'true') return;
+            form.addEventListener('submit', submitDocumentRequest);
+            form.dataset.bound = 'true';
         }
 
         function updateTourVisual(url) {
@@ -2401,7 +2650,7 @@
                 frame.classList.add('hidden');
                 image.classList.remove('hidden');
                 overlay.classList.remove('is-hidden');
-                label.textContent = 'Watch cinematic tour';
+                label.textContent = 'Ver tour cinematográfico';
                 trigger.style.cursor = 'default';
             }
         }
@@ -2440,14 +2689,14 @@
                 setText('view-time-2', data.tiempo_recorrido_min ? String(data.tiempo_recorrido_min) : '-');
                 setText('view-time-pv', data.tiempo_post_venta ? String(data.tiempo_post_venta) : '-');
                 setText('view-address-label', data.direccion_pin || 'Ubicacion pendiente');
-                setText('features-title', data.featuresTitle || 'Features');
-                setText('features-subtitle', data.featuresSubtitle || 'We give more');
+                setText('features-title', data.featuresTitle || 'Características');
+                setText('features-subtitle', data.featuresSubtitle || 'Entregamos más');
                 setText('view-narrative', `"${data.narrativa || data.descripcion_comercial || 'Narrativa pendiente.'}"`);
                 setText('view-desc', data.descripcion_comercial || data.narrativa || data.nombre);
                 setText('view-units', data.unidades_totales ? String(data.unidades_totales) : '0');
                 setText('view-avail', data.unidades_disponibles ? String(data.unidades_disponibles) : '0');
                 setText('view-ratio', data.ratio_estacionamientos === null ? '-' : `${data.ratio_estacionamientos} RATIO`);
-                setText('view-stage-badge', data.unidades_disponibles > 0 ? (data.estado_entrega || 'Stock Disponible') : 'Sin stock disponible');
+                setText('view-stage-badge', data.unidades_disponibles > 0 ? (data.estado_entrega || 'Unidades disponibles') : 'Sin unidades disponibles');
                 setText('view-etapa-text', data.estado_entrega || 'Estado pendiente');
 
                 const coverEl = document.getElementById('view-cover');
@@ -2555,7 +2804,7 @@
                 const normalized = normalizeLandingData(parsed);
                 jsonArea.value = JSON.stringify(normalized, null, 2);
                 renderLanding(normalized);
-                showNotification('Sync en tiempo real');
+                showNotification('Sincronización en tiempo real');
             } catch (_error) {
                 alert('JSON Error');
             }
@@ -2661,7 +2910,7 @@
                         'sucursales',
                         'multimedia.portada_url',
                         'multimedia.gallery[]',
-                        'documentos.brochure_url|masterplan_url'
+                        'documentos.brochure_url|masterplan_url|legal_url'
                     ]
                 });
                 appendLog('FALLBACK PREVIEW initialData', buildLandingRenderPreview(initialData, 'initialData'));
@@ -2742,6 +2991,7 @@
             }
             initAnimations();
             bindAudioModule();
+            setupDocumentRequestForm();
 
             if (window.location.protocol === 'file:') {
                 appendLog('WARN file:// origin', 'Abre esta landing en http(s), no en file://');
@@ -2754,7 +3004,7 @@
                 });
                 fetchProjectById();
             } else {
-                appendLog('INFO projectId requerido', 'Define ?projectId=123 en la URL o escribe Project ID en el panel para cargar datos publicos.');
+                appendLog('INFO projectId requerido', 'Define ?projectId=123 en la URL o escribe el ID de proyecto en el panel para cargar datos publicos.');
             }
         };
     </script>

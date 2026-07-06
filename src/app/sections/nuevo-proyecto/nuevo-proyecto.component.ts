@@ -952,11 +952,14 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
     }
   }
 
-  handlePrimaryAction() {
+  async handlePrimaryAction(): Promise<void> {
     if (this.currentStep === this.steps.length) {
       this.submitProject();
     } else {
-      this.goNext();
+      const saved = await this.saveCurrentStep();
+      if (saved) {
+        this.goNext();
+      }
     }
   }
 
@@ -1303,16 +1306,16 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
     return Number.isInteger(projectId) && projectId > 0 ? projectId : 0;
   }
 
-  async saveCurrentStep(): Promise<void> {
+  async saveCurrentStep(): Promise<boolean> {
     if (this.isSaving) {
-      return;
+      return false;
     }
 
     const token = this.getAccessToken();
     if (!token) {
       this.saveFeedback = 'Primero debes iniciar sesión para guardar.';
       console.warn('[NuevoProyectoUI] save blocked: missing access token');
-      return;
+      return false;
     }
 
     this.isSaving = true;
@@ -1407,9 +1410,11 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
       console.log('[NuevoProyectoUI] PATCH step ok', { projectId, step: this.currentStep });
 
       this.saveFeedback = `Paso ${this.currentStep} guardado correctamente. ID: ${projectId}`;
+      return true;
     } catch (error) {
       console.error('[NuevoProyecto] saveCurrentStep error', error);
       this.saveFeedback = this.getApiErrorMessage(error);
+      return false;
     } finally {
       this.isSaving = false;
     }
