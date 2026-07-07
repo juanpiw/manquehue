@@ -185,10 +185,8 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
     { id: 'futura', label: 'Futura' }
   ];
   typologyOptions: TypologyOption[] = this.createDefaultTypologyOptions();
-  modelAssociations = [
-    { typology: '2D / 2B', model: 'Azotea' },
-    { typology: '3D / 3B', model: 'Jardín' }
-  ];
+  readonly noAssociationModel = 'Sin modelo asociado';
+  modelAssociations: Array<{ typology: string; model: string }> = [];
   amenityOptions: AmenityOption[] = [
     { id: 'cowork', label: 'Cowork panorámico', selected: true },
     { id: 'gourmet', label: 'Salón gourmet', selected: true },
@@ -684,11 +682,20 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
 
   addAssociation() {
     const { typology, model } = this.associationForm;
-    if (!typology || !model) {
+    if (!typology) {
       return;
     }
-    this.modelAssociations = [...this.modelAssociations, { typology, model }];
+    this.modelAssociations = this.modelAssociations.filter(
+      (association) => association.typology !== typology
+    );
+    if (model && model !== this.noAssociationModel) {
+      this.modelAssociations = [...this.modelAssociations, { typology, model }];
+    }
     this.closeAssociationModal();
+  }
+
+  clearModelAssociations() {
+    this.modelAssociations = [];
   }
 
   addAmenity() {
@@ -2649,10 +2656,7 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
     this.branchSearch = '';
     this.newBranchName = '';
     this.projectScreens = [this.createEmptyProjectScreen()];
-    this.modelAssociations = [
-      { typology: '2D / 2B', model: 'Azotea' },
-      { typology: '3D / 3B', model: 'Jardín' }
-    ];
+    this.modelAssociations = [];
 
     this.resetTypologyOptionsToDefaults();
     this.typologyOptions.forEach((option) => {

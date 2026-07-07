@@ -514,13 +514,23 @@
                 <div class="np-association">
                   <p class="np-association__title">Modelos Asociados (Azotea, Jardín, Zócalo)</p>
                   <div class="np-association__list">
+                    <div class="np-association__item" *ngIf="!modelAssociations.length">
+                      <span class="np-association__type">Sin modelos asociados</span>
+                    </div>
                     <div class="np-association__item" *ngFor="let item of modelAssociations">
                       <span class="np-association__type">{{ item.typology }}</span>
                       <span class="np-association__arrow">→</span>
                       <span class="np-association__tag">{{ item.model }}</span>
                     </div>
+                    <button
+                      type="button"
+                      class="np-association__action"
+                      *ngIf="modelAssociations.length"
+                      (click)="clearModelAssociations()">
+                      Sin modelos asociados
+                    </button>
                     <button type="button" class="np-association__action" (click)="openAssociationModal()">
-                      + Asociar modelo
+                      {{ modelAssociations.length ? '+ Asociar modelo' : 'Volver a asociar' }}
                     </button>
                   </div>
                 </div>
@@ -1109,6 +1119,13 @@
                 <button
                   type="button"
                   class="np-attr-button"
+                  [class.is-active]="associationForm.model === noAssociationModel"
+                  (click)="selectAssociationModel(noAssociationModel)">
+                  Sin modelo asociado
+                </button>
+                <button
+                  type="button"
+                  class="np-attr-button"
                   [class.is-active]="associationForm.model === 'Azotea'"
                   (click)="selectAssociationModel('Azotea')">
                   Azotea
@@ -1138,7 +1155,7 @@
             <button
               type="button"
               class="np-btn np-btn--primary"
-              [disabled]="!associationForm.typology || !associationForm.model"
+              [disabled]="!associationForm.typology"
               (click)="addAssociation()">
               Guardar
             </button>

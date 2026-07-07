@@ -862,9 +862,9 @@
                                 <div id="tag-bodega" class="px-4 py-2 rounded-full border border-white/10 text-[8px] font-black uppercase tracking-widest opacity-20 transition-all duration-500">Bodega Incluida</div>
                             </div>
 
-                            <a id="unit-plan-download" href="#" target="_blank" rel="noreferrer" class="doc-link block w-full py-5 bg-white text-black text-center rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-indigo-500 hover:text-white transition-all shadow-xl">
-                                <i class="fa-solid fa-download mr-2"></i> Descargar planta
-                            </a>
+                            <button id="unit-plan-download" type="button" class="doc-link block w-full py-5 bg-white text-black text-center rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-indigo-500 hover:text-white transition-all shadow-xl">
+                                <i class="fa-solid fa-envelope mr-2"></i> Enviar planta
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -953,6 +953,26 @@
                 <p id="gallery-lightbox-format" class="text-[9px] font-black uppercase text-indigo-300 tracking-[0.5em] mb-3"></p>
                 <h3 id="gallery-lightbox-title" class="text-3xl lg:text-5xl font-bold uppercase italic tracking-tighter"></h3>
             </div>
+        </div>
+    </div>
+
+    <div id="unit-plan-email-modal" class="gallery-lightbox hidden" role="dialog" aria-modal="true" aria-label="Enviar planta por correo">
+        <div class="gallery-lightbox__dialog p-8 lg:p-12 flex items-center justify-center">
+            <button id="unit-plan-email-close" class="gallery-lightbox__close" type="button" aria-label="Cerrar formulario">&times;</button>
+            <form id="unit-plan-email-form" class="w-full max-w-xl space-y-5">
+                <div>
+                    <p class="text-[9px] font-black uppercase text-indigo-300 tracking-[0.5em] mb-3">Enviar planta</p>
+                    <h3 id="unit-plan-email-title" class="text-3xl lg:text-5xl font-bold uppercase italic tracking-tighter">Planta de unidad</h3>
+                    <p id="unit-plan-email-detail" class="text-white/45 text-sm mt-3">Completa tus datos y enviaremos esta planta a tu correo.</p>
+                </div>
+                <input id="unit-plan-email-name" type="text" class="debug-input" placeholder="Nombre" autocomplete="name">
+                <input id="unit-plan-email-address" type="email" class="debug-input" placeholder="Correo electrónico" autocomplete="email" required>
+                <input id="unit-plan-email-phone" type="tel" class="debug-input" placeholder="Teléfono" autocomplete="tel">
+                <button id="unit-plan-email-submit" type="submit" class="doc-link w-full py-5 bg-white text-black text-center rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-indigo-500 hover:text-white transition-all shadow-xl">
+                    Enviar a mi correo
+                </button>
+                <p id="unit-plan-email-status" class="text-white/45 text-xs leading-relaxed min-h-[1.25rem]"></p>
+            </form>
         </div>
     </div>
 
@@ -1083,6 +1103,7 @@
         let galleryLightboxItems = [];
         let activeFeatureLightboxItem = null;
         let activeBlueprintLightboxItem = null;
+        let activeUnitPlanEmailItem = null;
 
         function appendLog(title, payload) {
             const stamp = new Date().toLocaleTimeString();
@@ -2179,8 +2200,18 @@
             const planDownload = document.getElementById('unit-plan-download');
             if (planDownload) {
                 const href = unit?.blueprint_url || unit?.plan_url || data?.documentos?.masterplan_url || data?.documentos?.brochure_url || '#';
-                planDownload.href = href;
+                activeUnitPlanEmailItem = href === '#'
+                    ? null
+                    : {
+                        planUrl: href,
+                        unitLabel: unit?.label || data?.nombre || 'Unidad',
+                        unitDetail: unit?.detail || '',
+                        unitMeta: unit?.meta || unit?.label || ''
+                    };
                 planDownload.setAttribute('aria-disabled', href === '#' ? 'true' : 'false');
+                planDownload.disabled = href === '#';
+                planDownload.classList.toggle('opacity-50', href === '#');
+                planDownload.classList.toggle('cursor-not-allowed', href === '#');
             }
 
             document.querySelectorAll('#unit-list .unit-card').forEach((element) => {
@@ -2629,6 +2660,98 @@
             form.dataset.bound = 'true';
         }
 
+        function closeUnitPlanEmailModal() {
+            const modal = document.getElementById('unit-plan-email-modal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function openUnitPlanEmailModal() {
+            const modal = document.getElementById('unit-plan-email-modal');
+            const title = document.getElementById('unit-plan-email-title');
+            const detail = document.getElementById('unit-plan-email-detail');
+            const status = document.getElementById('unit-plan-email-status');
+            if (!modal || !activeUnitPlanEmailItem) return;
+
+            if (title) title.textContent = activeUnitPlanEmailItem.unitLabel || 'Planta de unidad';
+            if (detail) {
+                detail.textContent = [
+                    activeUnitPlanEmailItem.unitDetail,
+                    activeUnitPlanEmailItem.unitMeta
+                ].filter(Boolean).join(' · ') || 'Completa tus datos y enviaremos esta planta a tu correo.';
+            }
+            if (status) status.textContent = '';
+            modal.classList.remove('hidden');
+        }
+
+        async function submitUnitPlanEmail(event) {
+            event.preventDefault();
+            const status = document.getElementById('unit-plan-email-status');
+            const submit = document.getElementById('unit-plan-email-submit');
+            const name = String(document.getElementById('unit-plan-email-name')?.value || '').trim();
+            const email = String(document.getElementById('unit-plan-email-address')?.value || '').trim();
+            const phone = String(document.getElementById('unit-plan-email-phone')?.value || '').trim();
+            const projectId = currentLandingData?.projectId || getProjectId();
+
+            if (!activeUnitPlanEmailItem) {
+                if (status) status.textContent = 'No hay una planta seleccionada para enviar.';
+                return;
+            }
+            if (!email) {
+                if (status) status.textContent = 'Ingresa tu correo para enviar la planta.';
+                return;
+            }
+
+            try {
+                if (status) status.textContent = 'Enviando planta...';
+                if (submit) submit.disabled = true;
+                const response = await apiRequest(
+                    'POST',
+                    `/api/dash-manquehue/public/projects/${projectId}/unit-plan/email`,
+                    {
+                        name,
+                        email,
+                        phone,
+                        planUrl: activeUnitPlanEmailItem.planUrl,
+                        unitLabel: activeUnitPlanEmailItem.unitLabel,
+                        unitDetail: activeUnitPlanEmailItem.unitDetail,
+                        unitMeta: activeUnitPlanEmailItem.unitMeta,
+                        pageUrl: window.location.href
+                    }
+                );
+                const skipped = Boolean(response?.data?.skipped);
+                if (status) {
+                    status.textContent = skipped
+                        ? 'Solicitud registrada. El correo se enviará cuando el servicio SMTP esté configurado.'
+                        : 'Listo, enviamos la planta a tu correo.';
+                }
+            } catch (error) {
+                if (status) status.textContent = error?.message || 'No pudimos enviar la planta. Intenta nuevamente.';
+            } finally {
+                if (submit) submit.disabled = false;
+            }
+        }
+
+        function setupUnitPlanEmailForm() {
+            const button = document.getElementById('unit-plan-download');
+            const modal = document.getElementById('unit-plan-email-modal');
+            const closeButton = document.getElementById('unit-plan-email-close');
+            const form = document.getElementById('unit-plan-email-form');
+            if (!button || button.dataset.bound === 'true') return;
+
+            button.addEventListener('click', openUnitPlanEmailModal);
+            closeButton?.addEventListener('click', closeUnitPlanEmailModal);
+            modal?.addEventListener('click', (event) => {
+                if (event.target === modal) closeUnitPlanEmailModal();
+            });
+            form?.addEventListener('submit', submitUnitPlanEmail);
+            window.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape' && modal && !modal.classList.contains('hidden')) {
+                    closeUnitPlanEmailModal();
+                }
+            });
+            button.dataset.bound = 'true';
+        }
+
         function updateTourVisual(url) {
             const targetUrl = String(url || '').trim();
             const frame = document.getElementById('tour-embed-frame');
@@ -2992,6 +3115,7 @@
             initAnimations();
             bindAudioModule();
             setupDocumentRequestForm();
+            setupUnitPlanEmailForm();
 
             if (window.location.protocol === 'file:') {
                 appendLog('WARN file:// origin', 'Abre esta landing en http(s), no en file://');
