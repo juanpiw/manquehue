@@ -415,6 +415,7 @@
                       #typologyBlueprintInput
                       type="file"
                       accept="image/*"
+                      multiple
                       hidden
                       (change)="handleTypologyBlueprintChange($event, typology)" />
 
@@ -479,26 +480,34 @@
                         </ng-template>
 
                         <div class="np-typology-card__media" *ngIf="hasTypologyBlueprint(typology); else uploadTypologyBlueprintState">
-                          <div class="np-typology-card__preview">
-                            <img
-                              [src]="getTypologyBlueprintPreviewUrl(typology) || ''"
-                              [alt]="'Plano ' + typology.label" />
+                          <div
+                            class="np-typology-card__blueprint-row"
+                            *ngFor="let blueprint of getTypologyBlueprintItems(typology)">
+                            <div class="np-typology-card__preview">
+                              <img
+                                [src]="blueprint.url"
+                                [alt]="'Plano ' + typology.label" />
+                            </div>
+
+                            <div class="np-typology-card__actions">
+                              <div>
+                                <p>Plano / Planta blueprint</p>
+                                <small>{{ blueprint.name || 'Archivo cargado' }}</small>
+                              </div>
+                              <div class="np-typology-card__buttons">
+                                <button
+                                  type="button"
+                                  class="np-typology-btn np-typology-btn--danger"
+                                  (click)="removeTypologyBlueprint(typology, typologyBlueprintInput, blueprint, blueprint.pendingIndex ?? null)">
+                                  Eliminar
+                                </button>
+                              </div>
+                            </div>
                           </div>
 
-                          <div class="np-typology-card__actions">
-                            <div>
-                              <p>Plano / Planta blueprint</p>
-                              <small>{{ typology.pendingBlueprintFile?.name || typology.blueprint?.name || 'Archivo cargado' }}</small>
-                            </div>
-                            <div class="np-typology-card__buttons">
-                              <button type="button" class="np-typology-btn np-typology-btn--secondary" (click)="typologyBlueprintInput.click()">
-                                Subir planta
-                              </button>
-                              <button type="button" class="np-typology-btn np-typology-btn--danger" (click)="removeTypologyBlueprint(typology, typologyBlueprintInput)">
-                                Eliminar
-                              </button>
-                            </div>
-                          </div>
+                          <button type="button" class="np-typology-btn np-typology-btn--secondary" (click)="typologyBlueprintInput.click()">
+                            + Agregar otra planta
+                          </button>
                         </div>
 
                         <ng-template #uploadTypologyBlueprintState>

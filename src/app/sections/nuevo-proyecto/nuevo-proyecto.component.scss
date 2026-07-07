@@ -682,6 +682,17 @@
   align-items: center;
 }
 
+.np-typology-card__media:has(.np-typology-card__blueprint-row) {
+  align-items: stretch;
+  flex-direction: column;
+}
+
+.np-typology-card__blueprint-row {
+  display: flex;
+  gap: 0.9rem;
+  align-items: center;
+}
+
 .np-typology-assets {
   display: flex;
   flex-direction: column;
