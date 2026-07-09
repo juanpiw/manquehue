@@ -1594,8 +1594,16 @@
 
         function normalizeTypology(item) {
             if (!item) return null;
+            const isImageBlueprint = (entry) => {
+                const url = String(entry?.url || '').split('?')[0].toLowerCase();
+                const mimeType = String(entry?.mimeType || entry?.mime_type || '').toLowerCase();
+                const type = String(entry?.type || '').toLowerCase();
+                if (mimeType) return mimeType.startsWith('image/');
+                if (type && type !== 'image') return false;
+                return /\.(png|jpe?g|webp|gif)$/i.test(url);
+            };
             if (typeof item === 'string') {
-                return { label: item, asociacion: 'Asociado', models: [], media: null, blueprint: null, plan_url: '', blueprint_url: '' };
+                return { label: item, asociacion: 'Asociado', models: [], media: null, blueprint: null, blueprints: [], plan_url: '', blueprint_url: '' };
             }
             const models = toArray(item.models).map((model) => ({
                 code: model.code || model.modelCode || model.model_code || '',
@@ -1604,29 +1612,84 @@
             const media = item.media && typeof item.media === 'object'
                 ? {
                     id: item.media.id || null,
-                    url: item.media.url || item.media.file_url || item.media.path || '',
+                    url: resolveMediaUrl(item.media.url || item.media.file_url || item.media.path || ''),
                     type: item.media.type || 'image',
-                    name: item.media.name || item.media.original_name || ''
+                    name: item.media.name || item.media.original_name || '',
+                    mimeType: item.media.mimeType || item.media.mime_type || ''
                 }
                 : null;
             const blueprint = item.blueprint && typeof item.blueprint === 'object'
                 ? {
                     id: item.blueprint.id || null,
-                    url: item.blueprint.url || item.blueprint.file_url || item.blueprint.path || '',
+                    url: resolveMediaUrl(item.blueprint.url || item.blueprint.file_url || item.blueprint.path || ''),
                     type: item.blueprint.type || 'image',
-                    name: item.blueprint.name || item.blueprint.original_name || ''
+                    name: item.blueprint.name || item.blueprint.original_name || '',
+                    mimeType: item.blueprint.mimeType || item.blueprint.mime_type || ''
                 }
                 : null;
+            const blueprints = toArray(item.blueprints)
+                .map((blueprintItem) => {
+                    if (!blueprintItem || typeof blueprintItem !== 'object') return null;
+                    const url = resolveMediaUrl(blueprintItem.url || blueprintItem.file_url || blueprintItem.path || '');
+                    if (!url) return null;
+                    return {
+                        id: blueprintItem.id || null,
+                        url,
+                        type: blueprintItem.type || 'image',
+                        name: blueprintItem.name || blueprintItem.original_name || '',
+                        mimeType: blueprintItem.mimeType || blueprintItem.mime_type || ''
+                    };
+                })
+                .filter(Boolean)
+                .filter(isImageBlueprint);
+            const fallbackBlueprint = blueprint && isImageBlueprint(blueprint) ? blueprint : null;
+            const blueprintItems = blueprints.length ? blueprints : (fallbackBlueprint ? [fallbackBlueprint] : []);
+            const rawBlueprintUrl = resolveMediaUrl(item.blueprint_url || '');
+            const safeBlueprintUrl = /\.(png|jpe?g|webp|gif)$/i.test(rawBlueprintUrl.split('?')[0])
+                ? rawBlueprintUrl
+                : '';
+            console.log('[Landing Typology] normalize blueprint decision', {
+                id: item.id || null,
+                code: item.typology_code || item.typologyCode || item.code || '',
+                label: item.label || item.typologyLabel || item.typology_code || 'Tipologia',
+                rawBlueprintUrl,
+                rawBlueprintType: item.blueprint?.type || '',
+                rawBlueprintMime: item.blueprint?.mimeType || item.blueprint?.mime_type || '',
+                rawBlueprintName: item.blueprint?.name || item.blueprint?.original_name || '',
+                rawBlueprintsCount: toArray(item.blueprints).length,
+                rawBlueprints: toArray(item.blueprints).map((entry) => ({
+                    id: entry?.id || null,
+                    name: entry?.name || entry?.original_name || '',
+                    url: entry?.url || entry?.file_url || entry?.path || '',
+                    type: entry?.type || '',
+                    mimeType: entry?.mimeType || entry?.mime_type || '',
+                    acceptedAsImage: isImageBlueprint({
+                        url: resolveMediaUrl(entry?.url || entry?.file_url || entry?.path || ''),
+                        type: entry?.type || 'image',
+                        mimeType: entry?.mimeType || entry?.mime_type || ''
+                    })
+                })),
+                acceptedBlueprintsCount: blueprintItems.length,
+                acceptedBlueprints: blueprintItems.map((entry) => ({
+                    id: entry.id,
+                    name: entry.name,
+                    url: entry.url,
+                    mimeType: entry.mimeType || ''
+                })),
+                finalBlueprintUrl: blueprintItems[0]?.url || safeBlueprintUrl || ''
+            });
             return {
                 id: item.id || null,
                 label: item.label || item.typologyLabel || item.typology_code || 'Tipologia',
                 asociacion: item.asociacion || item.association || models[0]?.label || 'Disponible',
                 models,
                 media,
-                blueprint,
-                plan_url: item.plan_url || media?.url || item.image || '',
+                typology_code: item.typology_code || item.typologyCode || item.code || '',
+                blueprint: fallbackBlueprint,
+                blueprints: blueprintItems,
+                plan_url: resolveMediaUrl(item.plan_url || media?.url || item.image || ''),
                 plan_type: item.plan_type || media?.type || 'image',
-                blueprint_url: item.blueprint_url || blueprint?.url || ''
+                blueprint_url: blueprintItems[0]?.url || safeBlueprintUrl
             };
         }
 
@@ -1684,6 +1747,97 @@
         }
 
         function buildUnitCards(rawUnits, typologies, availableUnits, totalUnits) {
+            const mergedTypologies = Array.from(
+                typologies.reduce((acc, item) => {
+                    const key = slugify(item.typology_code || item.label || item.id || '');
+                    if (!key) return acc;
+                    const existing = acc.get(key);
+                    if (!existing) {
+                        acc.set(key, {
+                            ...item,
+                            blueprints: [...toArray(item.blueprints)]
+                        });
+                        return acc;
+                    }
+                    existing.blueprints = [
+                        ...toArray(existing.blueprints),
+                        ...toArray(item.blueprints)
+                    ].filter((blueprint, blueprintIndex, list) => {
+                        const blueprintKey = String(blueprint?.id || blueprint?.url || blueprintIndex);
+                        return list.findIndex((candidate, candidateIndex) => {
+                            const candidateKey = String(candidate?.id || candidate?.url || candidateIndex);
+                            return candidateKey === blueprintKey;
+                        }) === blueprintIndex;
+                    });
+                    existing.media = existing.media || item.media;
+                    existing.plan_url = existing.plan_url || item.plan_url;
+                    existing.blueprint = existing.blueprint || item.blueprint;
+                    existing.blueprint_url = existing.blueprint_url || item.blueprint_url;
+                    return acc;
+                }, new Map()).values()
+            );
+
+            const typologyCards = mergedTypologies.flatMap((item, index) => {
+                const fallbackBlueprintUrl = item.blueprint_url || item.blueprint?.url || '';
+                const hasImageFallbackBlueprint = /\.(png|jpe?g|webp|gif)$/i.test(String(fallbackBlueprintUrl).split('?')[0]);
+                const blueprintItems = toArray(item.blueprints).length
+                    ? toArray(item.blueprints)
+                    : (hasImageFallbackBlueprint ? [{ ...(item.blueprint || {}), url: fallbackBlueprintUrl }] : []);
+                const detail = item.models?.length
+                    ? item.models.map((model) => model.label || model.code).filter(Boolean).join(' · ')
+                    : 'Tipologia activa';
+
+                if (blueprintItems.length) {
+                    return blueprintItems.map((blueprint, blueprintIndex) => ({
+                        id: `${item.id || slugify(item.label) || `tipologia-${index + 1}`}-planta-${blueprint.id || blueprintIndex + 1}`,
+                        label: item.label || `Tipologia ${index + 1}`,
+                        detail,
+                        meta: cleanFileNameLabel(blueprint.name || item.asociacion || `Planta ${blueprintIndex + 1}`),
+                        plan_url: item.plan_url || item.media?.url || item.image || '',
+                        plan_type: item.plan_type || item.media?.type || 'image',
+                        blueprint_url: blueprint.url || '',
+                        cam: item.cam || buildUnitCameraPreset(index + blueprintIndex),
+                        blueprint_path: item.blueprint_path || item.plan || buildBlueprintPath(index + blueprintIndex)
+                    }));
+                }
+
+                return [{
+                    id: item.id || item.label || `tipologia-${index + 1}`,
+                    label: item.label || `Tipologia ${index + 1}`,
+                    detail,
+                    meta: item.asociacion || `Disponibles: ${availableUnits || totalUnits || 0}`,
+                    plan_url: item.plan_url || item.media?.url || item.image || '',
+                    plan_type: item.plan_type || item.media?.type || 'image',
+                    blueprint_url: item.blueprint_url || item.blueprint?.url || '',
+                    cam: item.cam || buildUnitCameraPreset(index),
+                    blueprint_path: item.blueprint_path || item.plan || buildBlueprintPath(index)
+                }];
+            });
+
+            console.log('[Landing Units] buildUnitCards', {
+                rawUnits: toArray(rawUnits).length,
+                typologies: typologies.length,
+                mergedTypologies: mergedTypologies.map((item) => ({
+                    id: item.id,
+                    code: item.typology_code,
+                    label: item.label,
+                    blueprints: toArray(item.blueprints).map((blueprint) => ({
+                        id: blueprint?.id,
+                        name: blueprint?.name,
+                        url: blueprint?.url,
+                        mimeType: blueprint?.mimeType || blueprint?.mime_type || ''
+                    }))
+                })),
+                cards: typologyCards.map((card) => ({
+                    id: card.id,
+                    label: card.label,
+                    meta: card.meta,
+                    blueprint_url: card.blueprint_url
+                }))
+            });
+
+            if (typologyCards.length) return typologyCards;
+
             const provided = toArray(rawUnits)
                 .map((item, index) => {
                     if (!item) return null;
@@ -1715,22 +1869,6 @@
                 .filter(Boolean);
 
             if (provided.length) return provided;
-
-            if (typologies.length) {
-                return typologies.map((item, index) => ({
-                    id: item.id || item.label || `tipologia-${index + 1}`,
-                    label: item.label || `Tipologia ${index + 1}`,
-                    detail: item.models?.length
-                        ? item.models.map((model) => model.label || model.code).filter(Boolean).join(' · ')
-                        : 'Tipologia activa',
-                    meta: item.asociacion || `Disponibles: ${availableUnits || totalUnits || 0}`,
-                    plan_url: item.plan_url || item.media?.url || item.image || '',
-                    plan_type: item.plan_type || item.media?.type || 'image',
-                    blueprint_url: item.blueprint_url || item.blueprint?.url || '',
-                    cam: item.cam || buildUnitCameraPreset(index),
-                    blueprint_path: item.blueprint_path || item.plan || buildBlueprintPath(index)
-                }));
-            }
 
             return [];
         }
@@ -2071,9 +2209,18 @@
             const metaEl = document.getElementById('active-blueprint-meta');
             if (!blueprintImage || !blueprintSvg || !blueprintPath) return;
 
-            const blueprintUrl = unit?.blueprint_url || data?.documentos?.masterplan_url || '';
+            const blueprintUrl = unit?.blueprint_url || '';
             const planType = unit?.plan_type || 'image';
             const blueprintValue = unit?.blueprint_path || buildBlueprintPath(0);
+            console.log('[Landing Blueprint Panel] render decision', {
+                unitId: unit?.id || null,
+                unitLabel: unit?.label || '',
+                unitMeta: unit?.meta || '',
+                blueprintUrl,
+                planUrl: unit?.plan_url || '',
+                willRenderImage: Boolean(blueprintUrl),
+                reason: blueprintUrl ? 'using_unit_blueprint_url' : 'missing_unit_blueprint_url_svg_fallback'
+            });
 
             if (areaEl) areaEl.textContent = unit?.detail || 'Unidad disponible';
             if (metaEl) metaEl.textContent = unit?.meta || unit?.label || data?.nombre || '-';
@@ -2204,7 +2351,7 @@
 
             const planDownload = document.getElementById('unit-plan-download');
             if (planDownload) {
-                const href = unit?.blueprint_url || unit?.plan_url || data?.documentos?.masterplan_url || data?.documentos?.brochure_url || '#';
+                const href = unit?.blueprint_url || '#';
                 activeUnitPlanEmailItem = href === '#'
                     ? null
                     : {
@@ -2971,6 +3118,32 @@
                 }
 
                 const payload = normalizeLandingData(response?.data || {});
+                console.log('[Landing API] typologies payload', {
+                    raw: toArray(response?.data?.tipologias_asociadas).map((item) => ({
+                        id: item?.id || null,
+                        code: item?.typology_code || item?.typologyCode || item?.code || '',
+                        label: item?.label || item?.nombre || '',
+                        blueprint_url: item?.blueprint_url || item?.blueprint?.url || '',
+                        blueprints: toArray(item?.blueprints).map((blueprint) => ({
+                            id: blueprint?.id || null,
+                            name: blueprint?.name || blueprint?.original_name || '',
+                            url: blueprint?.url || blueprint?.file_url || blueprint?.path || '',
+                            mimeType: blueprint?.mimeType || blueprint?.mime_type || ''
+                        }))
+                    })),
+                    normalized: toArray(payload?.tipologias_asociadas).map((item) => ({
+                        id: item?.id || null,
+                        code: item?.typology_code || '',
+                        label: item?.label || '',
+                        blueprint_url: item?.blueprint_url || '',
+                        blueprints: toArray(item?.blueprints).map((blueprint) => ({
+                            id: blueprint?.id || null,
+                            name: blueprint?.name || '',
+                            url: blueprint?.url || '',
+                            mimeType: blueprint?.mimeType || ''
+                        }))
+                    }))
+                });
                 appendLog('FETCH PROJECT NORMALIZED', {
                     source,
                     projectId,

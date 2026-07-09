@@ -631,6 +631,16 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
     typology.removeBlueprint = false;
     typology.selected = true;
     this.saveFeedback = `${selectedFiles.length} planta(s) preparada(s) para ${typology.label}. Guarda el paso para subirlas.`;
+    console.log('[NuevoProyectoUI] blueprint files selected', {
+      typologyId: typology.id,
+      typologyLabel: typology.label,
+      files: selectedFiles.map((file) => ({
+        name: file.name,
+        type: file.type,
+        size: file.size
+      })),
+      pendingCount: typology.pendingBlueprintFiles.length
+    });
     input.value = '';
   }
 
@@ -2416,13 +2426,28 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
       for (const pendingBlueprintFile of pendingBlueprintFiles) {
         const blueprintData = new FormData();
         blueprintData.append('file', pendingBlueprintFile);
-        await firstValueFrom(
+        console.log('[NuevoProyectoUI] uploading typology blueprint', {
+          projectId,
+          typologyId: typology.id,
+          typologyLabel: typology.label,
+          fileName: pendingBlueprintFile.name,
+          fileType: pendingBlueprintFile.type,
+          fileSize: pendingBlueprintFile.size
+        });
+        const uploadResponse = await firstValueFrom(
           this.http.post(
             `${this.getApiBaseUrl()}/api/dash-manquehue/projects/${projectId}/typologies/${typology.id}/blueprint`,
             blueprintData,
             { headers: new HttpHeaders({ Authorization: `Bearer ${token}` }) }
           )
         );
+        console.log('[NuevoProyectoUI] typology blueprint upload response', {
+          projectId,
+          typologyId: typology.id,
+          typologyLabel: typology.label,
+          fileName: pendingBlueprintFile.name,
+          response: uploadResponse
+        });
       }
       if (pendingBlueprintFiles.length) {
         this.revokeTypologyBlueprintPreview(typology);
@@ -2434,6 +2459,20 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
     }
 
     await this.loadStep2Resources(projectId, token);
+    console.log('[NuevoProyectoUI] step2 resources reloaded after blueprint sync', {
+      projectId,
+      typologies: this.typologyOptions.map((option) => ({
+        id: option.id,
+        label: option.label,
+        selected: option.selected,
+        blueprints: (option.blueprints || []).map((blueprint) => ({
+          fileId: blueprint.fileId,
+          name: blueprint.name,
+          url: blueprint.url,
+          mimeType: blueprint.mimeType
+        }))
+      }))
+    });
   }
 
   private mapTypologyMediaFromApi(value: unknown): TypologyMediaInfo | null {
