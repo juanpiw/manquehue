@@ -840,7 +840,7 @@
                                     <span>Superficie</span>
                                     <strong id="active-unit-size">-- m²</strong>
                                 </div>
-                                <div class="blueprint-spec">
+                                <div id="active-unit-orientation-spec" class="blueprint-spec">
                                     <span>Orientación</span>
                                     <strong id="view-orientation-active">Norte</strong>
                                 </div>
@@ -2171,7 +2171,12 @@
 
             setText('active-unit-label', unit?.label || data?.nombre || 'Unidad');
             setText('active-unit-size', unit?.detail || 'Unidad disponible');
-            setText('view-orientation-active', data?.orientacion_principal || 'Norte');
+            const orientationSpec = document.getElementById('active-unit-orientation-spec');
+            const hasOrientation = Boolean(String(data?.orientacion_principal || '').trim());
+            if (orientationSpec) {
+                orientationSpec.classList.toggle('hidden', !hasOrientation);
+            }
+            setText('view-orientation-active', hasOrientation ? data.orientacion_principal : '');
             renderActiveBlueprint(unit, data);
 
             const apartmentVideo = document.getElementById('view-apartment-video');

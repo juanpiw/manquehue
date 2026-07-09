@@ -326,7 +326,8 @@
   color: #64748b;
 }
 
-.np-form label {
+.np-form label,
+.np-orientation-field {
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
@@ -525,6 +526,31 @@
   border-color: #1d1d1b;
   background: #1d1d1b;
   color: #fff;
+}
+
+.np-pill-group.is-disabled {
+  opacity: 0.45;
+
+  button {
+    cursor: not-allowed;
+  }
+}
+
+.np-inline-check {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0.15rem 0 0.5rem;
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 700;
+
+  input {
+    width: 0.95rem;
+    height: 0.95rem;
+    accent-color: #1d1d1b;
+  }
 }
 
 .np-media-grid {

@@ -127,18 +127,26 @@
                   <span>Tiempo recorrido (min)</span>
                   <input type="number" min="1" max="60" [(ngModel)]="timings.recorrido" />
                 </label>
-                <label>
+                <div class="np-orientation-field">
                   <span>Orientación Principal</span>
-                  <div class="np-pill-group">
+                  <label class="np-inline-check">
+                    <input
+                      type="checkbox"
+                      [(ngModel)]="project.hideOrientation"
+                      (ngModelChange)="project.orientacion = $event ? '' : project.orientacion" />
+                    <span>No mostrar orientación en landing</span>
+                  </label>
+                  <div class="np-pill-group" [class.is-disabled]="project.hideOrientation">
                     <button
                       type="button"
                       *ngFor="let option of orientationOptions"
                       [class.active]="project.orientacion === option"
-                      (click)="project.orientacion = option">
+                      [disabled]="project.hideOrientation"
+                      (click)="project.orientacion = option; project.hideOrientation = false">
                       {{ option }}
                     </button>
                   </div>
-                </label>
+                </div>
               </div>
               <div class="np-form__group">
                 <label>
@@ -311,7 +319,11 @@
 
               <label>
                 <span>Orientación</span>
-                <input type="text" placeholder="Norte" [(ngModel)]="project.orientacion" />
+                <input
+                  type="text"
+                  placeholder="Norte"
+                  [(ngModel)]="project.orientacion"
+                  [disabled]="project.hideOrientation" />
               </label>
 
               <label>
@@ -346,20 +358,6 @@
               <label>
                 <span>Etapa</span>
                 <input type="text" [(ngModel)]="unitConfig.stage" />
-              </label>
-              <label>
-                <span>Ratio estacionamientos</span>
-                <input type="number" step="0.1" min="0" [(ngModel)]="unitConfig.parkingRatio" />
-              </label>
-              <label class="np-toggle">
-                <span>Bodega incluida</span>
-                <input type="checkbox" [(ngModel)]="unitConfig.storageIncluded" />
-                <span class="np-toggle__slider"></span>
-              </label>
-              <label class="np-toggle">
-                <span>Pet friendly</span>
-                <input type="checkbox" [(ngModel)]="unitConfig.petFriendly" />
-                <span class="np-toggle__slider"></span>
               </label>
             </div>
           </article>
@@ -542,6 +540,26 @@
                       {{ modelAssociations.length ? '+ Asociar modelo' : 'Volver a asociar' }}
                     </button>
                   </div>
+                </div>
+              </div>
+
+              <div class="np-section">
+                <span class="np-label">Parámetros de unidad</span>
+                <div class="np-form np-form__group">
+                  <label>
+                    <span>Estacionamiento</span>
+                    <input type="number" step="0.1" min="0" [(ngModel)]="unitConfig.parkingRatio" />
+                  </label>
+                  <label class="np-toggle">
+                    <span>Bodega incluida</span>
+                    <input type="checkbox" [(ngModel)]="unitConfig.storageIncluded" />
+                    <span class="np-toggle__slider"></span>
+                  </label>
+                  <label class="np-toggle">
+                    <span>Pet friendly</span>
+                    <input type="checkbox" [(ngModel)]="unitConfig.petFriendly" />
+                    <span class="np-toggle__slider"></span>
+                  </label>
                 </div>
               </div>
 

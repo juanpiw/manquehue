@@ -244,6 +244,7 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
     estado: this.deliveryOptions[0].id,
     fechaEntrega: '',
     orientacion: '',
+    hideOrientation: false,
     ubicacion: '',
     puntoCercano: '',
     puntoCercano2: '',
@@ -996,6 +997,7 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
     this.project.ubicacion = this.project.ubicacion || this.project.mapAddress;
     this.project.propertyType = propertyType;
     this.project.orientacion = orientation;
+    this.project.hideOrientation = false;
     this.project.estado = delivery;
 
     this.timings.preVenta = this.timings.preVenta || 7;
@@ -1249,6 +1251,7 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
       this.project.puntoCercano = String(data['punto_cercano_1'] || '');
       this.project.puntoCercano2 = String(data['punto_cercano_2'] || '');
       this.project.orientacion = String(data['orientacion_principal'] || data['orientacion_texto'] || '');
+      this.project.hideOrientation = !this.project.orientacion;
       this.project.propertyType = this.mapPropertyTypeFromApi(String(data['tipo_inmueble'] || ''));
       this.project.estado = String(data['estado_entrega'] || this.deliveryOptions[0].id);
       this.project.ubicacion = String(data['ubicacion_texto'] || '');
@@ -1528,10 +1531,10 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
       tiempoPostventaMin: this.timings.postVenta ?? null,
       puntoCercano1: this.project.puntoCercano?.trim() || null,
       puntoCercano2: this.project.puntoCercano2?.trim() || null,
-      orientacionPrincipal: this.project.orientacion?.trim() || null,
+      orientacionPrincipal: this.project.hideOrientation ? '' : (this.project.orientacion?.trim() || null),
       tipoInmueble: this.mapPropertyTypeForApi(this.project.propertyType),
       estadoEntrega: this.project.estado || null,
-      orientacionTexto: this.project.orientacion?.trim() || null,
+      orientacionTexto: this.project.hideOrientation ? '' : (this.project.orientacion?.trim() || null),
       ubicacionTexto: this.project.ubicacion?.trim() || null,
       entornoDescripcion: this.project.entornoDescripcion?.trim() || null,
       direccionPin: this.project.mapAddress?.trim() || null,
@@ -2692,6 +2695,7 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
       estado: this.deliveryOptions[0].id,
       fechaEntrega: '',
       orientacion: '',
+      hideOrientation: false,
       ubicacion: '',
       puntoCercano: '',
       puntoCercano2: '',
