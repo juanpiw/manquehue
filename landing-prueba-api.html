@@ -835,17 +835,6 @@
                         </div>
 
                         <div class="space-y-6">
-                            <div id="active-blueprint-data" class="grid grid-cols-2 gap-6">
-                                <div class="blueprint-spec">
-                                    <span>Superficie</span>
-                                    <strong id="active-unit-size">-- m²</strong>
-                                </div>
-                                <div id="active-unit-orientation-spec" class="blueprint-spec">
-                                    <span>Orientación</span>
-                                    <strong id="view-orientation-active">Norte</strong>
-                                </div>
-                            </div>
-
                             <div class="pt-6 space-y-3">
                                 <div class="flex justify-between items-center py-3 border-b border-white/5 gap-4">
                                     <span class="text-xs text-white/40 uppercase font-bold tracking-widest">Modelo Base</span>
@@ -2317,13 +2306,6 @@
             });
 
             setText('active-unit-label', unit?.label || data?.nombre || 'Unidad');
-            setText('active-unit-size', unit?.detail || 'Unidad disponible');
-            const orientationSpec = document.getElementById('active-unit-orientation-spec');
-            const hasOrientation = Boolean(String(data?.orientacion_principal || '').trim());
-            if (orientationSpec) {
-                orientationSpec.classList.toggle('hidden', !hasOrientation);
-            }
-            setText('view-orientation-active', hasOrientation ? data.orientacion_principal : '');
             renderActiveBlueprint(unit, data);
 
             const apartmentVideo = document.getElementById('view-apartment-video');

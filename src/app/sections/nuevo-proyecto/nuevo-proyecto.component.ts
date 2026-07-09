@@ -125,8 +125,8 @@ type ProjectScreen = {
 export class NuevoProyectoComponent implements OnDestroy, OnInit {
   private readonly defaultTypologyDefinitions: Array<{ id: string; label: string; selected: boolean }> = [
     { id: '1d1b', label: '1D / 1B', selected: false },
-    { id: '2d1b', label: '2D / 1B', selected: true },
-    { id: '2d2b', label: '2D / 2B', selected: true },
+    { id: '2d1b', label: '2D / 1B', selected: false },
+    { id: '2d2b', label: '2D / 2B', selected: false },
     { id: '3d2b', label: '3D / 2B', selected: false },
     { id: '3d3b', label: '3D / 3B', selected: false },
     { id: '4d3b', label: '4D / 3B', selected: false },
@@ -2810,7 +2810,7 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
     this.typologyOptions.forEach((option) => {
       this.revokeTypologyPreview(option);
       this.revokeTypologyBlueprintPreview(option);
-      option.selected = option.id === '2d1b' || option.id === '2d2b';
+      option.selected = false;
       option.media = null;
       option.pendingFile = null;
       option.pendingPreviewUrl = null;
