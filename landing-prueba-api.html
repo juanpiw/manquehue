@@ -446,6 +446,97 @@
             background: rgba(255, 255, 255, 0.22);
         }
 
+        .project-nav-menu {
+            position: relative;
+        }
+
+        .project-nav-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: rgba(255, 255, 255, 0.4);
+            transition: color 0.2s ease;
+        }
+
+        .project-nav-toggle:hover,
+        .project-nav-toggle.is-open {
+            color: #fff;
+        }
+
+        .project-nav-dropdown {
+            position: absolute;
+            top: calc(100% + 1rem);
+            left: 50%;
+            width: min(320px, 80vw);
+            transform: translateX(-50%);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            border-radius: 1.5rem;
+            background: rgba(8, 10, 18, 0.86);
+            box-shadow: 0 28px 80px rgba(0, 0, 0, 0.42);
+            backdrop-filter: blur(22px);
+            padding: 0.8rem;
+            color: #fff;
+            text-transform: none;
+            letter-spacing: normal;
+        }
+
+        .project-nav-dropdown__head {
+            padding: 0.55rem 0.75rem 0.75rem;
+            color: rgba(255, 255, 255, 0.42);
+            font-size: 0.62rem;
+            font-weight: 900;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+        }
+
+        .project-nav-dropdown__list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+            max-height: 340px;
+            overflow-y: auto;
+        }
+
+        .project-nav-dropdown__item {
+            width: 100%;
+            border-radius: 1rem;
+            padding: 0.85rem 0.9rem;
+            color: rgba(255, 255, 255, 0.72);
+            text-align: left;
+            transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+        }
+
+        .project-nav-dropdown__item:hover,
+        .project-nav-dropdown__item.is-active {
+            background: rgba(255, 255, 255, 0.11);
+            color: #fff;
+            transform: translateY(-1px);
+        }
+
+        .project-nav-dropdown__item.is-muted {
+            color: rgba(255, 255, 255, 0.36);
+            cursor: default;
+        }
+
+        .project-nav-dropdown__item strong,
+        .project-nav-dropdown__item small {
+            display: block;
+        }
+
+        .project-nav-dropdown__item strong {
+            font-size: 0.72rem;
+            font-weight: 900;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .project-nav-dropdown__item small {
+            margin-top: 0.2rem;
+            color: rgba(255, 255, 255, 0.38);
+            font-size: 0.64rem;
+            font-weight: 700;
+        }
+
         .tour-embed {
             position: absolute;
             inset: 0;
@@ -714,7 +805,18 @@
                 class="h-10 w-auto object-contain" />
             <div class="hidden lg:flex gap-10 text-[10px] font-black uppercase tracking-widest text-white/40">
                 <a href="#hero" class="hover:text-white transition">Inicio</a>
-                <a href="#hero" class="hover:text-white transition">Proyecto</a>
+                <div id="project-nav-menu" class="project-nav-menu">
+                    <button id="project-nav-toggle" type="button" class="project-nav-toggle">
+                        Proyecto
+                        <i class="fa-solid fa-chevron-down text-[8px]"></i>
+                    </button>
+                    <div id="project-nav-dropdown" class="project-nav-dropdown hidden">
+                        <div class="project-nav-dropdown__head">Proyectos guardados</div>
+                        <div id="project-nav-list" class="project-nav-dropdown__list">
+                            <button type="button" class="project-nav-dropdown__item is-muted">Cargando proyectos...</button>
+                        </div>
+                    </div>
+                </div>
                 <a href="#apartments" class="hover:text-white transition">Unidades</a>
                 <a href="#features" class="hover:text-white transition">Características</a>
                 <a href="#contact" class="hover:text-white transition">Contacto</a>
@@ -1267,6 +1369,85 @@
         async function refreshProjectIdsDropdown() {
             await renderProjectIdsDropdown();
             appendLog('IDS DE PROYECTO', { ids: readStoredProjectIds(), source: 'api+local' });
+        }
+
+        async function renderNavProjectsDropdown() {
+            const list = document.getElementById('project-nav-list');
+            if (!list) return;
+
+            list.innerHTML = '<button type="button" class="project-nav-dropdown__item is-muted">Cargando proyectos...</button>';
+
+            try {
+                const projects = await fetchPublicProjectsList();
+                const currentId = String(apiProjectIdInput.value || getRuntimeConfig().projectId || '').trim();
+                const normalizedProjects = projects
+                    .map((item) => ({
+                        id: Number(item?.projectId || item?.id || item?.project_id || 0),
+                        name: String(item?.nombre || item?.name || item?.label || '').trim(),
+                        status: String(item?.status || item?.estado || '').trim()
+                    }))
+                    .filter((item) => Number.isInteger(item.id) && item.id > 0)
+                    .filter((item, index, arr) => arr.findIndex((candidate) => candidate.id === item.id) === index)
+                    .sort((a, b) => a.name.localeCompare(b.name) || a.id - b.id);
+
+                if (!normalizedProjects.length) {
+                    list.innerHTML = '<button type="button" class="project-nav-dropdown__item is-muted">No hay proyectos disponibles</button>';
+                    return;
+                }
+
+                list.innerHTML = normalizedProjects.map((item) => `
+                    <button type="button" class="project-nav-dropdown__item ${String(item.id) === currentId ? 'is-active' : ''}" data-project-id="${item.id}">
+                        <strong>${escapeHtml(item.name || `Proyecto #${item.id}`)}</strong>
+                        <small>#${item.id}${item.status ? ` · ${escapeHtml(item.status)}` : ''}</small>
+                    </button>
+                `).join('');
+
+                list.querySelectorAll('[data-project-id]').forEach((button) => {
+                    button.addEventListener('click', () => {
+                        const projectId = button.getAttribute('data-project-id') || '';
+                        if (!projectId) return;
+                        const url = new URL(window.location.href);
+                        url.searchParams.set('projectId', projectId);
+                        window.location.href = url.toString();
+                    });
+                });
+            } catch (error) {
+                appendLog('WARN nav projects dropdown', error?.message || String(error));
+                list.innerHTML = '<button type="button" class="project-nav-dropdown__item is-muted">No se pudieron cargar los proyectos</button>';
+            }
+        }
+
+        function setupNavProjectsDropdown() {
+            const menu = document.getElementById('project-nav-menu');
+            const toggle = document.getElementById('project-nav-toggle');
+            const dropdown = document.getElementById('project-nav-dropdown');
+            if (!menu || !toggle || !dropdown || toggle.dataset.bound === 'true') return;
+
+            toggle.addEventListener('click', async (event) => {
+                event.preventDefault();
+                const willOpen = dropdown.classList.contains('hidden');
+                dropdown.classList.toggle('hidden', !willOpen);
+                toggle.classList.toggle('is-open', willOpen);
+                if (willOpen) {
+                    await renderNavProjectsDropdown();
+                }
+            });
+
+            document.addEventListener('click', (event) => {
+                if (!menu.contains(event.target)) {
+                    dropdown.classList.add('hidden');
+                    toggle.classList.remove('is-open');
+                }
+            });
+
+            window.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape') {
+                    dropdown.classList.add('hidden');
+                    toggle.classList.remove('is-open');
+                }
+            });
+
+            toggle.dataset.bound = 'true';
         }
 
         function updateRuntimeStatus(projectId = null, mode = 'PUBLICO / LANDING', endpointPath = null) {
@@ -3276,6 +3457,7 @@
             bindAudioModule();
             setupDocumentRequestForm();
             setupUnitPlanEmailForm();
+            setupNavProjectsDropdown();
 
             if (window.location.protocol === 'file:') {
                 appendLog('WARN file:// origin', 'Abre esta landing en http(s), no en file://');

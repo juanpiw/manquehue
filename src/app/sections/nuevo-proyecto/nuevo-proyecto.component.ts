@@ -2257,16 +2257,22 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
 
       const typologyRows = Array.isArray(typologiesResponse?.data) ? typologiesResponse.data : [];
       this.resetTypologyOptionsToDefaults();
-      const selectedLabels = new Set<string>();
+      const activeByCode = new Map<string, boolean>();
+      const activeByLabel = new Map<string, boolean>();
       const modelAssociations = typologyRows.flatMap((row) => {
+        const code = String(row['typology_code'] || '');
         const label = this.buildTypologyLabel(
-          String(row['typology_code'] || ''),
+          code,
           Number(row['dormitorios'] || 0),
           Number(row['banos'] || 0)
         );
-        if (Boolean(Number(row['is_active'] || 0))) {
-          selectedLabels.add(label);
+        const isActive = Boolean(Number(row['is_active'] || 0));
+        const normalizedCode = this.normalizeKey(code);
+        const normalizedLabel = this.normalizeKey(label);
+        if (normalizedCode) {
+          activeByCode.set(normalizedCode, Boolean(activeByCode.get(normalizedCode)) || isActive);
         }
+        activeByLabel.set(normalizedLabel, Boolean(activeByLabel.get(normalizedLabel)) || isActive);
         const models = Array.isArray(row['models']) ? (row['models'] as Array<Record<string, unknown>>) : [];
         return models.map((model) => ({
           typology: label,
@@ -2287,7 +2293,11 @@ export class NuevoProyectoComponent implements OnDestroy, OnInit {
       });
 
       this.typologyOptions.forEach((option) => {
-        option.selected = selectedLabels.has(option.label);
+        const normalizedCode = this.normalizeKey(option.id);
+        const normalizedLabel = this.normalizeKey(option.label);
+        option.selected = activeByCode.has(normalizedCode)
+          ? Boolean(activeByCode.get(normalizedCode))
+          : Boolean(activeByLabel.get(normalizedLabel));
         const row = typologyRows.find((item) => {
           const rowCode = String(item['typology_code'] || '');
           const rowLabel = this.buildTypologyLabel(
